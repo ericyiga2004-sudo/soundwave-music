@@ -23,7 +23,7 @@ import {
   FaStepBackward,
   FaStepForward,
 } from "react-icons/fa";
-import "./CSS/SongDetails.css";
+import "./CSS/SongDetailsV.css";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { MusicContext } from "../context/ShopContext";
 
@@ -790,644 +790,441 @@ const SongDetails = ({ relatedSongs: relatedSongsProp = [] }) => {
   }
 
   return (
-    <main className="song-page">
-      <section className="song-hero">
-        <img className="song-hero-bg" src={getImage(song)} alt="" />
+  <main className="sd2-page">
+    <section className="sd2-hero">
+      <img className="sd2-bg" src={getImage(song)} alt="" />
 
-        <div className="song-hero-overlay">
-          <div className="song-glass-panel">
-            <div className="cover-wrap">
-              <img
-                className="song-cover"
-                src={getImage(song)}
-                alt={`${song.title} cover`}
-              />
+      <div className="sd2-shell">
+        <div className="sd2-card">
+          <div className="sd2-coverBox">
+            <img
+              className="sd2-cover"
+              src={getImage(song)}
+              alt={`${song.title} cover`}
+            />
 
-              {isCurrentSong && isPlaying && (
-                <div className="cover-equalizer" aria-hidden="true">
-                  <i></i>
-                  <i></i>
-                  <i></i>
-                  <i></i>
-                </div>
-              )}
-            </div>
-
-            <div className="song-meta">
-              <span className="badge">Premium Track</span>
-
-              <h1>{song.title}</h1>
-
-              <p className="artist">{song.artist?.name || "Unknown Artist"}</p>
-
-              <p className="album">
-                From <strong>{song.album?.title || "Unknown Album"}</strong>
-              </p>
-
-              <div className="stats">
-                <span>
-                  <FaHeart /> {compactNumber(song.likes)} likes
-                </span>
-
-                <span>
-                  <FaMusic /> {compactNumber(song.plays)} plays
-                </span>
-
-                <span>
-                  <FaClock /> {formatTime(displayedDuration)}
-                </span>
+            {isCurrentSong && isPlaying && (
+              <div className="sd2-eq" aria-hidden="true">
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
               </div>
-
-              <section className="player-controls" aria-label="Song controls">
-                <div className="top-controls">
-                  <button
-                    type="button"
-                    className={`icon-control ${shuffle ? "active" : ""}`}
-                    title={shuffle ? "Shuffle on" : "Shuffle off"}
-                    aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
-                    onClick={() => setShuffle((value) => !value)}
-                  >
-                    <FaRandom />
-                  </button>
-
-                  <button
-                    type="button"
-                    className="icon-control"
-                    title="Previous song"
-                    aria-label="Previous song"
-                    onClick={handlePrevious}
-                  >
-                    <FaStepBackward />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`play-btner ${
-                      isCurrentSong && isPlaying ? "playing" : "paused"
-                    }`}
-                    onClick={handlePlayPause}
-                    title={isCurrentSong && isPlaying ? "Pause" : "Play"}
-                    aria-label={isCurrentSong && isPlaying ? "Pause" : "Play"}
-                  >
-                    {isCurrentSong && isPlaying ? <FaPause /> : <FaPlay />}
-                    <span>{isCurrentSong && isPlaying ? "Pause" : "Play"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="icon-control"
-                    title="Next song"
-                    aria-label="Next song"
-                    onClick={handleNext}
-                  >
-                    <FaStepForward />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`icon-control repeat-control ${
-                      repeat !== "off" ? "active" : ""
-                    }`}
-                    title={getRepeatLabel(repeat)}
-                    aria-label={getRepeatLabel(repeat)}
-                    onClick={cycleRepeat}
-                  >
-                    {repeat === "off" ? <FaBan /> : <FaRedo />}
-
-                    {repeat === "one" && (
-                      <span className="repeat-badge" aria-hidden="true">
-                        1
-                      </span>
-                    )}
-                  </button>
-                </div>
-
-                <div className="seek-bar">
-                  <input
-                    type="range"
-                    min="0"
-                    max={displayedDuration || 0}
-                    step="0.1"
-                    value={Math.min(displayedProgress, displayedDuration || 0)}
-                    onChange={handleSeek}
-                    style={{
-                      background: `linear-gradient(to right, #5cf680 ${seekPercent}%, rgba(255,255,255,0.16) ${seekPercent}%)`,
-                    }}
-                    aria-label="Seek song"
-                  />
-
-                  <div className="time">
-                    <span>{formatTime(displayedProgress)}</span>
-                    <span>{formatTime(displayedDuration)}</span>
-                  </div>
-                </div>
-
-                {hasTimedLyrics && (
-                  <button
-                    type="button"
-                    className="active-lyric-preview"
-                    onClick={() => setShowLyrics(true)}
-                    aria-label="Open live lyrics"
-                  >
-                    <span className="active-lyric-preview-label">
-                      Now singing
-                    </span>
-                    <p>{activeLyricText || "Waiting for vocals..."}</p>
-                  </button>
-                )}
-              </section>
-
-              <div className="actions">
-                <button
-                  type="button"
-                  className={`like-btn ${liked ? "active" : ""}`}
-                  onClick={handleToggleLike}
-                  aria-pressed={liked}
-                  disabled={likeLoading}
-                >
-                  {liked ? <FaHeart /> : <FaRegHeart />}
-                  {likeLoading ? "Saving..." : liked ? "Liked" : "Like"}
-                </button>
-
-                <button
-                  type="button"
-                  className="lyrics-btn"
-                  onClick={() => setShowLyrics(true)}
-                  aria-haspopup="dialog"
-                  aria-expanded={showLyrics}
-                >
-                  <FaChevronDown />
-                  Open Lyrics
-                </button>
-
-                <button
-                  type="button"
-                  className="effects-btn"
-                  onClick={() => setShowEffectsModal(true)}
-                  aria-haspopup="dialog"
-                  aria-expanded={showEffectsModal}
-                >
-                  <FaMusic />
-                  Effects / Equalizer
-                </button>
-
-                <button
-                  type="button"
-                  className="playlist-toggle-btn"
-                  onClick={() => setShowPlaylistBox((value) => !value)}
-                >
-                  <FaPlus />
-                  Add to Playlist
-                </button>
-              </div>
-
-              {showPlaylistBox && (
-                <div className="song-playlist-box">
-                  <h3>Add to Playlist</h3>
-
-                  {!token ? (
-                    <p className="playlist-message">
-                      Please login to use playlists.
-                    </p>
-                  ) : (
-                    <>
-                      <div className="playlist-select-row">
-                        <select
-                          value={selectedPlaylistId}
-                          onChange={(e) =>
-                            setSelectedPlaylistId(e.target.value)
-                          }
-                        >
-                          <option value="">Select playlist</option>
-
-                          {playlists.map((playlist) => (
-                            <option key={playlist._id} value={playlist._id}>
-                              {playlist.name} ({playlist.songs?.length || 0}{" "}
-                              songs)
-                            </option>
-                          ))}
-                        </select>
-
-                        <button
-                          type="button"
-                          onClick={addCurrentSongToPlaylist}
-                          disabled={playlistLoading || !selectedPlaylistId}
-                        >
-                          {playlistLoading ? "Adding..." : "Add"}
-                        </button>
-                      </div>
-
-                      <form
-                        className="create-playlist-inline"
-                        onSubmit={createPlaylistAndAddSong}
-                      >
-                        <input
-                          type="text"
-                          placeholder="New playlist name"
-                          value={newPlaylistName}
-                          onChange={(e) => setNewPlaylistName(e.target.value)}
-                        />
-
-                        <button type="submit" disabled={playlistLoading}>
-                          <FaPlus />
-                          {playlistLoading ? "Creating..." : "Create & Add"}
-                        </button>
-                      </form>
-
-                      {playlistMessage && (
-                        <p className="playlist-message">{playlistMessage}</p>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        </div>
-      </section>
 
-      {showEffectsModal && (
-        <div
-          className="effects-modal-backdrop"
-          role="presentation"
-          onClick={() => setShowEffectsModal(false)}
-        >
-          <section
-            className="effects-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="effects-modal-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="effects-close-btn"
-              onClick={() => setShowEffectsModal(false)}
-              aria-label="Close effects"
-            >
-              ×
-            </button>
+          <div className="sd2-info">
+            <span className="sd2-badge">Premium Track</span>
 
-            <div className="effects-modal-header">
-              <span className="effects-kicker">Audio Effects</span>
-              <h2 id="effects-modal-title">Equalizer</h2>
-              <p>Shape the sound with bass, reverb, and presence.</p>
+            <h1>{song.title}</h1>
+
+            <p className="sd2-artist">
+              {song.artist?.name || "Unknown Artist"}
+            </p>
+
+            <p className="sd2-album">
+              From <strong>{song.album?.title || "Unknown Album"}</strong>
+            </p>
+
+            <div className="sd2-stats">
+              <span>
+                <FaHeart /> {compactNumber(song.likes)} likes
+              </span>
+
+              <span>
+                <FaMusic /> {compactNumber(song.plays)} plays
+              </span>
+
+              <span>
+                <FaClock /> {formatTime(displayedDuration)}
+              </span>
             </div>
 
-            <div className="focus-equalizer" aria-hidden="true">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <span
-                  key={index}
-                  style={{ "--delay": `${index * 0.08}s` }}
-                />
-              ))}
-            </div>
+            <section className="sd2-player" aria-label="Song controls">
+              <div className="sd2-controls">
+                <button
+                  type="button"
+                  className={`sd2-iconBtn ${shuffle ? "active" : ""}`}
+                  onClick={() => setShuffle((value) => !value)}
+                  aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
+                >
+                  <FaRandom />
+                </button>
 
-            <div className="effects-controls">
-              <label>
-                <span>
-                  Bass Boost <strong>{currentAudioEffects.bassBoost}</strong>
-                </span>
-                <input
-                  type="range"
-                  min="-10"
-                  max="18"
-                  step="1"
-                  value={currentAudioEffects.bassBoost}
-                  onChange={(event) =>
-                    updateAudioEffect("bassBoost", event.target.value)
-                  }
-                />
-              </label>
+                <button
+                  type="button"
+                  className="sd2-iconBtn"
+                  onClick={handlePrevious}
+                  aria-label="Previous song"
+                >
+                  <FaStepBackward />
+                </button>
 
-              <label>
-                <span>
-                  Reverb <strong>{currentAudioEffects.reverb}%</strong>
-                </span>
+                <button
+                  type="button"
+                  className="sd2-playBtn"
+                  onClick={handlePlayPause}
+                  aria-label={isCurrentSong && isPlaying ? "Pause" : "Play"}
+                >
+                  {isCurrentSong && isPlaying ? <FaPause /> : <FaPlay />}
+                  <span>{isCurrentSong && isPlaying ? "Pause" : "Play"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="sd2-iconBtn"
+                  onClick={handleNext}
+                  aria-label="Next song"
+                >
+                  <FaStepForward />
+                </button>
+
+                <button
+                  type="button"
+                  className={`sd2-iconBtn ${repeat !== "off" ? "active" : ""}`}
+                  onClick={cycleRepeat}
+                  aria-label={getRepeatLabel(repeat)}
+                >
+                  {repeat === "off" ? <FaBan /> : <FaRedo />}
+                  {repeat === "one" && <b>1</b>}
+                </button>
+              </div>
+
+              <div className="sd2-seek">
                 <input
                   type="range"
                   min="0"
-                  max="100"
-                  step="1"
-                  value={currentAudioEffects.reverb}
-                  onChange={(event) =>
-                    updateAudioEffect("reverb", event.target.value)
-                  }
+                  max={displayedDuration || 0}
+                  step="0.1"
+                  value={Math.min(displayedProgress, displayedDuration || 0)}
+                  onChange={handleSeek}
+                  style={{
+                    background: `linear-gradient(to right, #5cf680 ${seekPercent}%, rgba(255,255,255,0.16) ${seekPercent}%)`,
+                  }}
+                  aria-label="Seek song"
                 />
-              </label>
 
-              <label>
-                <span>
-                  Presence <strong>{currentAudioEffects.presence}</strong>
-                </span>
-                <input
-                  type="range"
-                  min="-10"
-                  max="12"
-                  step="1"
-                  value={currentAudioEffects.presence}
-                  onChange={(event) =>
-                    updateAudioEffect("presence", event.target.value)
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="effects-presets">
-              <button type="button" onClick={() => resetAudioEffects?.()}>
-                Reset
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  applyEffectsPreset({
-                    bassBoost: 12,
-                    reverb: 18,
-                    presence: 4,
-                  })
-                }
-              >
-                Club
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  applyEffectsPreset({
-                    bassBoost: 6,
-                    reverb: 8,
-                    presence: 8,
-                  })
-                }
-              >
-                Vocal
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  applyEffectsPreset({
-                    bassBoost: -2,
-                    reverb: 35,
-                    presence: 2,
-                  })
-                }
-              >
-                Ambient
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
-
-      {showLyrics && (
-        <div
-          className={`lyrics-modal-backdrop party-lyrics-backdrop ${
-            kickActive ? "kick-react" : ""
-          }`}
-          role="presentation"
-          onClick={() => setShowLyrics(false)}
-          style={partyStyle}
-        >
-          <section
-            className={`lyrics-modal-card party-lyrics-card ${
-              kickActive ? "kick-react" : ""
-            } ${safeBassEnergy > 0.42 ? "bass-warm" : ""}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="lyrics-modal-title"
-            onClick={(event) => event.stopPropagation()}
-            style={partyStyle}
-          >
-            <button
-              type="button"
-              className="lyrics-modal-close"
-              onClick={() => setShowLyrics(false)}
-              aria-label="Close lyrics"
-            >
-              ×
-            </button>
-
-            <div className="lyrics-modal-bg party-lyrics-bg">
-              <img src={getImage(song)} alt="" />
-            </div>
-
-            <div className="party-light party-light-one"></div>
-            <div className="party-light party-light-two"></div>
-            <div className="party-light party-light-three"></div>
-
-            <div className="party-beam party-beam-one"></div>
-            <div className="party-beam party-beam-two"></div>
-            <div className="party-beam party-beam-three"></div>
-
-            <div className="party-sparkles" aria-hidden="true">
-              {Array.from({ length: 18 }).map((_, index) => (
-                <i key={index} style={{ "--spark-index": index }} />
-              ))}
-            </div>
-
-            <div className="lyrics-modal-header">
-              <span>Live Party Lyrics</span>
-              <h2 id="lyrics-modal-title">{song.title}</h2>
-              <p>{song.artist?.name || "Unknown Artist"}</p>
-            </div>
-
-            {hasTimedLyrics ? (
-              <>
-                <div
-                  className={`lyrics-current-glow party-current-glow ${
-                    kickActive ? "kick-react" : ""
-                  }`}
-                  aria-live="polite"
-                  style={partyStyle}
-                >
-                  <span>Now singing</span>
-                  <strong>{activeLyricText || "Waiting for vocals..."}</strong>
+                <div className="sd2-time">
+                  <span>{formatTime(displayedProgress)}</span>
+                  <span>{formatTime(displayedDuration)}</span>
                 </div>
+              </div>
 
-                <div
-                  ref={lyricsScrollRef}
-                  className="lyrics-modal-scroll synced-lyrics party-lyrics-scroll"
-                  aria-label="Timed lyrics"
+              {hasTimedLyrics && (
+                <button
+                  type="button"
+                  className="sd2-lyricPreview"
+                  onClick={() => setShowLyrics(true)}
                 >
-                  {timedLyrics.map((line, lineIndex) => {
-                    const activeLine = lineIndex === activeLyricIndex;
-                    const hasWords =
-                      Array.isArray(line.words) && line.words.length > 0;
+                  <small>Now singing</small>
+                  <span>{activeLyricText || "Waiting for vocals..."}</span>
+                </button>
+              )}
+            </section>
 
-                    return (
-                      <p
-                        key={`${line.start}-${line.text}-${lineIndex}`}
-                        ref={(element) => {
-                          if (element) {
-                            lyricLineRefs.current[lineIndex] = element;
-                          }
-                        }}
-                        className={`synced-lyric-line modal-line ${
-                          activeLine ? "active pulse party-active-line" : ""
-                        } ${kickActive && activeLine ? "kick-react" : ""}`}
-                      >
-                        {hasWords
-                          ? line.words.map((word, wordIndex) => {
-                              const activeWord =
-                                displayedProgress >= word.start &&
-                                displayedProgress < word.end;
-
-                              const completedWord =
-                                displayedProgress >= word.end;
-
-                              return (
-                                <span
-                                  key={`${word.text}-${word.start}-${wordIndex}`}
-                                  className={`synced-lyric-word ${
-                                    activeWord ? "active" : ""
-                                  } ${completedWord ? "completed" : ""}`}
-                                >
-                                  {word.text}{" "}
-                                </span>
-                              );
-                            })
-                          : line.text}
-                      </p>
-                    );
-                  })}
-                </div>
-              </>
-            ) : lyrics ? (
-              <pre className="lyrics-modal-plain party-plain-lyrics">
-                {lyrics}
-              </pre>
-            ) : (
-              <p className="muted-text">Lyrics are not available for this song.</p>
-            )}
-          </section>
-        </div>
-      )}
-
-      <section className="info-grid" aria-label="Song information">
-        <article className="card album-card">
-          <span className="card-label">Album</span>
-          <img src={getAlbumCover(song)} alt={song.album?.title || "Album"} />
-
-          <div>
-            <h2>{song.album?.title || "Unknown Album"}</h2>
-            <p>Explore the sound behind this release.</p>
-
-            {song.album?._id && (
+            <div className="sd2-actions">
               <button
                 type="button"
-                className="view-album-btn"
-                onClick={() => navigate(`/album/${song.album._id}`)}
+                className={`sd2-action ${liked ? "liked" : ""}`}
+                onClick={handleToggleLike}
+                disabled={likeLoading}
               >
-                View Album
+                {liked ? <FaHeart /> : <FaRegHeart />}
+                {likeLoading ? "Saving..." : liked ? "Liked" : "Like"}
               </button>
-            )}
-          </div>
-        </article>
 
-        <article className="card artist-card">
-          <span className="card-label">Artist</span>
-          <img src={getArtistImage(song)} alt={song.artist?.name || "Artist"} />
+              <button
+                type="button"
+                className="sd2-action"
+                onClick={() => setShowLyrics(true)}
+              >
+                <FaChevronDown />
+                Lyrics
+              </button>
 
-          <div>
-            <h2>{song.artist?.name || "Unknown Artist"}</h2>
-            <p>
-              {song.artist?.country && song.artist.country !== "Unknown"
-                ? `From ${song.artist.country}`
-                : "The creator behind this premium track."}
-            </p>
-          </div>
-        </article>
-      </section>
+              <button
+                type="button"
+                className="sd2-action"
+                onClick={() => setShowEffectsModal(true)}
+              >
+                <FaMusic />
+                Effects
+              </button>
 
-      <section className="related-section">
-        <div className="section-heading">
-          <h2>Related Songs</h2>
-          <p>
-            Based on artist, country, and genre. Plays in order unless shuffle is
-            on.
-          </p>
-        </div>
-
-        {relatedSongs.length > 0 ? (
-          <>
-            <div className="related-list">
-              {visibleRelatedSongs.map((item, index) => {
-                const active = currentSong?._id === item._id;
-                const playingNow = active && isPlaying;
-
-                return (
-                  <button
-                    type="button"
-                    key={item._id}
-                    className={`related-song ${active ? "active" : ""} ${
-                      playingNow ? "playing-now" : ""
-                    }`}
-                    onClick={() => handleRelatedSongClick(item)}
-                  >
-                    <span className="track-number">
-                      {playingNow ? (
-                        <span className="mini-equalizer">
-                          <i></i>
-                          <i></i>
-                          <i></i>
-                        </span>
-                      ) : active ? (
-                        <FaPause />
-                      ) : (
-                        index + 1
-                      )}
-                    </span>
-
-                    <img src={getImage(item)} alt={item.title} />
-
-                    <span className="related-copy">
-                      <strong>{item.title}</strong>
-                      <small>
-                        {item.artist?.name || "Unknown Artist"}
-                        {active && (
-                          <em className="now-playing-label">Playing now</em>
-                        )}
-                      </small>
-                    </span>
-
-                    <span className="related-album">
-                      {item.album?.title || "Single"}
-                    </span>
-
-                    <span className="related-duration">
-                      {formatTime(item.duration)}
-                    </span>
-                  </button>
-                );
-              })}
+              <button
+                type="button"
+                className="sd2-action"
+                onClick={() => setShowPlaylistBox((value) => !value)}
+              >
+                <FaPlus />
+                Playlist
+              </button>
             </div>
 
-            {hasMoreRelated && (
-              <button
-                type="button"
-                className="view-more-btn"
-                onClick={() => setShowAllRelated((value) => !value)}
-              >
-                {showAllRelated ? (
-                  <>
-                    Show Less <FaChevronDown />
-                  </>
+            {showPlaylistBox && (
+              <div className="sd2-playlistBox">
+                <h3>Add to Playlist</h3>
+
+                {!token ? (
+                  <p>Please login to use playlists.</p>
                 ) : (
                   <>
-                    View More Songs <FaChevronDown />
+                    <div className="sd2-playlistRow">
+                      <select
+                        value={selectedPlaylistId}
+                        onChange={(e) => setSelectedPlaylistId(e.target.value)}
+                      >
+                        <option value="">Select playlist</option>
+
+                        {playlists.map((playlist) => (
+                          <option key={playlist._id} value={playlist._id}>
+                            {playlist.name} ({playlist.songs?.length || 0} songs)
+                          </option>
+                        ))}
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={addCurrentSongToPlaylist}
+                        disabled={playlistLoading || !selectedPlaylistId}
+                      >
+                        {playlistLoading ? "Adding..." : "Add"}
+                      </button>
+                    </div>
+
+                    <form
+                      className="sd2-playlistRow"
+                      onSubmit={createPlaylistAndAddSong}
+                    >
+                      <input
+                        type="text"
+                        placeholder="New playlist name"
+                        value={newPlaylistName}
+                        onChange={(e) => setNewPlaylistName(e.target.value)}
+                      />
+
+                      <button type="submit" disabled={playlistLoading}>
+                        Create
+                      </button>
+                    </form>
+
+                    {playlistMessage && <p>{playlistMessage}</p>}
                   </>
                 )}
-              </button>
+              </div>
             )}
-          </>
-        ) : (
-          <p className="empty-related">No related songs found.</p>
-        )}
-      </section>
-    </main>
-  );
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section className="sd2-infoGrid">
+      <article className="sd2-miniCard">
+        <img src={getAlbumCover(song)} alt={song.album?.title || "Album"} />
+
+        <div>
+          <small>Album</small>
+          <h2>{song.album?.title || "Unknown Album"}</h2>
+          <p>Explore the sound behind this release.</p>
+
+          {song.album?._id && (
+            <button type="button" onClick={() => navigate(`/album/${song.album._id}`)}>
+              View Album
+            </button>
+          )}
+        </div>
+      </article>
+
+      <article className="sd2-miniCard">
+        <img src={getArtistImage(song)} alt={song.artist?.name || "Artist"} />
+
+        <div>
+          <small>Artist</small>
+          <h2>{song.artist?.name || "Unknown Artist"}</h2>
+          <p>
+            {song.artist?.country && song.artist.country !== "Unknown"
+              ? `From ${song.artist.country}`
+              : "The creator behind this premium track."}
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <section className="sd2-related">
+      <div className="sd2-heading">
+        <h2>Related Songs</h2>
+        <p>Based on artist, country, and genre.</p>
+      </div>
+
+      {relatedSongs.length > 0 ? (
+        <>
+          <div className="sd2-relatedList">
+            {visibleRelatedSongs.map((item, index) => {
+              const active = currentSong?._id === item._id;
+              const playingNow = active && isPlaying;
+
+              return (
+                <button
+                  type="button"
+                  key={item._id}
+                  className={`sd2-relatedSong ${active ? "active" : ""}`}
+                  onClick={() => handleRelatedSongClick(item)}
+                >
+                  <span className="sd2-number">
+                    {playingNow ? <FaPause /> : index + 1}
+                  </span>
+
+                  <img src={getImage(item)} alt={item.title} />
+
+                  <span className="sd2-relatedText">
+                    <strong>{item.title}</strong>
+                    <small>{item.artist?.name || "Unknown Artist"}</small>
+                  </span>
+
+                  <span className="sd2-duration">{formatTime(item.duration)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {hasMoreRelated && (
+            <button
+              type="button"
+              className="sd2-more"
+              onClick={() => setShowAllRelated((value) => !value)}
+            >
+              {showAllRelated ? "Show Less" : "View More Songs"}
+            </button>
+          )}
+        </>
+      ) : (
+        <p className="sd2-empty">No related songs found.</p>
+      )}
+    </section>
+
+    {showEffectsModal && (
+      <div className="sd2-modalBack" onClick={() => setShowEffectsModal(false)}>
+        <section className="sd2-modal" onClick={(event) => event.stopPropagation()}>
+          <button
+            type="button"
+            className="sd2-close"
+            onClick={() => setShowEffectsModal(false)}
+          >
+            ×
+          </button>
+
+          <h2>Equalizer</h2>
+          <p>Shape the sound with bass, reverb, and presence.</p>
+
+          <label>
+            Bass Boost <strong>{currentAudioEffects.bassBoost}</strong>
+            <input
+              type="range"
+              min="-10"
+              max="18"
+              step="1"
+              value={currentAudioEffects.bassBoost}
+              onChange={(event) => updateAudioEffect("bassBoost", event.target.value)}
+            />
+          </label>
+
+          <label>
+            Reverb <strong>{currentAudioEffects.reverb}%</strong>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={currentAudioEffects.reverb}
+              onChange={(event) => updateAudioEffect("reverb", event.target.value)}
+            />
+          </label>
+
+          <label>
+            Presence <strong>{currentAudioEffects.presence}</strong>
+            <input
+              type="range"
+              min="-10"
+              max="12"
+              step="1"
+              value={currentAudioEffects.presence}
+              onChange={(event) => updateAudioEffect("presence", event.target.value)}
+            />
+          </label>
+
+          <div className="sd2-presets">
+            <button type="button" onClick={() => resetAudioEffects?.()}>
+              Reset
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                applyEffectsPreset({
+                  bassBoost: 12,
+                  reverb: 18,
+                  presence: 4,
+                })
+              }
+            >
+              Club
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                applyEffectsPreset({
+                  bassBoost: 6,
+                  reverb: 8,
+                  presence: 8,
+                })
+              }
+            >
+              Vocal
+            </button>
+          </div>
+        </section>
+      </div>
+    )}
+
+    {showLyrics && (
+      <div className="sd2-modalBack" onClick={() => setShowLyrics(false)}>
+        <section className="sd2-lyricsModal" onClick={(event) => event.stopPropagation()}>
+          <button
+            type="button"
+            className="sd2-close"
+            onClick={() => setShowLyrics(false)}
+          >
+            ×
+          </button>
+
+          <h2>{song.title}</h2>
+          <p>{song.artist?.name || "Unknown Artist"}</p>
+
+          {hasTimedLyrics ? (
+            <div ref={lyricsScrollRef} className="sd2-lyricsScroll">
+              {timedLyrics.map((line, lineIndex) => (
+                <p
+                  key={`${line.start}-${line.text}-${lineIndex}`}
+                  ref={(element) => {
+                    if (element) lyricLineRefs.current[lineIndex] = element;
+                  }}
+                  className={lineIndex === activeLyricIndex ? "active" : ""}
+                >
+                  {line.text}
+                </p>
+              ))}
+            </div>
+          ) : lyrics ? (
+            <pre className="sd2-plainLyrics">{lyrics}</pre>
+          ) : (
+            <p>Lyrics are not available for this song.</p>
+          )}
+        </section>
+      </div>
+    )}
+  </main>
+);
 };
 
 export default SongDetails;
