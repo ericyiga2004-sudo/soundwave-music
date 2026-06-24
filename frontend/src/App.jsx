@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./components/Navbar/Navbar";
+import SideBar from "./components/SideBar/SideBar";
 import { Route, Routes } from "react-router-dom";
 import Explore from "./pages/Explore";
 import Library from "./pages/Library";
@@ -17,7 +17,7 @@ import PlayList from "./pages/PlayList";
 const App = () => {
   return (
     <div className="app">
-      <Navbar />
+      <SideBar />
 
       <main className="main-content">
         <Routes>
