@@ -4,14 +4,20 @@
   box-sizing: border-box;
 }
 
+html {
+  background: #0b0b10;
+}
+
 body {
   background: #0b0b10;
   color: white;
   font-family: system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 .app {
   display: flex;
+  min-height: 100vh;
 }
 
 /* MAIN CONTENT */
@@ -20,12 +26,18 @@ body {
   width: calc(100% - 260px);
   min-height: 100vh;
   background: #0b0b10;
-
-  /* Space for global player */
-  padding-bottom: 90px;
+  padding-bottom: 96px;
 }
 
-/* MOBILE BOTTOM NAVBAR */
+/* TABLETS */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 220px;
+    width: calc(100% - 220px);
+  }
+}
+
+/* MOBILE */
 @media (max-width: 768px) {
   .app {
     display: block;
@@ -36,7 +48,14 @@ body {
     width: 100%;
     min-height: 100vh;
 
-    /* Space for bottom navbar + music player */
+    /* space for bottom navbar + music player */
+    padding-bottom: 155px;
+  }
+}
+
+/* iPhone 7 and small phones */
+@media (max-width: 390px) {
+  .main-content {
     padding-bottom: 150px;
   }
 }
