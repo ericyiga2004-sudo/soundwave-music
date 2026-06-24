@@ -1,25 +1,74 @@
 /* =====================================================
-   SONG DETAILS — RESPONSIVE MOBILE FIX
-   Fixes iPhone 7 controls, lyrics, equalizer buttons
+   SONG DETAILS FULL CSS
 ===================================================== */
 
 .song-page {
   width: 100%;
   min-width: 0;
+  min-height: 100vh;
   overflow-x: hidden;
-  padding-bottom: 160px;
+  background: #0b0b10;
+  color: #ffffff;
+  padding-bottom: 165px;
 }
 
+.song-loading {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #cfcfd8;
+  font-weight: 700;
+}
+
+.loader-orb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1ed760;
+  box-shadow: 0 0 25px rgba(30, 215, 96, 0.8);
+  animation: pulseOrb 1s infinite alternate;
+}
+
+@keyframes pulseOrb {
+  from {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* HERO */
+
 .song-hero {
+  position: relative;
   width: 100%;
   min-width: 0;
   overflow: hidden;
 }
 
+.song-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+  object-fit: cover;
+  filter: blur(40px) brightness(0.35);
+  transform: scale(1.12);
+  opacity: 0.75;
+}
+
 .song-hero-overlay {
+  position: relative;
+  z-index: 2;
   width: 100%;
   min-width: 0;
-  padding: 24px;
+  padding: 34px 24px;
 }
 
 .song-glass-panel {
@@ -27,13 +76,21 @@
   max-width: 1180px;
   min-width: 0;
   margin: 0 auto;
+  padding: 24px;
   display: grid;
   grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
-  gap: 28px;
+  gap: 30px;
   align-items: center;
+  background: rgba(18, 18, 26, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 34px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 .cover-wrap {
+  position: relative;
   width: 100%;
   min-width: 0;
 }
@@ -42,47 +99,276 @@
   width: 100%;
   max-width: 360px;
   aspect-ratio: 1 / 1;
+  display: block;
   object-fit: cover;
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
 }
 
+.cover-equalizer,
+.mini-equalizer {
+  display: flex;
+  align-items: end;
+  gap: 3px;
+}
+
+.cover-equalizer {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  height: 30px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.cover-equalizer i,
+.mini-equalizer i {
+  width: 4px;
+  border-radius: 99px;
+  background: #1ed760;
+  animation: equalizerMove 0.7s infinite ease-in-out alternate;
+}
+
+.cover-equalizer i {
+  height: 12px;
+}
+
+.cover-equalizer i:nth-child(2),
+.mini-equalizer i:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.cover-equalizer i:nth-child(3),
+.mini-equalizer i:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.cover-equalizer i:nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+@keyframes equalizerMove {
+  from {
+    height: 8px;
+  }
+  to {
+    height: 25px;
+  }
+}
+
+/* META */
+
 .song-meta {
+  width: 100%;
   min-width: 0;
+}
+
+.badge {
+  width: fit-content;
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #1ed760;
+  background: rgba(29, 185, 84, 0.14);
+  border: 1px solid rgba(29, 185, 84, 0.25);
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .song-meta h1 {
   max-width: 100%;
+  color: #ffffff;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 0.98;
+  letter-spacing: -2px;
   overflow-wrap: anywhere;
 }
 
+.artist {
+  margin-top: 12px;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.album {
+  margin-top: 6px;
+  color: #a9a9b5;
+  font-size: 14px;
+}
+
+.album strong {
+  color: #ffffff;
+}
+
 .stats {
+  margin-top: 18px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
+.stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  color: #d7d7df;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+/* PLAYER CONTROLS */
+
 .player-controls {
   width: 100%;
   min-width: 0;
+  margin-top: 22px;
 }
 
 .top-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: nowrap;
   width: 100%;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: nowrap;
 }
 
 .icon-control,
 .play-btner {
-  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.09);
+  transition: 0.2s ease;
 }
+
+.icon-control {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.icon-control:hover,
+.icon-control.active {
+  color: #1ed760;
+  background: rgba(29, 185, 84, 0.16);
+}
+
+.play-btner {
+  height: 48px;
+  min-width: 118px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 999px;
+  color: #050509;
+  background: #1ed760;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.play-btner.playing {
+  background: #ffffff;
+}
+
+.repeat-control {
+  position: relative;
+}
+
+.repeat-badge {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  width: 13px;
+  height: 13px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #050509;
+  background: #1ed760;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.seek-bar {
+  margin-top: 16px;
+}
+
+.seek-bar input {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.seek-bar input::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 5px rgba(30, 215, 96, 0.18);
+}
+
+.time {
+  margin-top: 7px;
+  display: flex;
+  justify-content: space-between;
+  color: #a8a8b3;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ACTIVE LYRIC PREVIEW */
+
+.active-lyric-preview {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  border: none;
+  border-radius: 18px;
+  text-align: left;
+  color: #ffffff;
+  background: rgba(29, 185, 84, 0.13);
+  cursor: pointer;
+}
+
+.active-lyric-preview-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #1ed760;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.active-lyric-preview p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* ACTION BUTTONS */
 
 .actions {
   width: 100%;
   min-width: 0;
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -94,11 +380,478 @@
 .effects-btn,
 .playlist-toggle-btn {
   min-width: 0;
+  min-height: 44px;
+  padding: 0 15px;
+  border: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.09);
+  font-size: 13px;
+  font-weight: 850;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.like-btn.active {
+  color: #ff4f81;
+  background: rgba(255, 79, 129, 0.14);
+}
+
+.lyrics-btn {
+  color: #1ed760;
+  background: rgba(29, 185, 84, 0.14);
+}
+
+.effects-btn {
+  color: #8fd4ff;
+  background: rgba(143, 212, 255, 0.12);
+}
+
+.playlist-toggle-btn {
+  color: #ffd36e;
+  background: rgba(255, 211, 110, 0.12);
+}
+
+/* PLAYLIST BOX */
+
+.song-playlist-box {
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.song-playlist-box h3 {
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.playlist-select-row,
+.create-playlist-inline {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.playlist-select-row select,
+.create-playlist-inline input {
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #ffffff;
+  background: #12121a;
+}
+
+.playlist-select-row button,
+.create-playlist-inline button {
+  height: 42px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 12px;
+  color: #050509;
+  background: #1ed760;
+  font-weight: 900;
+}
+
+.playlist-message {
+  margin-top: 10px;
+  color: #bdbdc8;
+  font-size: 13px;
+}
+
+/* INFO CARDS */
+
+.info-grid {
+  max-width: 1180px;
+  margin: 22px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  min-width: 0;
+  padding: 18px;
+  border-radius: 24px;
+  background: #12121a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.album-card,
+.artist-card {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.card-label {
+  grid-column: 1 / -1;
+  color: #1ed760;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.album-card img,
+.artist-card img {
+  width: 110px;
+  height: 110px;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.card h2 {
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.card p {
+  margin-top: 6px;
+  color: #a8a8b3;
+  font-size: 14px;
+}
+
+.view-album-btn {
+  margin-top: 12px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: none;
+  border-radius: 999px;
+  color: #050509;
+  background: #1ed760;
+  font-weight: 900;
+}
+
+/* RELATED */
+
+.related-section {
+  max-width: 1180px;
+  margin: 26px auto 0;
+  padding: 0 24px 30px;
+}
+
+.section-heading {
+  margin-bottom: 14px;
+}
+
+.section-heading h2 {
+  color: #ffffff;
+  font-size: 26px;
+}
+
+.section-heading p {
+  margin-top: 5px;
+  color: #a8a8b3;
+  font-size: 14px;
+}
+
+.related-list {
+  display: grid;
+  gap: 9px;
+}
+
+.related-song {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: none;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 34px 56px minmax(0, 1fr) minmax(120px, 180px) 50px;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  background: #12121a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.related-song.active {
+  background: rgba(29, 185, 84, 0.14);
+}
+
+.track-number {
+  color: #a8a8b3;
+  font-weight: 800;
+}
+
+.related-song img {
+  width: 56px;
+  height: 56px;
+  border-radius: 13px;
+  object-fit: cover;
+}
+
+.related-copy {
+  min-width: 0;
+  display: grid;
+}
+
+.related-copy strong,
+.related-copy small,
+.related-album {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.related-copy strong {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.related-copy small,
+.related-album,
+.related-duration {
+  color: #a8a8b3;
+  font-size: 12px;
+}
+
+.now-playing-label {
+  margin-left: 8px;
+  color: #1ed760;
+  font-style: normal;
+}
+
+.view-more-btn {
+  margin: 16px auto 0;
+  min-height: 42px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #050509;
+  background: #1ed760;
+  font-weight: 900;
+}
+
+.empty-related {
+  color: #a8a8b3;
+}
+
+/* MODALS */
+
+.song-modal-open {
+  overflow: hidden;
+}
+
+.effects-modal-backdrop,
+.lyrics-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200000;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.effects-modal,
+.lyrics-modal-card {
+  position: relative;
+  width: min(100%, 560px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 28px;
+  color: #ffffff;
+  background: #12121a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.effects-close-btn,
+.lyrics-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.effects-modal-header span,
+.lyrics-modal-header span {
+  color: #1ed760;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.effects-modal-header h2,
+.lyrics-modal-header h2 {
+  margin-top: 6px;
+  font-size: 30px;
+}
+
+.effects-modal-header p,
+.lyrics-modal-header p {
+  margin-top: 6px;
+  color: #a8a8b3;
+}
+
+.focus-equalizer {
+  height: 70px;
+  margin: 20px 0;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 7px;
+}
+
+.focus-equalizer span {
+  width: 8px;
+  height: 24px;
+  border-radius: 99px;
+  background: #1ed760;
+  animation: equalizerMove 0.7s infinite ease-in-out alternate;
+  animation-delay: var(--delay);
+}
+
+.effects-controls {
+  display: grid;
+  gap: 15px;
+}
+
+.effects-controls label {
+  display: grid;
+  gap: 8px;
+  color: #d9d9e2;
+  font-weight: 800;
+}
+
+.effects-controls label span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.effects-controls input {
+  width: 100%;
+}
+
+.effects-presets {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.effects-presets button {
+  min-height: 40px;
+  border: none;
+  border-radius: 12px;
+  color: #050509;
+  background: #1ed760;
+  font-weight: 900;
+}
+
+/* LYRICS MODAL */
+
+.lyrics-modal-card {
+  width: min(100%, 680px);
+  overflow: hidden;
+}
+
+.lyrics-modal-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.2;
+}
+
+.lyrics-modal-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(30px);
+  transform: scale(1.1);
+}
+
+.lyrics-modal-card > *:not(.lyrics-modal-bg) {
+  position: relative;
+  z-index: 2;
+}
+
+.lyrics-current-glow {
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(29, 185, 84, 0.16);
+}
+
+.lyrics-current-glow span {
+  display: block;
+  margin-bottom: 5px;
+  color: #1ed760;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.lyrics-current-glow strong {
+  display: block;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.lyrics-modal-scroll {
+  max-height: 48vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.synced-lyric-line {
+  margin: 12px 0;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 850;
+  transition: 0.2s ease;
+}
+
+.synced-lyric-line.active {
+  color: #ffffff;
+  transform: scale(1.02);
+}
+
+.synced-lyric-word.active,
+.synced-lyric-word.completed {
+  color: #1ed760;
+}
+
+.lyrics-modal-plain {
+  white-space: pre-wrap;
+  color: #ffffff;
+  font-family: inherit;
+  line-height: 1.7;
+}
+
+.muted-text {
+  color: #a8a8b3;
 }
 
 /* =====================================================
-   TABLET
+   RESPONSIVE
 ===================================================== */
 
 @media (max-width: 900px) {
@@ -121,22 +874,11 @@
     max-width: 280px;
   }
 
-  .song-meta {
-    width: 100%;
-  }
-
-  .stats {
-    justify-content: center;
-  }
-
+  .stats,
   .actions {
     justify-content: center;
   }
 }
-
-/* =====================================================
-   MOBILE / iPHONE
-===================================================== */
 
 @media (max-width: 768px) {
   .song-page {
@@ -148,7 +890,6 @@
   }
 
   .song-glass-panel {
-    width: 100%;
     padding: 14px;
     border-radius: 22px;
     display: flex;
@@ -162,7 +903,6 @@
   }
 
   .song-meta {
-    width: 100%;
     text-align: center;
   }
 
@@ -204,48 +944,22 @@
     width: 38px;
     height: 38px;
     min-width: 38px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    padding: 0;
   }
 
   .play-btner {
     height: 44px;
     min-width: 92px;
     padding: 0 14px;
-    border-radius: 999px;
     font-size: 13px;
-  }
-
-  .play-btner svg {
-    width: 14px;
-    height: 14px;
   }
 
   .seek-bar {
     margin-top: 14px;
   }
 
-  .seek-bar input {
-    width: 100%;
-  }
-
-  .time {
-    font-size: 11px;
-  }
-
   .active-lyric-preview {
-    width: 100%;
-    margin-top: 12px;
     padding: 12px;
     border-radius: 16px;
-    text-align: left;
-  }
-
-  .active-lyric-preview p {
-    font-size: 13px;
-    line-height: 1.35;
   }
 
   .actions {
@@ -265,35 +979,16 @@
     padding: 0 10px;
     border-radius: 14px;
     font-size: 12px;
-    justify-content: center;
-  }
-
-  .actions button svg {
-    width: 13px;
-    height: 13px;
-    flex-shrink: 0;
   }
 
   .song-playlist-box {
-    width: 100%;
-    margin-top: 12px;
     padding: 12px;
     border-radius: 16px;
   }
 
   .playlist-select-row,
   .create-playlist-inline {
-    display: grid;
     grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .playlist-select-row select,
-  .playlist-select-row button,
-  .create-playlist-inline input,
-  .create-playlist-inline button {
-    width: 100%;
-    min-height: 42px;
   }
 
   .info-grid {
@@ -302,37 +997,20 @@
     gap: 12px;
   }
 
-  .card {
-    padding: 14px;
-    border-radius: 20px;
-  }
-
   .album-card,
   .artist-card {
-    display: grid;
     grid-template-columns: 82px minmax(0, 1fr);
     gap: 12px;
-    align-items: center;
   }
 
   .album-card img,
   .artist-card img {
     width: 82px;
     height: 82px;
-    border-radius: 16px;
-    object-fit: cover;
   }
 
   .related-section {
     padding: 0 12px 20px;
-  }
-
-  .section-heading h2 {
-    font-size: 22px;
-  }
-
-  .section-heading p {
-    font-size: 13px;
   }
 
   .related-song {
@@ -346,26 +1024,31 @@
     height: 48px;
   }
 
-  .related-copy {
-    min-width: 0;
-  }
-
-  .related-copy strong,
-  .related-copy small {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
   .related-album,
   .related-duration {
     display: none;
   }
-}
 
-/* =====================================================
-   iPHONE 7 EXACT FIX — 375px width
-===================================================== */
+  .effects-modal,
+  .lyrics-modal-card {
+    width: min(100%, 430px);
+    max-height: calc(100vh - 24px);
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .effects-presets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lyrics-modal-scroll {
+    max-height: 42vh;
+  }
+
+  .synced-lyric-line {
+    font-size: 18px;
+  }
+}
 
 @media (max-width: 390px) {
   .song-page {
@@ -428,7 +1111,6 @@
   }
 
   .actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
   }
 
@@ -441,23 +1123,6 @@
     padding: 0 8px;
     font-size: 10.5px;
     border-radius: 12px;
-  }
-
-  .actions button svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .active-lyric-preview {
-    padding: 10px;
-  }
-
-  .active-lyric-preview-label {
-    font-size: 10px;
-  }
-
-  .active-lyric-preview p {
-    font-size: 12px;
   }
 
   .album-card,
@@ -478,80 +1143,11 @@
   .card p {
     font-size: 12px;
   }
-}
 
-/* =====================================================
-   MODALS MOBILE FIX
-===================================================== */
-
-@media (max-width: 768px) {
-  .effects-modal-backdrop,
-  .lyrics-modal-backdrop {
-    padding: 10px;
-    align-items: center;
-  }
-
-  .effects-modal,
-  .lyrics-modal-card {
-    width: min(100%, 430px);
-    max-height: calc(100vh - 24px);
-    overflow-y: auto;
-    border-radius: 22px;
-  }
-
-  .effects-modal {
-    padding: 18px;
-  }
-
-  .lyrics-modal-card {
-    padding: 18px;
-  }
-
-  .effects-modal-header h2,
-  .lyrics-modal-header h2 {
-    font-size: 24px;
-  }
-
-  .effects-controls label {
-    gap: 8px;
-  }
-
-  .effects-presets {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .effects-presets button {
-    width: 100%;
-    min-height: 42px;
-  }
-
-  .lyrics-current-glow strong {
-    font-size: 18px;
-    line-height: 1.25;
-  }
-
-  .lyrics-modal-scroll {
-    max-height: 42vh;
-  }
-
-  .synced-lyric-line {
-    font-size: 18px;
-    line-height: 1.35;
-  }
-}
-
-@media (max-width: 390px) {
   .effects-modal,
   .lyrics-modal-card {
     border-radius: 18px;
     padding: 14px;
-  }
-
-  .effects-modal-header h2,
-  .lyrics-modal-header h2 {
-    font-size: 21px;
   }
 
   .lyrics-current-glow strong {
