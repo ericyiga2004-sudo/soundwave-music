@@ -18,37 +18,41 @@ body {
   overflow-x: hidden;
 }
 
+/* FORCE APP TO COLUMN, NOT FLEX */
 .app {
   width: 100%;
   min-height: 100vh;
+  display: block !important;
   background: #0b0b10;
 }
 
-/* No sidebar space at all */
+/* NO SIDEBAR SPACE */
 .main-content {
-  width: 100%;
-  min-height: calc(100vh - 72px);
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: calc(100vh - 60px);
+  margin-left: 0 !important;
+  padding-left: 0 !important;
   background: #0b0b10;
-
-  /*
-    Space for fixed music player + bottom navbar.
-    Reduce this if you still see too much bottom gap.
-  */
-  padding-bottom: 135px;
+  padding-bottom: 145px;
 }
 
-/* Mobile */
+/* MOBILE */
 @media (max-width: 768px) {
+  .app {
+    display: block !important;
+  }
+
   .main-content {
-    min-height: calc(100vh - 64px);
-    padding-bottom: 125px;
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-bottom: 140px;
   }
 }
 
-/* iPhone 7 / small phones */
+/* iPhone 7 */
 @media (max-width: 390px) {
   .main-content {
-    min-height: calc(100vh - 60px);
-    padding-bottom: 118px;
+    padding-bottom: 130px;
   }
 }
