@@ -1,5 +1,4 @@
 import React from "react";
-import Sidebar from "./components/Sidebar/Sidebar";
 import Navbar from "./components/Navbar/Navbar";
 import { Route, Routes } from "react-router-dom";
 import Explore from "./pages/Explore";
