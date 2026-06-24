@@ -5,13 +5,12 @@ import {
   Compass,
   Library,
   Heart,
-  Music2,
   User,
   ListMusic,
 } from "lucide-react";
 import "./Navbar.css";
 
-const navItems = [
+const navLinks = [
   { path: "/", label: "Home", icon: House },
   { path: "/explore", label: "Explore", icon: Compass },
   { path: "/library", label: "Library", icon: Library },
@@ -22,40 +21,18 @@ const navItems = [
 
 const Navbar = () => {
   return (
-    <>
-      <aside className="sidebar">
-        <div className="logo">
-          <Music2 size={30} />
-          <span>SoundWave</span>
-        </div>
+    <nav className="sw-bottom-navbar mobile-only">
+      {navLinks.map((item) => {
+        const Icon = item.icon;
 
-        <nav className="nav-links">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <NavLink key={item.path} to={item.path} className="nav-item">
-                <Icon size={22} />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-      </aside>
-
-      <nav className="mobile-bottom-nav">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <NavLink key={item.path} to={item.path} className="mobile-nav-item">
-              <Icon size={20} />
-              <span>{item.label}</span>
-            </NavLink>
-          );
-        })}
-      </nav>
-    </>
+        return (
+          <NavLink key={item.path} to={item.path} className="sw-bottom-link">
+            <Icon size={20} />
+            <span>{item.label}</span>
+          </NavLink>
+        );
+      })}
+    </nav>
   );
 };
 

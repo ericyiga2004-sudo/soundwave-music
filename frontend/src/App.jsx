@@ -1,5 +1,6 @@
 import React from "react";
-import SideBar from "./components/SideBar/SideBar";
+import Sidebar from "./components/Sidebar/Sidebar";
+import Navbar from "./components/Navbar/Navbar";
 import { Route, Routes } from "react-router-dom";
 import Explore from "./pages/Explore";
 import Library from "./pages/Library";
@@ -13,11 +14,11 @@ import Album from "./pages/Album";
 import Profile from "./pages/Profile";
 import PlayList from "./pages/PlayList";
 
-
 const App = () => {
   return (
     <div className="app">
-      <SideBar />
+      <Sidebar />
+      <Navbar />
 
       <main className="main-content">
         <Routes>
@@ -33,7 +34,6 @@ const App = () => {
         </Routes>
       </main>
 
-      {/* GLOBAL PLAYER */}
       <MusicPlay />
     </div>
   );

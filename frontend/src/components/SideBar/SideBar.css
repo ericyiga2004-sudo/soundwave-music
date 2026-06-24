@@ -1,240 +1,91 @@
-/* ================================
-   SOUNDWAVE RESPONSIVE SIDEBAR
-================================ */
-
-.sw-desktop-sidebar {
+.sw-sidebar {
   position: fixed;
-  inset: 0 auto 0 0;
+  top: 0;
+  left: 0;
   width: 260px;
   height: 100vh;
-  padding: 22px 16px;
+  padding: 24px 16px;
   background: linear-gradient(180deg, #07070c 0%, #101018 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  z-index: 5000;
+  z-index: 1000;
 }
 
-.sw-logo {
+.sw-sidebar-logo {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 34px;
 }
 
-.sw-logo-icon {
+.sw-sidebar-logo-icon {
   width: 46px;
   height: 46px;
   border-radius: 17px;
   display: grid;
   place-items: center;
   color: #ffffff;
-  background: linear-gradient(135deg, #1db954, #11993d);
-  box-shadow: 0 14px 34px rgba(29, 185, 84, 0.25);
+  background: linear-gradient(135deg, #1db954, #128c3d);
+  box-shadow: 0 14px 35px rgba(29, 185, 84, 0.28);
 }
 
-.sw-logo h2 {
-  font-size: 21px;
+.sw-sidebar-logo h2 {
+  font-size: 22px;
+  line-height: 1;
   font-weight: 850;
   color: #ffffff;
-  line-height: 1;
 }
 
-.sw-logo p {
+.sw-sidebar-logo p {
   margin-top: 4px;
   font-size: 12px;
-  color: #8b8b96;
+  color: #898996;
 }
 
-.sw-desktop-menu {
+.sw-sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.sw-desktop-link {
+.sw-sidebar-link {
+  min-height: 52px;
+  padding: 0 15px;
+  border-radius: 17px;
   display: flex;
   align-items: center;
-  gap: 13px;
-  min-height: 50px;
-  padding: 0 15px;
-  border-radius: 16px;
-  color: #aaaab5;
+  gap: 14px;
+  color: #a2a2ad;
   text-decoration: none;
   font-size: 15px;
   font-weight: 700;
   transition: 0.2s ease;
 }
 
-.sw-desktop-link:hover {
+.sw-sidebar-link:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.07);
 }
 
-.sw-desktop-link.active {
+.sw-sidebar-link.active {
   color: #ffffff;
-  background: rgba(29, 185, 84, 0.16);
-  border: 1px solid rgba(29, 185, 84, 0.28);
+  background: rgba(29, 185, 84, 0.17);
+  border: 1px solid rgba(29, 185, 84, 0.3);
 }
-
-/* Hidden on desktop */
-.sw-mobile-header,
-.sw-mobile-bottom-nav {
-  display: none;
-}
-
-/* ================================
-   TABLET
-================================ */
 
 @media (max-width: 1024px) {
-  .sw-desktop-sidebar {
+  .sw-sidebar {
     width: 220px;
-    padding: 20px 14px;
   }
 
-  .sw-logo h2 {
+  .sw-sidebar-logo h2 {
     font-size: 19px;
   }
 
-  .sw-logo p {
+  .sw-sidebar-logo p {
     display: none;
   }
 
-  .sw-desktop-link {
+  .sw-sidebar-link {
     font-size: 14px;
-  }
-}
-
-/* ================================
-   MOBILE
-================================ */
-
-@media (max-width: 768px) {
-  .sw-desktop-sidebar {
-    display: none !important;
-  }
-
-  .sw-mobile-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 54px;
-    padding: 0 14px;
-    display: flex;
-    align-items: center;
-    background: rgba(11, 11, 16, 0.96);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    z-index: 6000;
-  }
-
-  .sw-mobile-brand {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    color: #ffffff;
-    font-size: 17px;
-    font-weight: 850;
-  }
-
-  .sw-mobile-brand svg {
-    color: #1ed760;
-  }
-
-  .sw-mobile-bottom-nav {
-    position: fixed;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    height: 64px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 3px;
-    padding: 6px;
-    background: rgba(13, 13, 20, 0.97);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 23px;
-    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    z-index: 7000;
-  }
-
-  .sw-mobile-link {
-    min-width: 0;
-    height: 52px;
-    border-radius: 17px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    color: #90909c;
-    text-decoration: none;
-    font-size: 8.8px;
-    font-weight: 800;
-    line-height: 1;
-  }
-
-  .sw-mobile-link svg {
-    width: 19px;
-    height: 19px;
-    flex-shrink: 0;
-  }
-
-  .sw-mobile-link span {
-    max-width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .sw-mobile-link.active {
-    color: #1ed760;
-    background: rgba(29, 185, 84, 0.15);
-  }
-}
-
-/* ================================
-   iPHONE 7 / SMALL PHONES
-================================ */
-
-@media (max-width: 390px) {
-  .sw-mobile-header {
-    height: 50px;
-  }
-
-  .sw-mobile-bottom-nav {
-    left: 5px;
-    right: 5px;
-    bottom: 6px;
-    height: 60px;
-    padding: 5px;
-    gap: 2px;
-    border-radius: 20px;
-  }
-
-  .sw-mobile-link {
-    height: 50px;
-    border-radius: 15px;
-    font-size: 8px;
-  }
-
-  .sw-mobile-link svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-/* VERY SMALL PHONES */
-@media (max-width: 340px) {
-  .sw-mobile-link span {
-    display: none;
-  }
-
-  .sw-mobile-link svg {
-    width: 22px;
-    height: 22px;
   }
 }

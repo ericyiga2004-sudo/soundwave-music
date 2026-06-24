@@ -20,6 +20,14 @@ body {
   background: #0b0b10;
 }
 
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
 .main-content {
   margin-left: 260px;
   width: calc(100% - 260px);
@@ -36,17 +44,24 @@ body {
 }
 
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: grid !important;
+  }
+
   .main-content {
     margin-left: 0 !important;
     width: 100% !important;
-    padding-top: 54px;
+    min-height: 100vh;
     padding-bottom: 155px;
   }
 }
 
 @media (max-width: 390px) {
   .main-content {
-    padding-top: 50px;
     padding-bottom: 145px;
   }
 }
