@@ -1,0 +1,70 @@
+.artist-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+    background: #0b0b10;
+    color: white;
+  }
+  
+  .artist-card {
+    width: 420px;
+    padding: 25px;
+    border-radius: 16px;
+  
+    background: rgba(20, 20, 28, 0.9);
+    backdrop-filter: blur(15px);
+  
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  
+  .artist-card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .artist-card input,
+  .artist-card textarea {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 12px;
+  
+    border-radius: 10px;
+    border: 1px solid #2a2a35;
+    background: #111118;
+    color: white;
+  
+    outline: none;
+  }
+  
+  .artist-card textarea {
+    height: 90px;
+    resize: none;
+  }
+  
+  .artist-card button {
+    width: 100%;
+    padding: 12px;
+  
+    border: none;
+    border-radius: 10px;
+  
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white;
+  
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .artist-card button:hover {
+    transform: translateY(-2px);
+  }
+  
+  .msg {
+    margin-top: 12px;
+    text-align: center;
+    color: #a1a1aa;
+  }

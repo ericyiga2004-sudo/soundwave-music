@@ -1,0 +1,42 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0b0b10;
+  color: white;
+  font-family: system-ui, sans-serif;
+}
+
+.app {
+  display: flex;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  min-height: 100vh;
+  background: #0b0b10;
+
+  /* Space for global player */
+  padding-bottom: 90px;
+}
+
+/* MOBILE BOTTOM NAVBAR */
+@media (max-width: 768px) {
+  .app {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    min-height: 100vh;
+
+    /* Space for bottom navbar + music player */
+    padding-bottom: 150px;
+  }
+}
