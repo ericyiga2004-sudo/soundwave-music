@@ -11,16 +11,16 @@ html {
 body {
   background: #0b0b10;
   color: white;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow-x: hidden;
 }
 
 .app {
-  display: flex;
   min-height: 100vh;
+  background: #0b0b10;
 }
 
-/* MAIN CONTENT */
+/* DESKTOP CONTENT */
 .main-content {
   margin-left: 260px;
   width: calc(100% - 260px);
@@ -29,7 +29,7 @@ body {
   padding-bottom: 96px;
 }
 
-/* TABLETS */
+/* TABLET */
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 220px;
@@ -39,23 +39,19 @@ body {
 
 /* MOBILE */
 @media (max-width: 768px) {
-  .app {
-    display: block;
-  }
-
   .main-content {
     margin-left: 0;
     width: 100%;
     min-height: 100vh;
 
-    /* space for bottom navbar + music player */
-    padding-bottom: 155px;
+    /* enough space for player + floating bottom nav */
+    padding-bottom: 165px;
   }
 }
 
-/* iPhone 7 and small phones */
+/* iPHONE 7 / SMALL PHONES */
 @media (max-width: 390px) {
   .main-content {
-    padding-bottom: 150px;
+    padding-bottom: 155px;
   }
 }

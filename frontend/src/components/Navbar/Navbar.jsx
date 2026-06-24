@@ -7,50 +7,83 @@ import {
   Heart,
   Music2,
   User,
+  ListMusic,
 } from "lucide-react";
 import "./Navbar.css";
 
+const navItems = [
+  {
+    path: "/",
+    label: "Home",
+    icon: House,
+  },
+  {
+    path: "/explore",
+    label: "Explore",
+    icon: Compass,
+  },
+  {
+    path: "/library",
+    label: "Library",
+    icon: Library,
+  },
+  {
+    path: "/liked",
+    label: "Liked",
+    icon: Heart,
+  },
+  {
+    path: "/playlist",
+    label: "Playlist",
+    icon: ListMusic,
+  },
+  {
+    path: "/account",
+    label: "Account",
+    icon: User,
+  },
+];
+
 const Navbar = () => {
   return (
-    <aside className="sidebar">
-      <div className="logo">
-        <Music2 size={30} />
-        <span>SoundWave</span>
-      </div>
+    <>
+      {/* DESKTOP SIDEBAR */}
+      <aside className="desktop-sidebar">
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-icon">
+            <Music2 size={24} />
+          </div>
+          <span>SoundWave</span>
+        </div>
 
-      <nav className="nav-links">
-        <NavLink to="/" className="nav-item">
-          <House size={22} />
-          <span>Home</span>
-        </NavLink>
+        <nav className="desktop-nav-links">
+          {navItems.map((item) => {
+            const Icon = item.icon;
 
-        <NavLink to="/explore" className="nav-item">
-          <Compass size={22} />
-          <span>Explore</span>
-        </NavLink>
+            return (
+              <NavLink key={item.path} to={item.path} className="desktop-nav-item">
+                <Icon size={21} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </aside>
 
-        <NavLink to="/library" className="nav-item">
-          <Library size={22} />
-          <span>Library</span>
-        </NavLink>
+      {/* MOBILE BOTTOM NAV */}
+      <nav className="mobile-bottom-nav">
+        {navItems.map((item) => {
+          const Icon = item.icon;
 
-        <NavLink to="/liked" className="nav-item">
-          <Heart size={22} />
-          <span>Liked</span>
-        </NavLink>
-
-        <NavLink to="/account" className="nav-item">
-          <User size={22} />
-          <span>Account</span>
-        </NavLink>
-
-        <NavLink to="/playlist" className="nav-item">
-          <User size={22} />
-          <span>Playlist</span>
-        </NavLink>
-
+          return (
+            <NavLink key={item.path} to={item.path} className="mobile-nav-item">
+              <Icon size={21} />
+              <span>{item.label}</span>
+            </NavLink>
+          );
+        })}
       </nav>
-    </aside>
+    </>
   );
 };
 
