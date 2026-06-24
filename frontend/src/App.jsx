@@ -17,7 +17,6 @@ import PlayList from "./pages/PlayList";
 const App = () => {
   return (
     <div className="app">
-      <Sidebar />
       <Navbar />
 
       <main className="main-content">

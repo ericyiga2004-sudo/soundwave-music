@@ -5,6 +5,7 @@ import {
   Compass,
   Library,
   Heart,
+  Music2,
   User,
   ListMusic,
 } from "lucide-react";
@@ -21,18 +22,35 @@ const navLinks = [
 
 const Navbar = () => {
   return (
-    <nav className="sw-bottom-navbar mobile-only">
-      {navLinks.map((item) => {
-        const Icon = item.icon;
+    <>
+      {/* TOP LOGO BAR */}
+      <header className="sw-top-header">
+        <NavLink to="/" className="sw-logo-link">
+          <div className="sw-logo-icon">
+            <Music2 size={22} />
+          </div>
 
-        return (
-          <NavLink key={item.path} to={item.path} className="sw-bottom-link">
-            <Icon size={20} />
-            <span>{item.label}</span>
-          </NavLink>
-        );
-      })}
-    </nav>
+          <div className="sw-logo-text">
+            <h1>SoundWave</h1>
+            <p>Feel the music</p>
+          </div>
+        </NavLink>
+      </header>
+
+      {/* BOTTOM NAVBAR */}
+      <nav className="sw-bottom-nav">
+        {navLinks.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <NavLink key={item.path} to={item.path} className="sw-bottom-item">
+              <Icon size={20} />
+              <span>{item.label}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
+    </>
   );
 };
 
