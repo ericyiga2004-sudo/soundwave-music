@@ -999,6 +999,7 @@ body {
 
   .song-details {
     padding: 12px;
+    display: none;
   }
 
   .song-details-grid {
@@ -1192,6 +1193,7 @@ body {
 
   .song-details {
     padding: 10px 8px;
+    
   }
 
   .song-panel,
