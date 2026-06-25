@@ -1,0 +1,106 @@
+/* Container */
+.new-release {
+  padding: 2rem 5%;
+  background-color: #0a0a0a;
+  color: #fff;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+/* Horizontal Scroll for mobile, Grid for desktop */
+.release-grid {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scrollbar-width: none;
+}
+
+.release-grid::-webkit-scrollbar {
+  display: none;
+}
+
+/* The Square Card */
+.release-card {
+  background: #121212;
+  padding: 1rem;
+  border-radius: 12px;
+  /* Flex basis allows precise sizing: ~6 items on desktop, 2 on mobile */
+  flex: 0 0 170px; 
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.release-card:hover {
+  background: #1a1a1a;
+}
+
+/* Perfect Square Image Container */
+.release-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* This forces the square shape */
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.release-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Play Button */
+.play-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 45px;
+  height: 45px;
+  background: #1db954;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 1.1rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.release-card:hover .play-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Typography */
+.release-content h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.release-content p {
+  font-size: 0.8rem;
+  color: #a7a7a7;
+  margin: 0;
+}
+
+/* Responsive Tablet/Mobile Adjustment */
+@media (max-width: 600px) {
+  .release-card {
+    flex: 0 0 140px; /* Slightly smaller cards on mobile */
+  }
+}
