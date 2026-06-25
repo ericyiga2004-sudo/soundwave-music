@@ -9,11 +9,11 @@ import FilterSongs from '../components/FilterSongs/FilterSongs'
 const Home = () => {
   return (
     <div>
-        <Hero/>
+        {/* <Hero/> */}
         {/* <Trending/> */}
-        <NewRelease/>
-        <PopularArtist/>
-        <Albums/>
+         <NewRelease/>
+        {/*<PopularArtist/>
+        <Albums/> */}
         <FilterSongs/>
     </div>
   )
