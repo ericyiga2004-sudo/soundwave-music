@@ -1552,3 +1552,38 @@ body {
     scroll-behavior: auto;
   }
 }
+
+
+@media screen and (max-width: 390px) {
+  .song-details {
+    padding: 8px;
+  }
+
+  .song-details-grid {
+    gap: 10px;
+  }
+
+  .cover-shell {
+    max-width: 240px;
+  }
+
+  .lyrics-panel {
+    height: 390px;
+    max-height: 56vh;
+    max-height: 56svh;
+  }
+
+  .lyric-line {
+    font-size: clamp(1.08rem, 7.4vw, 1.75rem);
+  }
+
+  .icon-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .play-button {
+    width: 44px;
+    height: 44px;
+  }
+}
