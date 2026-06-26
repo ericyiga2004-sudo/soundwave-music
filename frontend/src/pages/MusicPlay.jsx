@@ -22,6 +22,9 @@ const formatTime = (seconds = 0) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
+const getArtistName = (song) =>
+  song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
+
 const MusicPlayer = () => {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const navigate = useNavigate();
@@ -113,7 +116,7 @@ const MusicPlayer = () => {
 
             <div className="info-text">
               <h4>{currentSong?.title || "Unknown Song"}</h4>
-              <p>{currentSong?.artist?.name || "Unknown Artist"}</p>
+              <p>{getArtistName(currentSong)}</p>
             </div>
           </div>
 
