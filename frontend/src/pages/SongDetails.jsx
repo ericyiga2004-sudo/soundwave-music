@@ -819,13 +819,13 @@ const SongDetails = () => {
       </div>
 
       <motion.section
-        className="song-details-grid"
+        className="song-details-layout row g-3 g-xl-4 align-items-stretch"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
       >
         <motion.aside
-          className="song-panel song-panel-left glass-card"
+          className="col-12 col-md-2 order-1 song-panel song-panel-left glass-card"
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45 }}
@@ -919,7 +919,7 @@ const SongDetails = () => {
         </motion.aside>
 
         <motion.section
-          className="lyrics-panel glass-card"
+          className="col-12 col-md-8 order-2 lyrics-panel glass-card"
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -1006,7 +1006,7 @@ const SongDetails = () => {
         </motion.section>
 
         <motion.aside
-          className="song-panel song-panel-right glass-card"
+          className="col-12 col-md-2 order-3 song-panel song-panel-right glass-card"
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45 }}
@@ -1058,178 +1058,187 @@ const SongDetails = () => {
         transition={{ delay: 0.1, duration: 0.42 }}
         aria-label="Music player controls"
       >
-        <div className="dock-song">
-          <img src={activeSong.imageUrl} alt="" />
-          <span>
-            <strong>{activeSong.title}</strong>
-            <small>{getArtistName(activeSong)}</small>
-          </span>
-        </div>
-
-        <div className="dock-main">
-          <div className="control-row">
-            <motion.button
-              type="button"
-              className={`icon-button ${shuffle ? "active" : ""}`}
-              onClick={handleShuffle}
-              whileTap={{ scale: 0.9 }}
-              aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
-              aria-pressed={Boolean(shuffle)}
-            >
-              <FaRandom />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className="icon-button"
-              onClick={prevSong}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Previous song"
-            >
-              <FaStepBackward />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className="play-button"
-              onClick={handlePlayPause}
-              whileHover={{ scale: 1.045 }}
-              whileTap={{ scale: 0.94 }}
-              aria-label={isPlaying ? "Pause song" : "Play song"}
-            >
-              {isPlaying ? <FaPause /> : <FaPlay />}
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className="icon-button"
-              onClick={nextSong}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Next song"
-            >
-              <FaStepForward />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className={`icon-button ${
-                repeat === "one" || repeat === "all" || repeat === true || repeat === 1
-                  ? "active"
-                  : ""
-              }`}
-              onClick={handleRepeat}
-              whileTap={{ scale: 0.9 }}
-              aria-label={repeatLabel(repeat)}
-              aria-pressed={
-                repeat === "one" || repeat === "all" || repeat === true || repeat === 1
-              }
-            >
-              {renderRepeatIcon()}
-            </motion.button>
+        <div className="row g-2 g-md-3 align-items-center w-100 m-0">
+          <div className="col-12 col-md-3 dock-song">
+            <img src={activeSong.imageUrl} alt="" />
+            <span>
+              <strong>{activeSong.title}</strong>
+              <small>{getArtistName(activeSong)}</small>
+            </span>
           </div>
 
-          <div className="progress-row">
-            <time>{formatTime(displayProgress)}</time>
-            <input
-              className="progress-slider"
-              type="range"
-              min="0"
-              max={totalDuration || 0}
-              step="0.01"
-              value={clamp(Number(displayProgress) || 0, 0, totalDuration || 0)}
-              onChange={handleSeek}
-              aria-label="Song progress"
-              style={{
-                "--progress-percent": `${
-                  totalDuration ? (displayProgress / totalDuration) * 100 : 0
-                }%`,
-              }}
-            />
-            <time>{formatTime(totalDuration)}</time>
+          <div className="col-12 col-md-6 dock-main">
+            <div className="control-row">
+              <motion.button
+                type="button"
+                className={`icon-button ${shuffle ? "active" : ""}`}
+                onClick={handleShuffle}
+                whileTap={{ scale: 0.9 }}
+                aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
+                aria-pressed={Boolean(shuffle)}
+              >
+                <FaRandom />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="icon-button"
+                onClick={prevSong}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Previous song"
+              >
+                <FaStepBackward />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="play-button"
+                onClick={handlePlayPause}
+                whileHover={{ scale: 1.045 }}
+                whileTap={{ scale: 0.94 }}
+                aria-label={isPlaying ? "Pause song" : "Play song"}
+              >
+                {isPlaying ? <FaPause /> : <FaPlay />}
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="icon-button"
+                onClick={nextSong}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Next song"
+              >
+                <FaStepForward />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className={`icon-button ${
+                  repeat === "one" ||
+                  repeat === "all" ||
+                  repeat === true ||
+                  repeat === 1
+                    ? "active"
+                    : ""
+                }`}
+                onClick={handleRepeat}
+                whileTap={{ scale: 0.9 }}
+                aria-label={repeatLabel(repeat)}
+                aria-pressed={
+                  repeat === "one" ||
+                  repeat === "all" ||
+                  repeat === true ||
+                  repeat === 1
+                }
+              >
+                {renderRepeatIcon()}
+              </motion.button>
+            </div>
+
+            <div className="progress-row">
+              <time>{formatTime(displayProgress)}</time>
+              <input
+                className="progress-slider"
+                type="range"
+                min="0"
+                max={totalDuration || 0}
+                step="0.01"
+                value={clamp(Number(displayProgress) || 0, 0, totalDuration || 0)}
+                onChange={handleSeek}
+                aria-label="Song progress"
+                style={{
+                  "--progress-percent": `${
+                    totalDuration ? (displayProgress / totalDuration) * 100 : 0
+                  }%`,
+                }}
+              />
+              <time>{formatTime(totalDuration)}</time>
+            </div>
           </div>
-        </div>
 
-        <div className="dock-actions">
-          <motion.button
-            type="button"
-            className={`icon-button favorite-button ${liked ? "liked" : ""}`}
-            onClick={handleToggleLike}
-            disabled={!token || likeLoading}
-            whileTap={{ scale: 0.9 }}
-            aria-label={liked ? "Unlike song" : "Like song"}
-            aria-pressed={liked}
-          >
-            {liked ? <FaHeart /> : <FaRegHeart />}
-          </motion.button>
+          <div className="col-12 col-md-3 dock-actions">
+            <motion.button
+              type="button"
+              className={`icon-button favorite-button ${liked ? "liked" : ""}`}
+              onClick={handleToggleLike}
+              disabled={likeLoading}
+              whileTap={{ scale: 0.9 }}
+              aria-label={liked ? "Unlike song" : "Like song"}
+              aria-pressed={liked}
+            >
+              {liked ? <FaHeart /> : <FaRegHeart />}
+            </motion.button>
 
-          <motion.button
-            type="button"
-            className="icon-button"
-            onClick={openPlaylistModal}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Add to playlist"
-          >
-            <FaPlus />
-          </motion.button>
-
-          <motion.button
-            type="button"
-            className="icon-button"
-            onClick={handleDownload}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Download song"
-          >
-            <FaDownload />
-          </motion.button>
-
-          <div className="share-wrap">
             <motion.button
               type="button"
               className="icon-button"
-              onClick={handleShare}
+              onClick={handleDownload}
               whileTap={{ scale: 0.9 }}
-              aria-label="Share song"
+              aria-label="Download song"
             >
-              <FaShareAlt />
+              <FaDownload />
             </motion.button>
 
-            <AnimatePresence>
-              {shareStatus && (
-                <motion.span
-                  className="mini-status"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                >
-                  {shareStatus}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
+            <span className="share-wrap">
+              <motion.button
+                type="button"
+                className="icon-button"
+                onClick={handleShare}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Share song"
+              >
+                <FaShareAlt />
+              </motion.button>
 
-          <div className="volume-control">
-            <button
+              <AnimatePresence>
+                {shareStatus && (
+                  <motion.span
+                    className="mini-status"
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  >
+                    {shareStatus}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </span>
+
+            <motion.button
               type="button"
               className="icon-button"
-              onClick={handleMute}
-              aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
+              onClick={openPlaylistModal}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Add song to playlist"
             >
-              {muted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
-            </button>
+              <FaPlus />
+            </motion.button>
 
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={muted ? 0 : volume}
-              onChange={handleVolumeChange}
-              aria-label="Volume"
-              className="volume-slider"
-              style={{
-                "--volume-percent": `${(muted ? 0 : volume) * 100}%`,
-              }}
-            />
+            <div className="volume-control">
+              <motion.button
+                type="button"
+                className="icon-button"
+                onClick={handleMute}
+                whileTap={{ scale: 0.9 }}
+                aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
+              >
+                {muted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+              </motion.button>
+
+              <input
+                className="volume-slider"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={muted ? 0 : volume}
+                onChange={handleVolumeChange}
+                aria-label="Volume"
+                style={{
+                  "--volume-percent": `${(muted ? 0 : volume) * 100}%`,
+                }}
+              />
+            </div>
           </div>
         </div>
       </motion.section>
@@ -1238,25 +1247,27 @@ const SongDetails = () => {
         {playlistModalOpen && (
           <motion.div
             className="modal-backdrop"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Add song to playlist"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onMouseDown={() => setPlaylistModalOpen(false)}
+            role="presentation"
+            onClick={() => setPlaylistModalOpen(false)}
           >
-            <motion.div
+            <motion.section
               className="modal-card glass-card"
-              initial={{ scale: 0.92, y: 24, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.92, y: 24, opacity: 0 }}
-              onMouseDown={(event) => event.stopPropagation()}
+              initial={{ opacity: 0, y: 28, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.96 }}
+              transition={{ duration: 0.22 }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Add to playlist"
+              onClick={(event) => event.stopPropagation()}
             >
-              <header className="modal-header">
+              <div className="modal-header">
                 <div>
                   <p className="eyebrow">Library</p>
-                  <h2>Add to Playlist</h2>
+                  <h2>Add to playlist</h2>
                 </div>
 
                 <button
@@ -1267,42 +1278,33 @@ const SongDetails = () => {
                 >
                   <FaTimes />
                 </button>
-              </header>
+              </div>
 
-              {!token ? (
-                <div className="modal-empty">
-                  <p>Please sign in to manage playlists.</p>
-                </div>
-              ) : playlistLoading ? (
+              {playlistLoading ? (
                 <div className="modal-empty">
                   <p>Loading playlists…</p>
                 </div>
               ) : playlists.length ? (
                 <div className="playlist-options">
-                  {playlists.map((playlist) => {
-                    const id = playlist._id;
-                    const title = playlist.name || playlist.title || "Untitled Playlist";
-                    const isSelected = selectedPlaylistId === id;
+                  {playlists.map((playlist) => (
+                    <button
+                      key={playlist._id}
+                      type="button"
+                      className={`playlist-option ${
+                        selectedPlaylistId === playlist._id ? "selected" : ""
+                      }`}
+                      onClick={() => handlePlaylistSelect(playlist._id)}
+                    >
+                      <span>
+                        <strong>{playlist.name || playlist.title}</strong>
+                        <small>
+                          {playlist.songs?.length || playlist.tracks?.length || 0} songs
+                        </small>
+                      </span>
 
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        className={`playlist-option ${isSelected ? "selected" : ""}`}
-                        onClick={() => handlePlaylistSelect(id)}
-                        aria-pressed={isSelected}
-                      >
-                        <span>
-                          <strong>{title}</strong>
-                          <small>
-                            {playlist.songs?.length || playlist.songCount || 0} songs
-                          </small>
-                        </span>
-
-                        {isSelected && <FaCheck aria-hidden="true" />}
-                      </button>
-                    );
-                  })}
+                      {selectedPlaylistId === playlist._id && <FaCheck />}
+                    </button>
+                  ))}
                 </div>
               ) : (
                 <div className="modal-empty">
@@ -1310,19 +1312,8 @@ const SongDetails = () => {
                 </div>
               )}
 
-              <AnimatePresence>
-                {playlistStatus && (
-                  <motion.p
-                    className="playlist-status"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                  >
-                    {playlistStatus}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              {playlistStatus && <p className="playlist-status">{playlistStatus}</p>}
+            </motion.section>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1331,69 +1322,62 @@ const SongDetails = () => {
         {queueOpen && (
           <motion.div
             className="modal-backdrop"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Playback queue"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onMouseDown={() => setQueueOpen(false)}
+            role="presentation"
+            onClick={() => setQueueOpen(false)}
           >
-            <motion.div
+            <motion.section
               className="modal-card queue-card glass-card"
-              initial={{ scale: 0.92, y: 24, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.92, y: 24, opacity: 0 }}
-              onMouseDown={(event) => event.stopPropagation()}
+              initial={{ opacity: 0, y: 28, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.96 }}
+              transition={{ duration: 0.22 }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Current queue"
+              onClick={(event) => event.stopPropagation()}
             >
-              <header className="modal-header">
+              <div className="modal-header">
                 <div>
-                  <p className="eyebrow">Playback</p>
-                  <h2>Queue</h2>
+                  <p className="eyebrow">Playing Queue</p>
+                  <h2>Up Next</h2>
                 </div>
 
                 <button
                   type="button"
                   className="icon-button"
                   onClick={() => setQueueOpen(false)}
-                  aria-label="Close queue"
+                  aria-label="Close queue modal"
                 >
                   <FaTimes />
                 </button>
-              </header>
+              </div>
 
               <div className="queue-list">
-                {(playlist.length ? playlist : songs).map((song, index) => {
-                  const active = song?._id === activeSong?._id;
-
-                  return (
-                    <button
-                      key={`${song?._id}-${index}`}
-                      type="button"
-                      className={`queue-item ${active ? "active" : ""}`}
-                      onClick={() => {
-                        setRestoredSongPreview(null);
-                        playSong?.(song, playlist.length ? playlist : songs);
-                      }}
-                      aria-label={`Play ${song?.title}`}
-                    >
-                      <span className="queue-index">
-                        {active ? <FaMusic /> : index + 1}
-                      </span>
-
-                      <img src={song?.imageUrl} alt="" />
-
-                      <span>
-                        <strong>{song?.title}</strong>
-                        <small>{getArtistName(song)}</small>
-                      </span>
-
-                      <em>{formatTime(song?.duration)}</em>
-                    </button>
-                  );
-                })}
+                {(playlist.length ? playlist : songs).map((song, index) => (
+                  <button
+                    key={song._id}
+                    type="button"
+                    className={`queue-item ${
+                      song._id === activeSong._id ? "active" : ""
+                    }`}
+                    onClick={() => handlePlayRecommended(song)}
+                  >
+                    <span className="queue-index">
+                      {song._id === activeSong._id ? <FaMusic /> : index + 1}
+                    </span>
+                    <img src={song.imageUrl} alt="" />
+                    <span>
+                      <strong>{song.title}</strong>
+                      <small>{getArtistName(song)}</small>
+                    </span>
+                    <em>{formatTime(song.duration)}</em>
+                  </button>
+                ))}
               </div>
-            </motion.div>
+            </motion.section>
           </motion.div>
         )}
       </AnimatePresence>
