@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   FaPlay,
   FaPause,
@@ -26,10 +26,12 @@ const getArtistName = (song) =>
   song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
 const MusicPlayer = () => {
+  const hiddenAudioRef = useRef(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const navigate = useNavigate();
 
   const {
+    registerAudioElement,
     currentSong,
     playlist,
     isPlaying,
@@ -44,6 +46,18 @@ const MusicPlayer = () => {
     loading,
   } = useContext(MusicPlayerContext);
 
+  useEffect(() => {
+    if (hiddenAudioRef.current && typeof registerAudioElement === "function") {
+      registerAudioElement(hiddenAudioRef.current);
+    }
+
+    return () => {
+      if (typeof registerAudioElement === "function") {
+        registerAudioElement(null);
+      }
+    };
+  }, [registerAudioElement]);
+
   const openCurrentSongDetails = () => {
     if (!currentSong?._id) return;
 
@@ -54,11 +68,37 @@ const MusicPlayer = () => {
     });
   };
 
+  const audioElement = (
+    <audio
+      ref={hiddenAudioRef}
+      preload="auto"
+      playsInline
+      webkit-playsinline="true"
+      x-webkit-airplay="allow"
+      style={{
+        position: "fixed",
+        width: "1px",
+        height: "1px",
+        opacity: 0,
+        pointerEvents: "none",
+        left: "-9999px",
+        bottom: 0,
+      }}
+    />
+  );
+
   if (loading) {
-    return <div className="player-loading">Loading player...</div>;
+    return (
+      <>
+        {audioElement}
+        <div className="player-loading">Loading player...</div>
+      </>
+    );
   }
 
-  if (!currentSong) return null;
+  if (!currentSong) {
+    return <>{audioElement}</>;
+  }
 
   const safeProgress = progress || 0;
   const safeDuration = duration || 0;
@@ -68,6 +108,8 @@ const MusicPlayer = () => {
 
   return (
     <>
+      {audioElement}
+
       <button
         type="button"
         className={`player-toggle ${isPlayerOpen ? "active" : ""} ${

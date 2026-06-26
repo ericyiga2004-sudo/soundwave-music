@@ -52,36 +52,8 @@ const getArtistName = (song) =>
 const getAlbumTitle = (song) =>
   song?.album?.title || song?.albumTitle || song?.album || "";
 
-const createReverbImpulse = (audioContext, seconds = 2.2, decay = 2.4) => {
-  const sampleRate = audioContext.sampleRate;
-  const length = sampleRate * seconds;
-  const impulse = audioContext.createBuffer(2, length, sampleRate);
-
-  for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
-    const channelData = impulse.getChannelData(channel);
-
-    for (let i = 0; i < length; i += 1) {
-      const randomValue = Math.random() * 2 - 1;
-      const fade = Math.pow(1 - i / length, decay);
-
-      channelData[i] = randomValue * fade;
-    }
-  }
-
-  return impulse;
-};
-
 export const MusicPlayerProvider = ({ children }) => {
-  const audioRef = useRef(new Audio());
-
-  const audioContextRef = useRef(null);
-  const audioSourceRef = useRef(null);
-  const bassFilterRef = useRef(null);
-  const presenceFilterRef = useRef(null);
-  const dryGainRef = useRef(null);
-  const wetGainRef = useRef(null);
-  const convolverRef = useRef(null);
-  const audioGraphReadyRef = useRef(false);
+  const audioRef = useRef(null);
 
   const playlistRef = useRef([]);
   const currentIndexRef = useRef(-1);
@@ -89,7 +61,6 @@ export const MusicPlayerProvider = ({ children }) => {
   const shuffleRef = useRef(false);
   const repeatRef = useRef(REPEAT_MODES.OFF);
   const isChangingTrackRef = useRef(false);
-  const audioEffectsRef = useRef(DEFAULT_AUDIO_EFFECTS);
 
   const musicContext = useContext(MusicContext);
 
@@ -97,6 +68,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const backendUrl = musicContext?.backendUrl || "";
   const fetchHistory = musicContext?.fetchHistory;
 
+  const [audioReady, setAudioReady] = useState(false);
   const [currentSong, setCurrentSong] = useState(null);
   const [playlist, setPlaylist] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -108,115 +80,39 @@ export const MusicPlayerProvider = ({ children }) => {
   const [audioEffects, setAudioEffectsState] = useState(DEFAULT_AUDIO_EFFECTS);
   const [loading] = useState(false);
 
-  const applyAudioEffects = useCallback((effects) => {
-    const bassBoost = Number(effects?.bassBoost || 0);
-    const reverb = Number(effects?.reverb || 0);
-    const presence = Number(effects?.presence || 0);
-
-    if (bassFilterRef.current) {
-      bassFilterRef.current.gain.value = bassBoost;
-    }
-
-    if (presenceFilterRef.current) {
-      presenceFilterRef.current.gain.value = presence;
-    }
-
-    if (dryGainRef.current && wetGainRef.current) {
-      const wetAmount = Math.min(Math.max(reverb / 100, 0), 1);
-
-      dryGainRef.current.gain.value = 1 - wetAmount * 0.35;
-      wetGainRef.current.gain.value = wetAmount * 0.75;
-    }
-  }, []);
-
-  const setupAudioGraph = useCallback(() => {
-    if (audioGraphReadyRef.current) return;
-
-    const audio = audioRef.current;
-
-    audio.crossOrigin = "anonymous";
-
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-
-    if (!AudioContextClass) {
-      console.warn("Web Audio API is not supported in this browser.");
+  const registerAudioElement = useCallback((node) => {
+    if (!node) {
+      audioRef.current = null;
+      setAudioReady(false);
       return;
     }
 
-    const audioContext = new AudioContextClass();
-    const source = audioContext.createMediaElementSource(audio);
+    audioRef.current = node;
 
-    const bassFilter = audioContext.createBiquadFilter();
-    bassFilter.type = "lowshelf";
-    bassFilter.frequency.value = 180;
-    bassFilter.gain.value = audioEffectsRef.current.bassBoost || 0;
+    node.preload = "auto";
+    node.crossOrigin = "anonymous";
+    node.setAttribute("playsinline", "true");
+    node.setAttribute("webkit-playsinline", "true");
+    node.setAttribute("x-webkit-airplay", "allow");
+    node.controls = false;
 
-    const presenceFilter = audioContext.createBiquadFilter();
-    presenceFilter.type = "peaking";
-    presenceFilter.frequency.value = 3200;
-    presenceFilter.Q.value = 1.1;
-    presenceFilter.gain.value = audioEffectsRef.current.presence || 0;
+    setAudioReady(true);
+  }, []);
 
-    const dryGain = audioContext.createGain();
-    const wetGain = audioContext.createGain();
+  const setAudioEffects = useCallback((effectsOrUpdater) => {
+    setAudioEffectsState((previous) => {
+      const nextEffects =
+        typeof effectsOrUpdater === "function"
+          ? effectsOrUpdater(previous)
+          : effectsOrUpdater;
 
-    const convolver = audioContext.createConvolver();
-    convolver.buffer = createReverbImpulse(audioContext);
-
-    source.connect(bassFilter);
-    bassFilter.connect(presenceFilter);
-
-    presenceFilter.connect(dryGain);
-    dryGain.connect(audioContext.destination);
-
-    presenceFilter.connect(convolver);
-    convolver.connect(wetGain);
-    wetGain.connect(audioContext.destination);
-
-    audioContextRef.current = audioContext;
-    audioSourceRef.current = source;
-    bassFilterRef.current = bassFilter;
-    presenceFilterRef.current = presenceFilter;
-    dryGainRef.current = dryGain;
-    wetGainRef.current = wetGain;
-    convolverRef.current = convolver;
-    audioGraphReadyRef.current = true;
-
-    applyAudioEffects(audioEffectsRef.current);
-  }, [applyAudioEffects]);
-
-  const resumeAudioContext = useCallback(async () => {
-    setupAudioGraph();
-
-    const audioContext = audioContextRef.current;
-
-    if (audioContext?.state === "suspended") {
-      await audioContext.resume();
-    }
-  }, [setupAudioGraph]);
-
-  const setAudioEffects = useCallback(
-    (effectsOrUpdater) => {
-      setAudioEffectsState((previous) => {
-        const nextEffects =
-          typeof effectsOrUpdater === "function"
-            ? effectsOrUpdater(previous)
-            : effectsOrUpdater;
-
-        const safeEffects = {
-          bassBoost: Number(nextEffects?.bassBoost || 0),
-          reverb: Number(nextEffects?.reverb || 0),
-          presence: Number(nextEffects?.presence || 0),
-        };
-
-        audioEffectsRef.current = safeEffects;
-        applyAudioEffects(safeEffects);
-
-        return safeEffects;
-      });
-    },
-    [applyAudioEffects]
-  );
+      return {
+        bassBoost: Number(nextEffects?.bassBoost || 0),
+        reverb: Number(nextEffects?.reverb || 0),
+        presence: Number(nextEffects?.presence || 0),
+      };
+    });
+  }, []);
 
   const resetAudioEffects = useCallback(() => {
     setAudioEffects(DEFAULT_AUDIO_EFFECTS);
@@ -299,20 +195,26 @@ export const MusicPlayerProvider = ({ children }) => {
       if (!song?.audioUrl) return;
 
       const audio = audioRef.current;
+
+      if (!audio) {
+        console.error("Audio element is not mounted yet.");
+        return;
+      }
+
       const isSameSong = currentSongRef.current?._id === song._id;
 
       syncTrackState(song, queue);
 
       try {
-        await resumeAudioContext();
-
         if (!isSameSong || audio.src !== song.audioUrl) {
           isChangingTrackRef.current = true;
 
+          audio.preload = "auto";
           audio.crossOrigin = "anonymous";
-          audio.preload = "metadata";
           audio.setAttribute("playsinline", "true");
           audio.setAttribute("webkit-playsinline", "true");
+          audio.setAttribute("x-webkit-airplay", "allow");
+
           audio.src = song.audioUrl;
           audio.load();
 
@@ -331,25 +233,33 @@ export const MusicPlayerProvider = ({ children }) => {
         isChangingTrackRef.current = false;
       }
     },
-    [addSongToHistory, resumeAudioContext, syncTrackState]
+    [addSongToHistory, syncTrackState]
   );
 
   const pauseSong = useCallback(() => {
-    audioRef.current.pause();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
     setIsPlaying(false);
   }, []);
 
   const resumeSong = useCallback(async () => {
-    if (!currentSongRef.current?.audioUrl) return;
+    const audio = audioRef.current;
+    const activeSong = currentSongRef.current;
+
+    if (!audio || !activeSong?.audioUrl) return;
 
     try {
-      await resumeAudioContext();
-
-      const audio = audioRef.current;
-
-      audio.preload = "metadata";
+      audio.preload = "auto";
       audio.setAttribute("playsinline", "true");
       audio.setAttribute("webkit-playsinline", "true");
+      audio.setAttribute("x-webkit-airplay", "allow");
+
+      if (!audio.src) {
+        audio.src = activeSong.audioUrl;
+        audio.load();
+      }
 
       await audio.play();
       setIsPlaying(true);
@@ -357,12 +267,13 @@ export const MusicPlayerProvider = ({ children }) => {
       setIsPlaying(false);
       console.error("Unable to resume song:", error);
     }
-  }, [resumeAudioContext]);
+  }, []);
 
   const togglePlay = useCallback(async () => {
-    if (!currentSongRef.current?.audioUrl) return;
+    const audio = audioRef.current;
+    if (!audio || !currentSongRef.current?.audioUrl) return;
 
-    if (audioRef.current.paused) {
+    if (audio.paused) {
       await resumeSong();
     } else {
       pauseSong();
@@ -371,6 +282,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const seekTo = useCallback((time) => {
     const audio = audioRef.current;
+    if (!audio) return;
 
     const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
 
@@ -384,6 +296,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const skipForward = useCallback((seconds = 15) => {
     const audio = audioRef.current;
+    if (!audio) return;
 
     const currentTime = Number.isFinite(audio.currentTime)
       ? audio.currentTime
@@ -402,6 +315,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const skipBackward = useCallback((seconds = 15) => {
     const audio = audioRef.current;
+    if (!audio) return;
 
     const currentTime = Number.isFinite(audio.currentTime)
       ? audio.currentTime
@@ -428,10 +342,11 @@ export const MusicPlayerProvider = ({ children }) => {
   );
 
   const nextSong = useCallback(async () => {
+    const audio = audioRef.current;
     const queue = playlistRef.current;
     const activeIndex = currentIndexRef.current;
 
-    if (!queue.length || activeIndex < 0) return null;
+    if (!audio || !queue.length || activeIndex < 0) return null;
 
     let nextIndex;
 
@@ -445,8 +360,8 @@ export const MusicPlayerProvider = ({ children }) => {
       if (repeatRef.current === REPEAT_MODES.ALL) {
         nextIndex = 0;
       } else {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+        audio.pause();
+        audio.currentTime = 0;
         setProgress(0);
         setIsPlaying(false);
         return null;
@@ -458,11 +373,11 @@ export const MusicPlayerProvider = ({ children }) => {
   }, [playByIndex]);
 
   const prevSong = useCallback(async () => {
+    const audio = audioRef.current;
     const queue = playlistRef.current;
     const activeIndex = currentIndexRef.current;
-    const audio = audioRef.current;
 
-    if (!queue.length || activeIndex < 0) return null;
+    if (!audio || !queue.length || activeIndex < 0) return null;
 
     if (audio.currentTime > 3) {
       seekTo(0);
@@ -486,11 +401,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   useEffect(() => {
     const audio = audioRef.current;
-
-    audio.crossOrigin = "anonymous";
-    audio.preload = "metadata";
-    audio.setAttribute("playsinline", "true");
-    audio.setAttribute("webkit-playsinline", "true");
+    if (!audio || !audioReady) return;
 
     const handleLoadedMetadata = () => {
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
@@ -528,7 +439,6 @@ export const MusicPlayerProvider = ({ children }) => {
         audio.currentTime = 0;
 
         try {
-          await resumeAudioContext();
           await audio.play();
           setIsPlaying(true);
         } catch (error) {
@@ -543,6 +453,7 @@ export const MusicPlayerProvider = ({ children }) => {
     };
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("durationchange", handleLoadedMetadata);
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
@@ -550,12 +461,13 @@ export const MusicPlayerProvider = ({ children }) => {
 
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("durationchange", handleLoadedMetadata);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [nextSong, resumeAudioContext]);
+  }, [audioReady, nextSong]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
@@ -657,6 +569,8 @@ export const MusicPlayerProvider = ({ children }) => {
     if (!("mediaSession" in navigator)) return;
 
     const audio = audioRef.current;
+    if (!audio) return;
+
     const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
     const safePosition = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
 
@@ -675,11 +589,12 @@ export const MusicPlayerProvider = ({ children }) => {
 
   useEffect(() => {
     return () => {
-      audioRef.current.pause();
-      audioRef.current.src = "";
+      const audio = audioRef.current;
 
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
+      if (audio) {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
       }
     };
   }, []);
@@ -687,6 +602,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       audioRef,
+      registerAudioElement,
       loading,
 
       currentSong,
@@ -717,6 +633,7 @@ export const MusicPlayerProvider = ({ children }) => {
       cycleRepeat,
     }),
     [
+      registerAudioElement,
       loading,
       currentSong,
       playlist,
