@@ -5,9 +5,9 @@ import {
   useMemo,
   useRef,
   useState,
+  useContext,
 } from "react";
 import axios from "axios";
-import { useContext } from "react";
 import { MusicContext } from "./ShopContext";
 
 export const MusicPlayerContext = createContext(null);
@@ -45,6 +45,12 @@ const getRandomIndex = (length, currentIndex) => {
 
   return nextIndex;
 };
+
+const getArtistName = (song) =>
+  song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
+
+const getAlbumTitle = (song) =>
+  song?.album?.title || song?.albumTitle || song?.album || "";
 
 const createReverbImpulse = (audioContext, seconds = 2.2, decay = 2.4) => {
   const sampleRate = audioContext.sampleRate;
@@ -85,7 +91,11 @@ export const MusicPlayerProvider = ({ children }) => {
   const isChangingTrackRef = useRef(false);
   const audioEffectsRef = useRef(DEFAULT_AUDIO_EFFECTS);
 
-  const { token, backendUrl, fetchHistory } = useContext(MusicContext);
+  const musicContext = useContext(MusicContext);
+
+  const token = musicContext?.token || "";
+  const backendUrl = musicContext?.backendUrl || "";
+  const fetchHistory = musicContext?.fetchHistory;
 
   const [currentSong, setCurrentSong] = useState(null);
   const [playlist, setPlaylist] = useState([]);
@@ -96,6 +106,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const [shuffle, setShuffleState] = useState(false);
   const [repeat, setRepeatState] = useState(REPEAT_MODES.OFF);
   const [audioEffects, setAudioEffectsState] = useState(DEFAULT_AUDIO_EFFECTS);
+  const [loading] = useState(false);
 
   const applyAudioEffects = useCallback((effects) => {
     const bassBoost = Number(effects?.bassBoost || 0);
@@ -125,8 +136,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
     audio.crossOrigin = "anonymous";
 
-    const AudioContextClass =
-      window.AudioContext || window.webkitAudioContext;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
     if (!AudioContextClass) {
       console.warn("Web Audio API is not supported in this browser.");
@@ -134,7 +144,6 @@ export const MusicPlayerProvider = ({ children }) => {
     }
 
     const audioContext = new AudioContextClass();
-
     const source = audioContext.createMediaElementSource(audio);
 
     const bassFilter = audioContext.createBiquadFilter();
@@ -299,9 +308,14 @@ export const MusicPlayerProvider = ({ children }) => {
 
         if (!isSameSong || audio.src !== song.audioUrl) {
           isChangingTrackRef.current = true;
+
           audio.crossOrigin = "anonymous";
+          audio.preload = "metadata";
+          audio.setAttribute("playsinline", "true");
+          audio.setAttribute("webkit-playsinline", "true");
           audio.src = song.audioUrl;
           audio.load();
+
           setProgress(0);
           setDuration(0);
         }
@@ -331,7 +345,13 @@ export const MusicPlayerProvider = ({ children }) => {
     try {
       await resumeAudioContext();
 
-      await audioRef.current.play();
+      const audio = audioRef.current;
+
+      audio.preload = "metadata";
+      audio.setAttribute("playsinline", "true");
+      audio.setAttribute("webkit-playsinline", "true");
+
+      await audio.play();
       setIsPlaying(true);
     } catch (error) {
       setIsPlaying(false);
@@ -362,7 +382,7 @@ export const MusicPlayerProvider = ({ children }) => {
     setProgress(safeTime);
   }, []);
 
-  const skipForward = useCallback(() => {
+  const skipForward = useCallback((seconds = 15) => {
     const audio = audioRef.current;
 
     const currentTime = Number.isFinite(audio.currentTime)
@@ -370,23 +390,25 @@ export const MusicPlayerProvider = ({ children }) => {
       : 0;
 
     const audioDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+    const safeSeconds = Number(seconds) || 15;
 
     const nextTime = audioDuration
-      ? Math.min(currentTime + 15, audioDuration)
-      : currentTime + 15;
+      ? Math.min(currentTime + safeSeconds, audioDuration)
+      : currentTime + safeSeconds;
 
     audio.currentTime = nextTime;
     setProgress(nextTime);
   }, []);
 
-  const skipBackward = useCallback(() => {
+  const skipBackward = useCallback((seconds = 15) => {
     const audio = audioRef.current;
 
     const currentTime = Number.isFinite(audio.currentTime)
       ? audio.currentTime
       : 0;
 
-    const nextTime = Math.max(currentTime - 15, 0);
+    const safeSeconds = Number(seconds) || 15;
+    const nextTime = Math.max(currentTime - safeSeconds, 0);
 
     audio.currentTime = nextTime;
     setProgress(nextTime);
@@ -467,6 +489,8 @@ export const MusicPlayerProvider = ({ children }) => {
 
     audio.crossOrigin = "anonymous";
     audio.preload = "metadata";
+    audio.setAttribute("playsinline", "true");
+    audio.setAttribute("webkit-playsinline", "true");
 
     const handleLoadedMetadata = () => {
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
@@ -477,11 +501,21 @@ export const MusicPlayerProvider = ({ children }) => {
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
     };
 
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => {
+      setIsPlaying(true);
+
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "playing";
+      }
+    };
 
     const handlePause = () => {
       if (!isChangingTrackRef.current) {
         setIsPlaying(false);
+
+        if ("mediaSession" in navigator) {
+          navigator.mediaSession.playbackState = "paused";
+        }
       }
     };
 
@@ -495,7 +529,6 @@ export const MusicPlayerProvider = ({ children }) => {
 
         try {
           await resumeAudioContext();
-
           await audio.play();
           setIsPlaying(true);
         } catch (error) {
@@ -525,6 +558,122 @@ export const MusicPlayerProvider = ({ children }) => {
   }, [nextSong, resumeAudioContext]);
 
   useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    if (!currentSong) return;
+
+    try {
+      if ("MediaMetadata" in window) {
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+          title: currentSong.title || "Unknown Song",
+          artist: getArtistName(currentSong),
+          album: getAlbumTitle(currentSong),
+          artwork: currentSong.imageUrl
+            ? [
+                {
+                  src: currentSong.imageUrl,
+                  sizes: "96x96",
+                  type: "image/png",
+                },
+                {
+                  src: currentSong.imageUrl,
+                  sizes: "128x128",
+                  type: "image/png",
+                },
+                {
+                  src: currentSong.imageUrl,
+                  sizes: "192x192",
+                  type: "image/png",
+                },
+                {
+                  src: currentSong.imageUrl,
+                  sizes: "256x256",
+                  type: "image/png",
+                },
+                {
+                  src: currentSong.imageUrl,
+                  sizes: "384x384",
+                  type: "image/png",
+                },
+                {
+                  src: currentSong.imageUrl,
+                  sizes: "512x512",
+                  type: "image/png",
+                },
+              ]
+            : [],
+        });
+      }
+
+      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+
+      navigator.mediaSession.setActionHandler("play", () => {
+        resumeSong();
+      });
+
+      navigator.mediaSession.setActionHandler("pause", () => {
+        pauseSong();
+      });
+
+      navigator.mediaSession.setActionHandler("previoustrack", () => {
+        prevSong();
+      });
+
+      navigator.mediaSession.setActionHandler("nexttrack", () => {
+        nextSong();
+      });
+
+      navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+        skipBackward(details.seekOffset || 15);
+      });
+
+      navigator.mediaSession.setActionHandler("seekforward", (details) => {
+        skipForward(details.seekOffset || 15);
+      });
+
+      navigator.mediaSession.setActionHandler("seekto", (details) => {
+        if (details.fastSeek && "fastSeek" in audioRef.current) {
+          audioRef.current.fastSeek(details.seekTime);
+          return;
+        }
+
+        seekTo(details.seekTime);
+      });
+    } catch (error) {
+      console.warn("Media Session is not fully supported:", error);
+    }
+  }, [
+    currentSong,
+    isPlaying,
+    resumeSong,
+    pauseSong,
+    prevSong,
+    nextSong,
+    skipBackward,
+    skipForward,
+    seekTo,
+  ]);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+
+    const audio = audioRef.current;
+    const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+    const safePosition = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+
+    if (!safeDuration || safePosition > safeDuration) return;
+
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: safeDuration,
+        playbackRate: audio.playbackRate || 1,
+        position: safePosition,
+      });
+    } catch {
+      // Some browsers do not support setPositionState.
+    }
+  }, [progress, duration]);
+
+  useEffect(() => {
     return () => {
       audioRef.current.pause();
       audioRef.current.src = "";
@@ -538,6 +687,8 @@ export const MusicPlayerProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       audioRef,
+      loading,
+
       currentSong,
       playlist,
       currentIndex,
@@ -566,6 +717,7 @@ export const MusicPlayerProvider = ({ children }) => {
       cycleRepeat,
     }),
     [
+      loading,
       currentSong,
       playlist,
       currentIndex,
@@ -598,3 +750,5 @@ export const MusicPlayerProvider = ({ children }) => {
     </MusicPlayerContext.Provider>
   );
 };
+
+export default MusicPlayerProvider;
