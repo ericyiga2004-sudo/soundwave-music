@@ -1,9 +1,9 @@
 .filter-section {
   width: 100%;
-  padding: 40px 60px;
+  padding: 40px 52px;
   background: #0b0b10;
   color: #ffffff;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* =========================
@@ -58,7 +58,7 @@
 ========================= */
 
 .filters {
-  margin-bottom: 25px;
+  margin-bottom: 28px;
 }
 
 .filters select,
@@ -106,59 +106,69 @@
 }
 
 /* =========================
-   SONG GRID WRAPPER
+   HORIZONTAL RESULTS
 ========================= */
 
-.new-release {
+.filter-results {
   width: 100%;
+  max-width: 100%;
+  padding: 22px 0;
+  border-radius: 24px;
+  background: #050506;
+  overflow: hidden;
 }
 
-.release-grid {
+.filter-release-scroll {
+  width: 100%;
+  max-width: 100%;
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
-  padding-bottom: 1rem;
+  overflow-y: hidden;
+  padding: 0 24px 1rem;
+  scroll-padding-left: 24px;
+  scroll-padding-right: 24px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
 
-.release-grid::-webkit-scrollbar {
+.filter-release-scroll::-webkit-scrollbar {
   display: none;
 }
 
-/* =========================
-   SONG CARD
-========================= */
-
-.release-card {
-  flex: 0 0 170px;
+.filter-release-card {
+  flex: 0 0 clamp(145px, 18vw, 190px);
+  width: clamp(145px, 18vw, 190px);
+  max-width: 190px;
+  min-width: 0;
   background: #121212;
   padding: 1rem;
-  border-radius: 16px;
+  border-radius: 18px;
+  cursor: pointer;
+  overflow: hidden;
   transition:
     transform 0.25s ease,
     background 0.25s ease,
     box-shadow 0.25s ease;
-  cursor: pointer;
 }
 
-.release-card:hover {
+.filter-release-card:hover {
   transform: translateY(-5px);
   background: #1a1a1a;
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
 }
 
-.release-image {
+.filter-release-image {
   width: 100%;
   aspect-ratio: 1 / 1;
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 14px;
   margin-bottom: 1rem;
   background: #282828;
 }
 
-.release-image img {
+.filter-release-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -167,7 +177,7 @@
 
 /* PLAY BUTTON */
 
-.play-btn {
+.filter-play-btn {
   position: absolute;
   bottom: 10px;
   right: 10px;
@@ -188,23 +198,28 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
 }
 
-.release-card:hover .play-btn {
+.filter-release-card:hover .filter-play-btn {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
 
 /* TEXT */
 
-.release-content h3 {
+.filter-release-content {
+  min-width: 0;
+}
+
+.filter-release-content h3 {
+  color: #ffffff;
   font-size: 0.95rem;
-  font-weight: 750;
+  font-weight: 800;
   margin: 0 0 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.release-content p {
+.filter-release-content p {
   font-size: 0.8rem;
   color: #a7a7a7;
   margin: 0;
@@ -216,8 +231,8 @@
 .song-country {
   display: inline-block;
   max-width: 100%;
-  margin-top: 7px;
-  padding: 4px 8px;
+  margin-top: 9px;
+  padding: 4px 9px;
   border-radius: 999px;
   background: rgba(29, 185, 84, 0.13);
   color: #1ed760;
@@ -242,11 +257,6 @@
 /* =========================
    SKELETON LOADER
 ========================= */
-
-.filter-skeleton-wrapper {
-  padding: 0;
-  background: transparent;
-}
 
 .filter-skeleton-card {
   cursor: default;
@@ -282,7 +292,7 @@
 .filter-skeleton-image {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 12px;
+  border-radius: 14px;
   margin-bottom: 1rem;
 }
 
@@ -313,17 +323,40 @@
 }
 
 /* =========================
-   RESPONSIVE SYSTEM
+   RESPONSIVE
 ========================= */
 
-@media (max-width: 1024px) {
+@media (max-width: 1199px) {
   .filter-section {
-    padding: 30px 40px;
+    padding: 34px 34px;
+  }
+}
+
+@media (max-width: 991px) {
+  .filter-section {
+    padding: 30px 24px;
   }
 
   .tabs button {
     font-size: 0.82rem;
     padding: 7px 12px;
+  }
+
+  .filter-results {
+    border-radius: 22px;
+  }
+
+  .filter-release-scroll {
+    gap: 1rem;
+    padding-left: 20px;
+    padding-right: 20px;
+    scroll-padding-left: 20px;
+    scroll-padding-right: 20px;
+  }
+
+  .filter-release-card {
+    flex-basis: clamp(142px, 24vw, 170px);
+    width: clamp(142px, 24vw, 170px);
   }
 }
 
@@ -358,23 +391,33 @@
     padding: 8px 10px;
   }
 
-  .release-grid {
-    gap: 1rem;
+  .filter-results {
+    padding: 16px 0;
+    border-radius: 20px;
   }
 
-  .release-card {
-    flex: 0 0 145px;
+  .filter-release-scroll {
+    gap: 0.9rem;
+    padding: 0 16px 0.9rem;
+    scroll-padding-left: 16px;
+    scroll-padding-right: 16px;
+  }
+
+  .filter-release-card {
+    flex: 0 0 calc((100vw - 72px) / 2);
+    width: calc((100vw - 72px) / 2);
+    max-width: 160px;
     padding: 0.75rem;
-    border-radius: 14px;
+    border-radius: 15px;
   }
 
-  .release-image,
+  .filter-release-image,
   .filter-skeleton-image {
-    border-radius: 10px;
+    border-radius: 11px;
     margin-bottom: 0.75rem;
   }
 
-  .play-btn {
+  .filter-play-btn {
     width: 38px;
     height: 38px;
     opacity: 1;
@@ -382,11 +425,11 @@
     font-size: 0.82rem;
   }
 
-  .release-content h3 {
+  .filter-release-content h3 {
     font-size: 0.78rem;
   }
 
-  .release-content p {
+  .filter-release-content p {
     font-size: 0.68rem;
   }
 
@@ -402,7 +445,7 @@
 
 @media (max-width: 480px) {
   .filter-section {
-    padding: 18px 12px;
+    padding: 18px 10px;
   }
 
   .filter-header h2 {
@@ -418,25 +461,35 @@
     padding: 5px 8px;
   }
 
-  .release-grid {
+  .filter-results {
+    padding: 12px 0;
+    border-radius: 18px;
+  }
+
+  .filter-release-scroll {
     gap: 0.75rem;
+    padding: 0 12px 0.75rem;
+    scroll-padding-left: 12px;
+    scroll-padding-right: 12px;
   }
 
-  .release-card {
-    flex: 0 0 128px;
+  .filter-release-card {
+    flex: 0 0 calc((100vw - 56px) / 2);
+    width: calc((100vw - 56px) / 2);
+    max-width: 150px;
     padding: 0.62rem;
-    border-radius: 13px;
+    border-radius: 14px;
   }
 
-  .release-content h3 {
+  .filter-release-content h3 {
     font-size: 0.7rem;
   }
 
-  .release-content p {
+  .filter-release-content p {
     font-size: 0.62rem;
   }
 
-  .play-btn {
+  .filter-play-btn {
     width: 33px;
     height: 33px;
     right: 8px;
@@ -455,7 +508,7 @@
 
 @media (max-width: 390px) {
   .filter-section {
-    padding: 16px 10px;
+    padding: 16px 8px;
   }
 
   .filter-header h2 {
@@ -473,15 +526,27 @@
     font-size: 0.68rem;
   }
 
-  .release-card {
-    flex: 0 0 118px;
+  .filter-results {
+    padding: 10px 0;
   }
 
-  .release-content h3 {
+  .filter-release-scroll {
+    gap: 0.65rem;
+    padding: 0 10px 0.65rem;
+  }
+
+  .filter-release-card {
+    flex: 0 0 calc((100vw - 44px) / 2);
+    width: calc((100vw - 44px) / 2);
+    max-width: 142px;
+    padding: 0.55rem;
+  }
+
+  .filter-release-content h3 {
     font-size: 0.66rem;
   }
 
-  .release-content p {
+  .filter-release-content p {
     font-size: 0.58rem;
   }
 }

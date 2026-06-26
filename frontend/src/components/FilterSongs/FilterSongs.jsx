@@ -11,13 +11,13 @@ const tabs = ["Trending", "New", "Most Liked"];
 
 const FilterSongsSkeleton = () => {
   return (
-    <section className="new-release filter-skeleton-wrapper">
-      <div className="release-grid">
+    <section className="filter-results">
+      <div className="filter-release-scroll">
         {Array.from({ length: 8 }).map((_, index) => (
-          <div className="release-card filter-skeleton-card" key={index}>
+          <div className="filter-release-card filter-skeleton-card" key={index}>
             <div className="filter-skeleton filter-skeleton-image"></div>
 
-            <div className="release-content">
+            <div className="filter-release-content">
               <div className="filter-skeleton filter-skeleton-line big"></div>
               <div className="filter-skeleton filter-skeleton-line small"></div>
               <div className="filter-skeleton filter-skeleton-line tiny"></div>
@@ -99,7 +99,6 @@ const FilterSongs = () => {
   return (
     <section className="filter-section">
       <div className="container-fluid px-0">
-        {/* HEADER */}
         <div className="filter-header row g-3 align-items-center">
           <div className="col-12 col-lg">
             <h2>🎧 Discover Music</h2>
@@ -121,7 +120,6 @@ const FilterSongs = () => {
           </div>
         </div>
 
-        {/* FILTERS */}
         <div className="filters row g-2 g-md-3 align-items-center">
           <div className="col-12 col-sm-5 col-md-4 col-lg-3">
             <select
@@ -161,15 +159,14 @@ const FilterSongs = () => {
           )}
         </div>
 
-        {/* SONGS */}
         {loading ? (
           <FilterSongsSkeleton />
         ) : songs.length > 0 ? (
-          <section className="new-release">
-            <div className="release-grid">
+          <section className="filter-results">
+            <div className="filter-release-scroll">
               {songs.map((song) => (
                 <div
-                  className="release-card"
+                  className="filter-release-card"
                   key={song._id}
                   onClick={() => playSong(song, songs)}
                 >
@@ -179,7 +176,7 @@ const FilterSongs = () => {
                     state={{ playlist: songs }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="release-image">
+                    <div className="filter-release-image">
                       <img
                         src={song.imageUrl || "/fallback-cover.png"}
                         alt={song.title || "Song cover"}
@@ -187,7 +184,7 @@ const FilterSongs = () => {
                       />
 
                       <div
-                        className="play-btn"
+                        className="filter-play-btn"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -198,10 +195,8 @@ const FilterSongs = () => {
                       </div>
                     </div>
 
-                    <div className="release-content">
-                      <h3 className="text-white">
-                        {song.title || "Unknown Song"}
-                      </h3>
+                    <div className="filter-release-content">
+                      <h3>{song.title || "Unknown Song"}</h3>
 
                       <p>{song.artist?.name || "Unknown Artist"}</p>
 
@@ -217,9 +212,7 @@ const FilterSongs = () => {
             </div>
           </section>
         ) : (
-          <div className="filter-empty-state">
-            No songs found.
-          </div>
+          <div className="filter-empty-state">No songs found.</div>
         )}
       </div>
     </section>
