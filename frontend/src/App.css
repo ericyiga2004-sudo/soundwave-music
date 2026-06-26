@@ -49,7 +49,6 @@ body {
   overflow-x: hidden;
 }
 
-/* FORCE APP TO COLUMN, NOT FLEX */
 .app {
   width: 100%;
   min-height: 100vh;
@@ -57,7 +56,6 @@ body {
   background: #0b0b10;
 }
 
-/* NO SIDEBAR SPACE */
 .main-content {
   width: 100% !important;
   max-width: 100% !important;
@@ -68,7 +66,135 @@ body {
   padding-bottom: 145px;
 }
 
-/* MOBILE */
+.play-loading {
+  position: relative;
+  pointer-events: auto;
+}
+
+.play-spinner,
+.buffer-spinner {
+  display: inline-block;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.28);
+  border-top-color: #ffffff;
+  animation: audioSpin 0.8s linear infinite;
+}
+
+.play-spinner {
+  width: 22px;
+  height: 22px;
+}
+
+.buffer-spinner {
+  width: 42px;
+  height: 42px;
+  margin: 18px auto 14px;
+  border-width: 4px;
+}
+
+.player-buffering {
+  box-shadow:
+    0 0 0 1px rgba(92, 246, 128, 0.22),
+    0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.player-toggle.is-buffering .toggle-song {
+  color: #5cf680;
+}
+
+.buffer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(5, 6, 10, 0.66);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.buffer-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.28;
+  filter: blur(34px) saturate(1.35);
+  transform: scale(1.16);
+}
+
+.buffer-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.buffer-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(92, 246, 128, 0.25), transparent 36%),
+    linear-gradient(180deg, rgba(11, 11, 16, 0.25), rgba(11, 11, 16, 0.95));
+}
+
+.buffer-card {
+  position: relative;
+  z-index: 1;
+  width: min(360px, 92vw);
+  padding: 26px 22px;
+  border-radius: 28px;
+  text-align: center;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.055)),
+    rgba(15, 16, 24, 0.78);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
+}
+
+.buffer-cover {
+  width: 112px;
+  height: 112px;
+  display: block;
+  margin: 0 auto;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.42);
+}
+
+.buffer-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+}
+
+.buffer-card p {
+  max-width: 280px;
+  margin: 8px auto 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.9rem;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buffer-card small {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.75rem;
+}
+
+@keyframes audioSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
   .app {
     display: block !important;
@@ -79,11 +205,26 @@ body {
     margin-left: 0 !important;
     padding-bottom: 140px;
   }
+
+  .buffer-card {
+    width: min(330px, 92vw);
+    padding: 24px 18px;
+    border-radius: 24px;
+  }
+
+  .buffer-cover {
+    width: 96px;
+    height: 96px;
+    border-radius: 20px;
+  }
 }
 
-/* iPhone 7 */
 @media (max-width: 390px) {
   .main-content {
     padding-bottom: 130px;
+  }
+
+  .buffer-card {
+    width: 92vw;
   }
 }

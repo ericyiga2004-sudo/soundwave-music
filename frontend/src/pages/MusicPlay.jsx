@@ -27,7 +27,9 @@ const getArtistName = (song) =>
 
 const MusicPlayer = () => {
   const hiddenAudioRef = useRef(null);
+  const bufferOverlayTimerRef = useRef(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [showBufferOverlay, setShowBufferOverlay] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -35,6 +37,8 @@ const MusicPlayer = () => {
     currentSong,
     playlist,
     isPlaying,
+    isBuffering,
+    bufferMessage,
     progress,
     duration,
     togglePlay,
@@ -58,6 +62,26 @@ const MusicPlayer = () => {
     };
   }, [registerAudioElement]);
 
+  useEffect(() => {
+    if (isBuffering && currentSong) {
+      bufferOverlayTimerRef.current = window.setTimeout(() => {
+        setShowBufferOverlay(true);
+      }, 1200);
+    } else {
+      if (bufferOverlayTimerRef.current) {
+        window.clearTimeout(bufferOverlayTimerRef.current);
+      }
+
+      setShowBufferOverlay(false);
+    }
+
+    return () => {
+      if (bufferOverlayTimerRef.current) {
+        window.clearTimeout(bufferOverlayTimerRef.current);
+      }
+    };
+  }, [isBuffering, currentSong]);
+
   const openCurrentSongDetails = () => {
     if (!currentSong?._id) return;
 
@@ -73,8 +97,6 @@ const MusicPlayer = () => {
       ref={hiddenAudioRef}
       preload="auto"
       playsInline
-      webkit-playsinline="true"
-      x-webkit-airplay="allow"
       style={{
         position: "fixed",
         width: "1px",
@@ -85,6 +107,28 @@ const MusicPlayer = () => {
         bottom: 0,
       }}
     />
+  );
+
+  const bufferingOverlay = showBufferOverlay && currentSong && (
+    <div className="buffer-overlay" role="status" aria-live="polite">
+      <div className="buffer-bg">
+        <img src={currentSong?.imageUrl || "/fallback.jpg"} alt="" />
+      </div>
+
+      <div className="buffer-card">
+        <img
+          src={currentSong?.imageUrl || "/fallback.jpg"}
+          alt={currentSong?.title || "song cover"}
+          className="buffer-cover"
+        />
+
+        <div className="buffer-spinner" aria-hidden="true"></div>
+
+        <h3>{bufferMessage || "Buffering song..."}</h3>
+        <p>{currentSong?.title || "Please wait"}</p>
+        <small>Stabilizing audio for smoother playback</small>
+      </div>
+    </div>
   );
 
   if (loading) {
@@ -109,12 +153,13 @@ const MusicPlayer = () => {
   return (
     <>
       {audioElement}
+      {bufferingOverlay}
 
       <button
         type="button"
         className={`player-toggle ${isPlayerOpen ? "active" : ""} ${
           isPlaying ? "is-playing" : ""
-        }`}
+        } ${isBuffering ? "is-buffering" : ""}`}
         onClick={() => setIsPlayerOpen((prev) => !prev)}
         aria-label={isPlayerOpen ? "Hide music player" : "Show music player"}
         title={isPlayerOpen ? "Hide player" : "Show player"}
@@ -128,7 +173,9 @@ const MusicPlayer = () => {
             {isPlayerOpen ? "Hide Player" : "Open Player"}
           </span>
           <span className="toggle-song">
-            {currentSong?.title || "Now Playing"}
+            {isBuffering
+              ? bufferMessage || "Buffering..."
+              : currentSong?.title || "Now Playing"}
           </span>
         </span>
 
@@ -140,7 +187,7 @@ const MusicPlayer = () => {
       </button>
 
       <div className={`player-shell ${isPlayerOpen ? "show" : "hide"}`}>
-        <div className="player">
+        <div className={`player ${isBuffering ? "player-buffering" : ""}`}>
           <div className="player-info">
             <button
               type="button"
@@ -158,7 +205,11 @@ const MusicPlayer = () => {
 
             <div className="info-text">
               <h4>{currentSong?.title || "Unknown Song"}</h4>
-              <p>{getArtistName(currentSong)}</p>
+              <p>
+                {isBuffering
+                  ? bufferMessage || "Buffering audio..."
+                  : getArtistName(currentSong)}
+              </p>
             </div>
           </div>
 
@@ -197,12 +248,18 @@ const MusicPlayer = () => {
 
             <button
               type="button"
-              className="play"
+              className={`play ${isBuffering ? "play-loading" : ""}`}
               onClick={togglePlay}
               aria-label={isPlaying ? "Pause song" : "Play song"}
               title={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? <FaPause /> : <FaPlay />}
+              {isBuffering ? (
+                <span className="play-spinner" aria-hidden="true"></span>
+              ) : isPlaying ? (
+                <FaPause />
+              ) : (
+                <FaPlay />
+              )}
             </button>
 
             <button

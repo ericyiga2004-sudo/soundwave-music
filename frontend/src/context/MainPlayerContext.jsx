@@ -24,6 +24,8 @@ const DEFAULT_AUDIO_EFFECTS = {
   presence: 0,
 };
 
+const MIN_BUFFER_SECONDS = 3;
+
 const normalizePlaylist = (songs = []) => {
   const seen = new Set();
 
@@ -52,6 +54,33 @@ const getArtistName = (song) =>
 const getAlbumTitle = (song) =>
   song?.album?.title || song?.albumTitle || song?.album || "";
 
+const getBufferedAhead = (audio) => {
+  if (!audio || !audio.buffered || audio.buffered.length === 0) return 0;
+
+  const currentTime = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+
+  for (let i = 0; i < audio.buffered.length; i += 1) {
+    const start = audio.buffered.start(i);
+    const end = audio.buffered.end(i);
+
+    if (currentTime >= start && currentTime <= end) {
+      return Math.max(0, end - currentTime);
+    }
+  }
+
+  return 0;
+};
+
+const hasEnoughBuffer = (audio, minSeconds = MIN_BUFFER_SECONDS) => {
+  if (!audio) return false;
+
+  if (audio.readyState >= 4) return true;
+
+  const bufferedAhead = getBufferedAhead(audio);
+
+  return bufferedAhead >= minSeconds;
+};
+
 export const MusicPlayerProvider = ({ children }) => {
   const audioRef = useRef(null);
 
@@ -61,6 +90,8 @@ export const MusicPlayerProvider = ({ children }) => {
   const shuffleRef = useRef(false);
   const repeatRef = useRef(REPEAT_MODES.OFF);
   const isChangingTrackRef = useRef(false);
+  const userWantedPlayRef = useRef(false);
+  const recoveryTimerRef = useRef(null);
 
   const musicContext = useContext(MusicContext);
 
@@ -73,12 +104,52 @@ export const MusicPlayerProvider = ({ children }) => {
   const [playlist, setPlaylist] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [bufferMessage, setBufferMessage] = useState("");
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [shuffle, setShuffleState] = useState(false);
   const [repeat, setRepeatState] = useState(REPEAT_MODES.OFF);
   const [audioEffects, setAudioEffectsState] = useState(DEFAULT_AUDIO_EFFECTS);
   const [loading] = useState(false);
+
+  const clearRecoveryTimer = useCallback(() => {
+    if (recoveryTimerRef.current) {
+      window.clearTimeout(recoveryTimerRef.current);
+      recoveryTimerRef.current = null;
+    }
+  }, []);
+
+  const setBufferingState = useCallback((value, message = "") => {
+    setIsBuffering(value);
+    setBufferMessage(value ? message || "Buffering song..." : "");
+  }, []);
+
+  const tryResumeAfterBuffer = useCallback(async () => {
+    const audio = audioRef.current;
+
+    if (!audio || !currentSongRef.current?.audioUrl) return;
+    if (!userWantedPlayRef.current) return;
+    if (!audio.paused) {
+      setBufferingState(false);
+      return;
+    }
+
+    if (!hasEnoughBuffer(audio, MIN_BUFFER_SECONDS)) {
+      setBufferingState(true, "Waiting for stable audio...");
+      return;
+    }
+
+    try {
+      await audio.play();
+      setIsPlaying(true);
+      setBufferingState(false);
+    } catch (error) {
+      setIsPlaying(false);
+      setBufferingState(true, "Tap play when connection is stable.");
+      console.error("Unable to resume after buffering:", error);
+    }
+  }, [setBufferingState]);
 
   const registerAudioElement = useCallback((node) => {
     if (!node) {
@@ -203,9 +274,13 @@ export const MusicPlayerProvider = ({ children }) => {
 
       const isSameSong = currentSongRef.current?._id === song._id;
 
+      userWantedPlayRef.current = true;
       syncTrackState(song, queue);
+      clearRecoveryTimer();
 
       try {
+        setBufferingState(true, "Loading song...");
+
         if (!isSameSong || audio.src !== song.audioUrl) {
           isChangingTrackRef.current = true;
 
@@ -223,26 +298,43 @@ export const MusicPlayerProvider = ({ children }) => {
         }
 
         await audio.play();
+
         setIsPlaying(true);
+        setBufferingState(false);
 
         await addSongToHistory(song);
       } catch (error) {
         setIsPlaying(false);
+        setBufferingState(true, "Preparing audio...");
         console.error("Unable to play song:", error);
+
+        recoveryTimerRef.current = window.setTimeout(() => {
+          tryResumeAfterBuffer();
+        }, 1200);
       } finally {
         isChangingTrackRef.current = false;
       }
     },
-    [addSongToHistory, syncTrackState]
+    [
+      addSongToHistory,
+      clearRecoveryTimer,
+      setBufferingState,
+      syncTrackState,
+      tryResumeAfterBuffer,
+    ]
   );
 
   const pauseSong = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    userWantedPlayRef.current = false;
+    clearRecoveryTimer();
+
     audio.pause();
     setIsPlaying(false);
-  }, []);
+    setBufferingState(false);
+  }, [clearRecoveryTimer, setBufferingState]);
 
   const resumeSong = useCallback(async () => {
     const audio = audioRef.current;
@@ -250,7 +342,12 @@ export const MusicPlayerProvider = ({ children }) => {
 
     if (!audio || !activeSong?.audioUrl) return;
 
+    userWantedPlayRef.current = true;
+    clearRecoveryTimer();
+
     try {
+      setBufferingState(true, "Preparing audio...");
+
       audio.preload = "auto";
       audio.setAttribute("playsinline", "true");
       audio.setAttribute("webkit-playsinline", "true");
@@ -261,13 +358,24 @@ export const MusicPlayerProvider = ({ children }) => {
         audio.load();
       }
 
+      if (!hasEnoughBuffer(audio, 1.2) && audio.readyState < 3) {
+        setBufferingState(true, "Buffering song...");
+      }
+
       await audio.play();
+
       setIsPlaying(true);
+      setBufferingState(false);
     } catch (error) {
       setIsPlaying(false);
+      setBufferingState(true, "Waiting for stable audio...");
       console.error("Unable to resume song:", error);
+
+      recoveryTimerRef.current = window.setTimeout(() => {
+        tryResumeAfterBuffer();
+      }, 1200);
     }
-  }, []);
+  }, [clearRecoveryTimer, setBufferingState, tryResumeAfterBuffer]);
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current;
@@ -280,53 +388,74 @@ export const MusicPlayerProvider = ({ children }) => {
     }
   }, [pauseSong, resumeSong]);
 
-  const seekTo = useCallback((time) => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const seekTo = useCallback(
+    (time) => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-    const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+      const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
 
-    const safeTime = Number.isFinite(time)
-      ? Math.min(Math.max(0, time), safeDuration || time)
-      : 0;
+      const safeTime = Number.isFinite(time)
+        ? Math.min(Math.max(0, time), safeDuration || time)
+        : 0;
 
-    audio.currentTime = safeTime;
-    setProgress(safeTime);
-  }, []);
+      audio.currentTime = safeTime;
+      setProgress(safeTime);
 
-  const skipForward = useCallback((seconds = 15) => {
-    const audio = audioRef.current;
-    if (!audio) return;
+      if (userWantedPlayRef.current && !hasEnoughBuffer(audio, 1.5)) {
+        setBufferingState(true, "Buffering after seek...");
+      }
+    },
+    [setBufferingState]
+  );
 
-    const currentTime = Number.isFinite(audio.currentTime)
-      ? audio.currentTime
-      : 0;
+  const skipForward = useCallback(
+    (seconds = 15) => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-    const audioDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
-    const safeSeconds = Number(seconds) || 15;
+      const currentTime = Number.isFinite(audio.currentTime)
+        ? audio.currentTime
+        : 0;
 
-    const nextTime = audioDuration
-      ? Math.min(currentTime + safeSeconds, audioDuration)
-      : currentTime + safeSeconds;
+      const audioDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+      const safeSeconds = Number(seconds) || 15;
 
-    audio.currentTime = nextTime;
-    setProgress(nextTime);
-  }, []);
+      const nextTime = audioDuration
+        ? Math.min(currentTime + safeSeconds, audioDuration)
+        : currentTime + safeSeconds;
 
-  const skipBackward = useCallback((seconds = 15) => {
-    const audio = audioRef.current;
-    if (!audio) return;
+      audio.currentTime = nextTime;
+      setProgress(nextTime);
 
-    const currentTime = Number.isFinite(audio.currentTime)
-      ? audio.currentTime
-      : 0;
+      if (userWantedPlayRef.current && !hasEnoughBuffer(audio, 1.5)) {
+        setBufferingState(true, "Buffering audio...");
+      }
+    },
+    [setBufferingState]
+  );
 
-    const safeSeconds = Number(seconds) || 15;
-    const nextTime = Math.max(currentTime - safeSeconds, 0);
+  const skipBackward = useCallback(
+    (seconds = 15) => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-    audio.currentTime = nextTime;
-    setProgress(nextTime);
-  }, []);
+      const currentTime = Number.isFinite(audio.currentTime)
+        ? audio.currentTime
+        : 0;
+
+      const safeSeconds = Number(seconds) || 15;
+      const nextTime = Math.max(currentTime - safeSeconds, 0);
+
+      audio.currentTime = nextTime;
+      setProgress(nextTime);
+
+      if (userWantedPlayRef.current && !hasEnoughBuffer(audio, 1.5)) {
+        setBufferingState(true, "Buffering audio...");
+      }
+    },
+    [setBufferingState]
+  );
 
   const playByIndex = useCallback(
     async (index) => {
@@ -360,17 +489,19 @@ export const MusicPlayerProvider = ({ children }) => {
       if (repeatRef.current === REPEAT_MODES.ALL) {
         nextIndex = 0;
       } else {
+        userWantedPlayRef.current = false;
         audio.pause();
         audio.currentTime = 0;
         setProgress(0);
         setIsPlaying(false);
+        setBufferingState(false);
         return null;
       }
     }
 
     await playByIndex(nextIndex);
     return playlistRef.current[nextIndex] || null;
-  }, [playByIndex]);
+  }, [playByIndex, setBufferingState]);
 
   const prevSong = useCallback(async () => {
     const audio = audioRef.current;
@@ -410,9 +541,95 @@ export const MusicPlayerProvider = ({ children }) => {
     const handleTimeUpdate = () => {
       setProgress(Number.isFinite(audio.currentTime) ? audio.currentTime : 0);
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+
+      if (userWantedPlayRef.current && !audio.paused && hasEnoughBuffer(audio, 1)) {
+        setBufferingState(false);
+      }
+    };
+
+    const handleLoadStart = () => {
+      if (userWantedPlayRef.current) {
+        setBufferingState(true, "Loading song...");
+      }
+    };
+
+    const handleWaiting = () => {
+      if (!userWantedPlayRef.current) return;
+
+      setBufferingState(true, "Buffering song...");
+
+      try {
+        audio.pause();
+      } catch {
+        // Ignore pause errors.
+      }
+
+      clearRecoveryTimer();
+
+      recoveryTimerRef.current = window.setTimeout(() => {
+        tryResumeAfterBuffer();
+      }, 900);
+    };
+
+    const handleStalled = () => {
+      if (!userWantedPlayRef.current) return;
+
+      setBufferingState(true, "Connection is unstable...");
+
+      try {
+        audio.pause();
+      } catch {
+        // Ignore pause errors.
+      }
+
+      clearRecoveryTimer();
+
+      recoveryTimerRef.current = window.setTimeout(() => {
+        tryResumeAfterBuffer();
+      }, 1400);
+    };
+
+    const handleCanPlay = () => {
+      if (!userWantedPlayRef.current) {
+        setBufferingState(false);
+        return;
+      }
+
+      if (hasEnoughBuffer(audio, 1.5)) {
+        tryResumeAfterBuffer();
+      }
+    };
+
+    const handleCanPlayThrough = () => {
+      if (!userWantedPlayRef.current) {
+        setBufferingState(false);
+        return;
+      }
+
+      tryResumeAfterBuffer();
+    };
+
+    const handleProgress = () => {
+      if (!userWantedPlayRef.current) return;
+
+      if (audio.paused && hasEnoughBuffer(audio, MIN_BUFFER_SECONDS)) {
+        tryResumeAfterBuffer();
+      } else if (!audio.paused && hasEnoughBuffer(audio, 1)) {
+        setBufferingState(false);
+      }
+    };
+
+    const handlePlaying = () => {
+      setIsPlaying(true);
+      setBufferingState(false);
+
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "playing";
+      }
     };
 
     const handlePlay = () => {
+      userWantedPlayRef.current = true;
       setIsPlaying(true);
 
       if ("mediaSession" in navigator) {
@@ -424,10 +641,35 @@ export const MusicPlayerProvider = ({ children }) => {
       if (!isChangingTrackRef.current) {
         setIsPlaying(false);
 
+        if (!userWantedPlayRef.current) {
+          setBufferingState(false);
+        }
+
         if ("mediaSession" in navigator) {
           navigator.mediaSession.playbackState = "paused";
         }
       }
+    };
+
+    const handleError = () => {
+      setIsPlaying(false);
+      setBufferingState(true, "Audio network error. Trying again...");
+
+      clearRecoveryTimer();
+
+      recoveryTimerRef.current = window.setTimeout(() => {
+        const activeSong = currentSongRef.current;
+
+        if (!activeSong?.audioUrl || !userWantedPlayRef.current) return;
+
+        try {
+          audio.src = activeSong.audioUrl;
+          audio.load();
+          tryResumeAfterBuffer();
+        } catch (error) {
+          console.error("Audio reload failed:", error);
+        }
+      }, 1800);
     };
 
     const handleEnded = async () => {
@@ -439,10 +681,14 @@ export const MusicPlayerProvider = ({ children }) => {
         audio.currentTime = 0;
 
         try {
+          userWantedPlayRef.current = true;
+          setBufferingState(true, "Repeating song...");
           await audio.play();
           setIsPlaying(true);
+          setBufferingState(false);
         } catch (error) {
           setIsPlaying(false);
+          setBufferingState(true, "Preparing repeat...");
           console.error("Unable to repeat song:", error);
         }
 
@@ -455,19 +701,41 @@ export const MusicPlayerProvider = ({ children }) => {
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("durationchange", handleLoadedMetadata);
     audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadstart", handleLoadStart);
+    audio.addEventListener("waiting", handleWaiting);
+    audio.addEventListener("stalled", handleStalled);
+    audio.addEventListener("canplay", handleCanPlay);
+    audio.addEventListener("canplaythrough", handleCanPlayThrough);
+    audio.addEventListener("progress", handleProgress);
+    audio.addEventListener("playing", handlePlaying);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
+    audio.addEventListener("error", handleError);
     audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("durationchange", handleLoadedMetadata);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadstart", handleLoadStart);
+      audio.removeEventListener("waiting", handleWaiting);
+      audio.removeEventListener("stalled", handleStalled);
+      audio.removeEventListener("canplay", handleCanPlay);
+      audio.removeEventListener("canplaythrough", handleCanPlayThrough);
+      audio.removeEventListener("progress", handleProgress);
+      audio.removeEventListener("playing", handlePlaying);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("error", handleError);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [audioReady, nextSong]);
+  }, [
+    audioReady,
+    clearRecoveryTimer,
+    nextSong,
+    setBufferingState,
+    tryResumeAfterBuffer,
+  ]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
@@ -543,8 +811,10 @@ export const MusicPlayerProvider = ({ children }) => {
       });
 
       navigator.mediaSession.setActionHandler("seekto", (details) => {
-        if (details.fastSeek && "fastSeek" in audioRef.current) {
-          audioRef.current.fastSeek(details.seekTime);
+        const audio = audioRef.current;
+
+        if (audio && details.fastSeek && "fastSeek" in audio) {
+          audio.fastSeek(details.seekTime);
           return;
         }
 
@@ -572,7 +842,9 @@ export const MusicPlayerProvider = ({ children }) => {
     if (!audio) return;
 
     const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
-    const safePosition = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+    const safePosition = Number.isFinite(audio.currentTime)
+      ? audio.currentTime
+      : 0;
 
     if (!safeDuration || safePosition > safeDuration) return;
 
@@ -588,7 +860,41 @@ export const MusicPlayerProvider = ({ children }) => {
   }, [progress, duration]);
 
   useEffect(() => {
+    const handleOnline = () => {
+      if (userWantedPlayRef.current) {
+        setBufferingState(true, "Connection restored. Resuming...");
+        window.setTimeout(() => {
+          tryResumeAfterBuffer();
+        }, 700);
+      }
+    };
+
+    const handleOffline = () => {
+      setBufferingState(true, "You are offline. Waiting for connection...");
+
+      const audio = audioRef.current;
+      if (audio) {
+        try {
+          audio.pause();
+        } catch {
+          // Ignore pause errors.
+        }
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
     return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [setBufferingState, tryResumeAfterBuffer]);
+
+  useEffect(() => {
+    return () => {
+      clearRecoveryTimer();
+
       const audio = audioRef.current;
 
       if (audio) {
@@ -597,7 +903,7 @@ export const MusicPlayerProvider = ({ children }) => {
         audio.load();
       }
     };
-  }, []);
+  }, [clearRecoveryTimer]);
 
   const value = useMemo(
     () => ({
@@ -609,6 +915,8 @@ export const MusicPlayerProvider = ({ children }) => {
       playlist,
       currentIndex,
       isPlaying,
+      isBuffering,
+      bufferMessage,
       progress,
       duration,
       shuffle,
@@ -639,6 +947,8 @@ export const MusicPlayerProvider = ({ children }) => {
       playlist,
       currentIndex,
       isPlaying,
+      isBuffering,
+      bufferMessage,
       progress,
       duration,
       shuffle,
