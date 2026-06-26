@@ -7,6 +7,29 @@ import { Link } from "react-router-dom";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+const NewReleaseSkeleton = () => {
+  return (
+    <section className="new-release">
+      <div className="section-header">
+        <div className="nr-skeleton nr-skeleton-title"></div>
+      </div>
+
+      <div className="release-grid">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div className="release-card release-skeleton-card" key={index}>
+            <div className="nr-skeleton nr-skeleton-image"></div>
+
+            <div className="release-content">
+              <div className="nr-skeleton nr-skeleton-line big"></div>
+              <div className="nr-skeleton nr-skeleton-line small"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const NewRelease = () => {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +54,7 @@ const NewRelease = () => {
   }, []);
 
   if (loading) {
-    return <div className="new-release-loading">Loading...</div>;
+    return <NewReleaseSkeleton />;
   }
 
   return (
@@ -55,7 +78,8 @@ const NewRelease = () => {
               <div className="release-image">
                 <img
                   src={song.imageUrl || "/fallback-cover.png"}
-                  alt={song.title}
+                  alt={song.title || "Song cover"}
+                  loading="lazy"
                 />
 
                 <div className="play-btn">
@@ -64,7 +88,7 @@ const NewRelease = () => {
               </div>
 
               <div className="release-content">
-                <h3 className="text-white">{song.title}</h3>
+                <h3 className="text-white">{song.title || "Unknown Song"}</h3>
                 <p>{song.artist?.name || "Unknown Artist"}</p>
               </div>
             </Link>

@@ -1,37 +1,40 @@
-/* Container */
 .new-release {
+  width: 100%;
   padding: 2rem 5%;
   background-color: #0a0a0a;
-  color: #fff;
+  color: #ffffff;
+  overflow-x: hidden;
 }
 
 .section-header h2 {
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-/* Horizontal Scroll for mobile, Grid for desktop */
 .release-grid {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
   padding-bottom: 1rem;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .release-grid::-webkit-scrollbar {
   display: none;
 }
 
-/* The Square Card */
 .release-card {
   background: #121212;
   padding: 1rem;
-  border-radius: 12px;
-  /* Flex basis allows precise sizing: ~6 items on desktop, 2 on mobile */
-  flex: 0 0 170px; 
-  transition: all 0.3s ease;
+  border-radius: 16px;
+  flex: 0 0 170px;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -39,25 +42,34 @@
 
 .release-card:hover {
   background: #1a1a1a;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.36);
 }
 
-/* Perfect Square Image Container */
 .release-image {
   width: 100%;
-  aspect-ratio: 1 / 1; /* This forces the square shape */
+  aspect-ratio: 1 / 1;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 1rem;
+  background: #282828;
 }
 
 .release-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition:
+    transform 0.35s ease,
+    filter 0.35s ease;
 }
 
-/* Play Button */
+.release-card:hover .release-image img {
+  transform: scale(1.06);
+  filter: brightness(0.78);
+}
+
 .play-btn {
   position: absolute;
   bottom: 10px;
@@ -69,24 +81,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000;
+  color: #000000;
   font-size: 1.1rem;
   opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(10px) scale(0.95);
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
 }
 
 .release-card:hover .play-btn {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
-/* Typography */
 .release-content h3 {
   font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 0 4px 0;
+  font-weight: 700;
+  margin: 0 0 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -96,11 +107,149 @@
   font-size: 0.8rem;
   color: #a7a7a7;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Responsive Tablet/Mobile Adjustment */
-@media (max-width: 600px) {
+/* ==========================
+   SKELETON LOADER
+========================== */
+
+.release-skeleton-card {
+  cursor: default;
+  pointer-events: none;
+}
+
+.nr-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #1c1c1c;
+}
+
+.nr-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.11),
+    transparent
+  );
+  animation: nrSkeletonWave 1.35s infinite;
+}
+
+.nr-skeleton-title {
+  width: 210px;
+  height: 30px;
+  margin-bottom: 1.5rem;
+  border-radius: 999px;
+}
+
+.nr-skeleton-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.nr-skeleton-line {
+  height: 13px;
+  border-radius: 999px;
+}
+
+.nr-skeleton-line.big {
+  width: 88%;
+  margin-bottom: 10px;
+}
+
+.nr-skeleton-line.small {
+  width: 62%;
+}
+
+@keyframes nrSkeletonWave {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+@media (max-width: 768px) {
+  .new-release {
+    padding: 1.5rem 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .release-grid {
+    gap: 1rem;
+  }
+
   .release-card {
-    flex: 0 0 140px; /* Slightly smaller cards on mobile */
+    flex: 0 0 145px;
+    padding: 0.75rem;
+    border-radius: 14px;
+  }
+
+  .release-image {
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+  }
+
+  .play-btn {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    width: 38px;
+    height: 38px;
+    font-size: 0.88rem;
+  }
+
+  .release-content h3 {
+    font-size: 0.82rem;
+  }
+
+  .release-content p {
+    font-size: 0.72rem;
+  }
+
+  .nr-skeleton-title {
+    width: 165px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .new-release {
+    padding: 1.25rem 0.8rem;
+  }
+
+  .release-card {
+    flex: 0 0 132px;
+    padding: 0.65rem;
+  }
+
+  .release-grid {
+    gap: 0.75rem;
+  }
+
+  .release-content h3 {
+    font-size: 0.76rem;
+  }
+
+  .release-content p {
+    font-size: 0.68rem;
+  }
+
+  .play-btn {
+    width: 34px;
+    height: 34px;
   }
 }

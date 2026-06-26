@@ -9,6 +9,26 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const tabs = ["Trending", "New", "Most Liked"];
 
+const FilterSongsSkeleton = () => {
+  return (
+    <section className="new-release filter-skeleton-wrapper">
+      <div className="release-grid">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div className="release-card filter-skeleton-card" key={index}>
+            <div className="filter-skeleton filter-skeleton-image"></div>
+
+            <div className="release-content">
+              <div className="filter-skeleton filter-skeleton-line big"></div>
+              <div className="filter-skeleton filter-skeleton-line small"></div>
+              <div className="filter-skeleton filter-skeleton-line tiny"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const FilterSongs = () => {
   const { playSong } = useContext(MusicPlayerContext);
 
@@ -59,7 +79,6 @@ const FilterSongs = () => {
 
         data = data.filter((song) => {
           const songCountry = normalizeText(getSongCountry(song));
-
           return songCountry.includes(countrySearch);
         });
       }
@@ -79,107 +98,130 @@ const FilterSongs = () => {
 
   return (
     <section className="filter-section">
-      {/* HEADER */}
-      <div className="filter-header">
-        <h2>🎧 Discover Music</h2>
+      <div className="container-fluid px-0">
+        {/* HEADER */}
+        <div className="filter-header row g-3 align-items-center">
+          <div className="col-12 col-lg">
+            <h2>🎧 Discover Music</h2>
+          </div>
 
-        <div className="tabs">
-          {tabs.map((tabName) => (
-            <button
-              type="button"
-              key={tabName}
-              className={tab === tabName ? "active" : ""}
-              onClick={() => setTab(tabName)}
-            >
-              {tabName}
-            </button>
-          ))}
+          <div className="col-12 col-lg-auto">
+            <div className="tabs d-flex flex-wrap gap-2 justify-content-start justify-content-lg-end">
+              {tabs.map((tabName) => (
+                <button
+                  type="button"
+                  key={tabName}
+                  className={tab === tabName ? "active" : ""}
+                  onClick={() => setTab(tabName)}
+                >
+                  {tabName}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* FILTERS */}
-      <div className="filters">
-        <select value={genre} onChange={(e) => setGenre(e.target.value)}>
-          <option value="">All Genres</option>
-          <option value="EDM">EDM</option>
-          <option value="Afrobeat">Afrobeat</option>
-          <option value="Hip Hop">Hip Hop</option>
-        </select>
+        {/* FILTERS */}
+        <div className="filters row g-2 g-md-3 align-items-center">
+          <div className="col-12 col-sm-5 col-md-4 col-lg-3">
+            <select
+              className="w-100"
+              value={genre}
+              onChange={(e) => setGenre(e.target.value)}
+            >
+              <option value="">All Genres</option>
+              <option value="EDM">EDM</option>
+              <option value="Afrobeat">Afrobeat</option>
+              <option value="Hip Hop">Hip Hop</option>
+            </select>
+          </div>
 
-        <input
-          value={country}
-          placeholder="Filter by country, e.g. America, Uganda, Nigeria"
-          onChange={(e) => setCountry(e.target.value)}
-        />
+          <div className="col-12 col-sm-7 col-md-6 col-lg-5">
+            <input
+              className="w-100"
+              value={country}
+              placeholder="Country e.g. Uganda, Nigeria"
+              onChange={(e) => setCountry(e.target.value)}
+            />
+          </div>
 
-        {(genre || country) && (
-          <button
-            type="button"
-            className="clear-filters-btn"
-            onClick={() => {
-              setGenre("");
-              setCountry("");
-            }}
-          >
-            Clear
-          </button>
+          {(genre || country) && (
+            <div className="col-12 col-md-auto">
+              <button
+                type="button"
+                className="clear-filters-btn"
+                onClick={() => {
+                  setGenre("");
+                  setCountry("");
+                }}
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* SONGS */}
+        {loading ? (
+          <FilterSongsSkeleton />
+        ) : songs.length > 0 ? (
+          <section className="new-release">
+            <div className="release-grid">
+              {songs.map((song) => (
+                <div
+                  className="release-card"
+                  key={song._id}
+                  onClick={() => playSong(song, songs)}
+                >
+                  <Link
+                    className="text-decoration-none"
+                    to={`/song/${song._id}`}
+                    state={{ playlist: songs }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="release-image">
+                      <img
+                        src={song.imageUrl || "/fallback-cover.png"}
+                        alt={song.title || "Song cover"}
+                        loading="lazy"
+                      />
+
+                      <div
+                        className="play-btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          playSong(song, songs);
+                        }}
+                      >
+                        <FaPlay />
+                      </div>
+                    </div>
+
+                    <div className="release-content">
+                      <h3 className="text-white">
+                        {song.title || "Unknown Song"}
+                      </h3>
+
+                      <p>{song.artist?.name || "Unknown Artist"}</p>
+
+                      {getSongCountry(song) && (
+                        <span className="song-country">
+                          {getSongCountry(song)}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <div className="filter-empty-state">
+            No songs found.
+          </div>
         )}
       </div>
-
-      {/* SONGS */}
-      {loading ? (
-        <p className="loading">Loading songs...</p>
-      ) : songs.length > 0 ? (
-        <section className="new-release">
-          <div className="release-grid">
-            {songs.map((song) => (
-              <div
-                className="release-card"
-                key={song._id}
-                onClick={() => playSong(song, songs)}
-              >
-                <Link
-                  className="text-decoration-none"
-                  to={`/song/${song._id}`}
-                  state={{ playlist: songs }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="release-image">
-                    <img
-                      src={song.imageUrl || "/fallback-cover.png"}
-                      alt={song.title || "Song cover"}
-                    />
-
-                    <div
-                      className="play-btn"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        playSong(song, songs);
-                      }}
-                    >
-                      <FaPlay />
-                    </div>
-                  </div>
-
-                  <div className="release-content">
-                    <h3 className="text-white">{song.title}</h3>
-                    <p>{song.artist?.name || "Unknown Artist"}</p>
-
-                    {getSongCountry(song) && (
-                      <span className="song-country">
-                        {getSongCountry(song)}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : (
-        <p className="loading">No songs found.</p>
-      )}
     </section>
   );
 };

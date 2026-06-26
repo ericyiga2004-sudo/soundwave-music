@@ -36,6 +36,50 @@ const formatTime = (seconds = 0) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
+const AlbumSkeleton = () => {
+  return (
+    <div className="album-page">
+      <div className="album-hero album-hero-skeleton">
+        <div className="album-skeleton album-skeleton-cover"></div>
+
+        <div className="album-hero-overlay album-skeleton-overlay">
+          <div className="album-skeleton album-skeleton-label"></div>
+          <div className="album-skeleton album-skeleton-title"></div>
+          <div className="album-skeleton album-skeleton-artist"></div>
+          <div className="album-skeleton album-skeleton-desc"></div>
+          <div className="album-skeleton album-skeleton-desc short"></div>
+
+          <div className="album-skeleton-meta-row">
+            <div className="album-skeleton album-skeleton-meta"></div>
+            <div className="album-skeleton album-skeleton-meta small"></div>
+          </div>
+
+          <div className="album-skeleton album-skeleton-button"></div>
+        </div>
+      </div>
+
+      <div className="album-tracks">
+        <div className="album-skeleton album-skeleton-tracks-title"></div>
+
+        {Array.from({ length: 7 }).map((_, index) => (
+          <div className="track-item album-track-skeleton" key={index}>
+            <div className="album-skeleton album-skeleton-number"></div>
+            <div className="album-skeleton album-skeleton-track-img"></div>
+
+            <div className="track-info">
+              <div className="album-skeleton album-skeleton-track-title"></div>
+              <div className="album-skeleton album-skeleton-track-artist"></div>
+            </div>
+
+            <div className="album-skeleton album-skeleton-duration"></div>
+            <div className="album-skeleton album-skeleton-play"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Album = () => {
   const { albumId } = useParams();
   const location = useLocation();
@@ -51,42 +95,45 @@ const Album = () => {
   const [loading, setLoading] = useState(!location.state?.album);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchAlbum = async () => {
       try {
         setLoading(true);
 
-        const res = await axios.get(
-          `${backendUrl}/api/albums/${albumId}`
-        );
+        const res = await axios.get(`${backendUrl}/api/albums/${albumId}`);
 
-        if (res.data.success) {
-          setAlbum(res.data.album);
+        if (!mounted) return;
+
+        if (res.data?.success) {
+          setAlbum(res.data.album || null);
+        } else {
+          setAlbum(null);
         }
       } catch (err) {
         console.log(err);
-        setAlbum(null);
+
+        if (mounted) {
+          setAlbum(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchAlbum();
+
+    return () => {
+      mounted = false;
+    };
   }, [albumId]);
 
   const albumQueue = useMemo(() => {
     if (!album?.songs?.length) return [];
 
-    const albumArtistId = album.artist?._id;
-
-    const songsFromThisAlbumArtist = album.songs.filter((song) => {
-      if (!song?._id) return false;
-
-      if (!albumArtistId) return true;
-
-      return song.artist?._id === albumArtistId;
-    });
-
-    return normalizeSongs(songsFromThisAlbumArtist);
+    return normalizeSongs(album.songs);
   }, [album]);
 
   const playAlbum = () => {
@@ -99,6 +146,8 @@ const Album = () => {
   };
 
   const playTrack = (song) => {
+    if (!song?._id) return;
+
     const isActiveSong = currentSong?._id === song._id;
 
     if (isActiveSong) {
@@ -109,27 +158,64 @@ const Album = () => {
     playSong(song, albumQueue);
   };
 
+  const getAlbumImage = () => {
+    return (
+      album?.coverImage ||
+      album?.imageUrl ||
+      album?.image ||
+      "/fallback-cover.png"
+    );
+  };
+
+  const getSongImage = (song) => {
+    return (
+      song?.imageUrl ||
+      song?.image ||
+      song?.coverImage ||
+      song?.thumbnail ||
+      getAlbumImage()
+    );
+  };
+
+  const getArtistName = (song) => {
+    if (typeof song?.artist === "string") return song.artist;
+
+    return (
+      song?.artist?.name ||
+      song?.artist?.username ||
+      song?.artistName ||
+      album?.artist?.name ||
+      "Unknown Artist"
+    );
+  };
+
   if (loading) {
-    return <div className="album-loading">Loading album...</div>;
+    return <AlbumSkeleton />;
   }
 
   if (!album) {
-    return <div className="album-loading">Album not found</div>;
+    return (
+      <div className="album-page">
+        <div className="album-loading">
+          Album not found
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="album-page">
       <div className="album-hero">
         <img
-          src={album.coverImage || "/fallback-cover.png"}
-          alt={album.title}
+          src={getAlbumImage()}
+          alt={album.title || "Album cover"}
           className="album-hero-img"
         />
 
         <div className="album-hero-overlay">
           <span className="label">ALBUM</span>
 
-          <h1>{album.title}</h1>
+          <h1>{album.title || "Untitled Album"}</h1>
 
           <p className="artist-name">
             {album.artist?.name || "Unknown Artist"}
@@ -154,7 +240,8 @@ const Album = () => {
             onClick={playAlbum}
             disabled={albumQueue.length === 0}
           >
-            <FaPlay /> Play Album
+            <FaPlay />
+            Play Album
           </button>
         </div>
       </div>
@@ -163,7 +250,9 @@ const Album = () => {
         <h2>Tracks</h2>
 
         {albumQueue.length === 0 ? (
-          <p>No songs in this album yet</p>
+          <p className="album-empty-text">
+            No songs in this album yet
+          </p>
         ) : (
           albumQueue.map((song, index) => {
             const active = currentSong?._id === song._id;
@@ -176,7 +265,13 @@ const Album = () => {
                   playingNow ? "playing-now" : ""
                 }`}
                 onClick={() => playTrack(song)}
-                style={{ cursor: "pointer" }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    playTrack(song);
+                  }
+                }}
               >
                 <div className="track-number">
                   {playingNow ? (
@@ -193,13 +288,14 @@ const Album = () => {
                 </div>
 
                 <img
-                  src={song.imageUrl || album.coverImage || "/fallback-cover.png"}
-                  alt={song.title}
+                  src={getSongImage(song)}
+                  alt={song.title || "Song cover"}
                 />
 
                 <div className="track-info">
                   <h4>
-                    {song.title}
+                    {song.title || "Unknown Song"}
+
                     {active && (
                       <span className="album-now-playing">
                         Playing now
@@ -207,11 +303,7 @@ const Album = () => {
                     )}
                   </h4>
 
-                  <p>
-                    {song.artist?.name ||
-                      album.artist?.name ||
-                      "Unknown Artist"}
-                  </p>
+                  <p>{getArtistName(song)}</p>
                 </div>
 
                 <span className="track-duration">
@@ -225,6 +317,7 @@ const Album = () => {
                     e.stopPropagation();
                     playTrack(song);
                   }}
+                  aria-label={playingNow ? "Pause song" : "Play song"}
                 >
                   {playingNow ? <FaPause /> : <FaPlay />}
                 </button>
