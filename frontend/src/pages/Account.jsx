@@ -1,7 +1,4 @@
-import React, {
-  useState,
-  useContext,
-} from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import {
   FaMusic,
@@ -9,9 +6,7 @@ import {
   FaEnvelope,
   FaLock,
   FaClock,
-  FaPlay,
 } from "react-icons/fa";
-
 
 import "./CSS/Account.css";
 import { MusicContext } from "../context/ShopContext";
@@ -30,11 +25,8 @@ const Account = () => {
   const { playSong } = useContext(MusicPlayerContext);
 
   const [mode, setMode] = useState("login");
-
   const [username, setUsername] = useState("");
-
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -46,9 +38,7 @@ const Account = () => {
       setLoading(true);
 
       const endpoint =
-        mode === "login"
-          ? "/api/user/login"
-          : "/api/user/register";
+        mode === "login" ? "/api/user/login" : "/api/user/register";
 
       const payload =
         mode === "login"
@@ -62,10 +52,7 @@ const Account = () => {
               password,
             };
 
-      const res = await axios.post(
-        `${backendUrl}${endpoint}`,
-        payload
-      );
+      const res = await axios.post(`${backendUrl}${endpoint}`, payload);
 
       if (res.data.success) {
         setToken(res.data.token);
@@ -79,299 +66,183 @@ const Account = () => {
     } catch (error) {
       console.log(error);
 
-      alert(
-        error.response?.data?.message ||
-          "Something went wrong"
-      );
+      alert(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  const formatPlayedAt = (date) => {
-    if (!date) return "Recently";
+  const buildHistoryQueue = () => {
+    if (!Array.isArray(historySongs)) return [];
 
-    return new Date(date).toLocaleString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return historySongs
+      .map((historyItem) => historyItem?.song)
+      .filter(Boolean);
   };
 
-  const getSongImage = (song) => {
-    return (
-      song?.imageUrl ||
-      song?.image ||
-      song?.coverImage ||
-      song?.thumbnail ||
-      song?.album?.imageUrl ||
-      song?.album?.image ||
-      ""
-    );
+  const handlePlayHistorySong = (song) => {
+    if (!song) return;
+
+    const historyQueue = buildHistoryQueue();
+    playSong?.(song, historyQueue);
   };
 
-  const getSongTitle = (song) => {
-    return song?.title || song?.name || "Unknown Song";
-  };
-
-  const getArtistName = (song) => {
-    if (typeof song?.artist === "string") {
-      return song.artist;
-    }
-
-    return (
-      song?.artist?.name ||
-      song?.artist?.username ||
-      song?.artist?.artistName ||
-      "Unknown Artist"
-    );
-  };
-
-  // ==========================
-  // LOGGED IN
-  // ==========================
   if (token) {
     return (
-      <div className="account-dashboard">
-        <div className="dashboard-card">
-          <div className="dashboard-avatar">
-            <FaUser />
-          </div>
-
-          <h1>Welcome Back</h1>
-
-          <p>
-            You are successfully logged in.
-          </p>
-
-          <button
-            className="logout-btn"
-            onClick={logout}
-          >
-            Logout
-          </button>
-        </div>
-
-        <div className="history-section">
-          <div className="history-header">
-            <div className="history-heading">
-              <FaClock />
-              <h2>Listening History</h2>
+      <main className="account-dashboard">
+        <div className="container-fluid px-2 px-sm-3 px-lg-4">
+          <section className="dashboard-card row g-3 g-md-4 align-items-center">
+            <div className="col-12 col-md-auto text-center text-md-start">
+              <div className="dashboard-avatar mx-auto mx-md-0">
+                <FaUser />
+              </div>
             </div>
 
-            <p>
-              Recently played songs from your account.
-            </p>
-          </div>
+            <div className="col-12 col-md text-center text-md-start">
+              <h1>Welcome Back</h1>
+              <p>You are successfully logged in.</p>
+            </div>
 
-          {historySongs && historySongs.length > 0 ? (
-  <div className="history-grid">
-    {historySongs.map((item) => {
-      const song = item.song;
-
-      if (!song) return null;
-
-      const historyQueue = historySongs
-        .map((historyItem) => historyItem.song)
-        .filter(Boolean);
-
-      const handlePlay = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        playSong(song, historyQueue);
-      };
-
-      return (
-        <div
-          className="history-song-card"
-          key={item._id || `${song._id}-${item.playedAt}`}
-        >
-          {/* <Link
-            to={`/song/${song._id}`}
-            className="history-song-link"
-          >
-            <div className="history-song-img-container">
-              {getSongImage(song) ? (
-                <img
-                  src={getSongImage(song)}
-                  alt={getSongTitle(song)}
-                />
-              ) : (
-                <div className="history-song-placeholder">
-                  <FaMusic />
-                </div>
-              )}
-
-              <button
-                type="button"
-                className="history-play-overlay"
-                onClick={handlePlay}
-              >
-                <FaPlay />
+            <div className="col-12 col-md-auto text-center text-md-end">
+              <button className="logout-btn" onClick={logout}>
+                Logout
               </button>
             </div>
+          </section>
 
-            <div className="history-song-content">
-              <h3>{getSongTitle(song)}</h3>
+          <section className="history-section">
+            <div className="history-header row g-3 align-items-end">
+              <div className="col-12 col-md">
+                <div className="history-heading">
+                  <FaClock />
+                  <h2>Listening History</h2>
+                </div>
 
-              <p>{getArtistName(song)}</p>
-
-              <span>
-                Played {formatPlayedAt(item.playedAt)}
-              </span>
+                <p>Recently played songs from your account.</p>
+              </div>
             </div>
-          </Link> */}
 
-            {
-              <SongItem key={song._id} song={song}/>
-            }
+            {historySongs && historySongs.length > 0 ? (
+              <div className="history-grid row g-3 g-md-4">
+                {historySongs.map((item) => {
+                  const song = item.song;
 
+                  if (!song) return null;
+
+                  return (
+                    <div
+                      className="history-song-card col-6 col-sm-4 col-md-3 col-lg-2"
+                      key={item._id || `${song._id}-${item.playedAt}`}
+                      onClick={() => handlePlayHistorySong(song)}
+                    >
+                      <SongItem song={song} />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="empty-history">
+                <FaMusic />
+                <p>No listening history yet. Play a song to see it here.</p>
+              </div>
+            )}
+          </section>
         </div>
-      );
-    })}
-  </div>
-) : (
-  <div className="empty-history">
-    <FaMusic />
-    <p>
-      No listening history yet. Play a song to see it here.
-    </p>
-  </div>
-)}
-        </div>
-      </div>
+      </main>
     );
   }
 
-  // ==========================
-  // LOGIN / REGISTER
-  // ==========================
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        {/* LEFT SIDE */}
-        <div className="auth-left">
-          <div className="logo-circle">
-            <FaMusic />
+    <main className="auth-page">
+      <div className="container-fluid px-2 px-sm-3 px-lg-4">
+        <section className="auth-container row g-0 mx-auto">
+          <div className="auth-left col-12 col-lg-7">
+            <div className="logo-circle">
+              <FaMusic />
+            </div>
+
+            <h1>
+              Stream Music
+              <br />
+              Without Limits
+            </h1>
+
+            <p>
+              Create playlists, save favorites, access listening history, and
+              enjoy your music anywhere.
+            </p>
           </div>
 
-          <h1>
-            Stream Music
-            <br />
-            Without Limits
-          </h1>
+          <div className="auth-right col-12 col-lg-5">
+            <div className="auth-switch">
+              <button
+                type="button"
+                className={mode === "login" ? "active" : ""}
+                onClick={() => setMode("login")}
+              >
+                Login
+              </button>
 
-          <p>
-            Create playlists,
-            save favorites,
-            access listening history,
-            and enjoy your music
-            anywhere.
-          </p>
-        </div>
+              <button
+                type="button"
+                className={mode === "register" ? "active" : ""}
+                onClick={() => setMode("register")}
+              >
+                Sign Up
+              </button>
+            </div>
 
-        {/* RIGHT SIDE */}
-        <div className="auth-right">
-          <div className="auth-switch">
-            <button
-              type="button"
-              className={
-                mode === "login"
-                  ? "active"
-                  : ""
-              }
-              onClick={() =>
-                setMode("login")
-              }
-            >
-              Login
-            </button>
+            <form onSubmit={submitHandler}>
+              {mode === "register" && (
+                <div className="input-group">
+                  <FaUser />
 
-            <button
-              type="button"
-              className={
-                mode === "register"
-                  ? "active"
-                  : ""
-              }
-              onClick={() =>
-                setMode("register")
-              }
-            >
-              Sign Up
-            </button>
-          </div>
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
 
-          <form
-            onSubmit={submitHandler}
-          >
-            {mode === "register" && (
               <div className="input-group">
-                <FaUser />
+                <FaEnvelope />
 
                 <input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) =>
-                    setUsername(
-                      e.target.value
-                    )
-                  }
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-            )}
 
-            <div className="input-group">
-              <FaEnvelope />
+              <div className="input-group">
+                <FaLock />
 
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) =>
-                  setEmail(
-                    e.target.value
-                  )
-                }
-                required
-              />
-            </div>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div className="input-group">
-              <FaLock />
-
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) =>
-                  setPassword(
-                    e.target.value
-                  )
-                }
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="submit-btn"
-              disabled={loading}
-            >
-              {loading
-                ? "Please wait..."
-                : mode === "login"
-                ? "Login"
-                : "Create Account"}
-            </button>
-          </form>
-        </div>
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading
+                  ? "Please wait..."
+                  : mode === "login"
+                  ? "Login"
+                  : "Create Account"}
+              </button>
+            </form>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 };
 
