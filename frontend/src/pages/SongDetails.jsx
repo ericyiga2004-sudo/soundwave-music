@@ -45,11 +45,22 @@ const safeJsonParse = (value) => {
   }
 };
 
-const formatTime = (seconds = 0) => {
-  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+const normalizeDuration = (value) => {
+  const durationValue = Number(value);
 
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
+  if (!Number.isFinite(durationValue) || durationValue <= 0) return 0;
+
+  // Some APIs store duration in milliseconds. Keep normal song seconds untouched.
+  return durationValue > 10000 ? durationValue / 1000 : durationValue;
+};
+
+const formatTime = (seconds = 0) => {
+  const safeSeconds = normalizeDuration(seconds);
+
+  if (!safeSeconds) return "0:00";
+
+  const mins = Math.floor(safeSeconds / 60);
+  const secs = Math.floor(safeSeconds % 60);
 
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
@@ -73,8 +84,18 @@ const getArtistName = (song) =>
 const getAlbumTitle = (song) =>
   song?.album?.title || song?.albumTitle || song?.album || "Unknown Album";
 
-const getDuration = (song, playerDuration) =>
-  Number(song?.duration) > 0 ? Number(song.duration) : Number(playerDuration) || 0;
+const getDuration = (song, playerDuration, liveAudioDuration) => {
+  const candidates = [
+    liveAudioDuration,
+    playerDuration,
+    song?.duration,
+    song?.audioDuration,
+    song?.length,
+    song?.metadata?.duration,
+  ];
+
+  return candidates.map(normalizeDuration).find(Boolean) || 0;
+};
 
 const repeatLabel = (repeat) => {
   if (repeat === "one" || repeat === 1) return "Repeat one";
@@ -219,6 +240,7 @@ const SongDetails = () => {
   } = useContext(MusicPlayerContext);
 
   const [liveProgress, setLiveProgress] = useState(Number(progress) || 0);
+  const [liveDuration, setLiveDuration] = useState(normalizeDuration(duration));
   const [restoredSongPreview, setRestoredSongPreview] = useState(null);
   const [restoreAttempted, setRestoreAttempted] = useState(false);
 
@@ -237,29 +259,37 @@ const SongDetails = () => {
   const [playlistStatus, setPlaylistStatus] = useState("");
 
   const [queueOpen, setQueueOpen] = useState(false);
+  const [lyricsModalOpen, setLyricsModalOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
 
   const lyricsContainerRef = useRef(null);
+  const lyricsModalContainerRef = useRef(null);
   const lyricRefs = useRef({});
+  const modalLyricRefs = useRef({});
   const animationFrameRef = useRef(null);
   const lastSessionRef = useRef(null);
 
   const activeSong = currentSong || restoredSongPreview;
 
   const totalDuration = useMemo(
-    () => getDuration(activeSong, duration),
-    [activeSong, duration]
+    () => getDuration(activeSong, duration, liveDuration),
+    [activeSong, duration, liveDuration]
   );
 
   const displayProgress = useMemo(() => {
     const audioTime = Number(liveProgress);
     const contextTime = Number(progress);
 
-    if (Number.isFinite(audioTime)) return audioTime;
-    if (Number.isFinite(contextTime)) return contextTime;
+    if (Number.isFinite(audioTime) && audioTime >= 0) return audioTime;
+    if (Number.isFinite(contextTime) && contextTime >= 0) return contextTime;
 
     return 0;
   }, [liveProgress, progress]);
+
+  const progressMax = useMemo(
+    () => Math.max(Number(totalDuration) || 0, Number(displayProgress) || 0, 0),
+    [displayProgress, totalDuration]
+  );
 
   const recommendedSongs = useMemo(() => {
     if (!Array.isArray(songs)) return [];
@@ -502,27 +532,74 @@ const SongDetails = () => {
   }, [audioRef, isPlaying, activeSong?._id]);
 
   useEffect(() => {
+    const fallbackDuration = getDuration(activeSong, 0, 0);
+
+    setLiveDuration(fallbackDuration);
+
     const audio = audioRef?.current;
     if (!audio) return;
 
-    const handleTimeUpdate = () => {
-      setLiveProgress(Number(audio.currentTime) || 0);
+    const syncProgress = () => {
+      const currentTime = Number(audio.currentTime);
+
+      if (Number.isFinite(currentTime) && currentTime >= 0) {
+        setLiveProgress(currentTime);
+      }
     };
 
-    const handleSeeked = () => {
-      setLiveProgress(Number(audio.currentTime) || 0);
+    const syncDuration = () => {
+      const audioDuration = normalizeDuration(audio.duration);
+
+      setLiveDuration(audioDuration || fallbackDuration);
     };
 
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("seeked", handleSeeked);
-    audio.addEventListener("loadedmetadata", handleTimeUpdate);
+    const syncAudioState = () => {
+      syncProgress();
+      syncDuration();
+    };
+
+    const activeSource =
+      activeSong?.audioUrl ||
+      activeSong?.audio ||
+      activeSong?.fileUrl ||
+      activeSong?.url ||
+      "";
+
+    const audioSource = audio.currentSrc || audio.src || "";
+    const sourceLooksCurrent =
+      !activeSource ||
+      !audioSource ||
+      audioSource === activeSource ||
+      audioSource.includes(activeSource) ||
+      activeSource.includes(audioSource);
+
+    if (audio.readyState >= 1 && sourceLooksCurrent) {
+      syncAudioState();
+    }
+
+    audio.addEventListener("timeupdate", syncProgress);
+    audio.addEventListener("seeked", syncProgress);
+    audio.addEventListener("loadedmetadata", syncAudioState);
+    audio.addEventListener("durationchange", syncDuration);
+    audio.addEventListener("canplay", syncAudioState);
 
     return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("seeked", handleSeeked);
-      audio.removeEventListener("loadedmetadata", handleTimeUpdate);
+      audio.removeEventListener("timeupdate", syncProgress);
+      audio.removeEventListener("seeked", syncProgress);
+      audio.removeEventListener("loadedmetadata", syncAudioState);
+      audio.removeEventListener("durationchange", syncDuration);
+      audio.removeEventListener("canplay", syncAudioState);
     };
-  }, [audioRef, activeSong?._id]);
+  }, [
+    audioRef,
+    activeSong?._id,
+    activeSong?.audioUrl,
+    activeSong?.audio,
+    activeSong?.fileUrl,
+    activeSong?.url,
+    activeSong?.duration,
+    duration,
+  ]);
 
   useEffect(() => {
     setLikesCount(Number(activeSong?.likes) || 0);
@@ -555,23 +632,35 @@ const SongDetails = () => {
   }, [backendUrl, token, activeSong?._id]);
 
   useEffect(() => {
-    const container = lyricsContainerRef.current;
-    const activeNode = lyricRefs.current[activeLyricIndex];
+    if (activeLyricIndex < 0) return;
 
-    if (!container || !activeNode || activeLyricIndex < 0) return;
+    const targets = [
+      {
+        container: lyricsContainerRef.current,
+        activeNode: lyricRefs.current[activeLyricIndex],
+      },
+      {
+        container: lyricsModalContainerRef.current,
+        activeNode: modalLyricRefs.current[activeLyricIndex],
+      },
+    ];
 
-    const containerHeight = container.clientHeight;
-    const activeOffsetTop = activeNode.offsetTop;
-    const activeHeight = activeNode.offsetHeight;
+    targets.forEach(({ container, activeNode }) => {
+      if (!container || !activeNode) return;
 
-    const targetScrollTop =
-      activeOffsetTop - containerHeight / 2 + activeHeight / 2;
+      const containerHeight = container.clientHeight;
+      const activeOffsetTop = activeNode.offsetTop;
+      const activeHeight = activeNode.offsetHeight;
 
-    container.scrollTo({
-      top: Math.max(0, targetScrollTop),
-      behavior: "smooth",
+      const targetScrollTop =
+        activeOffsetTop - containerHeight / 2 + activeHeight / 2;
+
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
     });
-  }, [activeLyricIndex]);
+  }, [activeLyricIndex, lyricsModalOpen]);
 
   useEffect(() => {
     const audio = audioRef?.current;
@@ -789,6 +878,116 @@ const SongDetails = () => {
     return <FaRedoAlt />;
   };
 
+  const renderLyricsContent = (variant = "page") => {
+    const isModal = variant === "modal";
+    const refs = isModal ? modalLyricRefs : lyricRefs;
+    const containerRef = isModal ? lyricsModalContainerRef : lyricsContainerRef;
+
+    return (
+      <>
+        <div className={`lyrics-header ${isModal ? "lyrics-header-modal" : ""}`}>
+          <div>
+            <p className="eyebrow">Live Lyrics</p>
+            <h2>{isModal ? activeSong.title : "Karaoke Mode"}</h2>
+            {isModal && <small>{getArtistName(activeSong)}</small>}
+          </div>
+
+          <div className="lyrics-header-actions">
+            <span className="lyrics-time">
+              {formatTime(displayProgress)}
+              {isModal ? ` / ${formatTime(totalDuration)}` : ""}
+            </span>
+
+            {isModal && (
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setLyricsModalOpen(false)}
+                aria-label="Close lyrics"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div
+          className="lyrics-scroll"
+          ref={containerRef}
+          tabIndex={0}
+          aria-live="polite"
+        >
+          {syncedLyrics.length ? (
+            syncedLyrics.map((line, index) => {
+              const isActive = index === activeLyricIndex;
+              const isPast = index < activeLyricIndex;
+              const isUpcoming = index > activeLyricIndex;
+
+              return (
+                <motion.button
+                  key={`${variant}-${line.start}-${line.text}-${index}`}
+                  ref={(node) => {
+                    if (node) {
+                      refs.current[index] = node;
+                    } else {
+                      delete refs.current[index];
+                    }
+                  }}
+                  type="button"
+                  className={[
+                    "lyric-line",
+                    isActive ? "active" : "",
+                    isPast ? "past" : "",
+                    isUpcoming ? "upcoming" : "",
+                  ].join(" ")}
+                  onClick={() => handleLyricClick(line.start)}
+                  aria-label={`Jump to lyric at ${formatTime(line.start)}: ${
+                    line.text
+                  }`}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{
+                    opacity: isActive ? 1 : isPast ? 0.36 : 0.72,
+                    y: 0,
+                    scale: isActive ? 1.025 : 1,
+                  }}
+                  transition={{ duration: 0.22 }}
+                  whileHover={{ scale: isActive ? 1.025 : 1.01 }}
+                  whileTap={{ scale: 0.985 }}
+                >
+                  {isActive && Array.isArray(line.words) && line.words.length ? (
+                    <span className="lyric-words">
+                      {line.words.map((word, wordIndex) => (
+                        <span
+                          key={`${word.text}-${word.start}-${wordIndex}`}
+                          className={
+                            wordIndex <= activeWordIndex
+                              ? "lyric-word sung"
+                              : "lyric-word"
+                          }
+                        >
+                          {word.text}
+                          {wordIndex < line.words.length - 1 ? " " : ""}
+                        </span>
+                      ))}
+                    </span>
+                  ) : (
+                    line.text
+                  )}
+                </motion.button>
+              );
+            })
+          ) : (
+            <div className="no-lyrics">
+              <FaMusic aria-hidden="true" />
+              <h3>No synchronized lyrics available</h3>
+              <p>This song does not include LRC lyrics yet.</p>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  };
+
   if (!activeSong) {
     return (
       <main className="song-details song-details-empty">
@@ -852,6 +1051,16 @@ const SongDetails = () => {
             <h1>{activeSong.title}</h1>
             <p>{getArtistName(activeSong)}</p>
           </div>
+
+          <button
+            type="button"
+            className="show-lyrics-mobile-btn d-md-none"
+            onClick={() => setLyricsModalOpen(true)}
+            aria-label="Show lyrics"
+          >
+            <FaMusic />
+            Show Lyrics
+          </button>
 
           <div className="visualizer" aria-hidden="true">
             {Array.from({ length: 16 }).map((_, index) => (
@@ -919,90 +1128,13 @@ const SongDetails = () => {
         </motion.aside>
 
         <motion.section
-          className="col-12 col-md-8 order-2 lyrics-panel glass-card"
+          className="col-12 col-md-8 order-2 lyrics-panel glass-card d-none d-md-flex"
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           aria-label="Synchronized lyrics"
         >
-          <div className="lyrics-header">
-            <div>
-              <p className="eyebrow">Live Lyrics</p>
-              <h2>Karaoke Mode</h2>
-            </div>
-
-            <span className="lyrics-time">{formatTime(displayProgress)}</span>
-          </div>
-
-          <div
-            className="lyrics-scroll"
-            ref={lyricsContainerRef}
-            tabIndex={0}
-            aria-live="polite"
-          >
-            {syncedLyrics.length ? (
-              syncedLyrics.map((line, index) => {
-                const isActive = index === activeLyricIndex;
-                const isPast = index < activeLyricIndex;
-                const isUpcoming = index > activeLyricIndex;
-
-                return (
-                  <motion.button
-                    key={`${line.start}-${line.text}-${index}`}
-                    ref={(node) => {
-                      lyricRefs.current[index] = node;
-                    }}
-                    type="button"
-                    className={[
-                      "lyric-line",
-                      isActive ? "active" : "",
-                      isPast ? "past" : "",
-                      isUpcoming ? "upcoming" : "",
-                    ].join(" ")}
-                    onClick={() => handleLyricClick(line.start)}
-                    aria-label={`Jump to lyric at ${formatTime(line.start)}: ${
-                      line.text
-                    }`}
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{
-                      opacity: isActive ? 1 : isPast ? 0.36 : 0.72,
-                      y: 0,
-                      scale: isActive ? 1.025 : 1,
-                    }}
-                    transition={{ duration: 0.22 }}
-                    whileHover={{ scale: isActive ? 1.025 : 1.01 }}
-                    whileTap={{ scale: 0.985 }}
-                  >
-                    {isActive && Array.isArray(line.words) && line.words.length ? (
-                      <span className="lyric-words">
-                        {line.words.map((word, wordIndex) => (
-                          <span
-                            key={`${word.text}-${word.start}-${wordIndex}`}
-                            className={
-                              wordIndex <= activeWordIndex
-                                ? "lyric-word sung"
-                                : "lyric-word"
-                            }
-                          >
-                            {word.text}
-                            {wordIndex < line.words.length - 1 ? " " : ""}
-                          </span>
-                        ))}
-                      </span>
-                    ) : (
-                      line.text
-                    )}
-                  </motion.button>
-                );
-              })
-            ) : (
-              <div className="no-lyrics">
-                <FaMusic aria-hidden="true" />
-                <h3>No synchronized lyrics available</h3>
-                <p>This song does not include LRC lyrics yet.</p>
-              </div>
-            )}
-          </div>
+          {renderLyricsContent("page")}
         </motion.section>
 
         <motion.aside
@@ -1147,20 +1279,30 @@ const SongDetails = () => {
               className="progress-slider"
               type="range"
               min="0"
-              max={totalDuration || 0}
+              max={progressMax || 0}
               step="0.01"
-              value={clamp(Number(displayProgress) || 0, 0, totalDuration || 0)}
+              value={clamp(Number(displayProgress) || 0, 0, progressMax || 0)}
               onChange={handleSeek}
               aria-label="Song progress"
               style={{
                 "--progress-percent": `${
-                  totalDuration ? (displayProgress / totalDuration) * 100 : 0
+                  progressMax ? (displayProgress / progressMax) * 100 : 0
                 }%`,
               }}
             />
 
             <time>{formatTime(totalDuration)}</time>
           </div>
+
+          <button
+            type="button"
+            className="show-lyrics-dock-btn d-md-none"
+            onClick={() => setLyricsModalOpen(true)}
+            aria-label="Show lyrics"
+          >
+            <FaMusic />
+            Show Lyrics
+          </button>
         </div>
       </div>
 
@@ -1242,6 +1384,33 @@ const SongDetails = () => {
     </div>
   </div>
 </motion.section>
+
+      <AnimatePresence>
+        {lyricsModalOpen && (
+          <motion.div
+            className="modal-backdrop lyrics-mobile-backdrop d-md-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            role="presentation"
+            onClick={() => setLyricsModalOpen(false)}
+          >
+            <motion.section
+              className="modal-card lyrics-modal-card glass-card"
+              initial={{ opacity: 0, y: 28, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 18, scale: 0.96 }}
+              transition={{ duration: 0.22 }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Live lyrics"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {renderLyricsContent("modal")}
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {playlistModalOpen && (
