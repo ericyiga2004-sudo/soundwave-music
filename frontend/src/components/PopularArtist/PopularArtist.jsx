@@ -26,7 +26,7 @@ const PopularArtist = () => {
   useEffect(() => {
     const fetchArtists = async () => {
       try {
-        const res = await axios.get(`${backendUrl}/api/songs/artists/popular`);
+        const res = await axios.get(`${backendUrl}/api/artists`);
 
         if (res.data.success) {
           setArtists(Array.isArray(res.data.artists) ? res.data.artists : []);

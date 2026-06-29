@@ -7,6 +7,36 @@ import { Link } from "react-router-dom";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+const dateFields = [
+  "releaseDate",
+  "releasedAt",
+  "uploadTime",
+  "uploadedAt",
+  "createdAt",
+  "updatedAt",
+];
+
+const getSongDateValue = (song = {}) => {
+  for (const field of dateFields) {
+    const value = song[field];
+
+    if (!value) continue;
+
+    const dateValue =
+      typeof value === "number" ? value : new Date(value).getTime();
+
+    if (!Number.isNaN(dateValue)) {
+      return dateValue;
+    }
+  }
+
+  return 0;
+};
+
+const sortSongsByNewestDate = (songs = []) => {
+  return [...songs].sort((a, b) => getSongDateValue(b) - getSongDateValue(a));
+};
+
 const NewReleaseSkeleton = () => {
   return (
     <section className="new-release">
@@ -41,7 +71,8 @@ const NewRelease = () => {
         const res = await axios.get(`${backendUrl}/api/songs/new-releases/all`);
 
         if (res.data.success) {
-          setSongs(res.data.songs || []);
+          const sortedSongs = sortSongsByNewestDate(res.data.songs || []);
+          setSongs(sortedSongs);
         }
       } catch (error) {
         console.error(error);
@@ -71,7 +102,7 @@ const NewRelease = () => {
             onClick={() => playSong(song, songs)}
           >
             <Link
-              className="text-decoration-none"
+              className="release-link text-decoration-none"
               to={`/song/${song._id}`}
               state={{ playlist: songs }}
             >

@@ -1,134 +1,134 @@
 .filter-section {
   width: 100%;
-  padding: 40px 52px;
-  background: #0b0b10;
+  padding: 2.2rem 5%;
+  background:
+    radial-gradient(circle at top left, rgba(29, 185, 84, 0.16), transparent 28%),
+    linear-gradient(180deg, #080808 0%, #0b0b0b 45%, #050505 100%);
   color: #ffffff;
   overflow: hidden;
 }
 
-/* =========================
-   HEADER
-========================= */
-
 .filter-header {
-  margin-bottom: 22px;
+  margin-bottom: 1.2rem;
 }
 
 .filter-header h2 {
   margin: 0;
   color: #ffffff;
-  font-size: clamp(1.25rem, 3vw, 1.8rem);
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
   font-weight: 900;
   letter-spacing: -0.04em;
 }
 
-/* =========================
-   TABS
-========================= */
-
 .tabs button {
-  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+  min-height: 42px;
+  padding: 0.6rem 1rem;
   border-radius: 999px;
-  border: 1px solid #2a2a2a;
-  background: transparent;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 750;
+  background: rgba(255, 255, 255, 0.06);
+  color: #bdbdbd;
+  font-size: 0.85rem;
+  font-weight: 800;
   transition:
     background 0.25s ease,
-    border-color 0.25s ease,
     color 0.25s ease,
+    border-color 0.25s ease,
     transform 0.25s ease;
 }
 
 .tabs button:hover {
-  border-color: rgba(29, 185, 84, 0.55);
-  transform: translateY(-1px);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.11);
+  transform: translateY(-2px);
 }
 
-.tabs .active {
+.tabs button.active {
   background: #1db954;
-  border-color: #1db954;
   color: #000000;
+  border-color: #1db954;
+  box-shadow: 0 10px 25px rgba(29, 185, 84, 0.25);
 }
-
-/* =========================
-   FILTERS
-========================= */
 
 .filters {
-  margin-bottom: 28px;
+  margin-bottom: 1.5rem;
 }
 
 .filters select,
 .filters input {
-  min-height: 42px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #2a2a2a;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
   outline: none;
-  background: #111111;
+  border-radius: 14px;
+  padding: 0 1rem;
+  background: rgba(18, 18, 18, 0.95);
   color: #ffffff;
   font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.filters select {
+  cursor: pointer;
+}
+
+.filters select option {
+  background: #121212;
+  color: #ffffff;
+}
+
+.filters input::placeholder {
+  color: #777777;
 }
 
 .filters select:focus,
 .filters input:focus {
-  border-color: #1db954;
+  border-color: rgba(29, 185, 84, 0.7);
+  background: #111111;
   box-shadow: 0 0 0 4px rgba(29, 185, 84, 0.12);
 }
 
-.filters input::placeholder {
-  color: rgba(255, 255, 255, 0.38);
-}
-
 .clear-filters-btn {
-  min-height: 42px;
-  width: 100%;
   border: none;
-  border-radius: 12px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+  min-height: 46px;
+  padding: 0 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.09);
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  cursor: pointer;
   transition:
     background 0.25s ease,
     transform 0.25s ease;
 }
 
 .clear-filters-btn:hover {
-  background: #1db954;
-  color: #000000;
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
 }
 
-/* =========================
+/* ==========================
    HORIZONTAL RESULTS
-========================= */
+========================== */
 
 .filter-results {
   width: 100%;
-  max-width: 100%;
-  padding: 22px 0;
-  border-radius: 24px;
-  background: #050506;
   overflow: hidden;
 }
 
 .filter-release-scroll {
-  width: 100%;
-  max-width: 100%;
   display: flex;
-  gap: 1.5rem;
+  gap: 1.25rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 24px 1rem;
-  scroll-padding-left: 24px;
-  scroll-padding-right: 24px;
+  padding: 0.25rem 0 1.25rem;
   scrollbar-width: none;
+  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -137,65 +137,112 @@
 }
 
 .filter-release-card {
-  flex: 0 0 clamp(145px, 18vw, 190px);
-  width: clamp(145px, 18vw, 190px);
-  max-width: 190px;
-  min-width: 0;
-  background: #121212;
-  padding: 1rem;
+  width: 190px;
+  min-width: 190px;
+  height: 292px;
+  scroll-snap-align: start;
+  background:
+    linear-gradient(180deg, rgba(31, 31, 31, 0.96), rgba(16, 16, 16, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 18px;
+  padding: 0.85rem;
   cursor: pointer;
+  position: relative;
   overflow: hidden;
   transition:
     transform 0.25s ease,
     background 0.25s ease,
+    border-color 0.25s ease,
     box-shadow 0.25s ease;
 }
 
+.filter-release-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at top right,
+    rgba(29, 185, 84, 0.18),
+    transparent 38%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
 .filter-release-card:hover {
-  transform: translateY(-5px);
-  background: #1a1a1a;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+  transform: translateY(-6px);
+  background:
+    linear-gradient(180deg, rgba(42, 42, 42, 0.98), rgba(20, 20, 20, 0.98));
+  border-color: rgba(29, 185, 84, 0.28);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.45);
+}
+
+.filter-release-card:hover::before {
+  opacity: 1;
+}
+
+.filter-release-card a {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  position: relative;
+  z-index: 2;
 }
 
 .filter-release-image {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  position: relative;
-  overflow: hidden;
+  height: 164px;
+  min-height: 164px;
   border-radius: 14px;
-  margin-bottom: 1rem;
+  overflow: hidden;
+  position: relative;
   background: #282828;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
 }
 
 .filter-release-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   display: block;
+  object-fit: cover;
+  object-position: center;
+  transition:
+    transform 0.35s ease,
+    filter 0.35s ease;
 }
 
-/* PLAY BUTTON */
+.filter-release-card:hover .filter-release-image img {
+  transform: scale(1.08);
+  filter: brightness(0.72);
+}
 
 .filter-play-btn {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 45px;
-  height: 45px;
-  background: #1db954;
+  right: 11px;
+  bottom: 11px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  background: #1db954;
+  color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
+  font-size: 0.95rem;
   opacity: 0;
-  transform: translateY(10px) scale(0.95);
+  transform: translateY(12px) scale(0.9);
   transition:
     opacity 0.25s ease,
     transform 0.25s ease,
     background 0.25s ease;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
+}
+
+.filter-play-btn svg {
+  margin-left: 2px;
 }
 
 .filter-release-card:hover .filter-play-btn {
@@ -203,39 +250,50 @@
   transform: translateY(0) scale(1);
 }
 
-/* TEXT */
+.filter-play-btn:hover {
+  background: #1ed760;
+  transform: translateY(0) scale(1.08);
+}
 
 .filter-release-content {
-  min-width: 0;
+  min-height: 82px;
+  padding-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .filter-release-content h3 {
+  margin: 0;
   color: #ffffff;
   font-size: 0.95rem;
+  line-height: 1.25;
   font-weight: 800;
-  margin: 0 0 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .filter-release-content p {
+  margin: 0.35rem 0 0;
+  color: #b3b3b3;
   font-size: 0.8rem;
-  color: #a7a7a7;
-  margin: 0;
+  line-height: 1.35;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .song-country {
-  display: inline-block;
+  width: fit-content;
   max-width: 100%;
-  margin-top: 9px;
-  padding: 4px 9px;
+  margin-top: 0.55rem;
+  padding: 0.28rem 0.55rem;
   border-radius: 999px;
-  background: rgba(29, 185, 84, 0.13);
   color: #1ed760;
+  background: rgba(29, 185, 84, 0.11);
+  border: 1px solid rgba(29, 185, 84, 0.18);
   font-size: 0.68rem;
   font-weight: 800;
   white-space: nowrap;
@@ -243,36 +301,38 @@
   text-overflow: ellipsis;
 }
 
+/* ==========================
+   EMPTY STATE
+========================== */
+
 .filter-empty-state {
-  width: 100%;
-  min-height: 140px;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  background: #121212;
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.9rem;
+  min-height: 210px;
+  border-radius: 22px;
+  background: rgba(18, 18, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #a7a7a7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
-/* =========================
-   SKELETON LOADER
-========================= */
+/* ==========================
+   SKELETON
+========================== */
 
 .filter-skeleton-card {
   cursor: default;
   pointer-events: none;
 }
 
-.filter-skeleton-card:hover {
-  transform: none;
-  box-shadow: none;
-  background: #121212;
-}
-
 .filter-skeleton {
   position: relative;
   overflow: hidden;
-  background: #252525;
+  background: #1d1d1d;
 }
 
 .filter-skeleton::after {
@@ -283,7 +343,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.13),
+    rgba(255, 255, 255, 0.12),
     transparent
   );
   animation: filterSkeletonWave 1.35s infinite;
@@ -291,9 +351,8 @@
 
 .filter-skeleton-image {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 164px;
   border-radius: 14px;
-  margin-bottom: 1rem;
 }
 
 .filter-skeleton-line {
@@ -303,17 +362,16 @@
 
 .filter-skeleton-line.big {
   width: 88%;
-  margin-bottom: 10px;
+  margin-bottom: 0.65rem;
 }
 
 .filter-skeleton-line.small {
   width: 62%;
-  margin-bottom: 10px;
+  margin-bottom: 0.65rem;
 }
 
 .filter-skeleton-line.tiny {
-  width: 46%;
-  height: 18px;
+  width: 42%;
 }
 
 @keyframes filterSkeletonWave {
@@ -322,99 +380,54 @@
   }
 }
 
-/* =========================
+/* ==========================
    RESPONSIVE
-========================= */
-
-@media (max-width: 1199px) {
-  .filter-section {
-    padding: 34px 34px;
-  }
-}
-
-@media (max-width: 991px) {
-  .filter-section {
-    padding: 30px 24px;
-  }
-
-  .tabs button {
-    font-size: 0.82rem;
-    padding: 7px 12px;
-  }
-
-  .filter-results {
-    border-radius: 22px;
-  }
-
-  .filter-release-scroll {
-    gap: 1rem;
-    padding-left: 20px;
-    padding-right: 20px;
-    scroll-padding-left: 20px;
-    scroll-padding-right: 20px;
-  }
-
-  .filter-release-card {
-    flex-basis: clamp(142px, 24vw, 170px);
-    width: clamp(142px, 24vw, 170px);
-  }
-}
+========================== */
 
 @media (max-width: 768px) {
   .filter-section {
-    padding: 25px 18px;
+    padding: 1.6rem 1rem;
   }
 
   .filter-header {
-    margin-bottom: 18px;
+    margin-bottom: 1rem;
   }
 
-  .filter-header h2 {
-    font-size: 1.28rem;
+  .tabs {
+    width: 100%;
   }
 
   .tabs button {
-    font-size: 0.76rem;
-    padding: 6px 10px;
-  }
-
-  .filters {
-    margin-bottom: 20px;
+    min-height: 39px;
+    padding: 0.52rem 0.85rem;
+    font-size: 0.78rem;
   }
 
   .filters select,
   .filters input,
   .clear-filters-btn {
-    min-height: 38px;
-    border-radius: 10px;
-    font-size: 0.76rem;
-    padding: 8px 10px;
-  }
-
-  .filter-results {
-    padding: 16px 0;
-    border-radius: 20px;
+    min-height: 43px;
+    border-radius: 12px;
+    font-size: 0.82rem;
   }
 
   .filter-release-scroll {
-    gap: 0.9rem;
-    padding: 0 16px 0.9rem;
-    scroll-padding-left: 16px;
-    scroll-padding-right: 16px;
+    gap: 1rem;
   }
 
   .filter-release-card {
-    flex: 0 0 calc((100vw - 72px) / 2);
-    width: calc((100vw - 72px) / 2);
-    max-width: 160px;
-    padding: 0.75rem;
+    width: 162px;
+    min-width: 162px;
+    height: 258px;
+    padding: 0.7rem;
     border-radius: 15px;
   }
 
   .filter-release-image,
   .filter-skeleton-image {
-    border-radius: 11px;
-    margin-bottom: 0.75rem;
+    height: 137px;
+    min-height: 137px;
+    border-radius: 12px;
   }
 
   .filter-play-btn {
@@ -425,128 +438,57 @@
     font-size: 0.82rem;
   }
 
+  .filter-release-content {
+    padding-top: 0.7rem;
+  }
+
   .filter-release-content h3 {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
   }
 
   .filter-release-content p {
-    font-size: 0.68rem;
+    font-size: 0.73rem;
   }
 
   .song-country {
-    font-size: 0.58rem;
-    padding: 3px 7px;
-  }
-
-  .filter-empty-state {
-    font-size: 0.78rem;
+    font-size: 0.63rem;
   }
 }
 
 @media (max-width: 480px) {
   .filter-section {
-    padding: 18px 10px;
-  }
-
-  .filter-header h2 {
-    font-size: 1.08rem;
-  }
-
-  .tabs {
-    gap: 6px !important;
-  }
-
-  .tabs button {
-    font-size: 0.68rem;
-    padding: 5px 8px;
-  }
-
-  .filter-results {
-    padding: 12px 0;
-    border-radius: 18px;
+    padding: 1.35rem 0.8rem;
   }
 
   .filter-release-scroll {
-    gap: 0.75rem;
-    padding: 0 12px 0.75rem;
-    scroll-padding-left: 12px;
-    scroll-padding-right: 12px;
+    gap: 0.8rem;
   }
 
   .filter-release-card {
-    flex: 0 0 calc((100vw - 56px) / 2);
-    width: calc((100vw - 56px) / 2);
-    max-width: 150px;
+    width: 145px;
+    min-width: 145px;
+    height: 238px;
     padding: 0.62rem;
-    border-radius: 14px;
+  }
+
+  .filter-release-image,
+  .filter-skeleton-image {
+    height: 123px;
+    min-height: 123px;
   }
 
   .filter-release-content h3 {
-    font-size: 0.7rem;
+    font-size: 0.76rem;
   }
 
   .filter-release-content p {
-    font-size: 0.62rem;
+    font-size: 0.68rem;
   }
 
   .filter-play-btn {
-    width: 33px;
-    height: 33px;
-    right: 8px;
-    bottom: 8px;
-    font-size: 0.68rem;
-  }
-
-  .filter-skeleton-line {
-    height: 11px;
-  }
-
-  .filter-skeleton-line.tiny {
-    height: 15px;
-  }
-}
-
-@media (max-width: 390px) {
-  .filter-section {
-    padding: 16px 8px;
-  }
-
-  .filter-header h2 {
-    font-size: 1rem;
-  }
-
-  .tabs button {
-    font-size: 0.62rem;
-    padding: 5px 7px;
-  }
-
-  .filters select,
-  .filters input,
-  .clear-filters-btn {
-    font-size: 0.68rem;
-  }
-
-  .filter-results {
-    padding: 10px 0;
-  }
-
-  .filter-release-scroll {
-    gap: 0.65rem;
-    padding: 0 10px 0.65rem;
-  }
-
-  .filter-release-card {
-    flex: 0 0 calc((100vw - 44px) / 2);
-    width: calc((100vw - 44px) / 2);
-    max-width: 142px;
-    padding: 0.55rem;
-  }
-
-  .filter-release-content h3 {
-    font-size: 0.66rem;
-  }
-
-  .filter-release-content p {
-    font-size: 0.58rem;
+    width: 34px;
+    height: 34px;
+    right: 9px;
+    bottom: 9px;
   }
 }

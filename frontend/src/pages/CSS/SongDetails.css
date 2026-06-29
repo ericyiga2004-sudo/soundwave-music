@@ -410,7 +410,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
   padding: 28svh 28px 34svh;
   scroll-behavior: smooth;
@@ -1701,5 +1701,427 @@ button {
 
   .lyrics-scroll {
     scroll-behavior: auto;
+  }
+}
+
+
+
+/* ==========================
+   STRONG RESPONSIVE PLAYER DOCK FIX
+   Paste at the VERY BOTTOM of SongDetails.css
+========================== */
+
+.player-dock {
+  position: sticky !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  z-index: 30 !important;
+  width: min(100%, var(--sd-max-width)) !important;
+  max-width: var(--sd-max-width) !important;
+  min-height: auto !important;
+  display: block !important;
+  padding: 14px !important;
+  margin: 22px auto 0 !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+}
+
+.player-dock .row {
+  width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.player-dock [class*="col-"] {
+  min-width: 0;
+}
+
+.dock-song {
+  width: 100%;
+  min-width: 0;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.dock-song img {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.dock-song span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.dock-song strong,
+.dock-song small {
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dock-song strong {
+  font-size: 0.9rem;
+}
+
+.dock-song small {
+  font-size: 0.72rem;
+}
+
+.dock-main {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  gap: 10px;
+}
+
+.control-row {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: 42px 42px 56px 42px 42px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button,
+.play-button {
+  border: 0;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+}
+
+.play-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+}
+
+.progress-row {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-row time {
+  width: auto !important;
+  min-width: 0;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.progress-slider {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.dock-actions {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  justify-content: stretch !important;
+}
+
+.dock-actions-buttons {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.volume-control {
+  width: 100%;
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.volume-slider {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* ==========================
+   LAPTOP / TABLET
+========================== */
+
+@media (max-width: 1199px) {
+  .player-dock {
+    padding: 13px !important;
+    border-radius: 26px !important;
+  }
+
+  .dock-actions-buttons {
+    justify-content: center;
+  }
+
+  .volume-control {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 991px) {
+  .player-dock {
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    padding: 12px !important;
+    border-radius: 24px !important;
+  }
+
+  .dock-song {
+    justify-content: flex-start !important;
+  }
+
+  .control-row {
+    grid-template-columns: 40px 40px 54px 40px 40px;
+    gap: 8px;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    font-size: 0.9rem;
+  }
+
+  .play-button {
+    width: 54px;
+    height: 54px;
+    border-radius: 17px;
+  }
+
+  .dock-actions-buttons {
+    justify-content: center;
+  }
+}
+
+/* ==========================
+   PHONE
+========================== */
+
+@media (max-width: 560px) {
+  .song-details {
+    padding-bottom: 10px !important;
+  }
+
+  .player-dock {
+    width: 100% !important;
+    padding: 10px !important;
+    border-radius: 20px !important;
+    margin-top: 14px !important;
+  }
+
+  .dock-song {
+    gap: 9px;
+  }
+
+  .dock-song img {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .dock-song strong {
+    font-size: 0.76rem;
+  }
+
+  .dock-song small {
+    font-size: 0.62rem;
+  }
+
+  .dock-main {
+    gap: 8px;
+  }
+
+  .control-row {
+    grid-template-columns: 35px 35px 48px 35px 35px;
+    gap: 6px;
+  }
+
+  .icon-button {
+    width: 35px;
+    height: 35px;
+    border-radius: 11px;
+    font-size: 0.78rem;
+  }
+
+  .play-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+  }
+
+  .progress-row {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+    gap: 6px;
+  }
+
+  .progress-row time {
+    font-size: 0.58rem;
+  }
+
+  .progress-slider {
+    height: 6px;
+  }
+
+  .dock-actions {
+    gap: 8px;
+  }
+
+  .dock-actions-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(4, 35px);
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .volume-control {
+    grid-template-columns: 35px minmax(0, 1fr);
+    width: min(100%, 260px);
+    margin: 0 auto;
+    gap: 7px;
+  }
+
+  .volume-slider {
+    height: 6px;
+  }
+
+  .progress-slider::-webkit-slider-thumb,
+  .volume-slider::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+  }
+
+  .progress-slider::-moz-range-thumb,
+  .volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ==========================
+   IPHONE 7 / SMALL PHONES
+========================== */
+
+@media (max-width: 390px) {
+  .player-dock {
+    padding: 8px !important;
+    border-radius: 18px !important;
+  }
+
+  .dock-song img {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+  }
+
+  .dock-song strong {
+    font-size: 0.7rem;
+  }
+
+  .dock-song small {
+    font-size: 0.56rem;
+  }
+
+  .control-row {
+    grid-template-columns: 32px 32px 44px 32px 32px;
+    gap: 5px;
+  }
+
+  .icon-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+  }
+
+  .play-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 0.82rem;
+  }
+
+  .progress-row {
+    grid-template-columns: 29px minmax(0, 1fr) 29px;
+    gap: 5px;
+  }
+
+  .progress-row time {
+    font-size: 0.52rem;
+  }
+
+  .dock-actions-buttons {
+    grid-template-columns: repeat(4, 32px);
+    gap: 6px;
+  }
+
+  .volume-control {
+    grid-template-columns: 32px minmax(0, 1fr);
+    width: min(100%, 230px);
+  }
+}
+
+/* ==========================
+   EXTRA SMALL PHONES
+========================== */
+
+@media (max-width: 340px) {
+  .player-dock {
+    padding: 7px !important;
+  }
+
+  .control-row {
+    grid-template-columns: 30px 30px 42px 30px 30px;
+    gap: 4px;
+  }
+
+  .icon-button {
+    width: 30px;
+    height: 30px;
+    font-size: 0.66rem;
+  }
+
+  .play-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .dock-actions-buttons {
+    grid-template-columns: repeat(4, 30px);
+    gap: 5px;
+  }
+
+  .volume-control {
+    grid-template-columns: 30px minmax(0, 1fr);
+    width: min(100%, 205px);
   }
 }

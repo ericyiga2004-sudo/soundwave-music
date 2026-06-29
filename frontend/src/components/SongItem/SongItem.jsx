@@ -10,6 +10,7 @@ const normalizeSongs = (songs = []) => {
 
   return songs.filter((song) => {
     if (!song?._id || seen.has(song._id)) return false;
+
     seen.add(song._id);
     return true;
   });
@@ -33,10 +34,7 @@ const SongItem = ({ song, queue = [] }) => {
   };
 
   return (
-    <div
-      className="song-carder"
-      onClick={handlePlaySong}
-    >
+    <div className="song-carder" onClick={handlePlaySong}>
       <Link
         to={`/song/${song._id}`}
         state={{
@@ -47,7 +45,8 @@ const SongItem = ({ song, queue = [] }) => {
         <div className="card-img-container">
           <img
             src={song.imageUrl || "/fallback-cover.png"}
-            alt={song.title}
+            alt={song.title || "Song cover"}
+            loading="lazy"
           />
 
           <div className="play-overlay">
@@ -56,9 +55,7 @@ const SongItem = ({ song, queue = [] }) => {
         </div>
 
         <div className="card-content">
-          <h4 className="card-title">
-            {song.title}
-          </h4>
+          <h4 className="card-title">{song.title || "Unknown Song"}</h4>
 
           <p className="card-artist">
             {song.artist?.name || "Unknown Artist"}

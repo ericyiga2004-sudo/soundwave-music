@@ -1052,121 +1052,141 @@ const SongDetails = () => {
       </motion.section>
 
       <motion.section
-        className="player-dock glass-card"
-        initial={{ opacity: 0, y: 36 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.42 }}
-        aria-label="Music player controls"
-      >
-        <div className="row g-2 g-md-3 align-items-center w-100 m-0">
-          <div className="col-12 col-md-3 dock-song">
-            <img src={activeSong.imageUrl} alt="" />
-            <span>
-              <strong>{activeSong.title}</strong>
-              <small>{getArtistName(activeSong)}</small>
-            </span>
+  className="player-dock glass-card"
+  initial={{ opacity: 0, y: 36 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.1, duration: 0.42 }}
+  aria-label="Music player controls"
+>
+  <div className="container-fluid p-0">
+    <div className="row g-2 g-md-3 align-items-center">
+      <div className="col-12 col-lg-3">
+        <div className="dock-song">
+          <img src={activeSong.imageUrl} alt="" />
+
+          <span>
+            <strong>{activeSong.title}</strong>
+            <small>{getArtistName(activeSong)}</small>
+          </span>
+        </div>
+      </div>
+
+      <div className="col-12 col-lg-6">
+        <div className="dock-main">
+          <div className="control-row">
+            <motion.button
+              type="button"
+              className={`icon-button ${shuffle ? "active" : ""}`}
+              onClick={handleShuffle}
+              whileTap={{ scale: 0.9 }}
+              aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
+              aria-pressed={Boolean(shuffle)}
+            >
+              <FaRandom />
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className="icon-button"
+              onClick={prevSong}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Previous song"
+            >
+              <FaStepBackward />
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className="play-button"
+              onClick={handlePlayPause}
+              whileHover={{ scale: 1.045 }}
+              whileTap={{ scale: 0.94 }}
+              aria-label={isPlaying ? "Pause song" : "Play song"}
+            >
+              {isPlaying ? <FaPause /> : <FaPlay />}
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className="icon-button"
+              onClick={nextSong}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Next song"
+            >
+              <FaStepForward />
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className={`icon-button ${
+                repeat === "one" ||
+                repeat === "all" ||
+                repeat === true ||
+                repeat === 1
+                  ? "active"
+                  : ""
+              }`}
+              onClick={handleRepeat}
+              whileTap={{ scale: 0.9 }}
+              aria-label={repeatLabel(repeat)}
+              aria-pressed={
+                repeat === "one" ||
+                repeat === "all" ||
+                repeat === true ||
+                repeat === 1
+              }
+            >
+              {renderRepeatIcon()}
+            </motion.button>
           </div>
 
-          <div className="col-12 col-md-6 dock-main">
-            <div className="control-row">
-              <motion.button
-                type="button"
-                className={`icon-button ${shuffle ? "active" : ""}`}
-                onClick={handleShuffle}
-                whileTap={{ scale: 0.9 }}
-                aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
-                aria-pressed={Boolean(shuffle)}
-              >
-                <FaRandom />
-              </motion.button>
+          <div className="progress-row">
+            <time>{formatTime(displayProgress)}</time>
 
-              <motion.button
-                type="button"
-                className="icon-button"
-                onClick={prevSong}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Previous song"
-              >
-                <FaStepBackward />
-              </motion.button>
+            <input
+              className="progress-slider"
+              type="range"
+              min="0"
+              max={totalDuration || 0}
+              step="0.01"
+              value={clamp(Number(displayProgress) || 0, 0, totalDuration || 0)}
+              onChange={handleSeek}
+              aria-label="Song progress"
+              style={{
+                "--progress-percent": `${
+                  totalDuration ? (displayProgress / totalDuration) * 100 : 0
+                }%`,
+              }}
+            />
 
-              <motion.button
-                type="button"
-                className="play-button"
-                onClick={handlePlayPause}
-                whileHover={{ scale: 1.045 }}
-                whileTap={{ scale: 0.94 }}
-                aria-label={isPlaying ? "Pause song" : "Play song"}
-              >
-                {isPlaying ? <FaPause /> : <FaPlay />}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="icon-button"
-                onClick={nextSong}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Next song"
-              >
-                <FaStepForward />
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className={`icon-button ${
-                  repeat === "one" ||
-                  repeat === "all" ||
-                  repeat === true ||
-                  repeat === 1
-                    ? "active"
-                    : ""
-                }`}
-                onClick={handleRepeat}
-                whileTap={{ scale: 0.9 }}
-                aria-label={repeatLabel(repeat)}
-                aria-pressed={
-                  repeat === "one" ||
-                  repeat === "all" ||
-                  repeat === true ||
-                  repeat === 1
-                }
-              >
-                {renderRepeatIcon()}
-              </motion.button>
-            </div>
-
-            <div className="progress-row">
-              <time>{formatTime(displayProgress)}</time>
-              <input
-                className="progress-slider"
-                type="range"
-                min="0"
-                max={totalDuration || 0}
-                step="0.01"
-                value={clamp(Number(displayProgress) || 0, 0, totalDuration || 0)}
-                onChange={handleSeek}
-                aria-label="Song progress"
-                style={{
-                  "--progress-percent": `${
-                    totalDuration ? (displayProgress / totalDuration) * 100 : 0
-                  }%`,
-                }}
-              />
-              <time>{formatTime(totalDuration)}</time>
-            </div>
+            <time>{formatTime(totalDuration)}</time>
           </div>
+        </div>
+      </div>
 
-          <div className="col-12 col-md-3 dock-actions">
+      <div className="col-12 col-lg-3">
+        <div className="dock-actions">
+          <div className="dock-actions-buttons">
             <motion.button
               type="button"
               className={`icon-button favorite-button ${liked ? "liked" : ""}`}
               onClick={handleToggleLike}
-              disabled={likeLoading}
+              disabled={!token || likeLoading}
               whileTap={{ scale: 0.9 }}
               aria-label={liked ? "Unlike song" : "Like song"}
               aria-pressed={liked}
             >
               {liked ? <FaHeart /> : <FaRegHeart />}
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className="icon-button"
+              onClick={openPlaylistModal}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Add to playlist"
+            >
+              <FaPlus />
             </motion.button>
 
             <motion.button
@@ -1179,7 +1199,7 @@ const SongDetails = () => {
               <FaDownload />
             </motion.button>
 
-            <span className="share-wrap">
+            <div className="share-wrap">
               <motion.button
                 type="button"
                 className="icon-button"
@@ -1194,54 +1214,34 @@ const SongDetails = () => {
                 {shareStatus && (
                   <motion.span
                     className="mini-status"
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
                   >
                     {shareStatus}
                   </motion.span>
                 )}
               </AnimatePresence>
-            </span>
-
-            <motion.button
-              type="button"
-              className="icon-button"
-              onClick={openPlaylistModal}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Add song to playlist"
-            >
-              <FaPlus />
-            </motion.button>
-
-            <div className="volume-control">
-              <motion.button
-                type="button"
-                className="icon-button"
-                onClick={handleMute}
-                whileTap={{ scale: 0.9 }}
-                aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
-              >
-                {muted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
-              </motion.button>
-
-              <input
-                className="volume-slider"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={muted ? 0 : volume}
-                onChange={handleVolumeChange}
-                aria-label="Volume"
-                style={{
-                  "--volume-percent": `${(muted ? 0 : volume) * 100}%`,
-                }}
-              />
             </div>
           </div>
+
+          <div className=" d-flex align-items-center justify-content-center mx-auto">
+            <button
+              type="button"
+              className="icon-button"
+              onClick={handleMute}
+              aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
+            >
+              {muted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
+            </button>
+
+            
+          </div>
         </div>
-      </motion.section>
+      </div>
+    </div>
+  </div>
+</motion.section>
 
       <AnimatePresence>
         {playlistModalOpen && (
