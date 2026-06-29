@@ -1,0 +1,227 @@
+.yearly-page {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(255, 54, 116, 0.14), transparent 34%),
+      radial-gradient(circle at top right, rgba(89, 97, 255, 0.18), transparent 32%),
+      #070711;
+    color: #fff;
+  }
+  
+  .yearly-header {
+    max-width: 760px;
+  }
+  
+  .yearly-kicker {
+    display: inline-flex;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    color: #ff4f87;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  
+  .yearly-header h1 {
+    font-size: clamp(2rem, 5vw, 4.2rem);
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    margin-bottom: 12px;
+  }
+  
+  .yearly-header p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.05rem;
+    margin: 0;
+  }
+  
+  .yearly-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+  }
+  
+  .year-block {
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.045);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(14px);
+  }
+  
+  .year-banner {
+    min-height: 230px;
+    border-radius: 22px;
+    padding: 28px;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .year-banner::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 45%;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.45));
+    pointer-events: none;
+  }
+  
+  .year-banner-content {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+  }
+  
+  .year-range {
+    display: inline-flex;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  
+  .year-banner h2 {
+    font-size: clamp(1.75rem, 4vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    margin: 0 0 8px;
+  }
+  
+  .year-banner p {
+    max-width: 520px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  
+  .year-view-btn {
+    position: relative;
+    z-index: 1;
+    border-radius: 999px;
+    padding: 11px 22px;
+    font-weight: 800;
+    border: none;
+    white-space: nowrap;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .year-view-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(255, 255, 255, 0.16);
+  }
+  
+  .year-song-card {
+    height: 100%;
+    padding: 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.075);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.22s ease, background 0.22s ease;
+  }
+  
+  .year-song-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.11);
+  }
+  
+  .year-song-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #15151f;
+  }
+  
+  .year-song-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .year-song-info {
+    padding: 10px 2px 2px;
+  }
+  
+  .year-song-info h3 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .year-song-info p {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.62);
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .year-song-info span {
+    font-size: 0.78rem;
+    color: #ff4f87;
+    font-weight: 800;
+  }
+  
+  .year-loading,
+  .year-empty {
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.72);
+  }
+  
+  @media (max-width: 768px) {
+    .year-block {
+      padding: 10px;
+      border-radius: 22px;
+    }
+  
+    .year-banner {
+      min-height: 260px;
+      padding: 22px;
+      align-items: flex-start;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+  
+    .year-view-btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .yearly-page .container {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+  
+    .year-banner {
+      border-radius: 18px;
+    }
+  
+    .year-song-card {
+      border-radius: 16px;
+      padding: 8px;
+    }
+  
+    .year-song-img-wrap {
+      border-radius: 13px;
+    }
+  }

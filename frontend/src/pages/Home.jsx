@@ -5,6 +5,7 @@ import NewRelease from '../components/NewRelease/NewRelease'
 import PopularArtist from '../components/PopularArtist/PopularArtist'
 import Albums from '../components/Albums/Albums'
 import FilterSongs from '../components/FilterSongs/FilterSongs'
+import Yearly from '../components/Nineteen/Yearly'
 
 const Home = () => {
   return (
@@ -15,6 +16,7 @@ const Home = () => {
         <PopularArtist/>
         <Albums/>
         <FilterSongs/>
+        <Yearly/>
     </div>
   )
 }
