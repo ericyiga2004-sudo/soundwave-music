@@ -45,6 +45,8 @@ const yearSections = [
   },
 ];
 
+const skeletonCards = Array.from({ length: 6 });
+
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
 
@@ -54,6 +56,22 @@ const normalizeSongs = (songs = []) => {
     seen.add(song._id);
     return true;
   });
+};
+
+const YearSongSkeleton = () => {
+  return (
+    <div className="col-6 col-md-4 col-lg-2">
+      <div className="year-song-card year-song-skeleton" aria-hidden="true">
+        <div className="year-song-img-wrap skeleton-img"></div>
+
+        <div className="year-song-info">
+          <div className="skeleton-line skeleton-title"></div>
+          <div className="skeleton-line skeleton-artist"></div>
+          <div className="skeleton-line skeleton-year"></div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Yearly = () => {
@@ -196,7 +214,11 @@ const Yearly = () => {
                 </div>
 
                 {section.loading ? (
-                  <div className="year-loading">Loading songs...</div>
+                  <div className="row g-3 mt-2">
+                    {skeletonCards.map((_, index) => (
+                      <YearSongSkeleton key={`${section.slug}-skeleton-${index}`} />
+                    ))}
+                  </div>
                 ) : section.error ? (
                   <div className="year-empty">{section.error}</div>
                 ) : section.songs.length > 0 ? (

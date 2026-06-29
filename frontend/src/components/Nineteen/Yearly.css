@@ -11,6 +11,65 @@
     max-width: 760px;
   }
 
+  .year-song-skeleton {
+    cursor: default;
+    pointer-events: none;
+  }
+  
+  .skeleton-img,
+  .skeleton-line {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.08) 25%,
+      rgba(255, 255, 255, 0.16) 37%,
+      rgba(255, 255, 255, 0.08) 63%
+    );
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.4s ease infinite;
+  }
+  
+  .skeleton-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+  }
+  
+  .skeleton-line {
+    height: 12px;
+    border-radius: 999px;
+    margin-top: 10px;
+  }
+  
+  .skeleton-title {
+    width: 85%;
+    height: 14px;
+  }
+  
+  .skeleton-artist {
+    width: 65%;
+  }
+  
+  .skeleton-year {
+    width: 45%;
+  }
+  
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 100% 50%;
+    }
+  
+    100% {
+      background-position: 0 50%;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-img,
+    .skeleton-line {
+      animation: none;
+    }
+  }
+
   .year-song-link {
     display: block;
     color: inherit;
