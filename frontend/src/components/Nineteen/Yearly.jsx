@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { FaPlay } from "react-icons/fa";
+import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./Yearly.css";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -43,7 +45,20 @@ const yearSections = [
   },
 ];
 
+const normalizeSongs = (songs = []) => {
+  const seen = new Set();
+
+  return songs.filter((song) => {
+    if (!song?._id || seen.has(song._id)) return false;
+
+    seen.add(song._id);
+    return true;
+  });
+};
+
 const Yearly = () => {
+  const { playSong } = useContext(MusicPlayerContext);
+
   const [sections, setSections] = useState(
     yearSections.map((section) => ({
       ...section,
@@ -131,6 +146,12 @@ const Yearly = () => {
     fetchSections();
   }, []);
 
+  const handlePlaySong = (song, sectionSongs) => {
+    const playlist = normalizeSongs(sectionSongs);
+
+    playSong(song, playlist);
+  };
+
   return (
     <main className="yearly-page">
       <div className="container py-4 py-lg-5">
@@ -144,70 +165,90 @@ const Yearly = () => {
         </div>
 
         <div className="yearly-sections">
-          {sections.map((section) => (
-            <section className="year-block" key={section.slug}>
-              <div
-                className="year-banner"
-                style={{
-                  backgroundImage: `linear-gradient(90deg, rgba(5, 5, 12, 0.92), rgba(5, 5, 12, 0.38)), url(${section.banner})`,
-                }}
-              >
-                <div className="year-banner-content">
-                  <span className="year-range">
-                    {section.fromYear === section.toYear
-                      ? section.fromYear
-                      : `${section.fromYear} - ${section.toYear}`}
-                  </span>
+          {sections.map((section) => {
+            const playlist = normalizeSongs(section.songs);
 
-                  <h2>{section.title}</h2>
-                  <p>{section.subtitle}</p>
+            return (
+              <section className="year-block" key={section.slug}>
+                <div
+                  className="year-banner"
+                  style={{
+                    backgroundImage: `linear-gradient(90deg, rgba(5, 5, 12, 0.92), rgba(5, 5, 12, 0.38)), url(${section.banner})`,
+                  }}
+                >
+                  <div className="year-banner-content">
+                    <span className="year-range">
+                      {section.fromYear === section.toYear
+                        ? section.fromYear
+                        : `${section.fromYear} - ${section.toYear}`}
+                    </span>
+
+                    <h2>{section.title}</h2>
+                    <p>{section.subtitle}</p>
+                  </div>
+
+                  <Link
+                    to={`/yearly/${section.slug}`}
+                    className="btn btn-light year-view-btn"
+                  >
+                    View All
+                  </Link>
                 </div>
 
-                <Link
-                  to={`/yearly/${section.slug}`}
-                  className="btn btn-light year-view-btn"
-                >
-                  View All
-                </Link>
-              </div>
+                {section.loading ? (
+                  <div className="year-loading">Loading songs...</div>
+                ) : section.error ? (
+                  <div className="year-empty">{section.error}</div>
+                ) : section.songs.length > 0 ? (
+                  <div className="row g-3 mt-2">
+                    {section.songs.map((song) => (
+                      <div className="col-6 col-md-4 col-lg-2" key={song._id}>
+                        <div
+                          className="year-song-card"
+                          onClick={() => handlePlaySong(song, playlist)}
+                        >
+                          <Link
+                            to={`/song/${song._id}`}
+                            state={{
+                              playlist,
+                            }}
+                            className="year-song-link text-decoration-none"
+                          >
+                            <div className="year-song-img-wrap">
+                              <img
+                                src={song.imageUrl || "/fallback-cover.png"}
+                                alt={song.title || "Song cover"}
+                                className="year-song-img"
+                                loading="lazy"
+                              />
 
-              {section.loading ? (
-                <div className="year-loading">Loading songs...</div>
-              ) : section.error ? (
-                <div className="year-empty">{section.error}</div>
-              ) : section.songs.length > 0 ? (
-                <div className="row g-3 mt-2">
-                  {section.songs.map((song) => (
-                    <div className="col-6 col-md-4 col-lg-2" key={song._id}>
-                      <div className="year-song-card">
-                        <div className="year-song-img-wrap">
-                          <img
-                            src={song.imageUrl}
-                            alt={song.title}
-                            className="year-song-img"
-                          />
-                        </div>
+                              <div className="year-play-btn">
+                                <FaPlay />
+                              </div>
+                            </div>
 
-                        <div className="year-song-info">
-                          <h3>{song.title}</h3>
-                          <p>
-                            {song.artist?.name ||
-                              song.artist?.artistName ||
-                              "Unknown Artist"}
-                          </p>
-                          <span>{song.releaseYear || "Unknown year"}</span>
+                            <div className="year-song-info">
+                              <h3>{song.title || "Unknown Song"}</h3>
+                              <p>
+                                {song.artist?.name ||
+                                  song.artist?.artistName ||
+                                  "Unknown Artist"}
+                              </p>
+                              <span>{song.releaseYear || "Unknown year"}</span>
+                            </div>
+                          </Link>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="year-empty">
-                  No songs found for this collection yet.
-                </div>
-              )}
-            </section>
-          ))}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="year-empty">
+                    No songs found for this collection yet.
+                  </div>
+                )}
+              </section>
+            );
+          })}
         </div>
       </div>
     </main>
