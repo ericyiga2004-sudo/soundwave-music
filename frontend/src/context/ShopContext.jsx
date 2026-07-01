@@ -8,7 +8,6 @@ const MusicContextProvider = ({ children }) => {
 
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [historySongs, setHistorySongs] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [token, setToken] = useState(localStorage.getItem("token") || "");
 
@@ -28,27 +27,6 @@ const MusicContextProvider = ({ children }) => {
     }
   };
 
-  const fetchHistory = async () => {
-    try {
-      if (!token) {
-        setHistorySongs([]);
-        return;
-      }
-
-      const res = await axios.get(`${backendUrl}/api/history/get`, {
-        headers: {
-          token,
-        },
-      });
-
-      if (res.data?.success) {
-        setHistorySongs(res.data.history || []);
-      }
-    } catch (error) {
-      console.log("Fetch history error:", error);
-    }
-  };
-
   const fetchPlaylists = async () => {
     try {
       if (!token) {
@@ -64,9 +42,12 @@ const MusicContextProvider = ({ children }) => {
 
       if (res.data?.success) {
         setPlaylists(res.data.playlists || []);
+      } else {
+        setPlaylists([]);
       }
     } catch (error) {
       console.log("Fetch playlists error:", error);
+      setPlaylists([]);
     }
   };
 
@@ -83,37 +64,28 @@ const MusicContextProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (token) {
-      fetchHistory();
-      fetchPlaylists();
-    } else {
-      setHistorySongs([]);
-      setPlaylists([]);
-    }
+    fetchPlaylists();
   }, [token]);
 
   const logout = () => {
     setToken("");
     localStorage.removeItem("token");
-    setHistorySongs([]);
     setPlaylists([]);
   };
 
   const value = {
     songs,
     setSongs,
+
     loading,
     setLoading,
 
     token,
     setToken,
+
     logout,
 
     backendUrl,
-
-    historySongs,
-    setHistorySongs,
-    fetchHistory,
 
     playlists,
     setPlaylists,

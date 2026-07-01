@@ -99,7 +99,7 @@ const NewRelease = () => {
           <div
             className="release-card"
             key={song._id}
-            onClick={() => playSong(song, songs)}
+            onClick={() => {playSong(song, songs), window.scrollTo(0,0)}}
           >
             <Link
               className="release-link text-decoration-none"

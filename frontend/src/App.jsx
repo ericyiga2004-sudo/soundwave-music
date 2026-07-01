@@ -13,6 +13,7 @@ import Album from "./pages/Album";
 import Profile from "./pages/Profile";
 import PlayList from "./pages/PlayList";
 import YearsPage from "./pages/YearsPage";
+import Dj from "./pages/Dj";
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/playlist" element={<PlayList />} />
           <Route path="/song/:songId" element={<SongDetails />} />
           <Route path="/album/:albumId" element={<Album />} />
+          <Route path="/dj" element={<Dj />} />
 
           {/* Add this route */}
           <Route path="/yearly/:yearSlug" element={<YearsPage />} />

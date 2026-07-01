@@ -174,7 +174,7 @@ const FilterSongs = () => {
                     className="text-decoration-none"
                     to={`/song/${song._id}`}
                     state={{ playlist: songs }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {e.stopPropagation(); window.scrollTo(0,0)}}
                   >
                     <div className="filter-release-image">
                       <img

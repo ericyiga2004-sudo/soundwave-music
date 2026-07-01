@@ -146,58 +146,68 @@
 
 .popular-artists-grid {
   display: flex;
-  flex-direction: row;
   gap: 1rem;
 
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
 
   padding-right: 1.5rem;
   padding-bottom: 0.85rem;
 
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  scroll-snap-type: x proximity;
+  -ms-overflow-style: none;
+
+
+  scroll-behavior: smooth;
+
+  overscroll-behavior-x: contain;
+
+  touch-action: pan-x;
+
+  scroll-snap-type: none;
 }
 
-.popular-artists-grid::-webkit-scrollbar {
-  display: none;
+.popular-artists-grid::-webkit-scrollbar{
+  display:none;
 }
 
 /* =========================
    ARTIST CARD
 ========================= */
+.popular-artist-card{
+  flex:0 0 158px;
+  width:158px;
+  min-height:248px;
 
-.popular-artist-card {
-  position: relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 
-  width: 158px;
-  min-height: 248px;
-  flex: 0 0 158px;
+  text-align:center;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  padding:1.15rem .75rem .9rem;
 
-  padding: 1.15rem 0.75rem 0.9rem;
-
-  border-radius: 16px;
+  border-radius:16px;
 
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 54%),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.045),
+      transparent 54%
+    ),
     #181818;
 
-  border: 1px solid rgba(255, 255, 255, 0.045);
+  border:1px solid rgba(255,255,255,.045);
 
-  cursor: pointer;
-  scroll-snap-align: start;
+  cursor:pointer;
 
   transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    background .2s,
+    transform .2s,
+    border-color .2s,
+    box-shadow .2s;
+
+ 
 }
 
 .popular-artist-card:hover {

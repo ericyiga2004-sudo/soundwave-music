@@ -17,6 +17,15 @@ const yearSections = [
       "https://images.unsplash.com/photo-1494232410401-ad00d5433cfa?auto=format&fit=crop&w=1600&q=80",
   },
   {
+    title: "2000s Hits",
+    subtitle: "Popular songs from 2000 to 2009",
+    fromYear: 2000,
+    toYear: 2009,
+    slug: "2000s",
+    banner:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80",
+  },
+  {
     title: "2010s Hits",
     subtitle: "Popular songs from 2010 to 2019",
     fromYear: 2010,
@@ -26,22 +35,13 @@ const yearSections = [
       "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1600&q=80",
   },
   {
-    title: "2020 Collection",
-    subtitle: "Songs released in 2020",
+    title: "2020s Hits",
+    subtitle: "Popular songs from 2020 to 2026",
     fromYear: 2020,
-    toYear: 2020,
-    slug: "2020",
+    toYear: 2026,
+    slug: "2020s",
     banner:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1600&q=80",
-  },
-  {
-    title: "2026 Fresh Sounds",
-    subtitle: "New music from 2026",
-    fromYear: 2026,
-    toYear: 2026,
-    slug: "2026",
-    banner:
-      "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1600&q=80",
   },
 ];
 
@@ -107,8 +107,8 @@ const Yearly = () => {
           yearSections.map(async (section) => {
             const url = new URL("/api/songs/filter", API_BASE_URL);
 
-            url.searchParams.set("fromYear", section.fromYear);
-            url.searchParams.set("toYear", section.toYear);
+            url.searchParams.set("fromYear", String(section.fromYear));
+            url.searchParams.set("toYear", String(section.toYear));
             url.searchParams.set("limit", "6");
             url.searchParams.set("sort", "popular");
 
@@ -119,6 +119,12 @@ const Yearly = () => {
             }
 
             const data = await res.json();
+
+            console.log("YEAR SECTION RESPONSE:", section.title, {
+              url: url.toString(),
+              total: data.total,
+              songs: data.songs,
+            });
 
             return {
               ...section,
@@ -164,7 +170,10 @@ const Yearly = () => {
     fetchSections();
   }, []);
 
-  const handlePlaySong = (song, sectionSongs) => {
+  const handlePlaySong = (event, song, sectionSongs) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     const playlist = normalizeSongs(sectionSongs);
 
     playSong(song, playlist);
@@ -206,6 +215,7 @@ const Yearly = () => {
                   </div>
 
                   <Link
+                    onClick={() => window.scrollTo(0, 0)}
                     to={`/yearly/${section.slug}`}
                     className="btn btn-light year-view-btn"
                   >
@@ -216,25 +226,23 @@ const Yearly = () => {
                 {section.loading ? (
                   <div className="row g-3 mt-2">
                     {skeletonCards.map((_, index) => (
-                      <YearSongSkeleton key={`${section.slug}-skeleton-${index}`} />
+                      <YearSongSkeleton
+                        key={`${section.slug}-skeleton-${index}`}
+                      />
                     ))}
                   </div>
-                ) : section.error ? (
-                  <div className="year-empty">{section.error}</div>
                 ) : section.songs.length > 0 ? (
                   <div className="row g-3 mt-2">
                     {section.songs.map((song) => (
                       <div className="col-6 col-md-4 col-lg-2" key={song._id}>
-                        <div
-                          className="year-song-card"
-                          onClick={() => handlePlaySong(song, playlist)}
-                        >
+                        <div className="year-song-card">
                           <Link
                             to={`/song/${song._id}`}
                             state={{
                               playlist,
                             }}
                             className="year-song-link text-decoration-none"
+                            onClick={() => window.scrollTo(0, 0)}
                           >
                             <div className="year-song-img-wrap">
                               <img
@@ -244,9 +252,18 @@ const Yearly = () => {
                                 loading="lazy"
                               />
 
-                              <div className="year-play-btn">
+                              <button
+                                type="button"
+                                className="year-play-btn"
+                                aria-label={`Play ${
+                                  song.title || "this song"
+                                }`}
+                                onClick={(event) =>
+                                  handlePlaySong(event, song, playlist)
+                                }
+                              >
                                 <FaPlay />
-                              </div>
+                              </button>
                             </div>
 
                             <div className="year-song-info">
@@ -263,11 +280,7 @@ const Yearly = () => {
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="year-empty">
-                    No songs found for this collection yet.
-                  </div>
-                )}
+                ) : null}
               </section>
             );
           })}

@@ -90,6 +90,8 @@ const MusicPlayer = () => {
         playlist,
       },
     });
+
+    window.scrollTo(0,0)
   };
 
   const audioElement = (
@@ -203,6 +205,7 @@ const MusicPlayer = () => {
                     src={currentSong?.imageUrl || "/fallback.jpg"}
                     alt={currentSong?.title || "song cover"}
                     className={isPlaying ? "cover playing-cover" : "cover"}
+                    
                   />
                 </button>
 

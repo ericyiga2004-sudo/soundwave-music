@@ -121,7 +121,9 @@ for (const [oldClass, newClass] of sortedEntries) {
     "g"
   );
 
-  css = css.replace(selectorRegex, "." + newClass);
+  css = css.re
+  
+  place(selectorRegex, "." + newClass);
 }
 
 fs.writeFileSync(cssPath, css, "utf8");

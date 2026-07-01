@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import {
   FaMusic,
@@ -14,15 +14,13 @@ import { MusicPlayerContext } from "../context/MainPlayerContext";
 import SongItem from "../components/SongItem/SongItem";
 
 const Account = () => {
-  const {
-    token,
-    setToken,
-    logout,
-    backendUrl,
-    historySongs,
-  } = useContext(MusicContext);
+  const { token, setToken, logout, backendUrl } =
+    useContext(MusicContext);
 
   const { playSong } = useContext(MusicPlayerContext);
+
+  const [historySongs, setHistorySongs] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
 
   const [mode, setMode] = useState("login");
   const [username, setUsername] = useState("");
@@ -31,6 +29,44 @@ const Account = () => {
 
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!token) {
+        setHistorySongs([]);
+        setHistoryLoading(false);
+        return;
+      }
+
+      try {
+        setHistoryLoading(true);
+
+        const res = await axios.get(
+          `${backendUrl}/api/history/get`,
+          {
+            headers: {
+              token,
+            },
+          }
+        );
+
+        console.log("History Response:", res.data);
+
+        if (res.data.success) {
+          setHistorySongs(res.data.history || []);
+        } else {
+          setHistorySongs([]);
+        }
+      } catch (error) {
+        console.error("Fetch history error:", error);
+        setHistorySongs([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [backendUrl, token]);
+
   const submitHandler = async (e) => {
     e.preventDefault();
 
@@ -38,7 +74,9 @@ const Account = () => {
       setLoading(true);
 
       const endpoint =
-        mode === "login" ? "/api/user/login" : "/api/user/register";
+        mode === "login"
+          ? "/api/user/login"
+          : "/api/user/register";
 
       const payload =
         mode === "login"
@@ -52,20 +90,22 @@ const Account = () => {
               password,
             };
 
-      const res = await axios.post(`${backendUrl}${endpoint}`, payload);
+      const res = await axios.post(
+        `${backendUrl}${endpoint}`,
+        payload
+      );
 
       if (res.data.success) {
         setToken(res.data.token);
 
+        setUsername("");
         setEmail("");
         setPassword("");
-        setUsername("");
       } else {
         alert(res.data.message);
       }
     } catch (error) {
       console.log(error);
-
       alert(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -76,15 +116,15 @@ const Account = () => {
     if (!Array.isArray(historySongs)) return [];
 
     return historySongs
-      .map((historyItem) => historyItem?.song)
+      .map((item) => item?.song)
       .filter(Boolean);
   };
 
   const handlePlayHistorySong = (song) => {
     if (!song) return;
 
-    const historyQueue = buildHistoryQueue();
-    playSong?.(song, historyQueue);
+    playSong(song, buildHistoryQueue());
+    window.scrollTo(0, 0);
   };
 
   if (token) {
@@ -104,7 +144,10 @@ const Account = () => {
             </div>
 
             <div className="col-12 col-md-auto text-center text-md-end">
-              <button className="logout-btn" onClick={logout}>
+              <button
+                className="logout-btn"
+                onClick={logout}
+              >
                 Logout
               </button>
             </div>
@@ -122,7 +165,12 @@ const Account = () => {
               </div>
             </div>
 
-            {historySongs && historySongs.length > 0 ? (
+            {historyLoading ? (
+              <div className="empty-history">
+                <FaMusic />
+                <p>Loading listening history...</p>
+              </div>
+            ) : historySongs.length > 0 ? (
               <div className="history-grid row g-3 g-md-4">
                 {historySongs.map((item) => {
                   const song = item.song;
@@ -132,8 +180,13 @@ const Account = () => {
                   return (
                     <div
                       className="history-song-card col-6 col-sm-4 col-md-3 col-lg-2"
-                      key={item._id || `${song._id}-${item.playedAt}`}
-                      onClick={() => handlePlayHistorySong(song)}
+                      key={
+                        item._id ||
+                        `${song._id}-${item.playedAt}`
+                      }
+                      onClick={() =>
+                        handlePlayHistorySong(song)
+                      }
                     >
                       <SongItem song={song} />
                     </div>
@@ -143,7 +196,10 @@ const Account = () => {
             ) : (
               <div className="empty-history">
                 <FaMusic />
-                <p>No listening history yet. Play a song to see it here.</p>
+                <p>
+                  No listening history yet. Play a song to
+                  see it here.
+                </p>
               </div>
             )}
           </section>
@@ -168,8 +224,9 @@ const Account = () => {
             </h1>
 
             <p>
-              Create playlists, save favorites, access listening history, and
-              enjoy your music anywhere.
+              Create playlists, save favorites, access
+              listening history, and enjoy your music
+              anywhere.
             </p>
           </div>
 
@@ -177,7 +234,9 @@ const Account = () => {
             <div className="auth-switch">
               <button
                 type="button"
-                className={mode === "login" ? "active" : ""}
+                className={
+                  mode === "login" ? "active" : ""
+                }
                 onClick={() => setMode("login")}
               >
                 Login
@@ -185,7 +244,9 @@ const Account = () => {
 
               <button
                 type="button"
-                className={mode === "register" ? "active" : ""}
+                className={
+                  mode === "register" ? "active" : ""
+                }
                 onClick={() => setMode("register")}
               >
                 Sign Up
@@ -201,7 +262,9 @@ const Account = () => {
                     type="text"
                     placeholder="Username"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) =>
+                      setUsername(e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -214,7 +277,9 @@ const Account = () => {
                   type="email"
                   placeholder="Email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
                   required
                 />
               </div>
@@ -226,12 +291,18 @@ const Account = () => {
                   type="password"
                   placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
                   required
                 />
               </div>
 
-              <button type="submit" className="submit-btn" disabled={loading}>
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={loading}
+              >
                 {loading
                   ? "Please wait..."
                   : mode === "login"

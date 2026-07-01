@@ -1,0 +1,670 @@
+/* ===========================
+   LIBRARY PAGE
+=========================== */
+
+.library-page {
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(180deg, #181818 0%, #101010 100%);
+    color: #fff;
+  }
+  
+  /* ===========================
+     HEADER
+  =========================== */
+  
+  .library-header {
+    margin-bottom: 2rem;
+  }
+  
+  .library-header h1 {
+    font-size: 2.3rem;
+    font-weight: 800;
+    margin-bottom: .3rem;
+  }
+  
+  .library-header p {
+    color: #a7a7a7;
+    margin: 0;
+    font-size: .95rem;
+  }
+  
+  .library-create-btn {
+    border: none;
+    outline: none;
+    background: #1db954;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: .8rem 1.5rem;
+  
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+  
+    transition: .25s;
+  }
+  
+  .library-create-btn:hover {
+    background: #1ed760;
+    transform: scale(1.03);
+  }
+  
+  /* ===========================
+     SEARCH
+  =========================== */
+  
+  .library-search {
+    height: 52px;
+    background: #242424;
+    border-radius: 999px;
+  
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  
+    padding: 0 1.2rem;
+  
+    margin-bottom: 1.5rem;
+  }
+  
+  .library-search svg {
+    color: #b3b3b3;
+  }
+  
+  .library-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: white;
+    font-size: .95rem;
+  }
+  
+  .library-search input::placeholder {
+    color: #8c8c8c;
+  }
+  
+  /* ===========================
+     FILTER BUTTONS
+  =========================== */
+  
+  .library-categories {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+  
+    margin-bottom: 2rem;
+  }
+  
+  .library-categories button {
+    border: none;
+    background: #282828;
+    color: white;
+  
+    padding: .65rem 1.25rem;
+  
+    border-radius: 999px;
+  
+    transition: .25s;
+  
+    font-weight: 600;
+  }
+  
+  .library-categories button:hover {
+    background: #383838;
+  }
+  
+  .library-categories button.active {
+    background: #1db954;
+  }
+  
+  /* ===========================
+     STATS
+  =========================== */
+  
+  .library-stat-card {
+    background: #181818;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.05);
+  
+    padding: 1.5rem;
+  
+    transition: .3s;
+  
+    position: relative;
+  
+    overflow: hidden;
+  
+    height: 100%;
+  }
+  
+  .library-stat-card:hover {
+    transform: translateY(-6px);
+    background: #242424;
+  }
+  
+  .library-stat-card svg {
+    font-size: 2rem;
+    color: #1db954;
+    margin-bottom: 1rem;
+  }
+  
+  .library-stat-card h4 {
+    margin-bottom: .4rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  
+  .library-stat-card span {
+    color: #b3b3b3;
+    font-size: .9rem;
+  }
+  
+  .dj-card {
+    background: linear-gradient(
+        135deg,
+        #1db954,
+        #169c46
+    );
+  }
+  
+  .dj-card svg {
+    color: white;
+  }
+  
+  .dj-card h4,
+  .dj-card span {
+    color: white;
+  }
+  
+  .dj-card .arrow {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 1.2rem;
+  }
+  
+  /* ===========================
+     SECTIONS
+  =========================== */
+  
+  .library-section {
+    margin-top: 3rem;
+  }
+  
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  
+    font-size: 1.3rem;
+    font-weight: 700;
+  
+    margin-bottom: 1rem;
+  }
+  
+  .section-title svg {
+    color: #1db954;
+  }
+  
+  .empty-box {
+    background: #181818;
+  
+    border: 1px solid rgba(255,255,255,.05);
+  
+    border-radius: 18px;
+  
+    min-height: 170px;
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+    color: #9d9d9d;
+    font-size: .95rem;
+  
+    transition: .3s;
+  }
+  
+  .empty-box:hover {
+    background: #202020;
+  }
+  
+  /* ===========================
+     DJ BANNER
+  =========================== */
+  
+  .dj-banner {
+    margin-top: 4rem;
+  
+    background: linear-gradient(
+        135deg,
+        #1db954,
+        #0b6d2f
+    );
+  
+    border-radius: 24px;
+  
+    padding: 2rem;
+  
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+  
+    flex-wrap: wrap;
+  }
+  
+  .dj-banner h2 {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  
+    margin-bottom: .8rem;
+  
+    font-size: 2rem;
+    font-weight: 800;
+  }
+  
+  .dj-banner p {
+    margin: 0;
+    color: rgba(255,255,255,.9);
+  
+    max-width: 550px;
+  }
+  
+  .dj-banner button {
+    border: none;
+  
+    background: white;
+  
+    color: black;
+  
+    font-weight: 700;
+  
+    border-radius: 999px;
+  
+    padding: .95rem 1.7rem;
+  
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  
+    transition: .3s;
+  }
+  
+  .dj-banner button:hover {
+    transform: scale(1.05);
+  }
+  
+  /* ===========================
+     SCROLLBAR
+  =========================== */
+  
+  .library-page::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .library-page::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 20px;
+  }
+  
+  .library-page::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  /* ===========================
+     RESPONSIVE
+  =========================== */
+  
+  @media (max-width:992px){
+  
+  .library-header{
+  gap:1rem;
+  }
+  
+  .dj-banner{
+  text-align:center;
+  justify-content:center;
+  }
+  
+  .dj-banner h2{
+  justify-content:center;
+  }
+  
+  }
+  
+  @media (max-width:768px){
+  
+  .library-page{
+  padding:1.25rem;
+  }
+  
+  .library-header h1{
+  font-size:1.9rem;
+  }
+  
+  .library-search{
+  height:48px;
+  }
+  
+  .library-stat-card{
+  padding:1.25rem;
+  }
+  
+  .section-title{
+  font-size:1.1rem;
+  }
+  
+  .dj-banner{
+  padding:1.5rem;
+  }
+  
+  .dj-banner h2{
+  font-size:1.5rem;
+  }
+  
+  }
+  
+  @media (max-width:576px){
+  
+  .library-create-btn{
+  width:100%;
+  justify-content:center;
+  }
+  
+  .library-search{
+  padding:0 1rem;
+  }
+  
+  .library-categories{
+  gap:.5rem;
+  }
+  
+  .library-categories button{
+  font-size:.8rem;
+  padding:.55rem .9rem;
+  }
+  
+  .dj-banner button{
+  width:100%;
+  justify-content:center;
+  }
+  
+  }
+
+  .library-small-label {
+    display: inline-block;
+  
+    margin-bottom: 0.4rem;
+  
+    color: #1db954;
+  
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  
+  .library-click-card {
+    width: 100%;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .library-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  
+  .library-song {
+    width: 100%;
+    min-height: 78px;
+  
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  
+    padding: 0.75rem 1rem;
+  
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.055);
+  
+    background:
+      linear-gradient(
+        90deg,
+        rgba(255,255,255,0.035),
+        transparent
+      ),
+      #181818;
+  
+    color: #ffffff;
+    text-decoration: none;
+  
+    cursor: pointer;
+  
+    transition:
+      background 0.25s ease,
+      transform 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  
+  .library-song:hover {
+    background: #242424;
+    transform: translateY(-2px);
+  
+    border-color: rgba(29,185,84,0.16);
+  
+    box-shadow:
+      0 14px 32px rgba(0,0,0,0.28);
+  }
+  
+  .library-song img {
+    width: 58px;
+    height: 58px;
+  
+    flex-shrink: 0;
+  
+    border-radius: 12px;
+  
+    object-fit: cover;
+    object-position: center;
+  
+    background: #282828;
+  
+    box-shadow:
+      0 8px 18px rgba(0,0,0,0.3);
+  }
+  
+  .library-song-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .library-song-info h5 {
+    margin: 0;
+  
+    color: #ffffff;
+  
+    font-size: 0.96rem;
+    font-weight: 800;
+    line-height: 1.2;
+  
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .library-song-info p {
+    margin: 0.32rem 0 0;
+  
+    color: #b3b3b3;
+  
+    font-size: 0.82rem;
+    font-weight: 500;
+  
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .library-song-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.42rem;
+  
+    color: #9d9d9d;
+  
+    font-size: 0.76rem;
+    font-weight: 800;
+  
+    white-space: nowrap;
+  }
+  
+  .library-song-meta svg {
+    color: #1db954;
+    font-size: 0.78rem;
+  }
+  
+  .library-song-meta.liked svg {
+    color: #ff4f8b;
+  }
+  
+  .library-play-btn {
+    width: 40px;
+    height: 40px;
+  
+    flex-shrink: 0;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    border: none;
+    border-radius: 50%;
+  
+    background: #1db954;
+    color: #000000;
+  
+    opacity: 0;
+    transform: scale(0.92);
+  
+    cursor: pointer;
+  
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      background 0.25s ease;
+  }
+  
+  .library-song:hover .library-play-btn {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .library-play-btn:hover {
+    background: #1ed760;
+    transform: scale(1.08);
+  }
+  
+  .library-play-btn svg {
+    margin-left: 2px;
+    font-size: 0.86rem;
+  }
+  
+  .playlist-link {
+    cursor: pointer;
+  }
+  
+  .library-row-arrow {
+    color: #b3b3b3;
+    font-size: 0.9rem;
+  }
+  
+  .library-error {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+  
+    border-radius: 14px;
+  
+    background: rgba(255,80,80,0.12);
+    color: #ffb3b3;
+  
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  
+  .library-login-box {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+  
+    border-radius: 18px;
+  
+    background:
+      linear-gradient(
+        135deg,
+        rgba(29,185,84,0.22),
+        rgba(255,255,255,0.04)
+      );
+  
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  
+  .library-login-box h3 {
+    margin: 0 0 0.35rem;
+  
+    color: #ffffff;
+  
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+  
+  .library-login-box p {
+    margin: 0;
+  
+    color: #b3b3b3;
+  
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 768px) {
+    .library-song {
+      padding: 0.7rem;
+    }
+  
+    .library-song img {
+      width: 52px;
+      height: 52px;
+    }
+  
+    .library-song-meta {
+      display: none;
+    }
+  
+    .library-play-btn {
+      opacity: 1;
+      transform: scale(1);
+  
+      width: 36px;
+      height: 36px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .library-song {
+      gap: 0.75rem;
+    }
+  
+    .library-song-info h5 {
+      font-size: 0.88rem;
+    }
+  
+    .library-song-info p {
+      font-size: 0.76rem;
+    }
+  }

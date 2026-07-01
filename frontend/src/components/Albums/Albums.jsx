@@ -93,7 +93,7 @@ const Albums = () => {
                   {/* VIEW BUTTON → NAVIGATE */}
                   <button
                     className="secondary"
-                    onClick={() => navigate(`/album/${album._id}`)}
+                    onClick={() => {navigate(`/album/${album._id}`); window.scrollTo(0,0)}}
                   >
                     View
                   </button>
