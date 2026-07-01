@@ -27,6 +27,9 @@ import React, {
     FaVolumeUp,
   } from "react-icons/fa";
   
+  import { Howl, Howler } from "howler";
+  import Tuna from "tunajs";
+  
   import { MusicContext } from "../context/ShopContext";
   
   import "./CSS/Dj.css";
@@ -57,12 +60,19 @@ import React, {
   
   const loopSizes = ["1/2", "1", "2", "4"];
   
+  const clamp = (value, min, max) => {
+    return Math.min(max, Math.max(min, Number(value)));
+  };
+  
   const Dj = () => {
     const { songs } = useContext(MusicContext);
   
     const deckARef = useRef(null);
     const deckBRef = useRef(null);
+  
     const audioContextRef = useRef(null);
+    const tunaRef = useRef(null);
+    const howlerSamplesRef = useRef({});
   
     const [deckA, setDeckA] = useState(null);
     const [deckB, setDeckB] = useState(null);
@@ -115,7 +125,7 @@ import React, {
         song?.audio ||
         song?.fileUrl ||
         song?.url ||
-        ""
+        null
       );
     };
   
@@ -128,11 +138,7 @@ import React, {
   
       if (typeof song.artist === "string") return song.artist;
   
-      return (
-        song.artist.name ||
-        song.artist.artistName ||
-        "Unknown Artist"
-      );
+      return song.artist.name || song.artist.artistName || "Unknown Artist";
     };
   
     const filteredSongs = useMemo(() => {
@@ -146,71 +152,166 @@ import React, {
       });
     }, [songs, searchTerm]);
   
+    const getAudioContext = () => {
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
+  
+      if (!audioContextRef.current && AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
+  
+      return audioContextRef.current;
+    };
+  
     const unlockAudio = async () => {
       try {
-        if (!audioContextRef.current) {
-          audioContextRef.current = new window.AudioContext();
+        Howler.autoUnlock = true;
+  
+        const ctx = getAudioContext();
+  
+        if (ctx && ctx.state === "suspended") {
+          await ctx.resume();
         }
   
-        if (audioContextRef.current.state === "suspended") {
-          await audioContextRef.current.resume();
+        if (Howler.ctx && Howler.ctx.state === "suspended") {
+          await Howler.ctx.resume();
+        }
+  
+        if (ctx && !tunaRef.current) {
+          try {
+            tunaRef.current = new Tuna(ctx);
+          } catch (error) {
+            console.log("Tuna init skipped:", error);
+          }
         }
       } catch (error) {
         console.log("Audio unlock error:", error);
       }
     };
   
-    const getAudioContext = () => {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new window.AudioContext();
-      }
-  
-      return audioContextRef.current;
+    const getDeckAudioElement = (side) => {
+      return side === "A" ? deckARef.current : deckBRef.current;
     };
   
-    useEffect(() => {
-      const leftPower = (100 - crossfader) / 100;
-      const rightPower = crossfader / 100;
+    const getDeckFinalVolume = ({
+      side,
+      volume,
+      gain,
+      low,
+      mid,
+      high,
+    }) => {
+      const fadePosition = clamp(crossfader, 0, 100) / 100;
   
+      const fadePower =
+        side === "A"
+          ? Math.cos(fadePosition * (Math.PI / 2))
+          : Math.sin(fadePosition * (Math.PI / 2));
+  
+      const volumeAmount = clamp(volume, 0, 100) / 100;
+  
+      const gainAmount = clamp(gain, 0, 100) / 50;
+  
+      const eqMovement =
+        (Number(low) - 50 + Number(mid) - 50 + Number(high) - 50) / 500;
+  
+      const eqTrim = clamp(1 + eqMovement, 0.65, 1.25);
+  
+      return clamp(volumeAmount * gainAmount * fadePower * eqTrim, 0, 1);
+    };
+  
+    const applyDeckControls = () => {
       if (deckARef.current) {
-        deckARef.current.volume = (volumeA / 100) * leftPower;
-      }
+        deckARef.current.volume = getDeckFinalVolume({
+          side: "A",
+          volume: volumeA,
+          gain: gainA,
+          low: lowA,
+          mid: midA,
+          high: highA,
+        });
   
-      if (deckBRef.current) {
-        deckBRef.current.volume = (volumeB / 100) * rightPower;
-      }
-    }, [volumeA, volumeB, crossfader]);
-  
-    useEffect(() => {
-      if (deckARef.current) {
         deckARef.current.playbackRate = Math.max(0.5, 1 + pitchA / 100);
       }
   
       if (deckBRef.current) {
+        deckBRef.current.volume = getDeckFinalVolume({
+          side: "B",
+          volume: volumeB,
+          gain: gainB,
+          low: lowB,
+          mid: midB,
+          high: highB,
+        });
+  
         deckBRef.current.playbackRate = Math.max(0.5, 1 + pitchB / 100);
       }
-    }, [pitchA, pitchB]);
+    };
+  
+    useEffect(() => {
+      applyDeckControls();
+    }, [
+      volumeA,
+      volumeB,
+      gainA,
+      gainB,
+      lowA,
+      lowB,
+      midA,
+      midB,
+      highA,
+      highB,
+      crossfader,
+      pitchA,
+      pitchB,
+    ]);
+  
+    useEffect(() => {
+      return () => {
+        Object.values(howlerSamplesRef.current).forEach((sound) => {
+          try {
+            sound.unload();
+          } catch (error) {
+            console.log("Howler cleanup error:", error);
+          }
+        });
+      };
+    }, []);
   
     const loadToDeck = async (song, deck) => {
       await unlockAudio();
   
       if (deck === "A") {
+        if (deckARef.current) {
+          deckARef.current.pause();
+        }
+  
         setDeckA(song);
         setPlayingA(false);
         setProgressA(0);
   
         setTimeout(() => {
-          deckARef.current?.load();
+          if (deckARef.current) {
+            deckARef.current.load();
+            applyDeckControls();
+          }
         }, 50);
       }
   
       if (deck === "B") {
+        if (deckBRef.current) {
+          deckBRef.current.pause();
+        }
+  
         setDeckB(song);
         setPlayingB(false);
         setProgressB(0);
   
         setTimeout(() => {
-          deckBRef.current?.load();
+          if (deckBRef.current) {
+            deckBRef.current.load();
+            applyDeckControls();
+          }
         }, 50);
       }
     };
@@ -221,24 +322,36 @@ import React, {
       if (deck === "A") {
         if (!deckA || !deckARef.current) return;
   
+        applyDeckControls();
+  
         if (playingA) {
           deckARef.current.pause();
           setPlayingA(false);
         } else {
-          await deckARef.current.play();
-          setPlayingA(true);
+          try {
+            await deckARef.current.play();
+            setPlayingA(true);
+          } catch (error) {
+            console.log("Deck A play error:", error);
+          }
         }
       }
   
       if (deck === "B") {
         if (!deckB || !deckBRef.current) return;
   
+        applyDeckControls();
+  
         if (playingB) {
           deckBRef.current.pause();
           setPlayingB(false);
         } else {
-          await deckBRef.current.play();
-          setPlayingB(true);
+          try {
+            await deckBRef.current.play();
+            setPlayingB(true);
+          } catch (error) {
+            console.log("Deck B play error:", error);
+          }
         }
       }
     };
@@ -272,7 +385,7 @@ import React, {
     };
   
     const jumpDeck = (deck, seconds) => {
-      const audio = deck === "A" ? deckARef.current : deckBRef.current;
+      const audio = getDeckAudioElement(deck);
   
       if (!audio) return;
   
@@ -280,7 +393,7 @@ import React, {
     };
   
     const handleTimeUpdate = (deck) => {
-      const audio = deck === "A" ? deckARef.current : deckBRef.current;
+      const audio = getDeckAudioElement(deck);
   
       if (!audio || !audio.duration) return;
   
@@ -294,7 +407,7 @@ import React, {
     };
   
     const seekDeck = (deck, value) => {
-      const audio = deck === "A" ? deckARef.current : deckBRef.current;
+      const audio = getDeckAudioElement(deck);
   
       if (!audio || !audio.duration) return;
   
@@ -313,15 +426,19 @@ import React, {
       type = "sine",
       startFrequency,
       endFrequency,
+      volume = 0.22,
     }) => {
       await unlockAudio();
   
       const ctx = getAudioContext();
   
+      if (!ctx) return;
+  
       const oscillator = ctx.createOscillator();
       const gain = ctx.createGain();
   
       oscillator.type = type;
+  
       oscillator.frequency.setValueAtTime(
         startFrequency || frequency,
         ctx.currentTime
@@ -329,12 +446,12 @@ import React, {
   
       if (endFrequency) {
         oscillator.frequency.exponentialRampToValueAtTime(
-          endFrequency,
+          Math.max(1, endFrequency),
           ctx.currentTime + duration
         );
       }
   
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
   
       oscillator.connect(gain);
@@ -344,10 +461,12 @@ import React, {
       oscillator.stop(ctx.currentTime + duration);
     };
   
-    const playNoise = async (duration = 0.25) => {
+    const playNoise = async (duration = 0.25, volume = 0.18) => {
       await unlockAudio();
   
       const ctx = getAudioContext();
+  
+      if (!ctx) return;
   
       const bufferSize = ctx.sampleRate * duration;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -359,15 +478,48 @@ import React, {
   
       const noise = ctx.createBufferSource();
       const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
   
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      filter.type = "bandpass";
+      filter.frequency.value = 900;
+      filter.Q.value = 0.8;
+  
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
   
       noise.buffer = buffer;
-      noise.connect(gain);
+      noise.connect(filter);
+      filter.connect(gain);
       gain.connect(ctx.destination);
   
       noise.start();
+      noise.stop(ctx.currentTime + duration);
+    };
+  
+    const playHowlerSample = async (sampleKey, audioUrl, volume = 0.9) => {
+      await unlockAudio();
+  
+      if (!audioUrl) return false;
+  
+      if (!howlerSamplesRef.current[sampleKey]) {
+        howlerSamplesRef.current[sampleKey] = new Howl({
+          src: [audioUrl],
+          volume,
+          html5: true,
+          preload: true,
+          onloaderror: (_, error) => {
+            console.log("Howler sample load error:", error);
+          },
+          onplayerror: (_, error) => {
+            console.log("Howler sample play error:", error);
+          },
+        });
+      }
+  
+      howlerSamplesRef.current[sampleKey].volume(volume);
+      howlerSamplesRef.current[sampleKey].play();
+  
+      return true;
     };
   
     const triggerPad = async (pad) => {
@@ -380,10 +532,9 @@ import React, {
       }, 180);
   
       if (pad.audioUrl) {
-        const sample = new Audio(pad.audioUrl);
-        sample.volume = 0.9;
-        sample.play();
-        return;
+        const played = await playHowlerSample(pad.id, pad.audioUrl, 0.9);
+  
+        if (played) return;
       }
   
       if (pad.type === "horn") {
@@ -405,9 +556,9 @@ import React, {
       }
   
       if (pad.type === "scratch") {
-        playNoise(0.08);
-        setTimeout(() => playNoise(0.08), 90);
-        setTimeout(() => playNoise(0.08), 180);
+        playNoise(0.08, 0.2);
+        setTimeout(() => playNoise(0.08, 0.2), 90);
+        setTimeout(() => playNoise(0.08, 0.2), 180);
       }
   
       if (pad.type === "laser") {
@@ -425,11 +576,12 @@ import React, {
           endFrequency: 45,
           duration: 0.6,
           type: "sine",
+          volume: 0.32,
         });
       }
   
       if (pad.type === "crowd") {
-        playNoise(0.6);
+        playNoise(0.6, 0.16);
       }
   
       if (pad.type === "rewind") {
@@ -494,6 +646,7 @@ import React, {
           frequency: 500,
           duration: 0.12,
           type: "triangle",
+          volume: 0.12,
         });
   
         setTimeout(() => {
@@ -501,12 +654,13 @@ import React, {
             frequency: 420,
             duration: 0.12,
             type: "triangle",
+            volume: 0.08,
           });
         }, 170);
       }
   
       if (fxId === "reverb") {
-        playNoise(0.35);
+        playNoise(0.35, 0.08);
       }
   
       if (fxId === "filter") {
@@ -515,6 +669,7 @@ import React, {
           endFrequency: 1100,
           duration: 0.45,
           type: "sawtooth",
+          volume: 0.1,
         });
       }
   
@@ -524,28 +679,63 @@ import React, {
           endFrequency: 300,
           duration: 0.35,
           type: "square",
+          volume: 0.1,
         });
       }
   
       if (fxId === "brake") {
+        ["A", "B"].forEach((side) => {
+          const audio = getDeckAudioElement(side);
+  
+          if (!audio || audio.paused) return;
+  
+          const oldRate = audio.playbackRate;
+          audio.playbackRate = Math.max(0.35, oldRate * 0.45);
+  
+          setTimeout(() => {
+            audio.playbackRate = oldRate;
+          }, 500);
+        });
+  
         playTone({
           startFrequency: 600,
           endFrequency: 60,
           duration: 0.65,
           type: "triangle",
+          volume: 0.12,
         });
       }
   
       if (fxId === "roll") {
-        playNoise(0.08);
-        setTimeout(() => playNoise(0.08), 110);
-        setTimeout(() => playNoise(0.08), 220);
-        setTimeout(() => playNoise(0.08), 330);
+        ["A", "B"].forEach((side) => {
+          const audio = getDeckAudioElement(side);
+  
+          if (!audio || audio.paused) return;
+  
+          const rollStart = audio.currentTime;
+  
+          setTimeout(() => {
+            if (!audio.paused) audio.currentTime = rollStart;
+          }, 110);
+  
+          setTimeout(() => {
+            if (!audio.paused) audio.currentTime = rollStart;
+          }, 220);
+  
+          setTimeout(() => {
+            if (!audio.paused) audio.currentTime = rollStart;
+          }, 330);
+        });
+  
+        playNoise(0.08, 0.1);
+        setTimeout(() => playNoise(0.08, 0.1), 110);
+        setTimeout(() => playNoise(0.08, 0.1), 220);
+        setTimeout(() => playNoise(0.08, 0.1), 330);
       }
   
       setTimeout(() => {
         setActiveFx("");
-      }, 260);
+      }, 360);
     };
   
     const triggerLoop = async (size) => {
@@ -553,10 +743,30 @@ import React, {
   
       setActiveLoop(size);
   
+      const parsedSize = size === "1/2" ? 0.5 : Number(size);
+      const frequency = 260 + parsedSize * 60;
+  
       playTone({
-        frequency: 260 + Number(size.replace("/", "")) * 30,
+        frequency,
         duration: 0.15,
         type: "square",
+        volume: 0.12,
+      });
+  
+      ["A", "B"].forEach((side) => {
+        const audio = getDeckAudioElement(side);
+  
+        if (!audio || audio.paused) return;
+  
+        const loopStart = audio.currentTime;
+        const beatLength = 60 / 128;
+        const loopLength = beatLength * parsedSize;
+  
+        setTimeout(() => {
+          if (!audio.paused) {
+            audio.currentTime = loopStart;
+          }
+        }, loopLength * 1000);
       });
   
       setTimeout(() => {
@@ -664,6 +874,7 @@ import React, {
       setHigh,
     }) => {
       const label = side === "A" ? "DECK A" : "DECK B";
+      const deckAudio = deck ? getSongAudio(deck) : null;
   
       return (
         <div className="dj-deck-pro">
@@ -684,20 +895,24 @@ import React, {
             </div>
           </div>
   
-          <audio
-            ref={audioRef}
-            src={deck ? getSongAudio(deck) : ""}
-            playsInline
-            preload="metadata"
-            onTimeUpdate={() => handleTimeUpdate(side)}
-            onEnded={() => {
-              if (side === "A") {
-                setPlayingA(false);
-              } else {
-                setPlayingB(false);
-              }
-            }}
-          />
+          {deckAudio ? (
+            <audio
+              ref={audioRef}
+              src={deckAudio}
+              playsInline
+              preload="metadata"
+              onLoadedMetadata={applyDeckControls}
+              onCanPlay={applyDeckControls}
+              onTimeUpdate={() => handleTimeUpdate(side)}
+              onEnded={() => {
+                if (side === "A") {
+                  setPlayingA(false);
+                } else {
+                  setPlayingB(false);
+                }
+              }}
+            />
+          ) : null}
   
           <div className="deck-mobile-vinyl d-md-none">
             <div className={playing ? "vinyl-pro spinning" : "vinyl-pro"}>
@@ -860,6 +1075,7 @@ import React, {
                       frequency: 300 + cue * 90,
                       duration: 0.12,
                       type: "square",
+                      volume: 0.12,
                     })
                   }
                 >
@@ -1149,8 +1365,11 @@ import React, {
               <div className="dj-empty-pro">No songs found.</div>
             ) : (
               <div className="row g-2">
-                {filteredSongs.map((song) => (
-                  <div className="col-12 col-md-6 col-xl-4" key={song._id}>
+                {filteredSongs.map((song, index) => (
+                  <div
+                    className="col-12 col-md-6 col-xl-4"
+                    key={song._id || song.id || `${getSongTitle(song)}-${index}`}
+                  >
                     <div className="crate-song-card">
                       <img
                         src={getSongImage(song)}
@@ -1196,7 +1415,7 @@ import React, {
   
               <p>
                 Later your API can return uploaded samples with <code>audioUrl</code>.
-                The sampler already supports real files.
+                The sampler uses Howler, and deck playback stays Cloudinary-safe.
               </p>
             </div>
   
