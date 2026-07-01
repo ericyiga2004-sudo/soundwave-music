@@ -51,11 +51,11 @@ import React, {
     { id: "reverb", name: "Reverb", icon: "🌌" },
     { id: "filter", name: "Filter", icon: "🌀" },
     { id: "flanger", name: "Flanger", icon: "⚙️" },
-    { id: "brake", name: "Vinyl Brake", icon: "🛑" },
-    { id: "roll", name: "Beat Roll", icon: "🔁" },
+    { id: "brake", name: "Brake", icon: "🛑" },
+    { id: "roll", name: "Roll", icon: "🔁" },
   ];
   
-  const loopSizes = ["1/2", "1", "2", "4", "8"];
+  const loopSizes = ["1/2", "1", "2", "4"];
   
   const Dj = () => {
     const { songs } = useContext(MusicContext);
@@ -97,10 +97,6 @@ import React, {
     const [activeFx, setActiveFx] = useState("");
     const [activeLoop, setActiveLoop] = useState("");
   
-    const stopTouchSteal = (e) => {
-      e.stopPropagation();
-    };
-  
     const getSongImage = (song) => {
       return (
         song?.imageUrl ||
@@ -124,11 +120,11 @@ import React, {
     };
   
     const getSongTitle = (song) => {
-      return song?.title || song?.name || "Load a song";
+      return song?.title || song?.name || "Load Song";
     };
   
     const getArtistName = (song) => {
-      if (!song?.artist) return "Choose from your library";
+      if (!song?.artist) return "Choose song";
   
       if (typeof song.artist === "string") return song.artist;
   
@@ -172,7 +168,7 @@ import React, {
       return audioContextRef.current;
     };
   
-    const updateDeckVolumes = () => {
+    useEffect(() => {
       const leftPower = (100 - crossfader) / 100;
       const rightPower = crossfader / 100;
   
@@ -183,9 +179,9 @@ import React, {
       if (deckBRef.current) {
         deckBRef.current.volume = (volumeB / 100) * rightPower;
       }
-    };
+    }, [volumeA, volumeB, crossfader]);
   
-    const updateDeckSpeeds = () => {
+    useEffect(() => {
       if (deckARef.current) {
         deckARef.current.playbackRate = Math.max(0.5, 1 + pitchA / 100);
       }
@@ -193,14 +189,6 @@ import React, {
       if (deckBRef.current) {
         deckBRef.current.playbackRate = Math.max(0.5, 1 + pitchB / 100);
       }
-    };
-  
-    useEffect(() => {
-      updateDeckVolumes();
-    }, [volumeA, volumeB, crossfader]);
-  
-    useEffect(() => {
-      updateDeckSpeeds();
     }, [pitchA, pitchB]);
   
     const loadToDeck = async (song, deck) => {
@@ -633,11 +621,7 @@ import React, {
   
     const renderKnob = (label, value, setValue) => {
       return (
-        <div
-          className="dj-knob-control"
-          onTouchStart={stopTouchSteal}
-          onPointerDown={stopTouchSteal}
-        >
+        <div className="dj-knob-control">
           <div
             className="dj-knob"
             style={{
@@ -650,13 +634,10 @@ import React, {
           <p>{label}</p>
   
           <input
-            className="dj-touch-range"
             type="range"
             min="0"
             max="100"
             value={value}
-            onTouchStart={stopTouchSteal}
-            onPointerDown={stopTouchSteal}
             onChange={(e) => setValue(Number(e.target.value))}
           />
         </div>
@@ -687,17 +668,19 @@ import React, {
       return (
         <div className="dj-deck-pro">
           <div className="deck-pro-header">
-            <div>
+            <div className="min-w-0">
               <span>{label}</span>
   
               <h3>{deck ? getSongTitle(deck) : "Load Track"}</h3>
   
-              <p>{deck ? getArtistName(deck) : "Select a song"}</p>
+              <p className="d-none d-sm-block">
+                {deck ? getArtistName(deck) : "Select a song"}
+              </p>
             </div>
   
             <div className="deck-bpm-pill">
               {128 + pitch}
-              <small>BPM</small>
+              <small className="d-none d-md-block">BPM</small>
             </div>
           </div>
   
@@ -716,7 +699,21 @@ import React, {
             }}
           />
   
-          <div className="deck-body">
+          <div className="deck-mobile-vinyl d-md-none">
+            <div className={playing ? "vinyl-pro spinning" : "vinyl-pro"}>
+              <img
+                src={getSongImage(deck)}
+                alt={getSongTitle(deck)}
+                onError={(e) => {
+                  e.currentTarget.src = "/fallback-cover.png";
+                }}
+              />
+  
+              <div className="vinyl-dot" />
+            </div>
+          </div>
+  
+          <div className="deck-body d-none d-md-grid">
             <div className="vinyl-pro-wrap">
               <div className={playing ? "vinyl-pro spinning" : "vinyl-pro"}>
                 <img
@@ -744,23 +741,28 @@ import React, {
               </div>
   
               <input
-                className="deck-seek dj-touch-range"
+                className="deck-seek"
                 type="range"
                 min="0"
                 max="100"
                 value={progress}
-                onTouchStart={stopTouchSteal}
-                onPointerDown={stopTouchSteal}
                 onChange={(e) => seekDeck(side, e.target.value)}
               />
             </div>
           </div>
   
+          <input
+            className="deck-seek d-md-none"
+            type="range"
+            min="0"
+            max="100"
+            value={progress}
+            onChange={(e) => seekDeck(side, e.target.value)}
+          />
+  
           <div className="deck-transport">
             <button
               type="button"
-              onTouchStart={stopTouchSteal}
-              onPointerDown={stopTouchSteal}
               onClick={() => jumpDeck(side, -5)}
               disabled={!deck}
             >
@@ -770,8 +772,6 @@ import React, {
             <button
               type="button"
               className="main-play"
-              onTouchStart={stopTouchSteal}
-              onPointerDown={stopTouchSteal}
               onClick={() => toggleDeck(side)}
               disabled={!deck}
             >
@@ -780,8 +780,6 @@ import React, {
   
             <button
               type="button"
-              onTouchStart={stopTouchSteal}
-              onPointerDown={stopTouchSteal}
               onClick={() => stopDeck(side)}
               disabled={!deck}
             >
@@ -790,8 +788,6 @@ import React, {
   
             <button
               type="button"
-              onTouchStart={stopTouchSteal}
-              onPointerDown={stopTouchSteal}
               onClick={() => restartDeck(side)}
               disabled={!deck}
             >
@@ -799,68 +795,77 @@ import React, {
             </button>
           </div>
   
-          <div className="deck-pro-controls">
-            <div className="deck-long-slider">
-              <div>
-                <FaVolumeUp />
-                <span>Vol</span>
-              </div>
+          <div className="row g-1 g-md-2">
+            <div className="col-6">
+              <div className="deck-long-slider">
+                <div>
+                  <FaVolumeUp />
+                  <span>Vol</span>
+                </div>
   
-              <input
-                className="dj-touch-range"
-                type="range"
-                min="0"
-                max="100"
-                value={volume}
-                onTouchStart={stopTouchSteal}
-                onPointerDown={stopTouchSteal}
-                onChange={(e) => setVolume(Number(e.target.value))}
-              />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume}
+                  onChange={(e) => setVolume(Number(e.target.value))}
+                />
+              </div>
             </div>
   
-            <div className="deck-long-slider">
-              <div>
-                <FaRandom />
-                <span>{pitch > 0 ? `+${pitch}` : pitch}%</span>
-              </div>
+            <div className="col-6">
+              <div className="deck-long-slider">
+                <div>
+                  <FaRandom />
+                  <span>{pitch > 0 ? `+${pitch}` : pitch}%</span>
+                </div>
   
-              <input
-                className="dj-touch-range"
-                type="range"
-                min="-30"
-                max="30"
-                value={pitch}
-                onTouchStart={stopTouchSteal}
-                onPointerDown={stopTouchSteal}
-                onChange={(e) => setPitch(Number(e.target.value))}
-              />
+                <input
+                  type="range"
+                  min="-30"
+                  max="30"
+                  value={pitch}
+                  onChange={(e) => setPitch(Number(e.target.value))}
+                />
+              </div>
             </div>
           </div>
   
-          <div className="eq-row">
-            {renderKnob("Gain", gain, setGain)}
-            {renderKnob("Low", low, setLow)}
-            {renderKnob("Mid", mid, setMid)}
-            {renderKnob("High", high, setHigh)}
+          <div className="row g-1 g-md-2 mt-1 mt-md-2">
+            <div className="col-3">
+              {renderKnob("Gain", gain, setGain)}
+            </div>
+  
+            <div className="col-3">
+              {renderKnob("Low", low, setLow)}
+            </div>
+  
+            <div className="col-3">
+              {renderKnob("Mid", mid, setMid)}
+            </div>
+  
+            <div className="col-3">
+              {renderKnob("High", high, setHigh)}
+            </div>
           </div>
   
-          <div className="hotcue-row">
+          <div className="row g-1 mt-1 mt-md-2">
             {[1, 2, 3, 4].map((cue) => (
-              <button
-                type="button"
-                key={cue}
-                onTouchStart={stopTouchSteal}
-                onPointerDown={stopTouchSteal}
-                onClick={() =>
-                  playTone({
-                    frequency: 300 + cue * 90,
-                    duration: 0.12,
-                    type: "square",
-                  })
-                }
-              >
-                Cue {cue}
-              </button>
+              <div className="col-3" key={cue}>
+                <button
+                  type="button"
+                  className="hotcue-btn"
+                  onClick={() =>
+                    playTone({
+                      frequency: 300 + cue * 90,
+                      duration: 0.12,
+                      type: "square",
+                    })
+                  }
+                >
+                  Cue {cue}
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -871,23 +876,20 @@ import React, {
       <div className="dj-page-pro">
         <div className="container-fluid px-2 px-md-3 px-xl-4">
           <div className="dj-topbar row align-items-center g-2 g-md-3">
-            <div className="col-lg-8">
+            <div className="col-12 col-lg-8">
               <span className="dj-label-pro">SoundWave DJ Control Room</span>
   
               <h1>DJ Essentials</h1>
   
               <p>
-                Two decks, compact mixer, EQ knobs, loops, FX rack, sampler pads,
-                and your music library.
+                Two decks, mixer, EQ knobs, loops, FX rack, sampler pads, and your music library.
               </p>
             </div>
   
-            <div className="col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
+            <div className="col-12 col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
               <button
                 type="button"
                 className="dj-top-btn ghost"
-                onTouchStart={stopTouchSteal}
-                onPointerDown={stopTouchSteal}
                 onClick={resetMixer}
               >
                 <FaRedo />
@@ -897,8 +899,6 @@ import React, {
               <button
                 type="button"
                 className="dj-top-btn"
-                onTouchStart={stopTouchSteal}
-                onPointerDown={stopTouchSteal}
                 onClick={saveMixSetup}
               >
                 <FaSave />
@@ -907,149 +907,149 @@ import React, {
             </div>
           </div>
   
-          <div className="mobile-landscape-hint">
-            Swipe sideways to see the full DJ controller. Deck A, Mixer, and Deck B stay in one row.
+          <div className="bootstrap-layout-warning">
+            Bootstrap layout active: Deck A uses <b>col-5</b>, Mixer uses <b>col-2</b>, Deck B uses <b>col-5</b>.
           </div>
   
-          <div className="dj-controller-scroll">
-            <div className="dj-controller-wide">
-              <div className="dj-controller-row">
-                <div className="dj-deck-column">
-                  {renderDeck({
-                    side: "A",
-                    deck: deckA,
-                    audioRef: deckARef,
-                    playing: playingA,
-                    volume: volumeA,
-                    setVolume: setVolumeA,
-                    pitch: pitchA,
-                    setPitch: setPitchA,
-                    progress: progressA,
-                    gain: gainA,
-                    setGain: setGainA,
-                    low: lowA,
-                    setLow: setLowA,
-                    mid: midA,
-                    setMid: setMidA,
-                    high: highA,
-                    setHigh: setHighA,
-                  })}
+          <div className="row g-1 g-md-3 align-items-stretch dj-bootstrap-controller">
+            <div className="col-5">
+              {renderDeck({
+                side: "A",
+                deck: deckA,
+                audioRef: deckARef,
+                playing: playingA,
+                volume: volumeA,
+                setVolume: setVolumeA,
+                pitch: pitchA,
+                setPitch: setPitchA,
+                progress: progressA,
+                gain: gainA,
+                setGain: setGainA,
+                low: lowA,
+                setLow: setLowA,
+                mid: midA,
+                setMid: setMidA,
+                high: highA,
+                setHigh: setHighA,
+              })}
+            </div>
+  
+            <div className="col-2">
+              <div className="mixer-pro h-100">
+                <div className="mixer-pro-title">
+                  <FaHeadphones />
+  
+                  <span className="d-none d-md-inline">
+                    Mixer
+                  </span>
                 </div>
   
-                <div className="dj-mixer-column">
-                  <div className="mixer-pro">
-                    <div className="mixer-pro-title">
-                      <FaHeadphones />
-                      <span>Mixer</span>
-                    </div>
+                <div className="master-meter">
+                  <span style={{ height: `${volumeA}%` }} />
+                  <span style={{ height: `${volumeB}%` }} />
+                </div>
   
-                    <div className="master-meter">
-                      <span style={{ height: `${volumeA}%` }} />
-                      <span style={{ height: `${volumeB}%` }} />
-                    </div>
+                <div className="crossfader-pro">
+                  <div>
+                    <strong>A</strong>
+                    <strong>B</strong>
+                  </div>
   
-                    <div className="crossfader-pro">
-                      <div>
-                        <strong>A</strong>
-                        <strong>B</strong>
-                      </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={crossfader}
+                    onChange={(e) => setCrossfader(Number(e.target.value))}
+                  />
+                </div>
   
-                      <input
-                        className="dj-touch-range"
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={crossfader}
-                        onTouchStart={stopTouchSteal}
-                        onPointerDown={stopTouchSteal}
-                        onChange={(e) => setCrossfader(Number(e.target.value))}
-                      />
-                    </div>
+                <button
+                  type="button"
+                  className="sync-btn"
+                  onClick={syncBpm}
+                >
+                  <FaSyncAlt />
   
+                  <span className="d-none d-md-inline">
+                    Sync
+                  </span>
+                </button>
+  
+                <div className="row g-1 mt-1 mt-md-2">
+                  <div className="col-6">
                     <button
                       type="button"
-                      className="sync-btn"
-                      onTouchStart={stopTouchSteal}
-                      onPointerDown={stopTouchSteal}
-                      onClick={syncBpm}
+                      className="mini-mute-btn"
+                      onClick={muteDeckA}
                     >
-                      <FaSyncAlt />
-                      Sync B
+                      <FaVolumeMute />
+                      A
                     </button>
+                  </div>
   
-                    <div className="mini-mixer-buttons">
-                      <button
-                        type="button"
-                        onTouchStart={stopTouchSteal}
-                        onPointerDown={stopTouchSteal}
-                        onClick={muteDeckA}
-                      >
-                        <FaVolumeMute />
-                        A
-                      </button>
-  
-                      <button
-                        type="button"
-                        onTouchStart={stopTouchSteal}
-                        onPointerDown={stopTouchSteal}
-                        onClick={muteDeckB}
-                      >
-                        <FaVolumeMute />
-                        B
-                      </button>
-                    </div>
-  
-                    <div className="loop-box">
-                      <h4>Loops</h4>
-  
-                      <div>
-                        {loopSizes.map((size) => (
-                          <button
-                            type="button"
-                            key={size}
-                            className={activeLoop === size ? "active" : ""}
-                            onTouchStart={stopTouchSteal}
-                            onPointerDown={stopTouchSteal}
-                            onClick={() => triggerLoop(size)}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-  
-                    <div className="fx-rack-mini">
-                      <FaBolt />
-  
-                      <h4>FX Rack</h4>
-  
-                      <p>Ready</p>
-                    </div>
+                  <div className="col-6">
+                    <button
+                      type="button"
+                      className="mini-mute-btn"
+                      onClick={muteDeckB}
+                    >
+                      <FaVolumeMute />
+                      B
+                    </button>
                   </div>
                 </div>
   
-                <div className="dj-deck-column">
-                  {renderDeck({
-                    side: "B",
-                    deck: deckB,
-                    audioRef: deckBRef,
-                    playing: playingB,
-                    volume: volumeB,
-                    setVolume: setVolumeB,
-                    pitch: pitchB,
-                    setPitch: setPitchB,
-                    progress: progressB,
-                    gain: gainB,
-                    setGain: setGainB,
-                    low: lowB,
-                    setLow: setLowB,
-                    mid: midB,
-                    setMid: setMidB,
-                    high: highB,
-                    setHigh: setHighB,
-                  })}
+                <div className="loop-box">
+                  <h4 className="d-none d-md-block">
+                    Loops
+                  </h4>
+  
+                  <div className="row g-1">
+                    {loopSizes.map((size) => (
+                      <div className="col-6" key={size}>
+                        <button
+                          type="button"
+                          className={activeLoop === size ? "active" : ""}
+                          onClick={() => triggerLoop(size)}
+                        >
+                          {size}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+  
+                <div className="fx-rack-mini d-none d-md-block">
+                  <FaBolt />
+  
+                  <h4>FX Rack</h4>
+  
+                  <p>Ready</p>
                 </div>
               </div>
+            </div>
+  
+            <div className="col-5">
+              {renderDeck({
+                side: "B",
+                deck: deckB,
+                audioRef: deckBRef,
+                playing: playingB,
+                volume: volumeB,
+                setVolume: setVolumeB,
+                pitch: pitchB,
+                setPitch: setPitchB,
+                progress: progressB,
+                gain: gainB,
+                setGain: setGainB,
+                low: lowB,
+                setLow: setLowB,
+                mid: midB,
+                setMid: setMidB,
+                high: highB,
+                setHigh: setHighB,
+              })}
             </div>
           </div>
   
@@ -1066,24 +1066,23 @@ import React, {
                   <FaSlidersH />
                 </div>
   
-                <div className="fx-grid-pro">
+                <div className="row g-2">
                   {fxButtons.map((fx) => (
-                    <button
-                      type="button"
-                      key={fx.id}
-                      className={
-                        activeFx === fx.id
-                          ? "fx-button-pro active"
-                          : "fx-button-pro"
-                      }
-                      onTouchStart={stopTouchSteal}
-                      onPointerDown={stopTouchSteal}
-                      onClick={() => triggerFx(fx.id)}
-                    >
-                      <strong>{fx.icon}</strong>
+                    <div className="col-4 col-md-4" key={fx.id}>
+                      <button
+                        type="button"
+                        className={
+                          activeFx === fx.id
+                            ? "fx-button-pro active"
+                            : "fx-button-pro"
+                        }
+                        onClick={() => triggerFx(fx.id)}
+                      >
+                        <strong>{fx.icon}</strong>
   
-                      <span>{fx.name}</span>
-                    </button>
+                        <span>{fx.name}</span>
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1101,20 +1100,19 @@ import React, {
                   <FaRecordVinyl />
                 </div>
   
-                <div className="pad-grid-pro">
+                <div className="row g-2">
                   {djPads.map((pad) => (
-                    <button
-                      type="button"
-                      key={pad.id}
-                      className={activePad === pad.id ? "pad-pro active" : "pad-pro"}
-                      onTouchStart={stopTouchSteal}
-                      onPointerDown={stopTouchSteal}
-                      onClick={() => triggerPad(pad)}
-                    >
-                      <strong>{pad.icon}</strong>
+                    <div className="col-4 col-md-3" key={pad.id}>
+                      <button
+                        type="button"
+                        className={activePad === pad.id ? "pad-pro active" : "pad-pro"}
+                        onClick={() => triggerPad(pad)}
+                      >
+                        <strong>{pad.icon}</strong>
   
-                      <span>{pad.name}</span>
-                    </button>
+                        <span>{pad.name}</span>
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1122,65 +1120,67 @@ import React, {
           </div>
   
           <div className="dj-panel-pro mt-2 mt-md-3">
-            <div className="panel-title-pro library-title-row">
-              <div>
-                <span>Music Crate</span>
+            <div className="row g-2 align-items-center mb-2">
+              <div className="col-12 col-md-6">
+                <div className="panel-title-pro mb-0">
+                  <div>
+                    <span>Music Crate</span>
   
-                <h2>Load Songs Into Decks</h2>
+                    <h2>Load Songs Into Decks</h2>
+                  </div>
+                </div>
               </div>
   
-              <div className="dj-search-pro">
-                <FaSearch />
+              <div className="col-12 col-md-6">
+                <div className="dj-search-pro">
+                  <FaSearch />
   
-                <input
-                  type="text"
-                  placeholder="Search your songs..."
-                  value={searchTerm}
-                  onTouchStart={stopTouchSteal}
-                  onPointerDown={stopTouchSteal}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                  <input
+                    type="text"
+                    placeholder="Search your songs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
   
             {filteredSongs.length === 0 ? (
               <div className="dj-empty-pro">No songs found.</div>
             ) : (
-              <div className="song-crate-grid">
+              <div className="row g-2">
                 {filteredSongs.map((song) => (
-                  <div key={song._id} className="crate-song-card">
-                    <img
-                      src={getSongImage(song)}
-                      alt={getSongTitle(song)}
-                      onError={(e) => {
-                        e.currentTarget.src = "/fallback-cover.png";
-                      }}
-                    />
+                  <div className="col-12 col-md-6 col-xl-4" key={song._id}>
+                    <div className="crate-song-card">
+                      <img
+                        src={getSongImage(song)}
+                        alt={getSongTitle(song)}
+                        onError={(e) => {
+                          e.currentTarget.src = "/fallback-cover.png";
+                        }}
+                      />
   
-                    <div>
-                      <h4>{getSongTitle(song)}</h4>
+                      <div>
+                        <h4>{getSongTitle(song)}</h4>
   
-                      <p>{getArtistName(song)}</p>
-                    </div>
+                        <p>{getArtistName(song)}</p>
+                      </div>
   
-                    <div className="crate-actions">
-                      <button
-                        type="button"
-                        onTouchStart={stopTouchSteal}
-                        onPointerDown={stopTouchSteal}
-                        onClick={() => loadToDeck(song, "A")}
-                      >
-                        A
-                      </button>
+                      <div className="crate-actions">
+                        <button
+                          type="button"
+                          onClick={() => loadToDeck(song, "A")}
+                        >
+                          A
+                        </button>
   
-                      <button
-                        type="button"
-                        onTouchStart={stopTouchSteal}
-                        onPointerDown={stopTouchSteal}
-                        onClick={() => loadToDeck(song, "B")}
-                      >
-                        B
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => loadToDeck(song, "B")}
+                        >
+                          B
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1196,11 +1196,11 @@ import React, {
   
               <p>
                 Later your API can return uploaded samples with <code>audioUrl</code>.
-                The sampler already supports real files when each pad has an audio URL.
+                The sampler already supports real files.
               </p>
             </div>
   
-            <FaDownload />
+            <FaDownload className="d-none d-md-block" />
           </div>
         </div>
       </div>
