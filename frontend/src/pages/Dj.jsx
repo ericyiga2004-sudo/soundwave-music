@@ -21,6 +21,7 @@ import {
 import { Howl, Howler } from "howler";
 import WaveSurfer from "wavesurfer.js";
 import { MusicContext } from "../context/ShopContext";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./CSS/Dj.css";
 
 const djPads = [
@@ -76,6 +77,8 @@ const classicRightButtons = [
   { id: "drums", name: "Drums", type: "beat" },
   { id: "beat", name: "Beat", type: "beat" },
 ];
+
+const classicAllButtons = [...classicLeftButtons, ...classicRightButtons];
 
 const classicColorPads = [
   { id: "hat-a", name: "Hi Hat", type: "hihat", color: "pink" },
@@ -1716,7 +1719,40 @@ const Dj = () => {
   const renderMiniClassic = () => {
     return (
       <div className="classic-dj-panel">
-        <div className="classic-side-buttons">
+        <div className="classic-mobile-dropdown d-md-none">
+          <label htmlFor="classicPadSelect" className="classic-mobile-label">
+            Quick sound pads
+          </label>
+
+          <select
+            id="classicPadSelect"
+            className="form-select classic-pad-select"
+            defaultValue=""
+            onChange={(event) => {
+              const item = classicAllButtons.find(
+                (button) => button.id === event.target.value
+              );
+
+              if (item) {
+                triggerClassicPad(item);
+              }
+
+              event.target.value = "";
+            }}
+          >
+            <option value="" disabled>
+              Piano to Beat
+            </option>
+
+            {classicAllButtons.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
           {classicLeftButtons.map((item) => (
             <button
               key={item.id}
@@ -1746,7 +1782,7 @@ const Dj = () => {
           ))}
         </div>
 
-        <div className="classic-side-buttons">
+        <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
           {classicRightButtons.map((item) => (
             <button
               key={item.id}
@@ -2097,7 +2133,7 @@ const Dj = () => {
       <div className="container-fluid px-0">
         <div className="row g-2 g-md-3 align-items-stretch dj-bootstrap-controller">
           <div
-            className={`col-5 mobile-panel ${
+            className={`col-12 col-xl-5 mobile-panel ${
               mobileView === "A" ? "mobile-panel-active" : ""
             }`}
           >
@@ -2126,7 +2162,7 @@ const Dj = () => {
           </div>
 
           <div
-            className={`col-2 mobile-panel ${
+            className={`col-12 col-xl-2 mobile-panel ${
               mobileView === "M" ? "mobile-panel-active" : ""
             }`}
           >
@@ -2134,7 +2170,7 @@ const Dj = () => {
           </div>
 
           <div
-            className={`col-5 mobile-panel ${
+            className={`col-12 col-xl-5 mobile-panel ${
               mobileView === "B" ? "mobile-panel-active" : ""
             }`}
           >
@@ -2255,7 +2291,7 @@ const Dj = () => {
 
               <div className="row g-2">
                 {djPads.map((pad) => (
-                  <div className="col-3 col-xl-4" key={pad.id}>
+                  <div className="col-6 col-sm-4 col-xl-4" key={pad.id}>
                     <button
                       type="button"
                       className={
