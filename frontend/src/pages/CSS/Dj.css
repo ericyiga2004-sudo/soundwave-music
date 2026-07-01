@@ -1130,3 +1130,27 @@
       gap: 6px;
     }
   }
+
+
+  .classic-mobile-pads {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  
+  .classic-mobile-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  
+  .classic-mobile-pad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  
+  @media (min-width: 768px) {
+    .classic-mobile-pads {
+      display: none;
+    }
+  }

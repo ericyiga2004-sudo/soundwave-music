@@ -620,7 +620,7 @@ const Dj = () => {
 
     const sound = new Howl({
       src: [audioUrl],
-      html5: true,
+      html5: false,
       preload: true,
       format: getAudioFormat(audioUrl),
       volume: getSideVolume(side),
@@ -1719,39 +1719,25 @@ const Dj = () => {
   const renderMiniClassic = () => {
     return (
       <div className="classic-dj-panel">
-        <div className="classic-mobile-dropdown d-md-none">
-          <label htmlFor="classicPadSelect" className="classic-mobile-label">
-            Quick sound pads
-          </label>
-
-          <select
-            id="classicPadSelect"
-            className="form-select classic-pad-select"
-            defaultValue=""
-            onChange={(event) => {
-              const item = classicAllButtons.find(
-                (button) => button.id === event.target.value
-              );
-
-              if (item) {
-                triggerClassicPad(item);
-              }
-
-              event.target.value = "";
-            }}
-          >
-            <option value="" disabled>
-              Piano to Beat
-            </option>
-
+        <div className="classic-mobile-pads d-md-none">
+          <span className="classic-mobile-label">Quick sound pads</span>
+  
+          <div className="classic-mobile-pad-grid">
             {classicAllButtons.map((item) => (
-              <option key={item.id} value={item.id}>
+              <button
+                key={item.id}
+                type="button"
+                className={
+                  activePad === item.id ? "classic-mini active" : "classic-mini"
+                }
+                onClick={() => triggerClassicPad(item)}
+              >
                 {item.name}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
-
+  
         <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
           {classicLeftButtons.map((item) => (
             <button
@@ -1766,7 +1752,7 @@ const Dj = () => {
             </button>
           ))}
         </div>
-
+  
         <div className="classic-color-grid">
           {classicColorPads.map((item) => (
             <button
@@ -1781,7 +1767,7 @@ const Dj = () => {
             </button>
           ))}
         </div>
-
+  
         <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
           {classicRightButtons.map((item) => (
             <button
