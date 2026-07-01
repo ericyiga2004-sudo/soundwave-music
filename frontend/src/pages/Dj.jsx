@@ -97,6 +97,10 @@ import React, {
     const [activeFx, setActiveFx] = useState("");
     const [activeLoop, setActiveLoop] = useState("");
   
+    const stopTouchSteal = (e) => {
+      e.stopPropagation();
+    };
+  
     const getSongImage = (song) => {
       return (
         song?.imageUrl ||
@@ -146,6 +150,20 @@ import React, {
       });
     }, [songs, searchTerm]);
   
+    const unlockAudio = async () => {
+      try {
+        if (!audioContextRef.current) {
+          audioContextRef.current = new window.AudioContext();
+        }
+  
+        if (audioContextRef.current.state === "suspended") {
+          await audioContextRef.current.resume();
+        }
+      } catch (error) {
+        console.log("Audio unlock error:", error);
+      }
+    };
+  
     const getAudioContext = () => {
       if (!audioContextRef.current) {
         audioContextRef.current = new window.AudioContext();
@@ -185,7 +203,9 @@ import React, {
       updateDeckSpeeds();
     }, [pitchA, pitchB]);
   
-    const loadToDeck = (song, deck) => {
+    const loadToDeck = async (song, deck) => {
+      await unlockAudio();
+  
       if (deck === "A") {
         setDeckA(song);
         setPlayingA(false);
@@ -208,6 +228,8 @@ import React, {
     };
   
     const toggleDeck = async (deck) => {
+      await unlockAudio();
+  
       if (deck === "A") {
         if (!deckA || !deckARef.current) return;
   
@@ -297,13 +319,15 @@ import React, {
       }
     };
   
-    const playTone = ({
+    const playTone = async ({
       frequency = 440,
       duration = 0.3,
       type = "sine",
       startFrequency,
       endFrequency,
     }) => {
+      await unlockAudio();
+  
       const ctx = getAudioContext();
   
       const oscillator = ctx.createOscillator();
@@ -332,7 +356,9 @@ import React, {
       oscillator.stop(ctx.currentTime + duration);
     };
   
-    const playNoise = (duration = 0.25) => {
+    const playNoise = async (duration = 0.25) => {
+      await unlockAudio();
+  
       const ctx = getAudioContext();
   
       const bufferSize = ctx.sampleRate * duration;
@@ -356,7 +382,9 @@ import React, {
       noise.start();
     };
   
-    const triggerPad = (pad) => {
+    const triggerPad = async (pad) => {
+      await unlockAudio();
+  
       setActivePad(pad.id);
   
       setTimeout(() => {
@@ -468,7 +496,9 @@ import React, {
       }
     };
   
-    const triggerFx = (fxId) => {
+    const triggerFx = async (fxId) => {
+      await unlockAudio();
+  
       setActiveFx(fxId);
   
       if (fxId === "echo") {
@@ -530,7 +560,9 @@ import React, {
       }, 260);
     };
   
-    const triggerLoop = (size) => {
+    const triggerLoop = async (size) => {
+      await unlockAudio();
+  
       setActiveLoop(size);
   
       playTone({
@@ -544,9 +576,18 @@ import React, {
       }, 240);
     };
   
-    const syncBpm = () => {
+    const syncBpm = async () => {
+      await unlockAudio();
       setPitchB(pitchA);
       triggerFx("filter");
+    };
+  
+    const muteDeckA = () => {
+      setVolumeA((current) => (current === 0 ? 85 : 0));
+    };
+  
+    const muteDeckB = () => {
+      setVolumeB((current) => (current === 0 ? 85 : 0));
     };
   
     const resetMixer = () => {
@@ -592,7 +633,11 @@ import React, {
   
     const renderKnob = (label, value, setValue) => {
       return (
-        <div className="dj-knob-control">
+        <div
+          className="dj-knob-control"
+          onTouchStart={stopTouchSteal}
+          onPointerDown={stopTouchSteal}
+        >
           <div
             className="dj-knob"
             style={{
@@ -605,10 +650,13 @@ import React, {
           <p>{label}</p>
   
           <input
+            className="dj-touch-range"
             type="range"
             min="0"
             max="100"
             value={value}
+            onTouchStart={stopTouchSteal}
+            onPointerDown={stopTouchSteal}
             onChange={(e) => setValue(Number(e.target.value))}
           />
         </div>
@@ -656,6 +704,8 @@ import React, {
           <audio
             ref={audioRef}
             src={deck ? getSongAudio(deck) : ""}
+            playsInline
+            preload="metadata"
             onTimeUpdate={() => handleTimeUpdate(side)}
             onEnded={() => {
               if (side === "A") {
@@ -694,34 +744,57 @@ import React, {
               </div>
   
               <input
-                className="deck-seek"
+                className="deck-seek dj-touch-range"
                 type="range"
                 min="0"
                 max="100"
                 value={progress}
+                onTouchStart={stopTouchSteal}
+                onPointerDown={stopTouchSteal}
                 onChange={(e) => seekDeck(side, e.target.value)}
               />
             </div>
           </div>
   
           <div className="deck-transport">
-            <button onClick={() => jumpDeck(side, -5)} disabled={!deck}>
+            <button
+              type="button"
+              onTouchStart={stopTouchSteal}
+              onPointerDown={stopTouchSteal}
+              onClick={() => jumpDeck(side, -5)}
+              disabled={!deck}
+            >
               <FaBackward />
             </button>
   
             <button
+              type="button"
               className="main-play"
+              onTouchStart={stopTouchSteal}
+              onPointerDown={stopTouchSteal}
               onClick={() => toggleDeck(side)}
               disabled={!deck}
             >
               {playing ? <FaPause /> : <FaPlay />}
             </button>
   
-            <button onClick={() => stopDeck(side)} disabled={!deck}>
+            <button
+              type="button"
+              onTouchStart={stopTouchSteal}
+              onPointerDown={stopTouchSteal}
+              onClick={() => stopDeck(side)}
+              disabled={!deck}
+            >
               <FaStop />
             </button>
   
-            <button onClick={() => restartDeck(side)} disabled={!deck}>
+            <button
+              type="button"
+              onTouchStart={stopTouchSteal}
+              onPointerDown={stopTouchSteal}
+              onClick={() => restartDeck(side)}
+              disabled={!deck}
+            >
               <FaUndo />
             </button>
           </div>
@@ -734,10 +807,13 @@ import React, {
               </div>
   
               <input
+                className="dj-touch-range"
                 type="range"
                 min="0"
                 max="100"
                 value={volume}
+                onTouchStart={stopTouchSteal}
+                onPointerDown={stopTouchSteal}
                 onChange={(e) => setVolume(Number(e.target.value))}
               />
             </div>
@@ -749,10 +825,13 @@ import React, {
               </div>
   
               <input
+                className="dj-touch-range"
                 type="range"
                 min="-30"
                 max="30"
                 value={pitch}
+                onTouchStart={stopTouchSteal}
+                onPointerDown={stopTouchSteal}
                 onChange={(e) => setPitch(Number(e.target.value))}
               />
             </div>
@@ -768,7 +847,10 @@ import React, {
           <div className="hotcue-row">
             {[1, 2, 3, 4].map((cue) => (
               <button
+                type="button"
                 key={cue}
+                onTouchStart={stopTouchSteal}
+                onPointerDown={stopTouchSteal}
                 onClick={() =>
                   playTone({
                     frequency: 300 + cue * 90,
@@ -801,12 +883,24 @@ import React, {
             </div>
   
             <div className="col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
-              <button className="dj-top-btn ghost" onClick={resetMixer}>
+              <button
+                type="button"
+                className="dj-top-btn ghost"
+                onTouchStart={stopTouchSteal}
+                onPointerDown={stopTouchSteal}
+                onClick={resetMixer}
+              >
                 <FaRedo />
                 Reset
               </button>
   
-              <button className="dj-top-btn" onClick={saveMixSetup}>
+              <button
+                type="button"
+                className="dj-top-btn"
+                onTouchStart={stopTouchSteal}
+                onPointerDown={stopTouchSteal}
+                onClick={saveMixSetup}
+              >
                 <FaSave />
                 Save
               </button>
@@ -861,26 +955,45 @@ import React, {
                       </div>
   
                       <input
+                        className="dj-touch-range"
                         type="range"
                         min="0"
                         max="100"
                         value={crossfader}
+                        onTouchStart={stopTouchSteal}
+                        onPointerDown={stopTouchSteal}
                         onChange={(e) => setCrossfader(Number(e.target.value))}
                       />
                     </div>
   
-                    <button className="sync-btn" onClick={syncBpm}>
+                    <button
+                      type="button"
+                      className="sync-btn"
+                      onTouchStart={stopTouchSteal}
+                      onPointerDown={stopTouchSteal}
+                      onClick={syncBpm}
+                    >
                       <FaSyncAlt />
                       Sync B
                     </button>
   
                     <div className="mini-mixer-buttons">
-                      <button onClick={() => setVolumeA(0)}>
+                      <button
+                        type="button"
+                        onTouchStart={stopTouchSteal}
+                        onPointerDown={stopTouchSteal}
+                        onClick={muteDeckA}
+                      >
                         <FaVolumeMute />
                         A
                       </button>
   
-                      <button onClick={() => setVolumeB(0)}>
+                      <button
+                        type="button"
+                        onTouchStart={stopTouchSteal}
+                        onPointerDown={stopTouchSteal}
+                        onClick={muteDeckB}
+                      >
                         <FaVolumeMute />
                         B
                       </button>
@@ -892,8 +1005,11 @@ import React, {
                       <div>
                         {loopSizes.map((size) => (
                           <button
+                            type="button"
                             key={size}
                             className={activeLoop === size ? "active" : ""}
+                            onTouchStart={stopTouchSteal}
+                            onPointerDown={stopTouchSteal}
                             onClick={() => triggerLoop(size)}
                           >
                             {size}
@@ -953,12 +1069,15 @@ import React, {
                 <div className="fx-grid-pro">
                   {fxButtons.map((fx) => (
                     <button
+                      type="button"
                       key={fx.id}
                       className={
                         activeFx === fx.id
                           ? "fx-button-pro active"
                           : "fx-button-pro"
                       }
+                      onTouchStart={stopTouchSteal}
+                      onPointerDown={stopTouchSteal}
                       onClick={() => triggerFx(fx.id)}
                     >
                       <strong>{fx.icon}</strong>
@@ -985,8 +1104,11 @@ import React, {
                 <div className="pad-grid-pro">
                   {djPads.map((pad) => (
                     <button
+                      type="button"
                       key={pad.id}
                       className={activePad === pad.id ? "pad-pro active" : "pad-pro"}
+                      onTouchStart={stopTouchSteal}
+                      onPointerDown={stopTouchSteal}
                       onClick={() => triggerPad(pad)}
                     >
                       <strong>{pad.icon}</strong>
@@ -1014,6 +1136,8 @@ import React, {
                   type="text"
                   placeholder="Search your songs..."
                   value={searchTerm}
+                  onTouchStart={stopTouchSteal}
+                  onPointerDown={stopTouchSteal}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
@@ -1040,9 +1164,23 @@ import React, {
                     </div>
   
                     <div className="crate-actions">
-                      <button onClick={() => loadToDeck(song, "A")}>A</button>
+                      <button
+                        type="button"
+                        onTouchStart={stopTouchSteal}
+                        onPointerDown={stopTouchSteal}
+                        onClick={() => loadToDeck(song, "A")}
+                      >
+                        A
+                      </button>
   
-                      <button onClick={() => loadToDeck(song, "B")}>B</button>
+                      <button
+                        type="button"
+                        onTouchStart={stopTouchSteal}
+                        onPointerDown={stopTouchSteal}
+                        onClick={() => loadToDeck(song, "B")}
+                      >
+                        B
+                      </button>
                     </div>
                   </div>
                 ))}
