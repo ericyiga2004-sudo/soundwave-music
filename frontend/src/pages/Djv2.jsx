@@ -259,12 +259,25 @@ const Dj = () => {
   }, [songs, searchTerm]);
 
   const getAudioContext = () => {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+    if (!Howler.ctx && AudioContextClass) {
+      Howler.ctx = new AudioContextClass();
+    }
+
     return Howler.ctx || null;
   };
 
   const unlockAudio = async () => {
     try {
       Howler.autoUnlock = true;
+      Howler.usingWebAudio = true;
+
+      const ctx = getAudioContext();
+
+      if (ctx?.state === "suspended") {
+        await ctx.resume();
+      }
 
       if (Howler.ctx?.state === "suspended") {
         await Howler.ctx.resume();
@@ -605,10 +618,7 @@ const Dj = () => {
       setErrorB("");
     }
 
-    let sound;
-
-    try {
-      sound = new Howl({
+    const sound = new Howl({
       src: [audioUrl],
       html5: false,
       preload: true,
@@ -695,24 +705,6 @@ const Dj = () => {
         }
       },
     });
-    } catch (error) {
-      console.log(`Deck ${side} create failed:`, error);
-
-      const message =
-        "Could not create audio player. Check the audio URL/CORS or browser support.";
-
-      if (side === "A") {
-        setPlayingA(false);
-        setLoadingA(false);
-        setErrorA(message);
-      } else {
-        setPlayingB(false);
-        setLoadingB(false);
-        setErrorB(message);
-      }
-
-      return null;
-    }
 
     deckHowlsRef.current[side] = sound;
 
