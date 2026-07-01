@@ -64,18 +64,43 @@ import React, {
     return Math.min(max, Math.max(min, Number(value)));
   };
   
+  const getAudioFormat = (url) => {
+    if (!url) return ["mp3"];
+  
+    const cleanUrl = url.split("?")[0].toLowerCase();
+  
+    if (cleanUrl.endsWith(".wav")) return ["wav"];
+    if (cleanUrl.endsWith(".ogg")) return ["ogg"];
+    if (cleanUrl.endsWith(".m4a")) return ["m4a", "mp4"];
+    if (cleanUrl.endsWith(".aac")) return ["aac"];
+    if (cleanUrl.endsWith(".mp4")) return ["mp4"];
+  
+    return ["mp3"];
+  };
+  
   const Dj = () => {
     const { songs } = useContext(MusicContext);
   
-    const deckARef = useRef(null);
-    const deckBRef = useRef(null);
+    const deckHowlsRef = useRef({
+      A: null,
+      B: null,
+    });
+  
+    const deckSoundIdsRef = useRef({
+      A: null,
+      B: null,
+    });
   
     const audioContextRef = useRef(null);
     const tunaRef = useRef(null);
     const howlerSamplesRef = useRef({});
+    const progressTimerRef = useRef(null);
   
     const [deckA, setDeckA] = useState(null);
     const [deckB, setDeckB] = useState(null);
+  
+    const [loadingA, setLoadingA] = useState(false);
+    const [loadingB, setLoadingB] = useState(false);
   
     const [playingA, setPlayingA] = useState(false);
     const [playingB, setPlayingB] = useState(false);
@@ -166,6 +191,7 @@ import React, {
     const unlockAudio = async () => {
       try {
         Howler.autoUnlock = true;
+        Howler.usingWebAudio = true;
   
         const ctx = getAudioContext();
   
@@ -189,8 +215,12 @@ import React, {
       }
     };
   
-    const getDeckAudioElement = (side) => {
-      return side === "A" ? deckARef.current : deckBRef.current;
+    const getDeckHowl = (side) => {
+      return deckHowlsRef.current[side];
+    };
+  
+    const getDeckSoundId = (side) => {
+      return deckSoundIdsRef.current[side];
     };
   
     const getDeckFinalVolume = ({
@@ -209,7 +239,6 @@ import React, {
           : Math.sin(fadePosition * (Math.PI / 2));
   
       const volumeAmount = clamp(volume, 0, 100) / 100;
-  
       const gainAmount = clamp(gain, 0, 100) / 50;
   
       const eqMovement =
@@ -220,9 +249,9 @@ import React, {
       return clamp(volumeAmount * gainAmount * fadePower * eqTrim, 0, 1);
     };
   
-    const applyDeckControls = () => {
-      if (deckARef.current) {
-        deckARef.current.volume = getDeckFinalVolume({
+    const getSideVolume = (side) => {
+      if (side === "A") {
+        return getDeckFinalVolume({
           side: "A",
           volume: volumeA,
           gain: gainA,
@@ -230,22 +259,46 @@ import React, {
           mid: midA,
           high: highA,
         });
-  
-        deckARef.current.playbackRate = Math.max(0.5, 1 + pitchA / 100);
       }
   
-      if (deckBRef.current) {
-        deckBRef.current.volume = getDeckFinalVolume({
-          side: "B",
-          volume: volumeB,
-          gain: gainB,
-          low: lowB,
-          mid: midB,
-          high: highB,
-        });
+      return getDeckFinalVolume({
+        side: "B",
+        volume: volumeB,
+        gain: gainB,
+        low: lowB,
+        mid: midB,
+        high: highB,
+      });
+    };
   
-        deckBRef.current.playbackRate = Math.max(0.5, 1 + pitchB / 100);
-      }
+    const getSideRate = (side) => {
+      const pitch = side === "A" ? pitchA : pitchB;
+  
+      return Math.max(0.5, 1 + pitch / 100);
+    };
+  
+    const applyDeckControls = () => {
+      ["A", "B"].forEach((side) => {
+        const sound = getDeckHowl(side);
+        const soundId = getDeckSoundId(side);
+  
+        if (!sound) return;
+  
+        const finalVolume = getSideVolume(side);
+        const finalRate = getSideRate(side);
+  
+        try {
+          if (soundId) {
+            sound.volume(finalVolume, soundId);
+            sound.rate(finalRate, soundId);
+          } else {
+            sound.volume(finalVolume);
+            sound.rate(finalRate);
+          }
+        } catch (error) {
+          console.log(`Apply controls failed on deck ${side}:`, error);
+        }
+      });
     };
   
     useEffect(() => {
@@ -266,159 +319,325 @@ import React, {
       pitchB,
     ]);
   
-    useEffect(() => {
-      return () => {
-        Object.values(howlerSamplesRef.current).forEach((sound) => {
+    const unloadDeck = (side) => {
+      const oldSound = getDeckHowl(side);
+  
+      if (oldSound) {
+        try {
+          oldSound.stop();
+          oldSound.unload();
+        } catch (error) {
+          console.log(`Unload deck ${side} error:`, error);
+        }
+      }
+  
+      deckHowlsRef.current[side] = null;
+      deckSoundIdsRef.current[side] = null;
+  
+      if (side === "A") {
+        setPlayingA(false);
+        setProgressA(0);
+        setLoadingA(false);
+      } else {
+        setPlayingB(false);
+        setProgressB(0);
+        setLoadingB(false);
+      }
+    };
+  
+    const createDeckHowl = (side, song) => {
+      const audioUrl = getSongAudio(song);
+  
+      if (!audioUrl) return null;
+  
+      if (side === "A") {
+        setLoadingA(true);
+      } else {
+        setLoadingB(true);
+      }
+  
+      const sound = new Howl({
+        src: [audioUrl],
+        html5: false,
+        preload: true,
+        format: getAudioFormat(audioUrl),
+        volume: getSideVolume(side),
+        rate: getSideRate(side),
+        xhr: {
+          method: "GET",
+          headers: {},
+          withCredentials: false,
+        },
+        onload: () => {
+          if (side === "A") {
+            setLoadingA(false);
+          } else {
+            setLoadingB(false);
+          }
+  
+          applyDeckControls();
+        },
+        onloaderror: (_, error) => {
+          console.log(`Deck ${side} WebAudio load failed. Trying HTML5 fallback:`, error);
+  
           try {
             sound.unload();
-          } catch (error) {
-            console.log("Howler cleanup error:", error);
+          } catch {
+            /* empty */
           }
-        });
-      };
-    }, []);
   
-    const loadToDeck = async (song, deck) => {
+          const fallback = new Howl({
+            src: [audioUrl],
+            html5: true,
+            preload: true,
+            format: getAudioFormat(audioUrl),
+            volume: getSideVolume(side),
+            rate: getSideRate(side),
+            onload: () => {
+              if (side === "A") {
+                setLoadingA(false);
+              } else {
+                setLoadingB(false);
+              }
+  
+              applyDeckControls();
+            },
+            onloaderror: (_, fallbackError) => {
+              console.log(`Deck ${side} fallback load failed:`, fallbackError);
+  
+              if (side === "A") {
+                setLoadingA(false);
+              } else {
+                setLoadingB(false);
+              }
+            },
+            onend: () => {
+              if (side === "A") {
+                setPlayingA(false);
+                setProgressA(0);
+              } else {
+                setPlayingB(false);
+                setProgressB(0);
+              }
+            },
+          });
+  
+          deckHowlsRef.current[side] = fallback;
+        },
+        onplayerror: (_, error) => {
+          console.log(`Deck ${side} play error:`, error);
+  
+          sound.once("unlock", () => {
+            const id = sound.play();
+            deckSoundIdsRef.current[side] = id;
+            applyDeckControls();
+          });
+        },
+        onend: () => {
+          if (side === "A") {
+            setPlayingA(false);
+            setProgressA(0);
+          } else {
+            setPlayingB(false);
+            setProgressB(0);
+          }
+        },
+      });
+  
+      deckHowlsRef.current[side] = sound;
+  
+      return sound;
+    };
+  
+    const loadToDeck = async (song, side) => {
       await unlockAudio();
   
-      if (deck === "A") {
-        if (deckARef.current) {
-          deckARef.current.pause();
-        }
+      unloadDeck(side);
   
+      if (side === "A") {
         setDeckA(song);
         setPlayingA(false);
         setProgressA(0);
-  
-        setTimeout(() => {
-          if (deckARef.current) {
-            deckARef.current.load();
-            applyDeckControls();
-          }
-        }, 50);
-      }
-  
-      if (deck === "B") {
-        if (deckBRef.current) {
-          deckBRef.current.pause();
-        }
-  
+      } else {
         setDeckB(song);
         setPlayingB(false);
         setProgressB(0);
-  
-        setTimeout(() => {
-          if (deckBRef.current) {
-            deckBRef.current.load();
-            applyDeckControls();
-          }
-        }, 50);
       }
+  
+      setTimeout(() => {
+        createDeckHowl(side, song);
+      }, 0);
     };
   
-    const toggleDeck = async (deck) => {
+    const toggleDeck = async (side) => {
       await unlockAudio();
   
-      if (deck === "A") {
-        if (!deckA || !deckARef.current) return;
+      const deck = side === "A" ? deckA : deckB;
   
-        applyDeckControls();
+      if (!deck) return;
   
-        if (playingA) {
-          deckARef.current.pause();
-          setPlayingA(false);
-        } else {
-          try {
-            await deckARef.current.play();
-            setPlayingA(true);
-          } catch (error) {
-            console.log("Deck A play error:", error);
-          }
-        }
+      let sound = getDeckHowl(side);
+  
+      if (!sound) {
+        sound = createDeckHowl(side, deck);
       }
   
-      if (deck === "B") {
-        if (!deckB || !deckBRef.current) return;
+      if (!sound) return;
   
-        applyDeckControls();
+      const isPlaying = side === "A" ? playingA : playingB;
   
-        if (playingB) {
-          deckBRef.current.pause();
-          setPlayingB(false);
-        } else {
-          try {
-            await deckBRef.current.play();
-            setPlayingB(true);
-          } catch (error) {
-            console.log("Deck B play error:", error);
-          }
+      if (isPlaying) {
+        try {
+          sound.pause(getDeckSoundId(side));
+        } catch {
+          sound.pause();
         }
+  
+        if (side === "A") {
+          setPlayingA(false);
+        } else {
+          setPlayingB(false);
+        }
+  
+        return;
+      }
+  
+      try {
+        const id = sound.play();
+        deckSoundIdsRef.current[side] = id;
+  
+        sound.volume(getSideVolume(side), id);
+        sound.rate(getSideRate(side), id);
+  
+        if (side === "A") {
+          setPlayingA(true);
+        } else {
+          setPlayingB(true);
+        }
+      } catch (error) {
+        console.log(`Deck ${side} play failed:`, error);
       }
     };
   
-    const stopDeck = (deck) => {
-      if (deck === "A" && deckARef.current) {
-        deckARef.current.pause();
-        deckARef.current.currentTime = 0;
-        setPlayingA(false);
-        setProgressA(0);
+    const stopDeck = (side) => {
+      const sound = getDeckHowl(side);
+  
+      if (!sound) return;
+  
+      try {
+        sound.stop(getDeckSoundId(side));
+        sound.seek(0);
+      } catch {
+        sound.stop();
       }
   
-      if (deck === "B" && deckBRef.current) {
-        deckBRef.current.pause();
-        deckBRef.current.currentTime = 0;
+      deckSoundIdsRef.current[side] = null;
+  
+      if (side === "A") {
+        setPlayingA(false);
+        setProgressA(0);
+      } else {
         setPlayingB(false);
         setProgressB(0);
       }
     };
   
-    const restartDeck = (deck) => {
-      if (deck === "A" && deckARef.current) {
-        deckARef.current.currentTime = 0;
-        setProgressA(0);
+    const restartDeck = (side) => {
+      const sound = getDeckHowl(side);
+  
+      if (!sound) return;
+  
+      try {
+        sound.seek(0, getDeckSoundId(side));
+      } catch {
+        sound.seek(0);
       }
   
-      if (deck === "B" && deckBRef.current) {
-        deckBRef.current.currentTime = 0;
+      if (side === "A") {
+        setProgressA(0);
+      } else {
         setProgressB(0);
       }
     };
   
-    const jumpDeck = (deck, seconds) => {
-      const audio = getDeckAudioElement(deck);
+    const jumpDeck = (side, seconds) => {
+      const sound = getDeckHowl(side);
   
-      if (!audio) return;
+      if (!sound) return;
   
-      audio.currentTime = Math.max(0, audio.currentTime + seconds);
+      const duration = sound.duration();
+  
+      if (!duration) return;
+  
+      const current = Number(sound.seek(getDeckSoundId(side))) || 0;
+      const next = clamp(current + seconds, 0, duration);
+  
+      sound.seek(next, getDeckSoundId(side));
     };
   
-    const handleTimeUpdate = (deck) => {
-      const audio = getDeckAudioElement(deck);
+    const seekDeck = (side, value) => {
+      const sound = getDeckHowl(side);
   
-      if (!audio || !audio.duration) return;
+      if (!sound) return;
   
-      const percentage = (audio.currentTime / audio.duration) * 100;
+      const duration = sound.duration();
   
-      if (deck === "A") {
-        setProgressA(percentage);
-      } else {
-        setProgressB(percentage);
-      }
-    };
+      if (!duration) return;
   
-    const seekDeck = (deck, value) => {
-      const audio = getDeckAudioElement(deck);
+      const nextTime = (Number(value) / 100) * duration;
   
-      if (!audio || !audio.duration) return;
+      sound.seek(nextTime, getDeckSoundId(side));
   
-      audio.currentTime = (Number(value) / 100) * audio.duration;
-  
-      if (deck === "A") {
+      if (side === "A") {
         setProgressA(Number(value));
       } else {
         setProgressB(Number(value));
       }
     };
+  
+    useEffect(() => {
+      progressTimerRef.current = window.setInterval(() => {
+        ["A", "B"].forEach((side) => {
+          const sound = getDeckHowl(side);
+  
+          if (!sound) return;
+  
+          const duration = sound.duration();
+  
+          if (!duration) return;
+  
+          const seek = Number(sound.seek(getDeckSoundId(side))) || 0;
+          const percentage = clamp((seek / duration) * 100, 0, 100);
+  
+          if (side === "A") {
+            setProgressA(percentage);
+          } else {
+            setProgressB(percentage);
+          }
+        });
+      }, 250);
+  
+      return () => {
+        if (progressTimerRef.current) {
+          window.clearInterval(progressTimerRef.current);
+        }
+      };
+    }, []);
+  
+    useEffect(() => {
+      return () => {
+        unloadDeck("A");
+        unloadDeck("B");
+  
+        Object.values(howlerSamplesRef.current).forEach((sound) => {
+          try {
+            sound.unload();
+          } catch (error) {
+            console.log("Howler sample cleanup error:", error);
+          }
+        });
+      };
+    }, []);
   
     const playTone = async ({
       frequency = 440,
@@ -504,9 +723,10 @@ import React, {
       if (!howlerSamplesRef.current[sampleKey]) {
         howlerSamplesRef.current[sampleKey] = new Howl({
           src: [audioUrl],
-          volume,
-          html5: true,
+          html5: false,
           preload: true,
+          format: getAudioFormat(audioUrl),
+          volume,
           onloaderror: (_, error) => {
             console.log("Howler sample load error:", error);
           },
@@ -685,15 +905,17 @@ import React, {
   
       if (fxId === "brake") {
         ["A", "B"].forEach((side) => {
-          const audio = getDeckAudioElement(side);
+          const sound = getDeckHowl(side);
   
-          if (!audio || audio.paused) return;
+          if (!sound || !sound.playing(getDeckSoundId(side))) return;
   
-          const oldRate = audio.playbackRate;
-          audio.playbackRate = Math.max(0.35, oldRate * 0.45);
+          const oldRate = getSideRate(side);
+          const soundId = getDeckSoundId(side);
+  
+          sound.rate(Math.max(0.35, oldRate * 0.45), soundId);
   
           setTimeout(() => {
-            audio.playbackRate = oldRate;
+            sound.rate(oldRate, soundId);
           }, 500);
         });
   
@@ -708,22 +930,23 @@ import React, {
   
       if (fxId === "roll") {
         ["A", "B"].forEach((side) => {
-          const audio = getDeckAudioElement(side);
+          const sound = getDeckHowl(side);
   
-          if (!audio || audio.paused) return;
+          if (!sound || !sound.playing(getDeckSoundId(side))) return;
   
-          const rollStart = audio.currentTime;
+          const soundId = getDeckSoundId(side);
+          const rollStart = Number(sound.seek(soundId)) || 0;
   
           setTimeout(() => {
-            if (!audio.paused) audio.currentTime = rollStart;
+            if (sound.playing(soundId)) sound.seek(rollStart, soundId);
           }, 110);
   
           setTimeout(() => {
-            if (!audio.paused) audio.currentTime = rollStart;
+            if (sound.playing(soundId)) sound.seek(rollStart, soundId);
           }, 220);
   
           setTimeout(() => {
-            if (!audio.paused) audio.currentTime = rollStart;
+            if (sound.playing(soundId)) sound.seek(rollStart, soundId);
           }, 330);
         });
   
@@ -754,17 +977,18 @@ import React, {
       });
   
       ["A", "B"].forEach((side) => {
-        const audio = getDeckAudioElement(side);
+        const sound = getDeckHowl(side);
   
-        if (!audio || audio.paused) return;
+        if (!sound || !sound.playing(getDeckSoundId(side))) return;
   
-        const loopStart = audio.currentTime;
+        const soundId = getDeckSoundId(side);
+        const loopStart = Number(sound.seek(soundId)) || 0;
         const beatLength = 60 / 128;
         const loopLength = beatLength * parsedSize;
   
         setTimeout(() => {
-          if (!audio.paused) {
-            audio.currentTime = loopStart;
+          if (sound.playing(soundId)) {
+            sound.seek(loopStart, soundId);
           }
         }, loopLength * 1000);
       });
@@ -857,8 +1081,8 @@ import React, {
     const renderDeck = ({
       side,
       deck,
-      audioRef,
       playing,
+      loading,
       volume,
       setVolume,
       pitch,
@@ -874,7 +1098,6 @@ import React, {
       setHigh,
     }) => {
       const label = side === "A" ? "DECK A" : "DECK B";
-      const deckAudio = deck ? getSongAudio(deck) : null;
   
       return (
         <div className="dj-deck-pro">
@@ -885,7 +1108,11 @@ import React, {
               <h3>{deck ? getSongTitle(deck) : "Load Track"}</h3>
   
               <p className="d-none d-sm-block">
-                {deck ? getArtistName(deck) : "Select a song"}
+                {loading
+                  ? "Loading audio..."
+                  : deck
+                    ? getArtistName(deck)
+                    : "Select a song"}
               </p>
             </div>
   
@@ -894,25 +1121,6 @@ import React, {
               <small className="d-none d-md-block">BPM</small>
             </div>
           </div>
-  
-          {deckAudio ? (
-            <audio
-              ref={audioRef}
-              src={deckAudio}
-              playsInline
-              preload="metadata"
-              onLoadedMetadata={applyDeckControls}
-              onCanPlay={applyDeckControls}
-              onTimeUpdate={() => handleTimeUpdate(side)}
-              onEnded={() => {
-                if (side === "A") {
-                  setPlayingA(false);
-                } else {
-                  setPlayingB(false);
-                }
-              }}
-            />
-          ) : null}
   
           <div className="deck-mobile-vinyl d-md-none">
             <div className={playing ? "vinyl-pro spinning" : "vinyl-pro"}>
@@ -988,7 +1196,7 @@ import React, {
               type="button"
               className="main-play"
               onClick={() => toggleDeck(side)}
-              disabled={!deck}
+              disabled={!deck || loading}
             >
               {playing ? <FaPause /> : <FaPlay />}
             </button>
@@ -1015,7 +1223,7 @@ import React, {
               <div className="deck-long-slider">
                 <div>
                   <FaVolumeUp />
-                  <span>Vol</span>
+                  <span>Vol {volume}</span>
                 </div>
   
                 <input
@@ -1024,6 +1232,7 @@ import React, {
                   max="100"
                   value={volume}
                   onChange={(e) => setVolume(Number(e.target.value))}
+                  onInput={(e) => setVolume(Number(e.currentTarget.value))}
                 />
               </div>
             </div>
@@ -1041,6 +1250,7 @@ import React, {
                   max="30"
                   value={pitch}
                   onChange={(e) => setPitch(Number(e.target.value))}
+                  onInput={(e) => setPitch(Number(e.currentTarget.value))}
                 />
               </div>
             </div>
@@ -1132,8 +1342,8 @@ import React, {
               {renderDeck({
                 side: "A",
                 deck: deckA,
-                audioRef: deckARef,
                 playing: playingA,
+                loading: loadingA,
                 volume: volumeA,
                 setVolume: setVolumeA,
                 pitch: pitchA,
@@ -1177,6 +1387,7 @@ import React, {
                     max="100"
                     value={crossfader}
                     onChange={(e) => setCrossfader(Number(e.target.value))}
+                    onInput={(e) => setCrossfader(Number(e.currentTarget.value))}
                   />
                 </div>
   
@@ -1250,8 +1461,8 @@ import React, {
               {renderDeck({
                 side: "B",
                 deck: deckB,
-                audioRef: deckBRef,
                 playing: playingB,
+                loading: loadingB,
                 volume: volumeB,
                 setVolume: setVolumeB,
                 pitch: pitchB,
@@ -1414,8 +1625,9 @@ import React, {
               <h3>DJ Sounds API Ready</h3>
   
               <p>
-                Later your API can return uploaded samples with <code>audioUrl</code>.
-                The sampler uses Howler, and deck playback stays Cloudinary-safe.
+                Deck A, Deck B, sampler pads, generated tones, loops, volume, gain,
+                pitch, mute, and crossfader now run through Howler/Web Audio first.
+                If a browser blocks Web Audio loading, it falls back to HTML5 audio.
               </p>
             </div>
   
