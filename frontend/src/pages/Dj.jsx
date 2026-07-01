@@ -10,11 +10,8 @@ import React, {
     FaBackward,
     FaBolt,
     FaBroadcastTower,
-    FaCompactDisc,
-    FaCrosshairs,
     FaDownload,
     FaHeadphones,
-    FaMicrophone,
     FaPause,
     FaPlay,
     FaRandom,
@@ -28,7 +25,6 @@ import React, {
     FaUndo,
     FaVolumeMute,
     FaVolumeUp,
-    FaWaveSquare,
   } from "react-icons/fa";
   
   import { MusicContext } from "../context/ShopContext";
@@ -128,13 +124,9 @@ import React, {
     };
   
     const getArtistName = (song) => {
-      if (!song?.artist) {
-        return "Choose from your music library";
-      }
+      if (!song?.artist) return "Choose from your library";
   
-      if (typeof song.artist === "string") {
-        return song.artist;
-      }
+      if (typeof song.artist === "string") return song.artist;
   
       return (
         song.artist.name ||
@@ -652,7 +644,7 @@ import React, {
   
               <h3>{deck ? getSongTitle(deck) : "Load Track"}</h3>
   
-              <p>{deck ? getArtistName(deck) : "Select a song below"}</p>
+              <p>{deck ? getArtistName(deck) : "Select a song"}</p>
             </div>
   
             <div className="deck-bpm-pill">
@@ -676,13 +668,7 @@ import React, {
   
           <div className="deck-body">
             <div className="vinyl-pro-wrap">
-              <div
-                className={
-                  playing
-                    ? "vinyl-pro spinning"
-                    : "vinyl-pro"
-                }
-              >
+              <div className={playing ? "vinyl-pro spinning" : "vinyl-pro"}>
                 <img
                   src={getSongImage(deck)}
                   alt={getSongTitle(deck)}
@@ -697,11 +683,11 @@ import React, {
   
             <div className="deck-wave-panel">
               <div className="fake-wave">
-                {Array.from({ length: 42 }).map((_, index) => (
+                {Array.from({ length: 32 }).map((_, index) => (
                   <span
                     key={index}
                     style={{
-                      height: `${18 + ((index * 13) % 46)}px`,
+                      height: `${14 + ((index * 11) % 36)}px`,
                     }}
                   />
                 ))}
@@ -744,7 +730,7 @@ import React, {
             <div className="deck-long-slider">
               <div>
                 <FaVolumeUp />
-                <span>Volume</span>
+                <span>Vol</span>
               </div>
   
               <input
@@ -759,7 +745,7 @@ import React, {
             <div className="deck-long-slider">
               <div>
                 <FaRandom />
-                <span>Pitch {pitch > 0 ? `+${pitch}` : pitch}%</span>
+                <span>{pitch > 0 ? `+${pitch}` : pitch}%</span>
               </div>
   
               <input
@@ -801,48 +787,40 @@ import React, {
   
     return (
       <div className="dj-page-pro">
-        <div className="container-fluid">
-          <div className="dj-topbar row align-items-center g-3">
+        <div className="container-fluid px-2 px-md-3 px-xl-4">
+          <div className="dj-topbar row align-items-center g-2 g-md-3">
             <div className="col-lg-8">
-              <span className="dj-label-pro">
-                SoundWave DJ Control Room
-              </span>
+              <span className="dj-label-pro">SoundWave DJ Control Room</span>
   
               <h1>DJ Essentials</h1>
   
               <p>
-                Professional two-deck controller layout with mixer, crossfader,
-                hot cues, EQ knobs, loop controls, FX rack, sampler pads, and your app songs.
+                Two decks, compact mixer, EQ knobs, loops, FX rack, sampler pads,
+                and your music library.
               </p>
             </div>
   
             <div className="col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
-              <button
-                className="dj-top-btn ghost"
-                onClick={resetMixer}
-              >
+              <button className="dj-top-btn ghost" onClick={resetMixer}>
                 <FaRedo />
                 Reset
               </button>
   
-              <button
-                className="dj-top-btn"
-                onClick={saveMixSetup}
-              >
+              <button className="dj-top-btn" onClick={saveMixSetup}>
                 <FaSave />
-                Save Setup
+                Save
               </button>
             </div>
           </div>
   
           <div className="mobile-landscape-hint">
-            Rotate your phone sideways for the best DJ controller view.
+            Swipe sideways to see the full DJ controller. Deck A, Mixer, and Deck B stay in one row.
           </div>
   
           <div className="dj-controller-scroll">
             <div className="dj-controller-wide">
-              <div className="row g-3 align-items-stretch flex-nowrap">
-                <div className="col-5">
+              <div className="dj-controller-row">
+                <div className="dj-deck-column">
                   {renderDeck({
                     side: "A",
                     deck: deckA,
@@ -864,7 +842,7 @@ import React, {
                   })}
                 </div>
   
-                <div className="col-2">
+                <div className="dj-mixer-column">
                   <div className="mixer-pro">
                     <div className="mixer-pro-title">
                       <FaHeadphones />
@@ -887,16 +865,11 @@ import React, {
                         min="0"
                         max="100"
                         value={crossfader}
-                        onChange={(e) =>
-                          setCrossfader(Number(e.target.value))
-                        }
+                        onChange={(e) => setCrossfader(Number(e.target.value))}
                       />
                     </div>
   
-                    <button
-                      className="sync-btn"
-                      onClick={syncBpm}
-                    >
+                    <button className="sync-btn" onClick={syncBpm}>
                       <FaSyncAlt />
                       Sync B
                     </button>
@@ -920,9 +893,7 @@ import React, {
                         {loopSizes.map((size) => (
                           <button
                             key={size}
-                            className={
-                              activeLoop === size ? "active" : ""
-                            }
+                            className={activeLoop === size ? "active" : ""}
                             onClick={() => triggerLoop(size)}
                           >
                             {size}
@@ -936,12 +907,12 @@ import React, {
   
                       <h4>FX Rack</h4>
   
-                      <p>Live effects ready</p>
+                      <p>Ready</p>
                     </div>
                   </div>
                 </div>
   
-                <div className="col-5">
+                <div className="dj-deck-column">
                   {renderDeck({
                     side: "B",
                     deck: deckB,
@@ -966,8 +937,8 @@ import React, {
             </div>
           </div>
   
-          <div className="row g-3 mt-3">
-            <div className="col-xl-5">
+          <div className="row g-2 g-md-3 mt-2 mt-md-3">
+            <div className="col-12 col-xl-5">
               <div className="dj-panel-pro h-100">
                 <div className="panel-title-pro">
                   <div>
@@ -999,7 +970,7 @@ import React, {
               </div>
             </div>
   
-            <div className="col-xl-7">
+            <div className="col-12 col-xl-7">
               <div className="dj-panel-pro h-100">
                 <div className="panel-title-pro">
                   <div>
@@ -1015,11 +986,7 @@ import React, {
                   {djPads.map((pad) => (
                     <button
                       key={pad.id}
-                      className={
-                        activePad === pad.id
-                          ? "pad-pro active"
-                          : "pad-pro"
-                      }
+                      className={activePad === pad.id ? "pad-pro active" : "pad-pro"}
                       onClick={() => triggerPad(pad)}
                     >
                       <strong>{pad.icon}</strong>
@@ -1032,7 +999,7 @@ import React, {
             </div>
           </div>
   
-          <div className="dj-panel-pro mt-3">
+          <div className="dj-panel-pro mt-2 mt-md-3">
             <div className="panel-title-pro library-title-row">
               <div>
                 <span>Music Crate</span>
@@ -1053,16 +1020,11 @@ import React, {
             </div>
   
             {filteredSongs.length === 0 ? (
-              <div className="dj-empty-pro">
-                No songs found.
-              </div>
+              <div className="dj-empty-pro">No songs found.</div>
             ) : (
               <div className="song-crate-grid">
                 {filteredSongs.map((song) => (
-                  <div
-                    key={song._id}
-                    className="crate-song-card"
-                  >
+                  <div key={song._id} className="crate-song-card">
                     <img
                       src={getSongImage(song)}
                       alt={getSongTitle(song)}
@@ -1078,13 +1040,9 @@ import React, {
                     </div>
   
                     <div className="crate-actions">
-                      <button onClick={() => loadToDeck(song, "A")}>
-                        A
-                      </button>
+                      <button onClick={() => loadToDeck(song, "A")}>A</button>
   
-                      <button onClick={() => loadToDeck(song, "B")}>
-                        B
-                      </button>
+                      <button onClick={() => loadToDeck(song, "B")}>B</button>
                     </div>
                   </div>
                 ))}
