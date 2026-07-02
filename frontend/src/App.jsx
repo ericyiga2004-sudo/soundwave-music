@@ -1,6 +1,6 @@
 import React from "react";
 import Navbar from "./components/Navbar/Navbar";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Explore from "./pages/Explore";
 import Library from "./pages/Library";
 import Liked from "./pages/Liked";
@@ -16,11 +16,22 @@ import YearsPage from "./pages/YearsPage";
 import Dj from "./pages/Dj";
 
 const App = () => {
-  return (
-    <div className="app">
-      <Navbar />
+  const location = useLocation();
 
-      <main className="main-content">
+  const isFullScreenMusicPage =
+    location.pathname.startsWith("/song/") || location.pathname === "/dj";
+
+  return (
+    <div className={isFullScreenMusicPage ? "app app-fullscreen-music" : "app"}>
+      {!isFullScreenMusicPage && <Navbar />}
+
+      <main
+        className={
+          isFullScreenMusicPage
+            ? "main-content main-content-fullscreen"
+            : "main-content"
+        }
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
@@ -32,13 +43,21 @@ const App = () => {
           <Route path="/song/:songId" element={<SongDetails />} />
           <Route path="/album/:albumId" element={<Album />} />
           <Route path="/dj" element={<Dj />} />
-
-          {/* Add this route */}
           <Route path="/yearly/:yearSlug" element={<YearsPage />} />
         </Routes>
       </main>
 
-      <MusicPlay />
+      {/* Keep MusicPlay mounted so audio/player context keeps working */}
+      <div
+        className={
+          isFullScreenMusicPage
+            ? "music-play-shell music-play-shell-hidden"
+            : "music-play-shell"
+        }
+        aria-hidden={isFullScreenMusicPage}
+      >
+        <MusicPlay />
+      </div>
     </div>
   );
 };

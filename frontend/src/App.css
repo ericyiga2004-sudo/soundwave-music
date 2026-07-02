@@ -11,6 +11,26 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+.main-content-fullscreen {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-height: 100svh;
+}
+
+/* Keep MusicPlay mounted, but hide its visual UI on full-screen music pages */
+.music-play-shell-hidden {
+  position: fixed;
+  left: -9999px;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 body,
 #root,
 .app,

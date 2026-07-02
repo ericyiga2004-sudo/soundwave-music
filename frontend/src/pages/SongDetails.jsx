@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   FaPlay,
   FaPause,
@@ -27,6 +28,7 @@ import {
   FaCheck,
   FaMusic,
   FaChevronUp,
+  FaChevronLeft,
 } from "react-icons/fa";
 import { MdRepeatOne } from "react-icons/md";
 
@@ -216,6 +218,7 @@ const normalizeSyncedLyrics = (lyrics = []) => {
 };
 
 const SongDetails = () => {
+  const navigate = useNavigate();
   const { songs = [], backendUrl, token } = useContext(MusicContext);
 
   const {
@@ -876,6 +879,15 @@ const SongDetails = () => {
   };
 
 
+  const handleGoBack = useCallback(() => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/");
+  }, [navigate]);
+
   const scrollToMobileDetails = useCallback(() => {
     mobileDetailsRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -1431,6 +1443,21 @@ const SongDetails = () => {
   if (!activeSong) {
     return (
       <main className="song-details song-details-empty">
+        <motion.button
+          type="button"
+          className="song-back-button"
+          onClick={handleGoBack}
+          initial={{ opacity: 0, x: -14 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileTap={{ scale: 0.94 }}
+          aria-label="Go back to previous page"
+        >
+          <span className="song-back-icon">
+            <FaChevronLeft />
+          </span>
+          <span className="song-back-text">Back</span>
+        </motion.button>
+
         <motion.section
           className="empty-player-card"
           initial={{ opacity: 0, y: 24 }}
@@ -1456,6 +1483,22 @@ const SongDetails = () => {
       <div className="song-details-bg" aria-hidden="true">
         <img src={activeSong.imageUrl} alt="" />
       </div>
+
+      <motion.button
+        type="button"
+        className="song-back-button"
+        onClick={handleGoBack}
+        initial={{ opacity: 0, x: -14 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ scale: 1.03, x: -2 }}
+        whileTap={{ scale: 0.94 }}
+        aria-label="Go back to previous page"
+      >
+        <span className="song-back-icon">
+          <FaChevronLeft />
+        </span>
+        <span className="song-back-text">Back</span>
+      </motion.button>
 
       {renderMobileSongDetails()}
 

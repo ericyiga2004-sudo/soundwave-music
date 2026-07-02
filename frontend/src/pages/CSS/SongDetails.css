@@ -2974,3 +2974,98 @@ button {
     transform: scaleY(1);
   }
 }
+
+/* ==========================
+   FANCY BACK BUTTON
+   Works on song details while Navbar / bottom player are hidden.
+========================== */
+.song-back-button {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 80;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px 7px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
+    rgba(6, 8, 14, 0.54);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.36),
+    0 0 34px rgba(30, 215, 96, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(22px) saturate(1.28);
+  -webkit-backdrop-filter: blur(22px) saturate(1.28);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.song-back-button::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(30, 215, 96, 0.34), rgba(0, 212, 255, 0.18), rgba(139, 92, 246, 0.28));
+  opacity: 0.58;
+  filter: blur(12px);
+  transition: opacity 180ms ease;
+}
+
+.song-back-button:hover,
+.song-back-button:focus-visible {
+  border-color: rgba(30, 215, 96, 0.42);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07)),
+    rgba(8, 12, 20, 0.68);
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.42),
+    0 0 42px rgba(30, 215, 96, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.song-back-button:hover::before,
+.song-back-button:focus-visible::before {
+  opacity: 0.92;
+}
+
+.song-back-button:focus-visible {
+  outline: 2px solid rgba(30, 215, 96, 0.78);
+  outline-offset: 4px;
+}
+
+.song-back-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #07120b;
+  background: linear-gradient(135deg, #ffffff 0%, var(--sd-accent) 100%);
+  box-shadow:
+    0 10px 24px rgba(30, 215, 96, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.song-back-icon svg {
+  font-size: 0.82rem;
+}
+
+.song-back-text {
+  padding-right: 2px;
+}
