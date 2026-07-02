@@ -26,6 +26,7 @@ import {
   FaTimes,
   FaCheck,
   FaMusic,
+  FaChevronUp,
 } from "react-icons/fa";
 import { MdRepeatOne } from "react-icons/md";
 
@@ -262,6 +263,7 @@ const SongDetails = () => {
   const [lyricsModalOpen, setLyricsModalOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
 
+  const mobileDetailsRef = useRef(null);
   const lyricsContainerRef = useRef(null);
   const lyricsModalContainerRef = useRef(null);
   const lyricRefs = useRef({});
@@ -873,6 +875,14 @@ const SongDetails = () => {
     setPlaylistStatus(`Selected ${playlistName}`);
   };
 
+
+  const scrollToMobileDetails = useCallback(() => {
+    mobileDetailsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
+
   const renderRepeatIcon = () => {
     if (repeat === "one" || repeat === 1) return <MdRepeatOne />;
     return <FaRedoAlt />;
@@ -990,264 +1000,433 @@ const SongDetails = () => {
 
   const renderMobileSongDetails = () => {
     const progressPercent = progressMax ? (displayProgress / progressMax) * 100 : 0;
+    const queueSongs = playlist?.length ? playlist : songs;
 
     return (
       <motion.section
         className="song-mobile-experience d-md-none"
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.45 }}
         aria-label="Mobile now playing"
       >
-        <div className="mobile-player-phone">
-          <div className="mobile-sticky-player glass-card">
-            <div className="mobile-phone-screen">
-              <motion.div
-                className={`mobile-cover-frame ${isPlaying ? "is-playing" : ""}`}
-                animate={{ y: isPlaying ? [0, -4, 0] : 0 }}
-                transition={{
+        <section className="mobile-now-playing-hero" aria-label="Full screen now playing">
+          <div className="mobile-hero-bg" aria-hidden="true">
+            <img src={activeSong.imageUrl} alt="" />
+          </div>
+
+          <div className="mobile-hero-shade" aria-hidden="true" />
+
+          <motion.div
+            className="mobile-hero-content"
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          >
+            <div className="mobile-top-label">
+              <span>Now Playing</span>
+              <span>{getAlbumTitle(activeSong)}</span>
+            </div>
+
+            <motion.div
+              className={`mobile-premium-cover ${isPlaying ? "is-playing" : ""}`}
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: isPlaying ? [0, -6, 0] : 0,
+              }}
+              transition={{
+                opacity: { duration: 0.45 },
+                scale: { duration: 0.45, ease: "easeOut" },
+                y: {
                   duration: 4,
                   repeat: isPlaying ? Infinity : 0,
                   ease: "easeInOut",
-                }}
+                },
+              }}
+            >
+              <img
+                src={activeSong.imageUrl}
+                alt={`${activeSong.title} album cover`}
+              />
+
+              <div className="mobile-cover-visualizer" aria-hidden="true">
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={isPlaying ? "playing" : ""}
+                    style={{
+                      "--delay": `${index * 0.08}s`,
+                      "--height": `${14 + ((index * 13) % 32)}px`,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            <div className="mobile-hero-song-copy">
+              <p>{getArtistName(activeSong)}</p>
+              <h1>{activeSong.title}</h1>
+            </div>
+
+            <div className="mobile-hero-progress">
+              <input
+                className="progress-slider mobile-premium-progress"
+                type="range"
+                min="0"
+                max={progressMax || 0}
+                step="0.01"
+                value={clamp(Number(displayProgress) || 0, 0, progressMax || 0)}
+                onChange={handleSeek}
+                aria-label="Song progress"
+                style={{ "--progress-percent": `${progressPercent}%` }}
+              />
+
+              <div className="mobile-hero-time-row">
+                <time>{formatTime(displayProgress)}</time>
+                <time>{formatTime(totalDuration)}</time>
+              </div>
+            </div>
+
+            <div className="mobile-primary-controls" aria-label="Player controls">
+              <motion.button
+                type="button"
+                className={`mobile-icon-control ${shuffle ? "active" : ""}`}
+                onClick={handleShuffle}
+                whileTap={{ scale: 0.88 }}
+                aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
+                aria-pressed={Boolean(shuffle)}
               >
-                <img
-                  src={activeSong.imageUrl}
-                  alt={`${activeSong.title} album cover`}
-                />
-              </motion.div>
+                <FaRandom />
+              </motion.button>
 
-              <div className="mobile-song-copy">
-                <p className="eyebrow">Audio Recording Title</p>
-                <h1>{activeSong.title}</h1>
-                <p>{getArtistName(activeSong)}</p>
+              <motion.button
+                type="button"
+                className="mobile-icon-control"
+                onClick={prevSong}
+                whileTap={{ scale: 0.88 }}
+                aria-label="Previous song"
+              >
+                <FaStepBackward />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-main-play"
+                onClick={handlePlayPause}
+                whileTap={{ scale: 0.92 }}
+                aria-label={isPlaying ? "Pause song" : "Play song"}
+              >
+                {isPlaying ? <FaPause /> : <FaPlay />}
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-icon-control"
+                onClick={nextSong}
+                whileTap={{ scale: 0.88 }}
+                aria-label="Next song"
+              >
+                <FaStepForward />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className={`mobile-icon-control ${
+                  repeat === "one" ||
+                  repeat === "all" ||
+                  repeat === true ||
+                  repeat === 1
+                    ? "active"
+                    : ""
+                }`}
+                onClick={handleRepeat}
+                whileTap={{ scale: 0.88 }}
+                aria-label={repeatLabel(repeat)}
+                aria-pressed={
+                  repeat === "one" ||
+                  repeat === "all" ||
+                  repeat === true ||
+                  repeat === 1
+                }
+              >
+                {renderRepeatIcon()}
+              </motion.button>
+            </div>
+
+            <div className="mobile-secondary-actions" aria-label="Song actions">
+              <motion.button
+                type="button"
+                className={`mobile-pill-action ${liked ? "liked" : ""}`}
+                onClick={handleToggleLike}
+                disabled={!token || likeLoading}
+                whileTap={{ scale: 0.94 }}
+                aria-label={liked ? "Unlike song" : "Like song"}
+                aria-pressed={liked}
+              >
+                {liked ? <FaHeart /> : <FaRegHeart />}
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-pill-action"
+                onClick={handleShare}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Share song"
+              >
+                <FaShareAlt />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-pill-action"
+                onClick={handleDownload}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Download song"
+              >
+                <FaDownload />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-pill-action"
+                onClick={openPlaylistModal}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Add to playlist"
+              >
+                <FaPlus />
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-pill-action"
+                onClick={() => setQueueOpen(true)}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Open queue"
+              >
+                <FaListUl />
+              </motion.button>
+            </div>
+
+            <motion.button
+              type="button"
+              className="mobile-scroll-cue"
+              onClick={scrollToMobileDetails}
+              animate={{ y: [0, -8, 0] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              aria-label="Swipe up for song details"
+            >
+              <span>More details</span>
+              <FaChevronUp />
+            </motion.button>
+          </motion.div>
+        </section>
+
+        <motion.section
+          ref={mobileDetailsRef}
+          className="mobile-details-stage"
+          initial={{ opacity: 0, y: 26 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          aria-label="Song details and recommendations"
+        >
+          <section className="mobile-detail-panel mobile-song-meta-panel">
+            <p className="eyebrow">Song Details</p>
+            <h2>{activeSong.title}</h2>
+
+            <dl className="mobile-premium-detail-list">
+              <div>
+                <dt>Artist</dt>
+                <dd>{getArtistName(activeSong)}</dd>
               </div>
 
-              <div className="mobile-progress-block">
-                <input
-                  className="progress-slider mobile-progress-slider"
-                  type="range"
-                  min="0"
-                  max={progressMax || 0}
-                  step="0.01"
-                  value={clamp(Number(displayProgress) || 0, 0, progressMax || 0)}
-                  onChange={handleSeek}
-                  aria-label="Song progress"
-                  style={{ "--progress-percent": `${progressPercent}%` }}
-                />
-
-                <div className="mobile-time-row">
-                  <time>{formatTime(displayProgress)}</time>
-                  <time>{formatTime(totalDuration)}</time>
-                </div>
+              <div>
+                <dt>Album</dt>
+                <dd>{getAlbumTitle(activeSong)}</dd>
               </div>
 
-              <div className="mobile-control-row" aria-label="Mobile controls">
-                <motion.button
-                  type="button"
-                  className={`mobile-round-btn ${shuffle ? "active" : ""}`}
-                  onClick={handleShuffle}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
-                  aria-pressed={Boolean(shuffle)}
-                >
-                  <FaRandom />
-                </motion.button>
+              <div>
+                <dt>Genre</dt>
+                <dd>{activeSong.genre || "Unknown"}</dd>
+              </div>
 
-                <motion.button
-                  type="button"
-                  className="mobile-round-btn"
-                  onClick={prevSong}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label="Previous song"
-                >
-                  <FaStepBackward />
-                </motion.button>
+              <div>
+                <dt>Release Date</dt>
+                <dd>{formatDate(activeSong.releaseDate)}</dd>
+              </div>
 
-                <motion.button
-                  type="button"
-                  className="mobile-play-btn"
-                  onClick={handlePlayPause}
-                  whileTap={{ scale: 0.92 }}
-                  aria-label={isPlaying ? "Pause song" : "Play song"}
-                >
-                  {isPlaying ? <FaPause /> : <FaPlay />}
-                </motion.button>
+              <div>
+                <dt>Release Year</dt>
+                <dd>{activeSong.releaseYear || "Unknown"}</dd>
+              </div>
 
-                <motion.button
-                  type="button"
-                  className="mobile-round-btn"
-                  onClick={nextSong}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label="Next song"
-                >
-                  <FaStepForward />
-                </motion.button>
+              <div>
+                <dt>Duration</dt>
+                <dd>{formatTime(totalDuration)}</dd>
+              </div>
+            </dl>
+          </section>
 
-                <motion.button
-                  type="button"
-                  className={`mobile-round-btn ${
-                    repeat === "one" ||
-                    repeat === "all" ||
-                    repeat === true ||
-                    repeat === 1
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={handleRepeat}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={repeatLabel(repeat)}
-                  aria-pressed={
-                    repeat === "one" ||
-                    repeat === "all" ||
-                    repeat === true ||
-                    repeat === 1
-                  }
-                >
-                  {renderRepeatIcon()}
-                </motion.button>
+          <section className="mobile-detail-panel mobile-lyrics-panel">
+            {renderLyricsContent("page")}
+          </section>
+
+          <section className="mobile-detail-panel">
+            <div className="mobile-section-title-row">
+              <div>
+                <p className="eyebrow">Up Next</p>
+                <h2>Recommended Songs</h2>
               </div>
 
               <button
                 type="button"
-                className="mobile-lyrics-button"
-                onClick={() => setLyricsModalOpen(true)}
-                aria-label="Show lyrics"
+                className="mobile-mini-button"
+                onClick={() => setQueueOpen(true)}
+                aria-label="Open queue"
               >
-                <FaMusic />
-                Show Lyrics
+                <FaListUl />
               </button>
             </div>
-          </div>
 
-          <div className="mobile-snap-stack" aria-label="Song detail sections">
-            <section className="mobile-snap-card glass-card" aria-label="Song details">
-              <p className="eyebrow">Song Details</p>
-              <h2>{activeSong.title}</h2>
-              <dl className="mobile-detail-list">
-                <div>
-                  <dt>Artist</dt>
-                  <dd>{getArtistName(activeSong)}</dd>
-                </div>
-                <div>
-                  <dt>Album</dt>
-                  <dd>{getAlbumTitle(activeSong)}</dd>
-                </div>
-                <div>
-                  <dt>Genre</dt>
-                  <dd>{activeSong.genre || "Unknown"}</dd>
-                </div>
-              </dl>
-            </section>
-
-            <section className="mobile-snap-card glass-card" aria-label="Release details">
-              <p className="eyebrow">Release</p>
-              <h2>Track Info</h2>
-              <dl className="mobile-detail-list">
-                <div>
-                  <dt>Release Date</dt>
-                  <dd>{formatDate(activeSong.releaseDate)}</dd>
-                </div>
-                <div>
-                  <dt>Release Year</dt>
-                  <dd>{activeSong.releaseYear || "Unknown"}</dd>
-                </div>
-                <div>
-                  <dt>Duration</dt>
-                  <dd>{formatTime(totalDuration)}</dd>
-                </div>
-              </dl>
-            </section>
-
-            <section className="mobile-snap-card glass-card" aria-label="Actions and stats">
-              <p className="eyebrow">Actions</p>
-              <h2>Save & Share</h2>
-              <div className="mobile-action-grid">
-                <button
+            <div className="mobile-recommended-list">
+              {recommendedSongs.slice(0, 8).map((song) => (
+                <motion.button
+                  key={song._id}
                   type="button"
-                  className={`mobile-action-btn ${liked ? "liked" : ""}`}
-                  onClick={handleToggleLike}
-                  disabled={!token || likeLoading}
-                  aria-label={liked ? "Unlike song" : "Like song"}
-                  aria-pressed={liked}
+                  className="mobile-recommended-song"
+                  onClick={() => handlePlayRecommended(song)}
+                  whileTap={{ scale: 0.98 }}
+                  aria-label={`Play ${song.title} by ${getArtistName(song)}`}
                 >
-                  {liked ? <FaHeart /> : <FaRegHeart />}
-                  <span>{likesCount.toLocaleString()} Likes</span>
-                </button>
+                  <img src={song.imageUrl} alt="" />
+                  <span>
+                    <strong>{song.title}</strong>
+                    <small>{getArtistName(song)}</small>
+                  </span>
+                  <em>{formatTime(song.duration)}</em>
+                </motion.button>
+              ))}
+            </div>
+          </section>
 
-                <button
-                  type="button"
-                  className="mobile-action-btn"
-                  onClick={openPlaylistModal}
-                  aria-label="Add to playlist"
-                >
-                  <FaPlus />
-                  <span>Playlist</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="mobile-action-btn"
-                  onClick={handleShare}
-                  aria-label="Share song"
-                >
-                  <FaShareAlt />
-                  <span>{shareStatus || "Share"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="mobile-action-btn"
-                  onClick={handleDownload}
-                  aria-label="Download song"
-                >
-                  <FaDownload />
-                  <span>Download</span>
-                </button>
-              </div>
-            </section>
-
-            <section className="mobile-snap-card glass-card" aria-label="Recommended songs">
-              <div className="mobile-section-title-row">
-                <div>
-                  <p className="eyebrow">Up Next</p>
-                  <h2>Recommended</h2>
-                </div>
-                <button
-                  type="button"
-                  className="mobile-round-btn"
-                  onClick={() => setQueueOpen(true)}
-                  aria-label="Open queue"
-                >
-                  <FaListUl />
-                </button>
+          <section className="mobile-detail-panel">
+            <div className="mobile-section-title-row">
+              <div>
+                <p className="eyebrow">Queue</p>
+                <h2>Playing Next</h2>
               </div>
 
-              <div className="mobile-recommended-list">
-                {recommendedSongs.slice(0, 5).map((song) => (
-                  <button
-                    key={song._id}
-                    type="button"
-                    className="mobile-recommended-song"
-                    onClick={() => handlePlayRecommended(song)}
-                    aria-label={`Play ${song.title} by ${getArtistName(song)}`}
-                  >
-                    <img src={song.imageUrl} alt="" />
-                    <span>
-                      <strong>{song.title}</strong>
-                      <small>{getArtistName(song)}</small>
-                    </span>
-                    <em>{formatTime(song.duration)}</em>
-                  </button>
-                ))}
-              </div>
-            </section>
-          </div>
-        </div>
+              <button
+                type="button"
+                className="mobile-mini-button"
+                onClick={() => setQueueOpen(true)}
+                aria-label="View full queue"
+              >
+                <FaListUl />
+              </button>
+            </div>
+
+            <div className="mobile-recommended-list">
+              {queueSongs.slice(0, 6).map((song, index) => (
+                <motion.button
+                  key={`${song._id}-${index}`}
+                  type="button"
+                  className={`mobile-recommended-song ${
+                    song?._id === activeSong?._id ? "active" : ""
+                  }`}
+                  onClick={() => handlePlayRecommended(song)}
+                  whileTap={{ scale: 0.98 }}
+                  aria-label={`Play ${song.title} by ${getArtistName(song)}`}
+                >
+                  <img src={song.imageUrl} alt="" />
+                  <span>
+                    <strong>{song.title}</strong>
+                    <small>{getArtistName(song)}</small>
+                  </span>
+                  <em>{song?._id === activeSong?._id ? "Now" : index + 1}</em>
+                </motion.button>
+              ))}
+            </div>
+          </section>
+
+          <section className="mobile-detail-panel mobile-actions-panel">
+            <p className="eyebrow">Actions</p>
+            <h2>Save, Share & Playlist</h2>
+
+            <div className="mobile-action-grid">
+              <button
+                type="button"
+                className={`mobile-action-btn ${liked ? "liked" : ""}`}
+                onClick={handleToggleLike}
+                disabled={!token || likeLoading}
+                aria-label={liked ? "Unlike song" : "Like song"}
+                aria-pressed={liked}
+              >
+                {liked ? <FaHeart /> : <FaRegHeart />}
+                <span>{likesCount.toLocaleString()} Likes</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={openPlaylistModal}
+                aria-label="Add to playlist"
+              >
+                <FaPlus />
+                <span>Playlist</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={handleShare}
+                aria-label="Share song"
+              >
+                <FaShareAlt />
+                <span>{shareStatus || "Share"}</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={handleDownload}
+                aria-label="Download song"
+              >
+                <FaDownload />
+                <span>Download</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={() => setLyricsModalOpen(true)}
+                aria-label="Open lyrics"
+              >
+                <FaMusic />
+                <span>Lyrics</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn"
+                onClick={() => setQueueOpen(true)}
+                aria-label="Open queue"
+              >
+                <FaListUl />
+                <span>Queue</span>
+              </button>
+            </div>
+          </section>
+        </motion.section>
       </motion.section>
     );
   };
-
 
   if (!activeSong) {
     return (
