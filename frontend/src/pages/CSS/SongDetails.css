@@ -3069,3 +3069,265 @@ button {
 .song-back-text {
   padding-right: 2px;
 }
+
+
+/* ==========================
+   FULL-PAGE LYRICS EXPERIENCE
+   Button opens a true immersive lyrics overlay.
+   Active lyrics auto-scroll only inside .lyrics-scroll.
+========================== */
+
+.mobile-lyrics-launch {
+  justify-self: center;
+  width: min(100%, 310px);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #06120b;
+  background:
+    linear-gradient(135deg, #ffffff 0%, var(--sd-accent) 100%),
+    var(--sd-accent);
+  box-shadow:
+    0 18px 40px rgba(30, 215, 96, 0.28),
+    0 0 52px rgba(30, 215, 96, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.58);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 950;
+  letter-spacing: -0.015em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-lyrics-launch-icon {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(3, 18, 8, 0.12);
+}
+
+.mobile-lyrics-launch:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.95);
+  outline-offset: 4px;
+}
+
+.lyrics-fullscreen-backdrop {
+  z-index: 120;
+  display: grid;
+  place-items: stretch;
+  padding: 0;
+  overflow: hidden;
+  background: #020308;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.lyrics-fullscreen-bg {
+  position: absolute;
+  inset: -42px;
+  z-index: 0;
+  opacity: 0.58;
+  filter: blur(38px) saturate(1.35) contrast(1.05);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+.lyrics-fullscreen-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lyrics-fullscreen-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 12%, rgba(30, 215, 96, 0.18), transparent 34%),
+    radial-gradient(circle at 84% 18%, rgba(139, 92, 246, 0.18), transparent 38%),
+    linear-gradient(180deg, rgba(2, 3, 8, 0.78) 0%, rgba(2, 3, 8, 0.7) 38%, rgba(2, 3, 8, 0.96) 100%);
+}
+
+.lyrics-fullscreen-card {
+  position: relative;
+  z-index: 2;
+  width: 100vw;
+  height: 100svh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--sd-text);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    rgba(3, 4, 10, 0.72);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: blur(20px) saturate(1.18);
+  -webkit-backdrop-filter: blur(20px) saturate(1.18);
+}
+
+.lyrics-fullscreen-card .lyrics-header {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    clamp(16px, 4vw, 34px)
+    14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(3, 4, 10, 0.82), rgba(3, 4, 10, 0.34));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.lyrics-fullscreen-card .lyrics-header > div:first-child {
+  min-width: 0;
+}
+
+.lyrics-fullscreen-card .lyrics-header h2 {
+  max-width: min(720px, calc(100vw - 168px));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(1.35rem, 5vw, 3.2rem);
+}
+
+.lyrics-fullscreen-card .lyrics-header small {
+  max-width: min(720px, calc(100vw - 168px));
+}
+
+.lyrics-fullscreen-card .lyrics-time {
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lyrics-fullscreen-card .lyrics-header .icon-button {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lyrics-fullscreen-card .lyrics-scroll {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding:
+    clamp(90px, 24svh, 240px)
+    clamp(12px, 5vw, 72px)
+    clamp(140px, 32svh, 320px);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.lyrics-fullscreen-card .lyric-line {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: clamp(12px, 2.8vw, 24px) clamp(12px, 3vw, 28px);
+  border-radius: clamp(18px, 4vw, 34px);
+  font-size: clamp(1.55rem, 8.2vw, 5.8rem);
+  line-height: 1.04;
+  text-align: center;
+}
+
+.lyrics-fullscreen-card .lyric-line.active {
+  transform-origin: center;
+  background:
+    linear-gradient(135deg, rgba(30, 215, 96, 0.2), rgba(0, 212, 255, 0.12), rgba(139, 92, 246, 0.16)),
+    rgba(255, 255, 255, 0.075);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.11),
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 56px rgba(30, 215, 96, 0.14);
+}
+
+.lyrics-fullscreen-card .no-lyrics {
+  min-height: 100%;
+}
+
+@supports not (height: 100svh) {
+  .lyrics-fullscreen-card {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 560px) {
+  .lyrics-fullscreen-card .lyrics-header {
+    padding:
+      max(14px, env(safe-area-inset-top))
+      12px
+      10px;
+    gap: 8px;
+  }
+
+  .lyrics-fullscreen-card .lyrics-header h2 {
+    max-width: calc(100vw - 132px);
+    font-size: 1.05rem;
+  }
+
+  .lyrics-fullscreen-card .lyrics-header small {
+    max-width: calc(100vw - 132px);
+    font-size: 0.7rem;
+  }
+
+  .lyrics-fullscreen-card .lyrics-header-actions {
+    gap: 7px;
+  }
+
+  .lyrics-fullscreen-card .lyrics-time {
+    padding: 6px 8px;
+    font-size: 0.64rem;
+  }
+
+  .lyrics-fullscreen-card .lyrics-scroll {
+    padding: 24svh 8px 35svh;
+  }
+
+  .lyrics-fullscreen-card .lyric-line {
+    padding: 10px 9px;
+    border-radius: 16px;
+    font-size: clamp(1.3rem, 9vw, 2.7rem);
+    text-align: left;
+  }
+
+  .mobile-lyrics-launch {
+    min-height: 44px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .lyrics-fullscreen-card .lyrics-header h2,
+  .lyrics-fullscreen-card .lyrics-header small {
+    max-width: calc(100vw - 118px);
+  }
+
+  .lyrics-fullscreen-card .lyrics-scroll {
+    padding: 22svh 6px 34svh;
+  }
+
+  .lyrics-fullscreen-card .lyric-line {
+    font-size: clamp(1.13rem, 8.6vw, 2.15rem);
+  }
+}
+
+
+@media (min-width: 768px) {
+  .show-lyrics-dock-btn {
+    display: inline-flex !important;
+  }
+}

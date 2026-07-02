@@ -675,6 +675,17 @@ const SongDetails = () => {
     audio.muted = muted;
   }, [audioRef, muted, volume]);
 
+  useEffect(() => {
+    if (!lyricsModalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lyricsModalOpen]);
+
   const fetchPlaylists = useCallback(async () => {
     if (!backendUrl || !token) {
       setPlaylists([]);
@@ -1223,6 +1234,19 @@ const SongDetails = () => {
 
             <motion.button
               type="button"
+              className="mobile-lyrics-launch"
+              onClick={() => setLyricsModalOpen(true)}
+              whileTap={{ scale: 0.96 }}
+              aria-label="Open full screen lyrics"
+            >
+              <span className="mobile-lyrics-launch-icon">
+                <FaMusic />
+              </span>
+              <span>Full Screen Lyrics</span>
+            </motion.button>
+
+            <motion.button
+              type="button"
               className="mobile-scroll-cue"
               onClick={scrollToMobileDetails}
               animate={{ y: [0, -8, 0] }}
@@ -1418,10 +1442,10 @@ const SongDetails = () => {
                 type="button"
                 className="mobile-action-btn"
                 onClick={() => setLyricsModalOpen(true)}
-                aria-label="Open lyrics"
+                aria-label="Open full screen lyrics"
               >
                 <FaMusic />
-                <span>Lyrics</span>
+                <span>Lyrics View</span>
               </button>
 
               <button
@@ -1544,7 +1568,7 @@ const SongDetails = () => {
             aria-label="Show lyrics"
           >
             <FaMusic />
-            Show Lyrics
+            Full Screen Lyrics
           </button>
 
           <div className="visualizer" aria-hidden="true">
@@ -1781,12 +1805,12 @@ const SongDetails = () => {
 
           <button
             type="button"
-            className="show-lyrics-dock-btn d-md-none"
+            className="show-lyrics-dock-btn"
             onClick={() => setLyricsModalOpen(true)}
             aria-label="Show lyrics"
           >
             <FaMusic />
-            Show Lyrics
+            Full Screen Lyrics
           </button>
         </div>
       </div>
@@ -1873,22 +1897,26 @@ const SongDetails = () => {
       <AnimatePresence>
         {lyricsModalOpen && (
           <motion.div
-            className="modal-backdrop lyrics-mobile-backdrop d-md-none"
+            className="modal-backdrop lyrics-fullscreen-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             role="presentation"
             onClick={() => setLyricsModalOpen(false)}
           >
+            <div className="lyrics-fullscreen-bg" aria-hidden="true">
+              <img src={activeSong.imageUrl} alt="" />
+            </div>
+
             <motion.section
-              className="modal-card lyrics-modal-card glass-card"
-              initial={{ opacity: 0, y: 28, scale: 0.96 }}
+              className="lyrics-fullscreen-card"
+              initial={{ opacity: 0, y: 36, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 18, scale: 0.96 }}
-              transition={{ duration: 0.22 }}
+              exit={{ opacity: 0, y: 22, scale: 0.96 }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
               role="dialog"
               aria-modal="true"
-              aria-label="Live lyrics"
+              aria-label="Full screen live lyrics"
               onClick={(event) => event.stopPropagation()}
             >
               {renderLyricsContent("modal")}
