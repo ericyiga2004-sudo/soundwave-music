@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaBackward,
   FaBolt,
@@ -149,6 +150,7 @@ const getCrossfaderBalanceLabel = (value) => {
 };
 
 const Dj = () => {
+  const navigate = useNavigate();
   const { songs = [] } = useContext(MusicContext) || {};
 
   const deckHowlsRef = useRef({ A: null, B: null });
@@ -2358,8 +2360,28 @@ const Dj = () => {
     );
   };
 
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/");
+  };
+
   return (
     <div className="dj-page-pro">
+      <button
+        type="button"
+        className="dj-back-button-pro"
+        onClick={handleGoBack}
+        aria-label="Go back to previous page"
+      >
+        <span className="dj-back-icon-pro">
+          <FaBackward />
+        </span>
+        <span>Back</span>
+      </button>
       <div className="dj-hero-pro">
         <div>
           <span className="dj-kicker-pro">
