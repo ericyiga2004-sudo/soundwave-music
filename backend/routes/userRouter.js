@@ -95,36 +95,18 @@ import authUser from "../middleware/authUser.js";
 const userRouter = express.Router();
 
 // REGISTER
-userRouter.post(
-  "/register",
-  registerUser
-);
+userRouter.post("/register", registerUser);
 
 // LOGIN
-userRouter.post(
-  "/login",
-  loginUser
-);
+userRouter.post("/login", loginUser);
 
 // PROFILE
-userRouter.get(
-  "/profile",
-  authUser,
-  getProfile
-);
+userRouter.get("/profile", authUser, getProfile);
 
 // PERSONALIZED RECOMMENDATIONS
-userRouter.get(
-  "/recommendations",
-  authUser,
-  getRecommendations
-);
+userRouter.get("/recommendations", authUser, getRecommendations);
 
 // BECAUSE YOU LIKED
-userRouter.get(
-  "/because-you-liked",
-  authUser,
-  getBecauseYouLiked
-);
+userRouter.get("/because-you-liked", authUser, getBecauseYouLiked);
 
 export default userRouter;

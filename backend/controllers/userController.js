@@ -443,3 +443,60 @@ export const getBecauseYouLiked = async (req, res) => {
     });
   }
 };
+
+// =====================================
+// SAVE USER LOCATION
+// =====================================
+
+export const saveUserLocation = async (req, res) => {
+  try {
+    const { latitude, longitude, accuracy } = req.body;
+
+    if (
+      typeof latitude !== "number" ||
+      typeof longitude !== "number"
+    ) {
+      return res.json({
+        success: false,
+        message: "Valid latitude and longitude are required",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $set: {
+          location: {
+            latitude,
+            longitude,
+            accuracy: typeof accuracy === "number" ? accuracy : null,
+            updatedAt: new Date(),
+          },
+        },
+      },
+      {
+        new: true,
+      }
+    ).select("location");
+
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Location saved successfully",
+      location: user.location,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
