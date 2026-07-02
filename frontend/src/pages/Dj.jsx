@@ -2,21 +2,34 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBackward,
   FaBolt,
+  FaBomb,
   FaBroadcastTower,
+  FaBullhorn,
+  FaCog,
+  FaCompactDisc,
   FaDownload,
+  FaDrum,
+  FaExclamationTriangle,
+  FaFilter,
   FaHeadphones,
+  FaKeyboard,
   FaMicrophone,
   FaPause,
   FaPlay,
   FaRandom,
   FaRecordVinyl,
   FaRedo,
+  FaRetweet,
   FaSearch,
   FaSlidersH,
   FaStop,
   FaSyncAlt,
+  FaTag,
   FaUndo,
+  FaUsers,
   FaVolumeMute,
+  FaVolumeUp,
+  FaWind,
 } from "react-icons/fa";
 import { Howl, Howler } from "howler";
 import WaveSurfer from "wavesurfer.js";
@@ -25,37 +38,37 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./CSS/Dj.css";
 
 const djPads = [
-  { id: "airhorn", name: "Air Horn", icon: "📯", type: "horn" },
-  { id: "scratch", name: "Scratch", icon: "💿", type: "scratch" },
-  { id: "laser", name: "Laser", icon: "🔫", type: "laser" },
-  { id: "drop", name: "Bass Drop", icon: "💥", type: "drop" },
-  { id: "crowd", name: "Crowd", icon: "🙌", type: "crowd" },
-  { id: "rewind", name: "Rewind", icon: "⏪", type: "rewind" },
-  { id: "siren", name: "Siren", icon: "🚨", type: "siren" },
-  { id: "tag", name: "DJ Tag", icon: "🎤", type: "tag" },
-  { id: "impact", name: "Impact", icon: "⚡", type: "drop" },
-  { id: "vinylstop", name: "Vinyl Stop", icon: "🛑", type: "rewind" },
-  { id: "transition", name: "Sweep", icon: "🌪️", type: "laser" },
-  { id: "noise", name: "Noise", icon: "✨", type: "crowd" },
+  { id: "airhorn", name: "Air Horn", icon: FaBullhorn, type: "horn" },
+  { id: "scratch", name: "Scratch", icon: FaCompactDisc, type: "scratch" },
+  { id: "laser", name: "Laser", icon: FaBolt, type: "laser" },
+  { id: "drop", name: "Bass Drop", icon: FaBomb, type: "drop" },
+  { id: "crowd", name: "Crowd", icon: FaUsers, type: "crowd" },
+  { id: "rewind", name: "Rewind", icon: FaBackward, type: "rewind" },
+  { id: "siren", name: "Siren", icon: FaExclamationTriangle, type: "siren" },
+  { id: "tag", name: "DJ Tag", icon: FaTag, type: "tag" },
+  { id: "impact", name: "Impact", icon: FaBolt, type: "drop" },
+  { id: "vinylstop", name: "Vinyl Stop", icon: FaStop, type: "rewind" },
+  { id: "transition", name: "Sweep", icon: FaWind, type: "laser" },
+  { id: "noise", name: "Noise", icon: FaVolumeUp, type: "crowd" },
 ];
 
 const fxButtons = [
-  { id: "echo", name: "Echo", icon: "🔊" },
-  { id: "reverb", name: "Reverb", icon: "🌌" },
-  { id: "filter", name: "Filter", icon: "🌀" },
-  { id: "flanger", name: "Flanger", icon: "⚙️" },
-  { id: "brake", name: "Brake", icon: "🛑" },
-  { id: "roll", name: "Roll", icon: "🔁" },
-  { id: "siren", name: "Siren", icon: "🚨" },
-  { id: "whoosh", name: "Whoosh", icon: "🌬️" },
-  { id: "stutter", name: "Stutter", icon: "⚡" },
+  { id: "echo", name: "Echo", icon: FaVolumeUp },
+  { id: "reverb", name: "Reverb", icon: FaBroadcastTower },
+  { id: "filter", name: "Filter", icon: FaFilter },
+  { id: "flanger", name: "Flanger", icon: FaCog },
+  { id: "brake", name: "Brake", icon: FaStop },
+  { id: "roll", name: "Roll", icon: FaRetweet },
+  { id: "siren", name: "Siren", icon: FaExclamationTriangle },
+  { id: "whoosh", name: "Whoosh", icon: FaWind },
+  { id: "stutter", name: "Stutter", icon: FaBolt },
 ];
 
 const stemButtons = [
-  { id: "vocal", name: "Vocal", icon: "🎙️" },
-  { id: "drums", name: "Drums", icon: "🥁" },
-  { id: "bass", name: "Bass", icon: "🎚️" },
-  { id: "music", name: "Music", icon: "🎹" },
+  { id: "vocal", name: "Vocal", icon: FaMicrophone },
+  { id: "drums", name: "Drums", icon: FaDrum },
+  { id: "bass", name: "Bass", icon: FaSlidersH },
+  { id: "music", name: "Music", icon: FaKeyboard },
 ];
 
 const loopSizes = ["1/2", "1", "2", "4"];
@@ -120,12 +133,33 @@ const hasSoundId = (soundId) => {
   return soundId !== null && soundId !== undefined;
 };
 
+const WAVE_STATUS_LABELS = {
+  empty: "No waveform yet",
+  loading: "Loading waveform...",
+  ready: "Waveform ready",
+  fallback: "Waveform unavailable",
+  error: "Waveform error",
+};
+
+const getCrossfaderBalanceLabel = (value) => {
+  const amount = clamp(value, 0, 100);
+  if (amount <= 35) return "Deck A";
+  if (amount >= 65) return "Deck B";
+  return "A + B";
+};
+
 const Dj = () => {
   const { songs = [] } = useContext(MusicContext) || {};
 
   const deckHowlsRef = useRef({ A: null, B: null });
   const deckSoundIdsRef = useRef({ A: null, B: null });
   const progressTimerRef = useRef(null);
+  const mountedRef = useRef(false);
+  const activeTimeoutsRef = useRef(new Set());
+  const mixerStateRef = useRef(null);
+  const deckLoadTokensRef = useRef({ A: 0, B: 0 });
+  const waveTrackKeysRef = useRef({ A: null, B: null });
+  const recordingUrlRef = useRef("");
 
   const waveContainersRef = useRef({ A: null, B: null });
   const waveSurfersRef = useRef({ A: null, B: null });
@@ -186,6 +220,7 @@ const Dj = () => {
   const [cuePoints, setCuePoints] = useState({ A: {}, B: {} });
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [visibleSongCount, setVisibleSongCount] = useState(10);
   const [activePad, setActivePad] = useState("");
   const [activeFx, setActiveFx] = useState("");
   const [activeLoop, setActiveLoop] = useState("");
@@ -199,6 +234,20 @@ const Dj = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingUrl, setRecordingUrl] = useState("");
   const [recordingError, setRecordingError] = useState("");
+
+  useEffect(() => {
+    recordingUrlRef.current = recordingUrl;
+  }, [recordingUrl]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      activeTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      activeTimeoutsRef.current.clear();
+    };
+  }, []);
 
   const getSongImage = (song) => {
     return (
@@ -225,14 +274,28 @@ const Dj = () => {
   };
 
   const getSongTitle = (song) => {
-    return song?.title || song?.name || "Load Track";
+    const title = song?.title || song?.name;
+    return title === undefined || title === null ? "Load Track" : String(title);
   };
 
   const getArtistName = (song) => {
-    if (!song?.artist) return "Choose from library";
-    if (typeof song.artist === "string") return song.artist;
+    const artist = song?.artist;
+    if (!artist) return "Choose from library";
+    if (typeof artist === "string" || typeof artist === "number") return String(artist);
+    if (Array.isArray(artist)) {
+      return (
+        artist
+          .map((item) =>
+            typeof item === "string"
+              ? item
+              : item?.name || item?.artistName || item?.title || ""
+          )
+          .filter(Boolean)
+          .join(", ") || "Unknown Artist"
+      );
+    }
 
-    return song.artist.name || song.artist.artistName || "Unknown Artist";
+    return String(artist.name || artist.artistName || artist.title || "Unknown Artist");
   };
 
   const getSongBpm = (song) => {
@@ -247,16 +310,29 @@ const Dj = () => {
     return Boolean(one && two && getSongKey(one) === getSongKey(two));
   };
 
-  const filteredSongs = useMemo(() => {
-    const search = searchTerm.toLowerCase().trim();
+  const safeSongs = useMemo(() => (Array.isArray(songs) ? songs : []), [songs]);
 
-    return songs.filter((song) => {
-      const title = getSongTitle(song).toLowerCase();
-      const artist = getArtistName(song).toLowerCase();
+  const filteredSongs = useMemo(() => {
+    const search = String(searchTerm || "").toLowerCase().trim();
+
+    return safeSongs.filter((song) => {
+      const title = String(getSongTitle(song) || "").toLowerCase();
+      const artist = String(getArtistName(song) || "").toLowerCase();
 
       return title.includes(search) || artist.includes(search);
     });
-  }, [songs, searchTerm]);
+  }, [safeSongs, searchTerm]);
+
+  const visibleSongs = useMemo(
+    () => filteredSongs.slice(0, visibleSongCount),
+    [filteredSongs, visibleSongCount]
+  );
+
+  const hasMoreSongs = visibleSongCount < filteredSongs.length;
+
+  useEffect(() => {
+    setVisibleSongCount(10);
+  }, [searchTerm]);
 
   const getAudioContext = () => {
     return Howler.ctx || null;
@@ -282,102 +358,211 @@ const Dj = () => {
     return deckSoundIdsRef.current[side];
   };
 
-  const getDeckData = (side) => {
-    if (side === "A") {
-      return {
-        deck: deckA,
-        volume: volumeA,
-        gain: gainA,
-        low: lowA,
-        mid: midA,
-        high: highA,
-        pitch: pitchA,
-      };
-    }
+  const scheduleTimeout = (callback, delay) => {
+    const timeoutId = window.setTimeout(() => {
+      activeTimeoutsRef.current.delete(timeoutId);
+      if (mountedRef.current) callback();
+    }, delay);
 
-    return {
-      deck: deckB,
-      volume: volumeB,
-      gain: gainB,
-      low: lowB,
-      mid: midB,
-      high: highB,
-      pitch: pitchB,
-    };
+    activeTimeoutsRef.current.add(timeoutId);
+    return timeoutId;
   };
 
-  const getDeckFinalVolume = ({ side, volume, gain, low, mid, high }) => {
-    const fadePosition = clamp(crossfader, 0, 100) / 100;
+  const clearScheduledTimeout = (timeoutId) => {
+    if (!timeoutId) return;
+    window.clearTimeout(timeoutId);
+    activeTimeoutsRef.current.delete(timeoutId);
+  };
 
+  const setDeckPlaying = (side, value) => {
+    if (!mountedRef.current) return;
+    if (side === "A") setPlayingA(value);
+    else setPlayingB(value);
+  };
+
+  const setDeckLoading = (side, value) => {
+    if (!mountedRef.current) return;
+    if (side === "A") setLoadingA(value);
+    else setLoadingB(value);
+  };
+
+  const setDeckError = (side, value) => {
+    if (!mountedRef.current) return;
+    if (side === "A") setErrorA(value);
+    else setErrorB(value);
+  };
+
+  const getLatestDeckData = (side) => {
+    const state = mixerStateRef.current;
+
+    if (!state) {
+      return side === "A"
+        ? {
+            deck: deckA,
+            volume: volumeA,
+            gain: gainA,
+            low: lowA,
+            mid: midA,
+            high: highA,
+            pitch: pitchA,
+            crossfader,
+          }
+        : {
+            deck: deckB,
+            volume: volumeB,
+            gain: gainB,
+            low: lowB,
+            mid: midB,
+            high: highB,
+            pitch: pitchB,
+            crossfader,
+          };
+    }
+
+    return side === "A"
+      ? {
+          deck: state.deckA,
+          volume: state.volumeA,
+          gain: state.gainA,
+          low: state.lowA,
+          mid: state.midA,
+          high: state.highA,
+          pitch: state.pitchA,
+          crossfader: state.crossfader,
+        }
+      : {
+          deck: state.deckB,
+          volume: state.volumeB,
+          gain: state.gainB,
+          low: state.lowB,
+          mid: state.midB,
+          high: state.highB,
+          pitch: state.pitchB,
+          crossfader: state.crossfader,
+        };
+  };
+
+  const getDeckFinalVolume = (side) => {
+    const { volume, gain, low, mid, high, crossfader: latestCrossfader } =
+      getLatestDeckData(side);
+
+    const position = clamp(latestCrossfader, 0, 100) / 100;
     const fadePower =
       side === "A"
-        ? Math.cos(fadePosition * (Math.PI / 2))
-        : Math.sin(fadePosition * (Math.PI / 2));
+        ? Math.cos(position * (Math.PI / 2))
+        : Math.sin(position * (Math.PI / 2));
 
     const volumeAmount = clamp(volume, 0, 100) / 100;
     const gainAmount = clamp(gain, 0, 100) / 50;
-
     const eqMovement =
-      (Number(low) - 50 + Number(mid) - 50 + Number(high) - 50) / 500;
-
+      (clamp(low, 0, 100) -
+        50 +
+        clamp(mid, 0, 100) -
+        50 +
+        clamp(high, 0, 100) -
+        50) /
+      500;
     const eqTrim = clamp(1 + eqMovement, 0.65, 1.25);
 
     return clamp(volumeAmount * gainAmount * fadePower * eqTrim, 0, 1);
   };
 
-  const getSideVolume = (side) => {
-    return getDeckFinalVolume({
-      side,
-      ...getDeckData(side),
-    });
-  };
-
   const getSideRate = (side) => {
-    const pitch = side === "A" ? pitchA : pitchB;
-    return Math.max(0.5, 1 + pitch / 100);
+    const { pitch } = getLatestDeckData(side);
+    return clamp(1 + clamp(pitch, -50, 50) / 100, 0.5, 1.5);
   };
 
-  const setSoundVolume = (side, volume) => {
+  const isSoundIdValid = (sound, soundId) => {
+    if (!sound || !hasSoundId(soundId)) return false;
+    if (!Array.isArray(sound._sounds)) return true;
+    return sound._sounds.some((item) => item?._id === soundId);
+  };
+
+  const getValidSoundId = (side) => {
     const sound = getDeckHowl(side);
     const soundId = getDeckSoundId(side);
+    return isSoundIdValid(sound, soundId) ? soundId : null;
+  };
 
+  const isDeckCurrentSound = (side, sound, token) => {
+    return (
+      mountedRef.current &&
+      deckHowlsRef.current[side] === sound &&
+      deckLoadTokensRef.current[side] === token
+    );
+  };
+
+  const setSoundVolume = (side, volume, explicitSoundId) => {
+    const sound = getDeckHowl(side);
     if (!sound) return;
 
+    const safeVolume = clamp(volume, 0, 1);
+    const soundId = hasSoundId(explicitSoundId)
+      ? explicitSoundId
+      : getValidSoundId(side);
+
     try {
-      if (hasSoundId(soundId)) {
-        sound.volume(volume, soundId);
+      if (isSoundIdValid(sound, soundId)) {
+        sound.volume(safeVolume, soundId);
+        return;
       }
 
-      sound.volume(volume);
+      sound.volume(safeVolume);
     } catch (error) {
       console.log(`Volume apply failed on deck ${side}:`, error);
     }
   };
 
-  const applyDeckControls = () => {
-    ["A", "B"].forEach((side) => {
-      const sound = getDeckHowl(side);
-      const soundId = getDeckSoundId(side);
+  const applyDeckControls = (side) => {
+    const sides = side ? [side] : ["A", "B"];
 
+    sides.forEach((currentSide) => {
+      const sound = getDeckHowl(currentSide);
       if (!sound) return;
 
-      try {
-        setSoundVolume(side, getSideVolume(side));
+      const soundId = getValidSoundId(currentSide);
+      const finalVolume = getDeckFinalVolume(currentSide);
+      const finalRate = getSideRate(currentSide);
 
-        if (hasSoundId(soundId)) {
-          sound.rate(getSideRate(side), soundId);
+      try {
+        setSoundVolume(currentSide, finalVolume, soundId);
+
+        if (isSoundIdValid(sound, soundId)) {
+          sound.rate(finalRate, soundId);
         } else {
-          sound.rate(getSideRate(side));
+          sound.rate(finalRate);
         }
       } catch (error) {
-        console.log(`Apply controls failed on deck ${side}:`, error);
+        console.log(`Apply controls failed on deck ${currentSide}:`, error);
       }
     });
   };
 
+  const applyAllDeckControls = () => applyDeckControls();
+
   useEffect(() => {
-    applyDeckControls();
+    mixerStateRef.current = {
+      deckA,
+      deckB,
+      volumeA,
+      volumeB,
+      gainA,
+      gainB,
+      lowA,
+      lowB,
+      midA,
+      midB,
+      highA,
+      highB,
+      pitchA,
+      pitchB,
+      crossfader,
+    };
+
+    applyAllDeckControls();
   }, [
+    deckA,
+    deckB,
     volumeA,
     volumeB,
     gainA,
@@ -403,7 +588,7 @@ const Dj = () => {
 
   const destroyWaveform = (side) => {
     if (waveCreateTimerRef.current[side]) {
-      window.clearTimeout(waveCreateTimerRef.current[side]);
+      clearScheduledTimeout(waveCreateTimerRef.current[side]);
       waveCreateTimerRef.current[side] = null;
     }
 
@@ -416,6 +601,7 @@ const Dj = () => {
     }
 
     waveSurfersRef.current[side] = null;
+    waveTrackKeysRef.current[side] = null;
     setWaveStatus(side, "empty");
   };
 
@@ -428,7 +614,7 @@ const Dj = () => {
       waveSyncingRef.current[side] = true;
       wave.seekTo(clamp(currentTime / duration, 0, 1));
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         waveSyncingRef.current[side] = false;
       }, 40);
     } catch {
@@ -447,7 +633,11 @@ const Dj = () => {
 
     const nextTime = (Number(value) / 100) * duration;
 
-    sound.seek(nextTime, getDeckSoundId(side));
+    const soundId = getValidSoundId(side);
+    if (hasSoundId(soundId)) sound.seek(nextTime, soundId);
+    else sound.seek(nextTime);
+
+    applyDeckControls(side);
     syncWaveformToTime(side, nextTime, duration);
 
     if (side === "A") {
@@ -469,16 +659,23 @@ const Dj = () => {
     }
 
     if (!container) {
-      waveCreateTimerRef.current[side] = window.setTimeout(() => {
+      waveCreateTimerRef.current[side] = scheduleTimeout(() => {
         createWaveform(side, song);
       }, 150);
       return;
     }
 
+    const nextWaveKey = getSongKey(song);
+
+    if (waveSurfersRef.current[side] && waveTrackKeysRef.current[side] === nextWaveKey) {
+      return;
+    }
+
     destroyWaveform(side);
+    waveTrackKeysRef.current[side] = nextWaveKey;
     setWaveStatus(side, "loading");
 
-    waveCreateTimerRef.current[side] = window.setTimeout(() => {
+    waveCreateTimerRef.current[side] = scheduleTimeout(() => {
       const readyContainer = waveContainersRef.current[side];
 
       if (!readyContainer) {
@@ -509,6 +706,7 @@ const Dj = () => {
         wave.on("ready", () => {
           const waveDuration = Number(wave.getDuration()) || 0;
 
+          if (!mountedRef.current || waveSurfersRef.current[side] !== wave) return;
           setWaveStatus(side, "ready");
 
           if (side === "A") {
@@ -537,18 +735,20 @@ const Dj = () => {
 
         wave.on("error", (error) => {
           console.log(`Waveform error on deck ${side}:`, error);
-          setWaveStatus(side, "fallback");
+          if (mountedRef.current && waveSurfersRef.current[side] === wave) {
+            setWaveStatus(side, "fallback");
+          }
         });
 
         waveSurfersRef.current[side] = wave;
       } catch (error) {
         console.log(`Waveform create failed on deck ${side}:`, error);
-        setWaveStatus(side, "fallback");
+        if (mountedRef.current) setWaveStatus(side, "fallback");
       }
     }, 150);
   };
 
-  const unloadDeck = (side) => {
+  const unloadDeck = (side, options = {}) => {
     const oldSound = getDeckHowl(side);
 
     if (oldSound) {
@@ -562,8 +762,14 @@ const Dj = () => {
 
     destroyWaveform(side);
 
+    if (!options.keepToken) {
+      deckLoadTokensRef.current[side] += 1;
+    }
+
     deckHowlsRef.current[side] = null;
     deckSoundIdsRef.current[side] = null;
+
+    if (!mountedRef.current) return;
 
     if (side === "A") {
       setPlayingA(false);
@@ -582,139 +788,123 @@ const Dj = () => {
     }
   };
 
-  const createDeckHowl = (side, song) => {
+  const createDeckHowl = (side, song, token = deckLoadTokensRef.current[side]) => {
     const audioUrl = getSongAudio(song);
 
     if (!audioUrl) {
-      if (side === "A") {
-        setErrorA("This track has no audio URL.");
-        setLoadingA(false);
-      } else {
-        setErrorB("This track has no audio URL.");
-        setLoadingB(false);
-      }
-
+      setDeckError(side, "This track has no audio URL.");
+      setDeckLoading(side, false);
       return null;
     }
 
-    if (side === "A") {
-      setLoadingA(true);
-      setErrorA("");
-    } else {
-      setLoadingB(true);
-      setErrorB("");
-    }
+    setDeckLoading(side, true);
+    setDeckError(side, "");
 
     let sound;
 
     try {
       sound = new Howl({
-      src: [audioUrl],
-      html5: false,
-      preload: true,
-      format: getAudioFormat(audioUrl),
-      volume: getSideVolume(side),
-      rate: getSideRate(side),
-      pool: 1,
-      onload: () => {
-        const duration = sound.duration() || 0;
+        src: [audioUrl],
+        html5: false,
+        preload: true,
+        format: getAudioFormat(audioUrl),
+        volume: getDeckFinalVolume(side),
+        rate: getSideRate(side),
+        pool: 1,
+        onload: () => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
 
-        if (side === "A") {
-          setLoadingA(false);
-          setDurationA(duration);
-          setErrorA("");
-        } else {
-          setLoadingB(false);
-          setDurationB(duration);
-          setErrorB("");
-        }
+          const duration = sound.duration() || 0;
+          setDeckLoading(side, false);
+          setDeckError(side, "");
 
-        applyDeckControls();
-      },
-      onloaderror: (_, error) => {
-        console.log(`Deck ${side} load failed:`, error);
+          if (side === "A") setDurationA(duration);
+          else setDurationB(duration);
 
-        const message =
-          "Audio could not preload. Press Play again, or check the audio URL/CORS.";
+          applyDeckControls(side);
+        },
+        onloaderror: (_, error) => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
+          console.log(`Deck ${side} load failed:`, error);
 
-        if (side === "A") {
-          setLoadingA(false);
-          setErrorA(message);
-        } else {
-          setLoadingB(false);
-          setErrorB(message);
-        }
-      },
-      onplay: (soundId) => {
-        deckSoundIdsRef.current[side] = soundId;
+          setDeckLoading(side, false);
+          setDeckError(
+            side,
+            "Audio could not preload. Press Play again, or check the audio URL/CORS."
+          );
+        },
+        onplay: (soundId) => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
 
-        if (side === "A") {
-          setPlayingA(true);
-          setLoadingA(false);
-          setErrorA("");
-        } else {
-          setPlayingB(true);
-          setLoadingB(false);
-          setErrorB("");
-        }
+          deckSoundIdsRef.current[side] = soundId;
+          setDeckPlaying(side, true);
+          setDeckLoading(side, false);
+          setDeckError(side, "");
+          applyDeckControls(side);
+        },
+        onplayerror: (_, error) => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
+          console.log(`Deck ${side} play error:`, error);
 
-        applyDeckControls();
-      },
-      onplayerror: (_, error) => {
-        console.log(`Deck ${side} play error:`, error);
+          setDeckPlaying(side, false);
+          setDeckLoading(side, false);
+          setDeckError(side, "Could not play. Check audio URL, CORS, or file format.");
+        },
+        onpause: (soundId) => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
+          if (deckSoundIdsRef.current[side] === soundId) {
+            setDeckPlaying(side, false);
+            applyDeckControls(side);
+          }
+        },
+        onstop: (soundId) => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
+          if (!hasSoundId(soundId) || deckSoundIdsRef.current[side] === soundId) {
+            setDeckPlaying(side, false);
+            applyDeckControls(side);
+          }
+        },
+        onend: (soundId) => {
+          if (!isDeckCurrentSound(side, sound, token)) return;
+          if (hasSoundId(soundId) && deckSoundIdsRef.current[side] !== soundId) return;
 
-        const message = "Could not play. Check audio URL, CORS, or file format.";
+          deckSoundIdsRef.current[side] = null;
+          setDeckPlaying(side, false);
 
-        if (side === "A") {
-          setPlayingA(false);
-          setLoadingA(false);
-          setErrorA(message);
-        } else {
-          setPlayingB(false);
-          setLoadingB(false);
-          setErrorB(message);
-        }
-      },
-      onpause: () => {
-        if (side === "A") setPlayingA(false);
-        else setPlayingB(false);
-      },
-      onstop: () => {
-        if (side === "A") setPlayingA(false);
-        else setPlayingB(false);
-      },
-      onend: () => {
-        if (side === "A") {
-          setPlayingA(false);
-          setProgressA(0);
-          setTimeA(0);
-        } else {
-          setPlayingB(false);
-          setProgressB(0);
-          setTimeB(0);
-        }
-      },
-    });
+          if (side === "A") {
+            setProgressA(0);
+            setTimeA(0);
+          } else {
+            setProgressB(0);
+            setTimeB(0);
+          }
+
+          syncWaveformToTime(side, 0, sound.duration() || 1);
+        },
+      });
     } catch (error) {
       console.log(`Deck ${side} create failed:`, error);
-
-      const message =
-        "Could not create audio player. Check the audio URL/CORS or browser support.";
-
-      if (side === "A") {
-        setPlayingA(false);
-        setLoadingA(false);
-        setErrorA(message);
-      } else {
-        setPlayingB(false);
-        setLoadingB(false);
-        setErrorB(message);
-      }
+      setDeckPlaying(side, false);
+      setDeckLoading(side, false);
+      setDeckError(
+        side,
+        "Could not create audio player. Check the audio URL/CORS or browser support."
+      );
 
       return null;
     }
 
+    if (deckLoadTokensRef.current[side] !== token) {
+      try {
+        sound.unload();
+      } catch {
+        // Ignore unload errors for a stale deck load.
+      }
+      return null;
+    }
+
     deckHowlsRef.current[side] = sound;
+    applyDeckControls(side);
 
     return sound;
   };
@@ -722,7 +912,12 @@ const Dj = () => {
   const loadToDeck = async (song, side) => {
     await unlockAudio();
 
-    unloadDeck(side);
+    const token = deckLoadTokensRef.current[side] + 1;
+    deckLoadTokensRef.current[side] = token;
+
+    unloadDeck(side, { keepToken: true });
+
+    if (!mountedRef.current) return;
 
     if (side === "A") {
       setDeckA(song);
@@ -737,87 +932,122 @@ const Dj = () => {
       [side]: {},
     }));
 
-    window.setTimeout(() => {
-      createDeckHowl(side, song);
+    scheduleTimeout(() => {
+      if (deckLoadTokensRef.current[side] !== token) return;
+      createDeckHowl(side, song, token);
+      createWaveform(side, song);
     }, 80);
   };
 
-  const toggleDeck = async (side) => {
-    await unlockAudio();
+  const resumeDeck = (side) => {
+    const sound = getDeckHowl(side);
+    const soundId = getValidSoundId(side);
 
-    const deck = side === "A" ? deckA : deckB;
-    const isPlaying = side === "A" ? playingA : playingB;
+    if (!sound || !hasSoundId(soundId)) return false;
 
-    if (!deck) {
-      if (side === "A") {
-        setErrorA("Load a song into Deck A first.");
-      } else {
-        setErrorB("Load a song into Deck B first.");
+    try {
+      if (sound.playing(soundId)) {
+        applyDeckControls(side);
+        setDeckPlaying(side, true);
+        return true;
       }
 
+      setSoundVolume(side, getDeckFinalVolume(side), soundId);
+      sound.rate(getSideRate(side), soundId);
+      sound.play(soundId);
+      deckSoundIdsRef.current[side] = soundId;
+      applyDeckControls(side);
+      setDeckPlaying(side, true);
+      return true;
+    } catch (error) {
+      console.log(`Deck ${side} resume failed:`, error);
+      return false;
+    }
+  };
+
+  const playDeck = async (side) => {
+    await unlockAudio();
+
+    const { deck } = getLatestDeckData(side);
+
+    if (!deck) {
+      setDeckError(side, `Load a song into Deck ${side} first.`);
       return;
     }
 
     let sound = getDeckHowl(side);
 
     if (!sound) {
-      sound = createDeckHowl(side, deck);
+      sound = createDeckHowl(side, deck, deckLoadTokensRef.current[side]);
     }
 
     if (!sound) return;
 
-    if (isPlaying) {
-      try {
-        if (hasSoundId(getDeckSoundId(side))) {
-          sound.pause(getDeckSoundId(side));
-        } else {
-          sound.pause();
-        }
-      } catch {
-        sound.pause();
-      }
-
-      if (side === "A") {
-        setPlayingA(false);
-      } else {
-        setPlayingB(false);
-      }
-
-      return;
-    }
+    if (resumeDeck(side)) return;
 
     try {
+      const currentId = getValidSoundId(side);
+      if (hasSoundId(currentId) && sound.playing(currentId)) {
+        applyDeckControls(side);
+        setDeckPlaying(side, true);
+        return;
+      }
+
+      const finalVolume = getDeckFinalVolume(side);
+      const finalRate = getSideRate(side);
+
+      sound.volume(finalVolume);
+      sound.rate(finalRate);
+
       const id = sound.play();
       deckSoundIdsRef.current[side] = id;
 
-      setSoundVolume(side, getSideVolume(side));
+      setSoundVolume(side, finalVolume, id);
+      if (hasSoundId(id)) sound.rate(finalRate, id);
 
-      if (hasSoundId(id)) {
-        sound.rate(getSideRate(side), id);
-      }
-
-      if (side === "A") {
-        setPlayingA(true);
-        setLoadingA(false);
-        setErrorA("");
-      } else {
-        setPlayingB(true);
-        setLoadingB(false);
-        setErrorB("");
-      }
+      setDeckPlaying(side, true);
+      setDeckLoading(side, false);
+      setDeckError(side, "");
+      applyDeckControls(side);
     } catch (error) {
       console.log(`Deck ${side} play failed:`, error);
+      setDeckPlaying(side, false);
+      setDeckLoading(side, false);
+      setDeckError(side, "Could not start playback.");
+    }
+  };
 
-      if (side === "A") {
-        setPlayingA(false);
-        setLoadingA(false);
-        setErrorA("Could not start playback.");
-      } else {
-        setPlayingB(false);
-        setLoadingB(false);
-        setErrorB("Could not start playback.");
+  const pauseDeck = (side) => {
+    const sound = getDeckHowl(side);
+    if (!sound) return;
+
+    const soundId = getValidSoundId(side);
+
+    try {
+      if (hasSoundId(soundId)) sound.pause(soundId);
+      else sound.pause();
+    } catch (error) {
+      console.log(`Deck ${side} pause failed:`, error);
+      try {
+        sound.pause();
+      } catch {
+        // Ignore secondary pause failure.
       }
     }
+
+    setDeckPlaying(side, false);
+    applyDeckControls(side);
+  };
+
+  const toggleDeck = async (side) => {
+    const isPlaying = side === "A" ? playingA : playingB;
+
+    if (isPlaying) {
+      pauseDeck(side);
+      return;
+    }
+
+    await playDeck(side);
   };
 
   const stopDeck = (side) => {
@@ -825,27 +1055,29 @@ const Dj = () => {
 
     if (!sound) return;
 
-    try {
-      if (hasSoundId(getDeckSoundId(side))) {
-        sound.stop(getDeckSoundId(side));
-      } else {
-        sound.stop();
-      }
+    const soundId = getValidSoundId(side);
 
-      sound.seek(0);
-    } catch {
-      sound.stop();
+    try {
+      if (hasSoundId(soundId)) sound.stop(soundId);
+      else sound.stop();
+    } catch (error) {
+      console.log(`Deck ${side} stop failed:`, error);
+      try {
+        sound.stop();
+      } catch {
+        // Ignore secondary stop failure.
+      }
     }
 
     deckSoundIdsRef.current[side] = null;
     syncWaveformToTime(side, 0, sound.duration() || 1);
+    setDeckPlaying(side, false);
+    applyDeckControls(side);
 
     if (side === "A") {
-      setPlayingA(false);
       setProgressA(0);
       setTimeA(0);
     } else {
-      setPlayingB(false);
       setProgressB(0);
       setTimeB(0);
     }
@@ -856,16 +1088,20 @@ const Dj = () => {
 
     if (!sound) return;
 
+    const soundId = getValidSoundId(side);
+
     try {
-      if (hasSoundId(getDeckSoundId(side))) {
-        sound.seek(0, getDeckSoundId(side));
-      } else {
-        sound.seek(0);
-      }
+      if (hasSoundId(soundId)) sound.seek(0, soundId);
+      else sound.seek(0);
     } catch {
-      sound.seek(0);
+      try {
+        sound.seek(0);
+      } catch {
+        // Ignore restart seek failure.
+      }
     }
 
+    applyDeckControls(side);
     syncWaveformToTime(side, 0, sound.duration() || 1);
 
     if (side === "A") {
@@ -886,10 +1122,14 @@ const Dj = () => {
 
     if (!duration) return;
 
-    const current = Number(sound.seek(getDeckSoundId(side))) || 0;
+    const soundId = getValidSoundId(side);
+    const current = Number(hasSoundId(soundId) ? sound.seek(soundId) : sound.seek()) || 0;
     const next = clamp(current + seconds, 0, duration);
 
-    sound.seek(next, getDeckSoundId(side));
+    if (hasSoundId(soundId)) sound.seek(next, soundId);
+    else sound.seek(next);
+
+    applyDeckControls(side);
     syncWaveformToTime(side, next, duration);
   };
 
@@ -898,24 +1138,24 @@ const Dj = () => {
 
     if (!sound) return;
 
-    const soundId = getDeckSoundId(side);
-    const currentTime = Number(sound.seek(soundId)) || 0;
+    const soundId = getValidSoundId(side);
+    const currentTime = Number(hasSoundId(soundId) ? sound.seek(soundId) : sound.seek()) || 0;
     const savedCue = cuePoints[side]?.[cueNumber];
 
     if (savedCue !== undefined) {
-      const cueTime =
+      const rawCueTime =
         typeof savedCue === "object" && savedCue !== null
           ? savedCue.time
           : savedCue;
+      const cueTime = clamp(Number(rawCueTime) || 0, 0, sound.duration() || 0);
 
-      sound.seek(cueTime, soundId);
+      if (hasSoundId(soundId)) sound.seek(cueTime, soundId);
+      else sound.seek(cueTime);
+
+      applyDeckControls(side);
       syncWaveformToTime(side, cueTime, sound.duration() || 1);
 
-      const percentage = clamp(
-        (cueTime / (sound.duration() || 1)) * 100,
-        0,
-        100
-      );
+      const percentage = clamp((cueTime / (sound.duration() || 1)) * 100, 0, 100);
 
       if (side === "A") {
         setTimeA(cueTime);
@@ -1114,13 +1354,14 @@ const Dj = () => {
     if (!sound) return;
 
     const point = getPointerPosition(event);
+    const soundId = getValidSoundId(side);
 
     scratchRef.current = {
       active: true,
       side,
       lastX: point.x,
       lastY: point.y,
-      lastTime: Number(sound.seek(getDeckSoundId(side))) || 0,
+      lastTime: Number(hasSoundId(soundId) ? sound.seek(soundId) : sound.seek()) || 0,
     };
 
     document.body.classList.add("dj-scratching-now");
@@ -1132,7 +1373,7 @@ const Dj = () => {
     if (!scratch.active || !scratch.side) return;
 
     const sound = getDeckHowl(scratch.side);
-    const soundId = getDeckSoundId(scratch.side);
+    const soundId = getValidSoundId(scratch.side);
 
     if (!sound) return;
 
@@ -1144,7 +1385,10 @@ const Dj = () => {
     if (Math.abs(movement) < 2) return;
 
     const duration = sound.duration() || 0;
-    const currentTime = Number(sound.seek(soundId)) || scratch.lastTime || 0;
+    const currentTime =
+      Number(hasSoundId(soundId) ? sound.seek(soundId) : sound.seek()) ||
+      scratch.lastTime ||
+      0;
     const nextTime = clamp(
       currentTime + movement * 0.012,
       0,
@@ -1152,10 +1396,12 @@ const Dj = () => {
     );
 
     try {
-      sound.seek(nextTime, soundId);
+      if (hasSoundId(soundId)) sound.seek(nextTime, soundId);
+      else sound.seek(nextTime);
 
       const scratchRate = clamp(1 + movement * 0.018, 0.35, 2.4);
-      sound.rate(scratchRate, soundId);
+      if (hasSoundId(soundId)) sound.rate(scratchRate, soundId);
+      else sound.rate(scratchRate);
     } catch (error) {
       console.log("Scratch move failed:", error);
     }
@@ -1185,11 +1431,12 @@ const Dj = () => {
     if (!scratch.active || !scratch.side) return;
 
     const sound = getDeckHowl(scratch.side);
-    const soundId = getDeckSoundId(scratch.side);
+    const soundId = getValidSoundId(scratch.side);
 
     if (sound) {
       try {
-        sound.rate(getSideRate(scratch.side), soundId);
+        if (hasSoundId(soundId)) sound.rate(getSideRate(scratch.side), soundId);
+        else sound.rate(getSideRate(scratch.side));
       } catch {
         sound.rate(getSideRate(scratch.side));
       }
@@ -1210,7 +1457,7 @@ const Dj = () => {
     await unlockAudio();
 
     setActivePad(item.id);
-    window.setTimeout(() => setActivePad(""), 180);
+    scheduleTimeout(() => setActivePad(""), 180);
 
     if (item.type === "tone") {
       playTone({
@@ -1240,7 +1487,7 @@ const Dj = () => {
         volume: 0.11,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           frequency: 560,
           duration: 0.08,
@@ -1262,8 +1509,8 @@ const Dj = () => {
 
     if (item.type === "scratch") {
       playWikiScratch(2.1);
-      window.setTimeout(() => playWikiScratch(1.6), 80);
-      window.setTimeout(() => playWikiScratch(1.9), 160);
+      scheduleTimeout(() => playWikiScratch(1.6), 80);
+      scheduleTimeout(() => playWikiScratch(1.9), 160);
     }
 
     if (item.type === "whoosh") {
@@ -1285,7 +1532,7 @@ const Dj = () => {
         volume: 0.1,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           frequency: 520,
           duration: 0.08,
@@ -1294,7 +1541,7 @@ const Dj = () => {
         });
       }, 85);
 
-      window.setTimeout(() => playNoise(0.1, 0.045), 160);
+      scheduleTimeout(() => playNoise(0.1, 0.045), 160);
     }
 
     if (item.type === "beat") {
@@ -1306,7 +1553,7 @@ const Dj = () => {
         volume: 0.18,
       });
 
-      window.setTimeout(() => playNoise(0.045, 0.07), 110);
+      scheduleTimeout(() => playNoise(0.045, 0.07), 110);
     }
 
     if (item.type === "click") {
@@ -1317,7 +1564,7 @@ const Dj = () => {
         volume: 0.075,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           frequency: 900,
           duration: 0.035,
@@ -1342,7 +1589,7 @@ const Dj = () => {
     await unlockAudio();
 
     setActivePad(pad.id);
-    window.setTimeout(() => setActivePad(""), 220);
+    scheduleTimeout(() => setActivePad(""), 220);
 
     if (pad.type === "horn") {
       playTone({
@@ -1352,7 +1599,7 @@ const Dj = () => {
         volume: 0.13,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           frequency: 622,
           duration: 0.16,
@@ -1364,7 +1611,7 @@ const Dj = () => {
 
     if (pad.type === "scratch") {
       playWikiScratch(2.2);
-      window.setTimeout(() => playWikiScratch(1.7), 90);
+      scheduleTimeout(() => playWikiScratch(1.7), 90);
     }
 
     if (pad.type === "laser") {
@@ -1411,7 +1658,7 @@ const Dj = () => {
         volume: 0.1,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           startFrequency: 1200,
           endFrequency: 500,
@@ -1435,7 +1682,7 @@ const Dj = () => {
     await unlockAudio();
 
     setActiveFx(fxId);
-    window.setTimeout(() => setActiveFx(""), 350);
+    scheduleTimeout(() => setActiveFx(""), 350);
 
     if (fxId === "echo") {
       playTone({
@@ -1445,7 +1692,7 @@ const Dj = () => {
         volume: 0.08,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           frequency: 420,
           duration: 0.08,
@@ -1454,7 +1701,7 @@ const Dj = () => {
         });
       }, 150);
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           frequency: 420,
           duration: 0.06,
@@ -1487,7 +1734,7 @@ const Dj = () => {
         volume: 0.05,
       });
 
-      window.setTimeout(() => {
+      scheduleTimeout(() => {
         playTone({
           startFrequency: 520,
           endFrequency: 430,
@@ -1517,15 +1764,18 @@ const Dj = () => {
     if (fxId === "stutter") {
       getTargetSides().forEach((side) => {
         const sound = getDeckHowl(side);
-        const soundId = getDeckSoundId(side);
+        const soundId = getValidSoundId(side);
 
         if (!sound) return;
 
-        const now = Number(sound.seek(soundId)) || 0;
+        const now = Number(hasSoundId(soundId) ? sound.seek(soundId) : sound.seek()) || 0;
 
         [80, 160, 240].forEach((delay) => {
-          window.setTimeout(() => {
-            sound.seek(now, soundId);
+          scheduleTimeout(() => {
+            if (deckHowlsRef.current[side] !== sound) return;
+            if (hasSoundId(soundId)) sound.seek(now, soundId);
+            else sound.seek(now);
+            applyDeckControls(side);
           }, delay);
         });
       });
@@ -1534,7 +1784,7 @@ const Dj = () => {
 
   const triggerLoop = (size) => {
     setActiveLoop(size);
-    window.setTimeout(() => setActiveLoop(""), 350);
+    scheduleTimeout(() => setActiveLoop(""), 350);
 
     const beats = size === "1/2" ? 0.5 : Number(size);
 
@@ -1545,7 +1795,7 @@ const Dj = () => {
 
   const triggerStem = (stemId) => {
     setActiveStem(stemId);
-    window.setTimeout(() => setActiveStem(""), 550);
+    scheduleTimeout(() => setActiveStem(""), 550);
 
     if (stemId === "vocal") {
       playTone({
@@ -1583,8 +1833,7 @@ const Dj = () => {
   const randomLoad = () => {
     if (!filteredSongs.length) return;
 
-    const randomSong =
-      filteredSongs[Math.floor(Math.random() * filteredSongs.length)];
+    const randomSong = filteredSongs[Math.floor(Math.random() * filteredSongs.length)];
 
     loadToDeck(randomSong, Math.random() > 0.5 ? "A" : "B");
   };
@@ -1602,8 +1851,9 @@ const Dj = () => {
         return;
       }
 
-      if (recordingUrl) {
-        URL.revokeObjectURL(recordingUrl);
+      if (recordingUrlRef.current) {
+        URL.revokeObjectURL(recordingUrlRef.current);
+        recordingUrlRef.current = "";
       }
 
       recordedChunksRef.current = [];
@@ -1624,7 +1874,10 @@ const Dj = () => {
           type: "audio/webm",
         });
 
-        setRecordingUrl(URL.createObjectURL(blob));
+        if (!mountedRef.current) return;
+        const nextUrl = URL.createObjectURL(blob);
+        setRecordingUrl(nextUrl);
+        recordingUrlRef.current = nextUrl;
         recordingDestinationRef.current = null;
       };
 
@@ -1655,13 +1908,13 @@ const Dj = () => {
     if (deckA) {
       createWaveform("A", deckA);
     }
-  }, [deckA, mobileView]);
+  }, [deckA]);
 
   useEffect(() => {
     if (deckB) {
       createWaveform("B", deckB);
     }
-  }, [deckB, mobileView]);
+  }, [deckB]);
 
   useEffect(() => {
     progressTimerRef.current = window.setInterval(() => {
@@ -1674,12 +1927,12 @@ const Dj = () => {
 
         if (!duration) return;
 
-        const soundId = getDeckSoundId(side);
+        const soundId = getValidSoundId(side);
         const isActuallyPlaying = hasSoundId(soundId)
           ? sound.playing(soundId)
           : sound.playing();
 
-        const seek = Number(sound.seek(soundId)) || 0;
+        const seek = Number(hasSoundId(soundId) ? sound.seek(soundId) : sound.seek()) || 0;
         const percentage = clamp((seek / duration) * 100, 0, 100);
 
         syncWaveformToTime(side, seek, duration);
@@ -1718,8 +1971,9 @@ const Dj = () => {
       unloadDeck("A");
       unloadDeck("B");
 
-      if (recordingUrl) {
-        URL.revokeObjectURL(recordingUrl);
+      if (recordingUrlRef.current) {
+        URL.revokeObjectURL(recordingUrlRef.current);
+        recordingUrlRef.current = "";
       }
     };
   }, []);
@@ -1729,7 +1983,7 @@ const Dj = () => {
       <div className="classic-dj-panel">
         <div className="classic-mobile-pads d-md-none">
           <span className="classic-mobile-label">Quick sound pads</span>
-  
+
           <div className="classic-mobile-pad-grid">
             {classicAllButtons.map((item) => (
               <button
@@ -1745,7 +1999,7 @@ const Dj = () => {
             ))}
           </div>
         </div>
-  
+
         <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
           {classicLeftButtons.map((item) => (
             <button
@@ -1760,7 +2014,7 @@ const Dj = () => {
             </button>
           ))}
         </div>
-  
+
         <div className="classic-color-grid">
           {classicColorPads.map((item) => (
             <button
@@ -1775,7 +2029,7 @@ const Dj = () => {
             </button>
           ))}
         </div>
-  
+
         <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
           {classicRightButtons.map((item) => (
             <button
@@ -1794,10 +2048,11 @@ const Dj = () => {
     );
   };
 
-  const renderKnob = (label, value, setter) => {
+  const renderKnob = (label, value, setter, helperText = "") => {
     return (
       <label className="dj-knob-pro">
         <span>{label}</span>
+        {helperText && <small className="dj-control-helper">{helperText}</small>}
 
         <input
           type="range"
@@ -1893,7 +2148,7 @@ const Dj = () => {
             />
 
             <span className={`wave-status-pro ${waveStatus}`}>
-              {waveStatus}
+              {WAVE_STATUS_LABELS[waveStatus] || "Waveform status unknown"}
             </span>
           </div>
         </div>
@@ -1901,7 +2156,12 @@ const Dj = () => {
         <div className="time-row-pro">
           <span>{formatTime(time)}</span>
 
+          <label className="visually-hidden" htmlFor={`seek-${side}`}>
+            Track position
+          </label>
           <input
+            id={`seek-${side}`}
+            aria-label={`Track position for Deck ${side}`}
             type="range"
             min="0"
             max="100"
@@ -1916,11 +2176,19 @@ const Dj = () => {
         {loading && <div className="deck-loading-pro">Loading audio...</div>}
 
         <div className="transport-pro">
-          <button type="button" onClick={() => jumpDeck(side, -5)}>
+          <button
+            type="button"
+            onClick={() => jumpDeck(side, -5)}
+            aria-label={`Jump Deck ${side} backward 5 seconds`}
+          >
             <FaBackward />
           </button>
 
-          <button type="button" onClick={() => restartDeck(side)}>
+          <button
+            type="button"
+            onClick={() => restartDeck(side)}
+            aria-label={`Restart Deck ${side}`}
+          >
             <FaUndo />
           </button>
 
@@ -1928,15 +2196,24 @@ const Dj = () => {
             type="button"
             className="play-main-pro"
             onClick={() => toggleDeck(side)}
+            aria-label={playing ? `Pause Deck ${side}` : `Play Deck ${side}`}
           >
             {playing ? <FaPause /> : <FaPlay />}
           </button>
 
-          <button type="button" onClick={() => stopDeck(side)}>
+          <button
+            type="button"
+            onClick={() => stopDeck(side)}
+            aria-label={`Stop Deck ${side}`}
+          >
             <FaStop />
           </button>
 
-          <button type="button" onClick={() => jumpDeck(side, 5)}>
+          <button
+            type="button"
+            onClick={() => jumpDeck(side, 5)}
+            aria-label={`Jump Deck ${side} forward 5 seconds`}
+          >
             <FaRedo />
           </button>
         </div>
@@ -1952,6 +2229,8 @@ const Dj = () => {
                 event.preventDefault();
                 clearCue(side, cue);
               }}
+              title="Left click to jump/set cue. Right click to clear cue."
+              aria-label={`Cue ${cue} on Deck ${side}. Left click to jump or set cue. Right click to clear cue.`}
             >
               {cuePoints[side]?.[cue]?.label || `Cue ${cue}`}
             </button>
@@ -1959,11 +2238,11 @@ const Dj = () => {
         </div>
 
         <div className="deck-controls-pro">
-          {renderKnob("Vol", volume, setVolume)}
-          {renderKnob("Gain", gain, setGain)}
+          {renderKnob("Deck Volume", volume, setVolume)}
+          {renderKnob("Gain / Trim", gain, setGain)}
 
           <label className="dj-knob-pro">
-            <span>Pitch</span>
+            <span>Pitch / Speed</span>
 
             <input
               type="range"
@@ -1978,9 +2257,9 @@ const Dj = () => {
         </div>
 
         <div className="eq-row-pro">
-          {renderKnob("Low", low, setLow)}
-          {renderKnob("Mid", mid, setMid)}
-          {renderKnob("High", high, setHigh)}
+          {renderKnob("Low EQ", low, setLow)}
+          {renderKnob("Mid EQ", mid, setMid)}
+          {renderKnob("High EQ", high, setHigh)}
         </div>
       </div>
     );
@@ -2016,18 +2295,25 @@ const Dj = () => {
 
         <div className="crossfader-pro">
           <div className="cross-labels-pro">
-            <span>A</span>
+            <span>Deck A</span>
             <span>Crossfader</span>
-            <span>B</span>
+            <span>Deck B</span>
           </div>
+
+          <p className="dj-helper-text">Move left for Deck A, right for Deck B.</p>
 
           <input
             type="range"
             min="0"
             max="100"
             value={crossfader}
+            aria-label="Crossfader. Move left for Deck A, right for Deck B."
             onChange={(event) => setCrossfader(Number(event.target.value))}
           />
+
+          <div className="cross-balance-pro">
+            Current balance: <strong>{getCrossfaderBalanceLabel(crossfader)}</strong>
+          </div>
         </div>
 
         <div className="loop-row-pro">
@@ -2099,7 +2385,7 @@ const Dj = () => {
             <FaVolumeMute /> Stop All
           </button>
 
-          <button type="button" onClick={applyDeckControls}>
+          <button type="button" onClick={applyAllDeckControls}>
             <FaSyncAlt /> Sync Controls
           </button>
         </div>
@@ -2207,22 +2493,28 @@ const Dj = () => {
               </div>
 
               <div className="row g-2">
-                {stemButtons.map((stem) => (
-                  <div className="col-6" key={stem.id}>
-                    <button
-                      type="button"
-                      className={
-                        activeStem === stem.id
-                          ? "stem-button-pro active"
-                          : "stem-button-pro"
-                      }
-                      onClick={() => triggerStem(stem.id)}
-                    >
-                      <strong>{stem.icon}</strong>
-                      <span>{stem.name}</span>
-                    </button>
-                  </div>
-                ))}
+                {stemButtons.map((stem) => {
+                  const StemIcon = stem.icon;
+
+                  return (
+                    <div className="col-6" key={stem.id}>
+                      <button
+                        type="button"
+                        className={
+                          activeStem === stem.id
+                            ? "stem-button-pro active"
+                            : "stem-button-pro"
+                        }
+                        onClick={() => triggerStem(stem.id)}
+                      >
+                        <strong>
+                          <StemIcon />
+                        </strong>
+                        <span>{stem.name}</span>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               <p className="stem-note">
@@ -2245,23 +2537,29 @@ const Dj = () => {
               </div>
 
               <div className="row g-2">
-                {fxButtons.map((fx) => (
-                  <div className="col-4 col-md-4" key={fx.id}>
-                    <button
-                      type="button"
-                      className={
-                        activeFx === fx.id
-                          ? "fx-button-pro active"
-                          : "fx-button-pro"
-                      }
-                      onClick={() => triggerFx(fx.id)}
-                    >
-                      <strong>{fx.icon}</strong>
+                {fxButtons.map((fx) => {
+                  const FxIcon = fx.icon;
 
-                      <span>{fx.name}</span>
-                    </button>
-                  </div>
-                ))}
+                  return (
+                    <div className="col-4 col-md-4" key={fx.id}>
+                      <button
+                        type="button"
+                        className={
+                          activeFx === fx.id
+                            ? "fx-button-pro active"
+                            : "fx-button-pro"
+                        }
+                        onClick={() => triggerFx(fx.id)}
+                      >
+                        <strong>
+                          <FxIcon />
+                        </strong>
+
+                        <span>{fx.name}</span>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               <p className="stem-note">
@@ -2284,21 +2582,25 @@ const Dj = () => {
               </div>
 
               <div className="row g-2">
-                {djPads.map((pad) => (
-                  <div className="col-6 col-sm-4 col-xl-4" key={pad.id}>
-                    <button
-                      type="button"
-                      className={
-                        activePad === pad.id ? "pad-pro active" : "pad-pro"
-                      }
-                      onClick={() => triggerPad(pad)}
-                    >
-                      <strong>{pad.icon}</strong>
+                {djPads.map((pad) => {
+                  const PadIcon = pad.icon;
 
-                      <span>{pad.name}</span>
-                    </button>
-                  </div>
-                ))}
+                  return (
+                    <div className="col-6 col-sm-4 col-xl-4" key={pad.id}>
+                      <button
+                        type="button"
+                        className={activePad === pad.id ? "pad-pro active" : "pad-pro"}
+                        onClick={() => triggerPad(pad)}
+                      >
+                        <strong>
+                          <PadIcon />
+                        </strong>
+
+                        <span>{pad.name}</span>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -2342,61 +2644,89 @@ const Dj = () => {
               </div>
             </div>
           ) : (
-            <div className="row g-2">
-              {filteredSongs.map((song, index) => {
-                const loadedA = isSameSong(deckA, song);
-                const loadedB = isSameSong(deckB, song);
+            <>
+              <div className="song-count-helper-pro">
+                Showing {Math.min(visibleSongCount, filteredSongs.length)} of{" "}
+                {filteredSongs.length} songs
+              </div>
 
-                return (
-                  <div
-                    className="col-12 col-md-6 col-xl-4"
-                    key={song._id || song.id || `${getSongTitle(song)}-${index}`}
-                  >
+              <div className="row g-2">
+                {visibleSongs.map((song, index) => {
+                  const loadedA = isSameSong(deckA, song);
+                  const loadedB = isSameSong(deckB, song);
+
+                  return (
                     <div
-                      className={
-                        loadedA || loadedB
-                          ? "crate-song-card loaded"
-                          : "crate-song-card"
-                      }
+                      className="col-12 col-md-6 col-xl-4"
+                      key={song._id || song.id || `${getSongTitle(song)}-${index}`}
                     >
-                      <img
-                        src={getSongImage(song)}
-                        alt={getSongTitle(song)}
-                        onError={(event) => {
-                          event.currentTarget.src = "/fallback-cover.png";
-                        }}
-                      />
+                      <div
+                        className={
+                          loadedA || loadedB
+                            ? "crate-song-card loaded"
+                            : "crate-song-card"
+                        }
+                      >
+                        <img
+                          src={getSongImage(song)}
+                          alt={getSongTitle(song)}
+                          onError={(event) => {
+                            event.currentTarget.src = "/fallback-cover.png";
+                          }}
+                        />
 
-                      <div>
-                        <h4>{getSongTitle(song)}</h4>
+                        <div>
+                          <h4>{getSongTitle(song)}</h4>
 
-                        <p>
-                          {getArtistName(song)} · {getSongBpm(song)} BPM
-                        </p>
-                      </div>
+                          <p>
+                            {getArtistName(song)} · {getSongBpm(song)} BPM
+                          </p>
+                        </div>
 
-                      <div className="crate-actions">
-                        <button
-                          type="button"
-                          className={loadedA ? "active" : ""}
-                          onClick={() => loadToDeck(song, "A")}
-                        >
-                          A
-                        </button>
+                        <div className="crate-actions">
+                          <button
+                            type="button"
+                            className={loadedA ? "active" : ""}
+                            onClick={() => loadToDeck(song, "A")}
+                            aria-label={`Load ${getSongTitle(song)} to Deck A`}
+                            title="Load to A"
+                          >
+                            Load to A
+                          </button>
 
-                        <button
-                          type="button"
-                          className={loadedB ? "active" : ""}
-                          onClick={() => loadToDeck(song, "B")}
-                        >
-                          B
-                        </button>
+                          <button
+                            type="button"
+                            className={loadedB ? "active" : ""}
+                            onClick={() => loadToDeck(song, "B")}
+                            aria-label={`Load ${getSongTitle(song)} to Deck B`}
+                            title="Load to B"
+                          >
+                            Load to B
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+
+              <div className="load-more-songs-pro">
+                {hasMoreSongs ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisibleSongCount((count) =>
+                        Math.min(count + 10, filteredSongs.length)
+                      )
+                    }
+                  >
+                    Load More Songs
+                  </button>
+                ) : (
+                  <span>No more songs to show</span>
+                )}
+              </div>
+            </>
           )}
         </div>
 

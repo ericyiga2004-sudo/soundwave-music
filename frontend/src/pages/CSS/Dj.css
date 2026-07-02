@@ -1154,3 +1154,117 @@
       display: none;
     }
   }
+
+
+  /* DJ usability and song pagination additions */
+.dj-control-helper,
+.dj-helper-text,
+.song-count-helper-pro,
+.cross-balance-pro {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.dj-helper-text {
+  margin: 0.35rem 0 0.45rem;
+  text-align: center;
+}
+
+.cross-balance-pro {
+  margin-top: 0.45rem;
+  text-align: center;
+}
+
+.cross-balance-pro strong {
+  color: #30ffc8;
+  letter-spacing: 0.03em;
+}
+
+.song-count-helper-pro {
+  margin: 0.25rem 0 0.75rem;
+}
+
+.load-more-songs-pro {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  min-height: 2.75rem;
+}
+
+.load-more-songs-pro button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.75rem 1.35rem;
+  font-weight: 800;
+  color: #081211;
+  background: linear-gradient(135deg, #30ffc8, #ffffff);
+  box-shadow: 0 10px 28px rgba(48, 255, 200, 0.22);
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.load-more-songs-pro button:hover,
+.load-more-songs-pro button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(48, 255, 200, 0.3);
+}
+
+.load-more-songs-pro span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.9rem;
+}
+
+.crate-actions {
+  gap: 0.45rem;
+}
+
+.crate-actions button {
+  min-width: 5.6rem;
+  white-space: nowrap;
+}
+
+.wave-status-pro.empty,
+.wave-status-pro.loading,
+.wave-status-pro.ready,
+.wave-status-pro.fallback,
+.wave-status-pro.error {
+  text-transform: none;
+}
+
+.cue-pro {
+  cursor: pointer;
+}
+
+.dj-knob-pro span {
+  text-align: center;
+}
+
+.dj-knob-pro .dj-control-helper {
+  margin-top: -0.15rem;
+  text-align: center;
+}
+
+.stem-button-pro strong svg,
+.fx-button-pro strong svg,
+.pad-pro strong svg {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+@media (max-width: 575.98px) {
+  .crate-actions {
+    flex-wrap: wrap;
+  }
+
+  .crate-actions button {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .song-count-helper-pro,
+  .load-more-songs-pro {
+    text-align: center;
+  }
+}

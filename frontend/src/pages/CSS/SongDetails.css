@@ -2382,3 +2382,409 @@ button {
   }
 }
 
+
+
+/* ==========================
+   MOBILE SPLIT PLAYER / STICKY SNAP EXPERIENCE
+   Desktop keeps the full three-column player. Phones switch to a simple
+   image-inspired component with sticky playback and snapping detail cards.
+========================== */
+
+.song-mobile-experience {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100svh;
+}
+
+.mobile-player-phone {
+  width: min(100%, 430px);
+  margin: 0 auto;
+  padding: 0 0 max(26px, env(safe-area-inset-bottom));
+}
+
+.mobile-sticky-player {
+  position: sticky;
+  top: max(10px, env(safe-area-inset-top));
+  z-index: 12;
+  overflow: hidden;
+  padding: 10px;
+  border-radius: 28px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)),
+    rgba(10, 12, 19, 0.86);
+}
+
+.mobile-phone-screen {
+  min-height: min(77svh, 650px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 13px;
+  padding: 16px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(214, 220, 233, 0.92) 0%, rgba(128, 134, 151, 0.7) 46%, rgba(14, 16, 25, 0.98) 47%),
+    #151722;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 -40px 100px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-cover-frame {
+  width: 100%;
+  min-height: 45svh;
+  max-height: 410px;
+  margin-bottom: auto;
+  border-radius: 17px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 62%, rgba(255, 255, 255, 0.72), transparent 27%),
+    linear-gradient(180deg, rgba(237, 240, 248, 0.94), rgba(168, 174, 191, 0.74));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-cover-frame img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  opacity: 0.92;
+}
+
+.mobile-cover-frame.is-playing img {
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.mobile-song-copy {
+  min-width: 0;
+}
+
+.mobile-song-copy .eyebrow {
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.mobile-song-copy h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.05rem, 5.2vw, 1.45rem);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-song-copy p:last-child {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.76rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-progress-block {
+  display: grid;
+  gap: 7px;
+}
+
+.mobile-progress-slider {
+  height: 5px;
+}
+
+.mobile-time-row {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.mobile-control-row {
+  display: grid;
+  grid-template-columns: 36px 36px minmax(46px, 1fr) 36px 36px;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-round-btn,
+.mobile-play-btn,
+.mobile-lyrics-button,
+.mobile-action-btn,
+.mobile-recommended-song {
+  border: 0;
+  color: var(--sd-text);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-round-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mobile-round-btn.active {
+  color: var(--sd-accent);
+  background: rgba(30, 215, 96, 0.14);
+}
+
+.mobile-play-btn {
+  width: 50px;
+  height: 50px;
+  justify-self: center;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #10131d;
+  background: #ffffff;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+}
+
+.mobile-lyrics-button {
+  min-height: 43px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 14px;
+  color: #07130c;
+  background: linear-gradient(135deg, #ffffff, var(--sd-accent));
+  font-size: 0.84rem;
+  font-weight: 950;
+  box-shadow: 0 12px 26px rgba(30, 215, 96, 0.2);
+}
+
+.mobile-snap-stack {
+  height: 78svh;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mobile-snap-stack::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-snap-card {
+  min-height: 58svh;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  padding: 20px;
+  border-radius: 24px;
+}
+
+.mobile-snap-card h2 {
+  margin: 0 0 16px;
+  font-size: clamp(1.32rem, 7vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.mobile-detail-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.mobile-detail-list div {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-detail-list dt {
+  color: var(--sd-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.mobile-detail-list dd {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.94rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.mobile-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mobile-action-btn {
+  min-height: 88px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.mobile-action-btn svg {
+  font-size: 1.08rem;
+}
+
+.mobile-action-btn.liked {
+  color: var(--sd-danger);
+  background: rgba(255, 77, 141, 0.12);
+}
+
+.mobile-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mobile-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mobile-section-title-row h2 {
+  margin-bottom: 0;
+}
+
+.mobile-recommended-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mobile-recommended-song {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.mobile-recommended-song img {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  object-fit: cover;
+}
+
+.mobile-recommended-song span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.mobile-recommended-song strong,
+.mobile-recommended-song small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-recommended-song strong {
+  font-size: 0.83rem;
+}
+
+.mobile-recommended-song small,
+.mobile-recommended-song em {
+  color: var(--sd-muted);
+  font-size: 0.7rem;
+  font-style: normal;
+}
+
+@media (max-width: 767.98px) {
+  .song-details {
+    padding: 10px;
+    min-height: 100svh;
+  }
+
+  .song-details-layout,
+  .player-dock {
+    display: none !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .mobile-player-phone {
+    width: 100%;
+  }
+
+  .mobile-sticky-player {
+    padding: 8px;
+    border-radius: 24px;
+  }
+
+  .mobile-phone-screen {
+    min-height: min(75svh, 620px);
+    gap: 11px;
+    padding: 14px;
+    border-radius: 19px;
+  }
+
+  .mobile-cover-frame {
+    min-height: 42svh;
+  }
+
+  .mobile-snap-stack {
+    height: 76svh;
+  }
+
+  .mobile-snap-card {
+    min-height: 56svh;
+    padding: 17px;
+    border-radius: 21px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-phone-screen {
+    min-height: 73svh;
+    padding: 12px;
+  }
+
+  .mobile-control-row {
+    gap: 7px;
+  }
+
+  .mobile-round-btn {
+    width: 33px;
+    height: 33px;
+    font-size: 0.82rem;
+  }
+
+  .mobile-play-btn {
+    width: 46px;
+    height: 46px;
+  }
+}

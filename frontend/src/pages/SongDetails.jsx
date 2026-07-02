@@ -988,6 +988,267 @@ const SongDetails = () => {
     );
   };
 
+  const renderMobileSongDetails = () => {
+    const progressPercent = progressMax ? (displayProgress / progressMax) * 100 : 0;
+
+    return (
+      <motion.section
+        className="song-mobile-experience d-md-none"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        aria-label="Mobile now playing"
+      >
+        <div className="mobile-player-phone">
+          <div className="mobile-sticky-player glass-card">
+            <div className="mobile-phone-screen">
+              <motion.div
+                className={`mobile-cover-frame ${isPlaying ? "is-playing" : ""}`}
+                animate={{ y: isPlaying ? [0, -4, 0] : 0 }}
+                transition={{
+                  duration: 4,
+                  repeat: isPlaying ? Infinity : 0,
+                  ease: "easeInOut",
+                }}
+              >
+                <img
+                  src={activeSong.imageUrl}
+                  alt={`${activeSong.title} album cover`}
+                />
+              </motion.div>
+
+              <div className="mobile-song-copy">
+                <p className="eyebrow">Audio Recording Title</p>
+                <h1>{activeSong.title}</h1>
+                <p>{getArtistName(activeSong)}</p>
+              </div>
+
+              <div className="mobile-progress-block">
+                <input
+                  className="progress-slider mobile-progress-slider"
+                  type="range"
+                  min="0"
+                  max={progressMax || 0}
+                  step="0.01"
+                  value={clamp(Number(displayProgress) || 0, 0, progressMax || 0)}
+                  onChange={handleSeek}
+                  aria-label="Song progress"
+                  style={{ "--progress-percent": `${progressPercent}%` }}
+                />
+
+                <div className="mobile-time-row">
+                  <time>{formatTime(displayProgress)}</time>
+                  <time>{formatTime(totalDuration)}</time>
+                </div>
+              </div>
+
+              <div className="mobile-control-row" aria-label="Mobile controls">
+                <motion.button
+                  type="button"
+                  className={`mobile-round-btn ${shuffle ? "active" : ""}`}
+                  onClick={handleShuffle}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
+                  aria-pressed={Boolean(shuffle)}
+                >
+                  <FaRandom />
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  className="mobile-round-btn"
+                  onClick={prevSong}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label="Previous song"
+                >
+                  <FaStepBackward />
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  className="mobile-play-btn"
+                  onClick={handlePlayPause}
+                  whileTap={{ scale: 0.92 }}
+                  aria-label={isPlaying ? "Pause song" : "Play song"}
+                >
+                  {isPlaying ? <FaPause /> : <FaPlay />}
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  className="mobile-round-btn"
+                  onClick={nextSong}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label="Next song"
+                >
+                  <FaStepForward />
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  className={`mobile-round-btn ${
+                    repeat === "one" ||
+                    repeat === "all" ||
+                    repeat === true ||
+                    repeat === 1
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={handleRepeat}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label={repeatLabel(repeat)}
+                  aria-pressed={
+                    repeat === "one" ||
+                    repeat === "all" ||
+                    repeat === true ||
+                    repeat === 1
+                  }
+                >
+                  {renderRepeatIcon()}
+                </motion.button>
+              </div>
+
+              <button
+                type="button"
+                className="mobile-lyrics-button"
+                onClick={() => setLyricsModalOpen(true)}
+                aria-label="Show lyrics"
+              >
+                <FaMusic />
+                Show Lyrics
+              </button>
+            </div>
+          </div>
+
+          <div className="mobile-snap-stack" aria-label="Song detail sections">
+            <section className="mobile-snap-card glass-card" aria-label="Song details">
+              <p className="eyebrow">Song Details</p>
+              <h2>{activeSong.title}</h2>
+              <dl className="mobile-detail-list">
+                <div>
+                  <dt>Artist</dt>
+                  <dd>{getArtistName(activeSong)}</dd>
+                </div>
+                <div>
+                  <dt>Album</dt>
+                  <dd>{getAlbumTitle(activeSong)}</dd>
+                </div>
+                <div>
+                  <dt>Genre</dt>
+                  <dd>{activeSong.genre || "Unknown"}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="mobile-snap-card glass-card" aria-label="Release details">
+              <p className="eyebrow">Release</p>
+              <h2>Track Info</h2>
+              <dl className="mobile-detail-list">
+                <div>
+                  <dt>Release Date</dt>
+                  <dd>{formatDate(activeSong.releaseDate)}</dd>
+                </div>
+                <div>
+                  <dt>Release Year</dt>
+                  <dd>{activeSong.releaseYear || "Unknown"}</dd>
+                </div>
+                <div>
+                  <dt>Duration</dt>
+                  <dd>{formatTime(totalDuration)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="mobile-snap-card glass-card" aria-label="Actions and stats">
+              <p className="eyebrow">Actions</p>
+              <h2>Save & Share</h2>
+              <div className="mobile-action-grid">
+                <button
+                  type="button"
+                  className={`mobile-action-btn ${liked ? "liked" : ""}`}
+                  onClick={handleToggleLike}
+                  disabled={!token || likeLoading}
+                  aria-label={liked ? "Unlike song" : "Like song"}
+                  aria-pressed={liked}
+                >
+                  {liked ? <FaHeart /> : <FaRegHeart />}
+                  <span>{likesCount.toLocaleString()} Likes</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="mobile-action-btn"
+                  onClick={openPlaylistModal}
+                  aria-label="Add to playlist"
+                >
+                  <FaPlus />
+                  <span>Playlist</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="mobile-action-btn"
+                  onClick={handleShare}
+                  aria-label="Share song"
+                >
+                  <FaShareAlt />
+                  <span>{shareStatus || "Share"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="mobile-action-btn"
+                  onClick={handleDownload}
+                  aria-label="Download song"
+                >
+                  <FaDownload />
+                  <span>Download</span>
+                </button>
+              </div>
+            </section>
+
+            <section className="mobile-snap-card glass-card" aria-label="Recommended songs">
+              <div className="mobile-section-title-row">
+                <div>
+                  <p className="eyebrow">Up Next</p>
+                  <h2>Recommended</h2>
+                </div>
+                <button
+                  type="button"
+                  className="mobile-round-btn"
+                  onClick={() => setQueueOpen(true)}
+                  aria-label="Open queue"
+                >
+                  <FaListUl />
+                </button>
+              </div>
+
+              <div className="mobile-recommended-list">
+                {recommendedSongs.slice(0, 5).map((song) => (
+                  <button
+                    key={song._id}
+                    type="button"
+                    className="mobile-recommended-song"
+                    onClick={() => handlePlayRecommended(song)}
+                    aria-label={`Play ${song.title} by ${getArtistName(song)}`}
+                  >
+                    <img src={song.imageUrl} alt="" />
+                    <span>
+                      <strong>{song.title}</strong>
+                      <small>{getArtistName(song)}</small>
+                    </span>
+                    <em>{formatTime(song.duration)}</em>
+                  </button>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      </motion.section>
+    );
+  };
+
+
   if (!activeSong) {
     return (
       <main className="song-details song-details-empty">
@@ -1017,8 +1278,10 @@ const SongDetails = () => {
         <img src={activeSong.imageUrl} alt="" />
       </div>
 
+      {renderMobileSongDetails()}
+
       <motion.section
-        className="song-details-layout row g-3 g-xl-4 align-items-stretch"
+        className="song-details-layout row g-3 g-xl-4 align-items-stretch d-none d-md-flex"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
@@ -1184,7 +1447,7 @@ const SongDetails = () => {
       </motion.section>
 
       <motion.section
-  className="player-dock glass-card"
+  className="player-dock glass-card d-none d-md-grid"
   initial={{ opacity: 0, y: 36 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ delay: 0.1, duration: 0.42 }}
