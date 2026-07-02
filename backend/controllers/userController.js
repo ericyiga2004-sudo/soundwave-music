@@ -397,7 +397,10 @@ export const getBecauseYouLiked = async (req, res) => {
       });
     }
 
-    const likedSong = user.likedSongs[0];
+    const recentLikedSongs = user.likedSongs.slice(-10);
+
+    const likedSong =
+      recentLikedSongs[Math.floor(Math.random() * recentLikedSongs.length)];
 
     const similarSongs = await Song.find({
       _id: {
