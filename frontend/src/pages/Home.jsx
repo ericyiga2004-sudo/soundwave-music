@@ -10,6 +10,7 @@ import MadeForYou from '../components/MadeForYou/MadeForYou'
 import ContinueListening from '../components/ContinueListening/ContinueListening'
 import YouLiked from '../components/YouLiked/YouLiked'
 import Country from '../components/Country/Country'
+import FollowedArtists from '../components/FollowedArtists/FollowedArtists'
 
 const Home = () => {
   return (
@@ -20,6 +21,7 @@ const Home = () => {
         <ContinueListening/>
         <YouLiked/>
         <Country/>
+        <FollowedArtists/>
         <NewRelease/>
         <PopularArtist/>
         <Albums/>

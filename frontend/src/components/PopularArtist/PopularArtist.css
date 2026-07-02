@@ -560,3 +560,59 @@
     padding-inline: 0.55rem;
   }
 }
+
+.popular-artist-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.popular-artist-follow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  background: #1ed760;
+  color: #06130a;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.popular-artist-follow-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(30, 215, 96, 0.25);
+}
+
+.popular-artist-follow-btn.following {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.popular-artist-follow-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.popular-artist-image-wrap {
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .popular-artist-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .popular-artist-follow-btn,
+  .popular-artist-button {
+    width: 100%;
+  }
+}
