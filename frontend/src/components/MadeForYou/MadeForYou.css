@@ -1,0 +1,165 @@
+.made-section {
+    width: 100%;
+    margin-top: 35px;
+    padding: 0 10px;
+    overflow: hidden;
+  }
+  
+  .made-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+  }
+  
+  .made-title {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0;
+  }
+  
+  .made-subtitle {
+    color: #a7a7a7;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  
+  .made-empty {
+    color: #b3b3b3;
+    font-size: 15px;
+    margin-top: 14px;
+  }
+  
+  .made-slider {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 4px 0 14px;
+  }
+  
+  .made-slider::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .made-slider::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .made-slider::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 20px;
+  }
+  
+  .made-slider::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  .made-slide-item {
+    flex: 0 0 170px;
+    min-width: 170px;
+    border: 1px solid rgba(233, 144, 144, 0.157);
+    border-radius: 16px;
+  }
+  
+  .made-slide-item > * {
+    width: 100%;
+  }
+  
+  .made-skeleton-card {
+    flex: 0 0 170px;
+    min-width: 170px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #181818;
+  }
+  
+  .made-skeleton-cover,
+  .made-skeleton-line {
+    background: linear-gradient(
+      90deg,
+      #202020 0%,
+      #2a2a2a 50%,
+      #202020 100%
+    );
+    background-size: 200% 100%;
+    animation: madeSkeleton 1.3s infinite linear;
+  }
+  
+  .made-skeleton-cover {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+  
+  .made-skeleton-line {
+    height: 12px;
+    border-radius: 20px;
+  }
+  
+  .made-skeleton-title {
+    width: 85%;
+    margin-bottom: 10px;
+  }
+  
+  .made-skeleton-text {
+    width: 60%;
+  }
+  
+  @keyframes madeSkeleton {
+    0% {
+      background-position: 200% 0;
+    }
+  
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .made-section {
+      padding: 0 6px;
+    }
+  
+    .made-title {
+      font-size: 22px;
+    }
+  
+    .made-slider {
+      gap: 14px;
+    }
+  
+    .made-slide-item,
+    .made-skeleton-card {
+      flex-basis: 145px;
+      min-width: 145px;
+    }
+  }
+
+  .made-section .song-title,
+.made-section .song-name,
+.made-section h3,
+.made-section h4 {
+  color: #ffffff !important;
+}
+
+.made-section .song-artist,
+.made-section .artist-name,
+.made-section p {
+  color: #b3b3b3;
+}
+  
+  @media (max-width: 480px) {
+    .made-slide-item,
+    .made-skeleton-card {
+      flex-basis: 135px;
+      min-width: 135px;
+    }
+  
+    .made-subtitle {
+      font-size: 13px;
+    }
+  }

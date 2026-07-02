@@ -1,0 +1,158 @@
+.continue-section {
+    width: 100%;
+    margin-top: 35px;
+    padding: 0 10px;
+    overflow: hidden;
+  }
+  
+  .continue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+  }
+  
+  .continue-title {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0;
+  }
+  
+  .continue-subtitle {
+    color: #a7a7a7;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  
+  .continue-empty {
+    color: #b3b3b3;
+    font-size: 15px;
+    margin-top: 14px;
+  }
+  
+  .continue-slider {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    padding: 4px 0 14px;
+  }
+  
+  .continue-slider::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .continue-slider::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .continue-slider::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 20px;
+  }
+  
+  .continue-slider::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  .continue-slide-item {
+    flex: 0 0 170px;
+    min-width: 170px;
+  }
+  
+  .continue-slide-item > * {
+    width: 100%;
+  }
+  
+  .continue-skeleton-card {
+    flex: 0 0 170px;
+    min-width: 170px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #181818;
+  }
+  
+  .continue-skeleton-cover,
+  .continue-skeleton-line {
+    background: linear-gradient(
+      90deg,
+      #202020 0%,
+      #2a2a2a 50%,
+      #202020 100%
+    );
+    background-size: 200% 100%;
+    animation: continueSkeleton 1.3s infinite linear;
+  }
+  
+  .continue-skeleton-cover {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+  
+  .continue-skeleton-line {
+    height: 12px;
+    border-radius: 20px;
+  }
+  
+  .continue-skeleton-title {
+    width: 85%;
+    margin-bottom: 10px;
+  }
+  
+  .continue-skeleton-text {
+    width: 60%;
+  }
+  
+  @keyframes continueSkeleton {
+    0% {
+      background-position: 200% 0;
+    }
+  
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .continue-section {
+      padding: 0 6px;
+    }
+  
+    .continue-title {
+      font-size: 22px;
+    }
+  
+    .continue-slider {
+      gap: 14px;
+    }
+  
+    .continue-slide-item,
+    .continue-skeleton-card {
+      flex-basis: 145px;
+      min-width: 145px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .continue-slide-item,
+    .continue-skeleton-card {
+      flex-basis: 135px;
+      min-width: 135px;
+    }
+  
+    .continue-subtitle {
+      font-size: 13px;
+    }
+  }
+
+  .continue-section .card-title {
+    color: #ffffff !important;
+  }
+  
+  .continue-section .card-artist {
+    color: #b3b3b3 !important;
+  }

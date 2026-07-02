@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from "react";
 import { FaPlay } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import "./SongItem.css";
@@ -18,7 +19,7 @@ const normalizeSongs = (songs = []) => {
 
 const SongItem = ({ song, queue = [] }) => {
   const { playSong } = useContext(MusicPlayerContext);
-  const { songs } = useContext(MusicContext);
+  const { songs, backendUrl } = useContext(MusicContext);
 
   const songQueue = useMemo(() => {
     const sourceQueue = queue.length ? queue : songs;
@@ -29,8 +30,35 @@ const SongItem = ({ song, queue = [] }) => {
     ]);
   }, [queue, song, songs]);
 
-  const handlePlaySong = () => {
+  const addSongToHistory = async (songId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token || !songId) return;
+
+      await axios.post(
+        `${backendUrl}/api/history/add`,
+        {
+          songId,
+        },
+        {
+          headers: {
+            token,
+          },
+        }
+      );
+    } catch (error) {
+      console.log("Add to history error:", error);
+    }
+  };
+
+  const handlePlaySong = async (e) => {
+    e.preventDefault();
+
+    if (!song?._id) return;
+
     playSong(song, songQueue);
+    await addSongToHistory(song._id);
   };
 
   return (
@@ -41,6 +69,7 @@ const SongItem = ({ song, queue = [] }) => {
           playlist: songQueue,
         }}
         className="song-linker"
+        onClick={handlePlaySong}
       >
         <div className="card-img-container">
           <img

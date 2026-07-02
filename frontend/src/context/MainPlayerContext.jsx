@@ -54,6 +54,14 @@ const getArtistName = (song) =>
 const getAlbumTitle = (song) =>
   song?.album?.title || song?.albumTitle || song?.album || "";
 
+const getSongAudioUrl = (song) =>
+  song?.audioUrl ||
+  song?.audio ||
+  song?.songUrl ||
+  song?.fileUrl ||
+  song?.url ||
+  "";
+
 const getBufferedAhead = (audio) => {
   if (!audio || !audio.buffered || audio.buffered.length === 0) return 0;
 
@@ -95,9 +103,10 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const musicContext = useContext(MusicContext);
 
-  const token = musicContext?.token || "";
-  const backendUrl = musicContext?.backendUrl || "";
-  const fetchHistory = musicContext?.fetchHistory;
+const backendUrl =
+  musicContext?.backendUrl ||
+  import.meta.env.VITE_BACKEND_URL ||
+  "";
 
   const [audioReady, setAudioReady] = useState(false);
   const [currentSong, setCurrentSong] = useState(null);
@@ -128,7 +137,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const tryResumeAfterBuffer = useCallback(async () => {
     const audio = audioRef.current;
 
-    if (!audio || !currentSongRef.current?.audioUrl) return;
+    if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
     if (!userWantedPlayRef.current) return;
     if (!audio.paused) {
       setBufferingState(false);
@@ -238,7 +247,9 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const addSongToHistory = useCallback(
     async (song) => {
-      if (!token || !backendUrl || !song?._id) return;
+      const savedToken = localStorage.getItem("token");
+
+      if (!savedToken || !backendUrl || !song?._id) return;
 
       try {
         await axios.post(
@@ -248,22 +259,28 @@ export const MusicPlayerProvider = ({ children }) => {
           },
           {
             headers: {
-              token,
+              token: savedToken,
             },
           }
         );
 
-        fetchHistory?.();
+        window.dispatchEvent(new Event("music-history-updated"));
+        console.log("Saving history:", song?._id, backendUrl);
       } catch (error) {
         console.error("Unable to add song to history:", error);
       }
     },
-    [backendUrl, fetchHistory, token]
+    [backendUrl]
   );
 
   const playSong = useCallback(
     async (song, queue = []) => {
-      if (!song?.audioUrl) return;
+      const audioUrl = getSongAudioUrl(song);
+
+      if (!audioUrl) {
+        console.error("Song has no audio URL:", song);
+        return;
+      }
 
       const audio = audioRef.current;
 
@@ -281,7 +298,7 @@ export const MusicPlayerProvider = ({ children }) => {
       try {
         setBufferingState(true, "Loading song...");
 
-        if (!isSameSong || audio.src !== song.audioUrl) {
+        if (!isSameSong || audio.src !== audioUrl) {
           isChangingTrackRef.current = true;
 
           audio.preload = "auto";
@@ -290,7 +307,7 @@ export const MusicPlayerProvider = ({ children }) => {
           audio.setAttribute("webkit-playsinline", "true");
           audio.setAttribute("x-webkit-airplay", "allow");
 
-          audio.src = song.audioUrl;
+          audio.src = audioUrl;
           audio.load();
 
           setProgress(0);
@@ -339,8 +356,9 @@ export const MusicPlayerProvider = ({ children }) => {
   const resumeSong = useCallback(async () => {
     const audio = audioRef.current;
     const activeSong = currentSongRef.current;
+    const audioUrl = getSongAudioUrl(activeSong);
 
-    if (!audio || !activeSong?.audioUrl) return;
+    if (!audio || !audioUrl) return;
 
     userWantedPlayRef.current = true;
     clearRecoveryTimer();
@@ -354,7 +372,7 @@ export const MusicPlayerProvider = ({ children }) => {
       audio.setAttribute("x-webkit-airplay", "allow");
 
       if (!audio.src) {
-        audio.src = activeSong.audioUrl;
+        audio.src = audioUrl;
         audio.load();
       }
 
@@ -379,7 +397,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current;
-    if (!audio || !currentSongRef.current?.audioUrl) return;
+    if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
 
     if (audio.paused) {
       await resumeSong();
@@ -659,11 +677,12 @@ export const MusicPlayerProvider = ({ children }) => {
 
       recoveryTimerRef.current = window.setTimeout(() => {
         const activeSong = currentSongRef.current;
+        const audioUrl = getSongAudioUrl(activeSong);
 
-        if (!activeSong?.audioUrl || !userWantedPlayRef.current) return;
+        if (!audioUrl || !userWantedPlayRef.current) return;
 
         try {
-          audio.src = activeSong.audioUrl;
+          audio.src = audioUrl;
           audio.load();
           tryResumeAfterBuffer();
         } catch (error) {

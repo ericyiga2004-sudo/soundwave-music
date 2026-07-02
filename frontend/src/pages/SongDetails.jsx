@@ -1047,7 +1047,7 @@ const SongDetails = () => {
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
             <div className="mobile-top-label">
-              <span>Now Playing</span>
+              <span></span>
               <span>{getAlbumTitle(activeSong)}</span>
             </div>
 

@@ -6,12 +6,18 @@ import PopularArtist from '../components/PopularArtist/PopularArtist'
 import Albums from '../components/Albums/Albums'
 import FilterSongs from '../components/FilterSongs/FilterSongs'
 import Yearly from '../components/Nineteen/Yearly'
+import MadeForYou from '../components/MadeForYou/MadeForYou'
+import ContinueListening from '../components/ContinueListening/ContinueListening'
+import YouLiked from '../components/YouLiked/YouLiked'
 
 const Home = () => {
   return (
     <div>
         <Hero/>
         {/* <Trending/> */}
+        <MadeForYou/>
+        <ContinueListening/>
+        <YouLiked/>
         <NewRelease/>
         <PopularArtist/>
         <Albums/>
@@ -21,4 +27,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default Home  
