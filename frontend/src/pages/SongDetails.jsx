@@ -1527,13 +1527,13 @@ const SongDetails = () => {
       {renderMobileSongDetails()}
 
       <motion.section
-        className="song-details-layout row g-3 g-xl-4 align-items-stretch d-none d-md-flex"
+        className="song-details-layout row g-4 g-xl-4 g-xxl-5 align-items-stretch justify-content-center d-none d-md-flex"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
       >
         <motion.aside
-          className="col-12 col-md-2 order-1 song-panel song-panel-left glass-card"
+          className="col-12 col-md-10 col-lg-4 col-xl-3 col-xxl-3 order-1 song-panel song-panel-left glass-card"
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45 }}
@@ -1637,7 +1637,7 @@ const SongDetails = () => {
         </motion.aside>
 
         <motion.section
-          className="col-12 col-md-8 order-2 lyrics-panel glass-card d-none d-md-flex"
+          className="col-12 col-md-10 col-lg-8 col-xl-6 col-xxl-6 order-2 lyrics-panel glass-card d-none d-md-flex"
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -1647,7 +1647,7 @@ const SongDetails = () => {
         </motion.section>
 
         <motion.aside
-          className="col-12 col-md-2 order-3 song-panel song-panel-right glass-card"
+          className="col-12 col-md-10 col-lg-12 col-xl-3 col-xxl-3 order-3 song-panel song-panel-right glass-card"
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45 }}
@@ -1693,15 +1693,15 @@ const SongDetails = () => {
       </motion.section>
 
       <motion.section
-  className="player-dock glass-card d-none d-md-grid"
+  className="player-dock glass-card d-none d-md-block"
   initial={{ opacity: 0, y: 36 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ delay: 0.1, duration: 0.42 }}
   aria-label="Music player controls"
 >
   <div className="container-fluid p-0">
-    <div className="row g-2 g-md-3 align-items-center">
-      <div className="col-12 col-lg-3">
+    <div className="row g-3 g-xl-4 align-items-center justify-content-center">
+      <div className="col-12 col-lg-3 col-xl-3">
         <div className="dock-song">
           <img src={activeSong.imageUrl} alt="" />
 
@@ -1712,7 +1712,7 @@ const SongDetails = () => {
         </div>
       </div>
 
-      <div className="col-12 col-lg-6">
+      <div className="col-12 col-lg-6 col-xl-6">
         <div className="dock-main">
           <div className="control-row">
             <motion.button
@@ -1815,7 +1815,7 @@ const SongDetails = () => {
         </div>
       </div>
 
-      <div className="col-12 col-lg-3">
+      <div className="col-12 col-lg-3 col-xl-3">
         <div className="dock-actions">
           <div className="dock-actions-buttons">
             <motion.button
