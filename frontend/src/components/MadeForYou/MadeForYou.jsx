@@ -12,6 +12,7 @@ const MadeForYou = () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
+        setMadeForYouSongs([]);
         setLoading(false);
         return;
       }
@@ -27,9 +28,12 @@ const MadeForYou = () => {
 
       if (res.data.success) {
         setMadeForYouSongs(res.data.songs || []);
+      } else {
+        setMadeForYouSongs([]);
       }
     } catch (error) {
-      console.log(error);
+      console.log("Made For You error:", error);
+      setMadeForYouSongs([]);
     } finally {
       setLoading(false);
     }
@@ -38,6 +42,10 @@ const MadeForYou = () => {
   useEffect(() => {
     fetchMadeForYou();
   }, []);
+
+  if (!loading && madeForYouSongs.length === 0) {
+    return null;
+  }
 
   return (
     <section className="made-section">
@@ -58,10 +66,6 @@ const MadeForYou = () => {
             </div>
           ))}
         </div>
-      ) : madeForYouSongs.length === 0 ? (
-        <p className="made-empty">
-          Like a few songs first so we can learn your music taste.
-        </p>
       ) : (
         <div className="made-slider">
           {madeForYouSongs.map((song) => (

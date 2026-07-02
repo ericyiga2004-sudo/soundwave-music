@@ -1,7 +1,6 @@
 import React, { useContext, useMemo } from "react";
 import { FaPlay } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import "./SongItem.css";
@@ -19,7 +18,7 @@ const normalizeSongs = (songs = []) => {
 
 const SongItem = ({ song, queue = [] }) => {
   const { playSong } = useContext(MusicPlayerContext);
-  const { songs, backendUrl } = useContext(MusicContext);
+  const { songs } = useContext(MusicContext);
 
   const songQueue = useMemo(() => {
     const sourceQueue = queue.length ? queue : songs;
@@ -30,46 +29,31 @@ const SongItem = ({ song, queue = [] }) => {
     ]);
   }, [queue, song, songs]);
 
-  const addSongToHistory = async (songId) => {
-    try {
-      const token = localStorage.getItem("token");
+  const handleCardClick = () => {
+    if (!song?._id) return;
 
-      if (!token || !songId) return;
-
-      await axios.post(
-        `${backendUrl}/api/history/add`,
-        {
-          songId,
-        },
-        {
-          headers: {
-            token,
-          },
-        }
-      );
-    } catch (error) {
-      console.log("Add to history error:", error);
-    }
+    playSong(song, songQueue);
+    window.scrollTo(0,0)
   };
 
-  const handlePlaySong = async (e) => {
-    e.preventDefault();
+  const handlePlayOnly = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
 
     if (!song?._id) return;
 
     playSong(song, songQueue);
-    await addSongToHistory(song._id);
   };
 
   return (
-    <div className="song-carder" onClick={handlePlaySong}>
+    <div className="song-carder">
       <Link
         to={`/song/${song._id}`}
         state={{
           playlist: songQueue,
         }}
         className="song-linker"
-        onClick={handlePlaySong}
+        onClick={handleCardClick}
       >
         <div className="card-img-container">
           <img
@@ -78,9 +62,15 @@ const SongItem = ({ song, queue = [] }) => {
             loading="lazy"
           />
 
-          <div className="play-overlay">
+          <button
+            type="button"
+            className="play-overlay"
+            onClick={handlePlayOnly}
+            aria-label={`Play ${song.title || "song"}`}
+            title="Play"
+          >
             <FaPlay />
-          </div>
+          </button>
         </div>
 
         <div className="card-content">

@@ -6,18 +6,17 @@ import {
   FaEnvelope,
   FaLock,
   FaClock,
+  FaHeadphones,
 } from "react-icons/fa";
 
 import "./CSS/Account.css";
 import { MusicContext } from "../context/ShopContext";
-import { MusicPlayerContext } from "../context/MainPlayerContext";
 import SongItem from "../components/SongItem/SongItem";
 
-const Account = () => {
-  const { token, setToken, logout, backendUrl } =
-    useContext(MusicContext);
+const MAX_HISTORY_SONGS = 20;
 
-  const { playSong } = useContext(MusicPlayerContext);
+const Account = () => {
+  const { token, setToken, logout, backendUrl } = useContext(MusicContext);
 
   const [historySongs, setHistorySongs] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -28,43 +27,97 @@ const Account = () => {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState(null);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!token) {
-        setHistorySongs([]);
-        setHistoryLoading(false);
+  const showNotice = (type, message) => {
+    setNotice({ type, message });
+
+    window.setTimeout(() => {
+      setNotice(null);
+    }, 3500);
+  };
+
+  const getUserLocation = () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
         return;
       }
 
-      try {
-        setHistoryLoading(true);
-
-        const res = await axios.get(
-          `${backendUrl}/api/history/get`,
-          {
-            headers: {
-              token,
-            },
-          }
-        );
-
-        console.log("History Response:", res.data);
-
-        if (res.data.success) {
-          setHistorySongs(res.data.history || []);
-        } else {
-          setHistorySongs([]);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+        },
+        () => {
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
         }
-      } catch (error) {
-        console.error("Fetch history error:", error);
-        setHistorySongs([]);
-      } finally {
-        setHistoryLoading(false);
-      }
-    };
+      );
+    });
+  };
 
+  const saveLocationAfterAuth = async (authToken, location) => {
+    if (!authToken || !location) return;
+
+    try {
+      await axios.post(`${backendUrl}/api/user/location`, location, {
+        headers: {
+          token: authToken,
+        },
+      });
+    } catch (error) {
+      console.log("Save location error:", error);
+    }
+  };
+
+  const fetchHistory = async () => {
+    if (!token) {
+      setHistorySongs([]);
+      setHistoryLoading(false);
+      return;
+    }
+
+    try {
+      setHistoryLoading(true);
+
+      const res = await axios.get(`${backendUrl}/api/history/get`, {
+        headers: { token },
+      });
+
+      if (res.data.success) {
+        const songs = (res.data.history || [])
+          .map((item) => item.song)
+          .filter(Boolean)
+          .slice(0, MAX_HISTORY_SONGS);
+
+        setHistorySongs(songs);
+      } else {
+        setHistorySongs([]);
+      }
+    } catch (error) {
+      console.error("Fetch history error:", error);
+      setHistorySongs([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchHistory();
+
+    window.addEventListener("music-history-updated", fetchHistory);
+
+    return () => {
+      window.removeEventListener("music-history-updated", fetchHistory);
+    };
   }, [backendUrl, token]);
 
   const submitHandler = async (e) => {
@@ -73,63 +126,81 @@ const Account = () => {
     try {
       setLoading(true);
 
-      const endpoint =
-        mode === "login"
-          ? "/api/user/login"
-          : "/api/user/register";
+      const cleanUsername = username.trim();
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPassword = password.trim();
+
+      const location = await getUserLocation();
+
+      const endpoint = mode === "login" ? "/api/user/login" : "/api/user/register";
 
       const payload =
         mode === "login"
           ? {
-              email,
-              password,
+              email: cleanEmail,
+              password: cleanPassword,
             }
           : {
-              username,
-              email,
-              password,
+              username: cleanUsername,
+              email: cleanEmail,
+              password: cleanPassword,
+              location,
             };
 
-      const res = await axios.post(
-        `${backendUrl}${endpoint}`,
-        payload
-      );
+      const res = await axios.post(`${backendUrl}${endpoint}`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (res.data.success) {
         setToken(res.data.token);
+        localStorage.setItem("token", res.data.token);
+
+        if (mode === "login") {
+          await saveLocationAfterAuth(res.data.token, location);
+        }
+
+        showNotice(
+          "success",
+          mode === "login"
+            ? "Welcome back. You are now logged in."
+            : "Account created successfully."
+        );
 
         setUsername("");
         setEmail("");
         setPassword("");
       } else {
-        alert(res.data.message);
+        showNotice("error", res.data.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      console.log(error);
-      alert(error.response?.data?.message || "Something went wrong");
+      console.log("Auth error:", error);
+
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Something went wrong";
+
+      showNotice("error", message);
     } finally {
       setLoading(false);
     }
   };
 
-  const buildHistoryQueue = () => {
-    if (!Array.isArray(historySongs)) return [];
-
-    return historySongs
-      .map((item) => item?.song)
-      .filter(Boolean);
-  };
-
-  const handlePlayHistorySong = (song) => {
-    if (!song) return;
-
-    playSong(song, buildHistoryQueue());
-    window.scrollTo(0, 0);
-  };
+  const noticeMarkup = notice && (
+    <div className={`auth-notice ${notice.type}`}>
+      <span className="auth-notice-dot"></span>
+      <p>{notice.message}</p>
+    </div>
+  );
 
   if (token) {
     return (
       <main className="account-dashboard">
+        {noticeMarkup}
+
         <div className="container-fluid px-2 px-sm-3 px-lg-4">
           <section className="dashboard-card row g-3 g-md-4 align-items-center">
             <div className="col-12 col-md-auto text-center text-md-start">
@@ -139,67 +210,57 @@ const Account = () => {
             </div>
 
             <div className="col-12 col-md text-center text-md-start">
+              <span className="dashboard-badge">Your Account</span>
               <h1>Welcome Back</h1>
-              <p>You are successfully logged in.</p>
+              <p>Your music, history, playlists, and personal mixes are ready.</p>
             </div>
 
             <div className="col-12 col-md-auto text-center text-md-end">
-              <button
-                className="logout-btn"
-                onClick={logout}
-              >
+              <button className="logout-btn" onClick={logout}>
                 Logout
               </button>
             </div>
           </section>
 
-          <section className="history-section">
-            <div className="history-header row g-3 align-items-end">
-              <div className="col-12 col-md">
-                <div className="history-heading">
+          <section className="account-history-section">
+            <div className="account-history-header">
+              <div>
+                <span className="account-history-badge">
+                  <FaHeadphones />
+                  Recently Played
+                </span>
+
+                <div className="account-history-heading">
                   <FaClock />
                   <h2>Listening History</h2>
                 </div>
 
-                <p>Recently played songs from your account.</p>
+                <p>Your latest played songs, saved automatically.</p>
               </div>
             </div>
 
             {historyLoading ? (
-              <div className="empty-history">
-                <FaMusic />
-                <p>Loading listening history...</p>
+              <div className="account-history-slider">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div className="account-history-skeleton" key={item}>
+                    <div className="account-history-skeleton-cover"></div>
+                    <div className="account-history-skeleton-line title"></div>
+                    <div className="account-history-skeleton-line text"></div>
+                  </div>
+                ))}
               </div>
             ) : historySongs.length > 0 ? (
-              <div className="history-grid row g-3 g-md-4">
-                {historySongs.map((item) => {
-                  const song = item.song;
-
-                  if (!song) return null;
-
-                  return (
-                    <div
-                      className="history-song-card col-6 col-sm-4 col-md-3 col-lg-2"
-                      key={
-                        item._id ||
-                        `${song._id}-${item.playedAt}`
-                      }
-                      onClick={() =>
-                        handlePlayHistorySong(song)
-                      }
-                    >
-                      <SongItem song={song} />
-                    </div>
-                  );
-                })}
+              <div className="account-history-slider">
+                {historySongs.map((song) => (
+                  <div className="account-history-slide" key={song._id}>
+                    <SongItem song={song} queue={historySongs} />
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="empty-history">
                 <FaMusic />
-                <p>
-                  No listening history yet. Play a song to
-                  see it here.
-                </p>
+                <p>No listening history yet. Play a song to see it here.</p>
               </div>
             )}
           </section>
@@ -210,6 +271,8 @@ const Account = () => {
 
   return (
     <main className="auth-page">
+      {noticeMarkup}
+
       <div className="container-fluid px-2 px-sm-3 px-lg-4">
         <section className="auth-container row g-0 mx-auto">
           <div className="auth-left col-12 col-lg-7">
@@ -224,9 +287,8 @@ const Account = () => {
             </h1>
 
             <p>
-              Create playlists, save favorites, access
-              listening history, and enjoy your music
-              anywhere.
+              Create playlists, save favorites, access listening history, and enjoy
+              your music anywhere.
             </p>
           </div>
 
@@ -234,9 +296,7 @@ const Account = () => {
             <div className="auth-switch">
               <button
                 type="button"
-                className={
-                  mode === "login" ? "active" : ""
-                }
+                className={mode === "login" ? "active" : ""}
                 onClick={() => setMode("login")}
               >
                 Login
@@ -244,9 +304,7 @@ const Account = () => {
 
               <button
                 type="button"
-                className={
-                  mode === "register" ? "active" : ""
-                }
+                className={mode === "register" ? "active" : ""}
                 onClick={() => setMode("register")}
               >
                 Sign Up
@@ -257,14 +315,11 @@ const Account = () => {
               {mode === "register" && (
                 <div className="input-group">
                   <FaUser />
-
                   <input
                     type="text"
                     placeholder="Username"
                     value={username}
-                    onChange={(e) =>
-                      setUsername(e.target.value)
-                    }
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                   />
                 </div>
@@ -272,37 +327,27 @@ const Account = () => {
 
               <div className="input-group">
                 <FaEnvelope />
-
                 <input
                   type="email"
                   placeholder="Email"
                   value={email}
-                  onChange={(e) =>
-                    setEmail(e.target.value)
-                  }
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
 
               <div className="input-group">
                 <FaLock />
-
                 <input
                   type="password"
                   placeholder="Password"
                   value={password}
-                  onChange={(e) =>
-                    setPassword(e.target.value)
-                  }
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              <button
-                type="submit"
-                className="submit-btn"
-                disabled={loading}
-              >
+              <button type="submit" className="submit-btn" disabled={loading}>
                 {loading
                   ? "Please wait..."
                   : mode === "login"

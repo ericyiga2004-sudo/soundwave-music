@@ -33,6 +33,78 @@
   -webkit-backdrop-filter: blur(24px);
 }
 
+.auth-notice {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 360px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(18, 18, 18, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+  animation: noticeSlideIn 0.35s ease;
+}
+
+.auth-notice p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.auth-notice-dot {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
+  border-radius: 50%;
+}
+
+.auth-notice.success {
+  border-color: rgba(30, 215, 96, 0.28);
+}
+
+.auth-notice.error {
+  border-color: rgba(255, 77, 77, 0.28);
+}
+
+.auth-notice.success .auth-notice-dot {
+  background: #1ed760;
+  box-shadow: 0 0 18px rgba(30, 215, 96, 0.75);
+}
+
+.auth-notice.error .auth-notice-dot {
+  background: #ff4d4d;
+  box-shadow: 0 0 18px rgba(255, 77, 77, 0.65);
+}
+
+@keyframes noticeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 576px) {
+  .auth-notice {
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    max-width: none;
+  }
+}
+
 .auth-left {
   position: relative;
   padding: 60px;
@@ -620,5 +692,173 @@
 
   .history-header p {
     font-size: 0.76rem;
+  }
+}
+
+.dashboard-badge {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #1ed760;
+  background: rgba(30, 215, 96, 0.12);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-history-section {
+  position: relative;
+  margin-top: 34px;
+  padding: 22px 18px 16px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(30, 215, 96, 0.18), transparent 32%),
+    linear-gradient(135deg, rgba(24, 24, 24, 0.98), rgba(8, 8, 8, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-history-header {
+  margin-bottom: 20px;
+}
+
+.account-history-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #1ed760;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-history-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-history-heading svg {
+  color: #1ed760;
+}
+
+.account-history-heading h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.account-history-header p {
+  margin: 7px 0 0;
+  color: #b3b3b3;
+  font-size: 14px;
+}
+
+.account-history-slider {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 4px 0 14px;
+}
+
+.account-history-slider::-webkit-scrollbar {
+  height: 8px;
+}
+
+.account-history-slider::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.account-history-slider::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+.account-history-slide,
+.account-history-skeleton {
+  flex: 0 0 170px;
+  min-width: 170px;
+}
+
+.account-history-slide > * {
+  width: 100%;
+}
+
+.account-history-section .card-title {
+  color: #ffffff !important;
+}
+
+.account-history-section .card-artist {
+  color: #b3b3b3 !important;
+}
+
+.account-history-skeleton {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.account-history-skeleton-cover,
+.account-history-skeleton-line {
+  background: linear-gradient(
+    90deg,
+    #202020 0%,
+    #303030 50%,
+    #202020 100%
+  );
+  background-size: 200% 100%;
+  animation: accountHistorySkeleton 1.3s infinite linear;
+}
+
+.account-history-skeleton-cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.account-history-skeleton-line {
+  height: 12px;
+  border-radius: 20px;
+}
+
+.account-history-skeleton-line.title {
+  width: 85%;
+  margin-bottom: 10px;
+}
+
+.account-history-skeleton-line.text {
+  width: 58%;
+}
+
+@keyframes accountHistorySkeleton {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .account-history-section {
+    padding: 18px 12px 14px;
+    border-radius: 15px;
+  }
+
+  .account-history-heading h2 {
+    font-size: 23px;
+  }
+
+  .account-history-slide,
+  .account-history-skeleton {
+    flex-basis: 145px;
+    min-width: 145px;
   }
 }

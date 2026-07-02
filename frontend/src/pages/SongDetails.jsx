@@ -226,6 +226,8 @@ const SongDetails = () => {
     playlist = [],
     currentIndex = 0,
     isPlaying,
+    isBuffering,
+    bufferMessage,
     progress = 0,
     duration = 0,
     playSong,
@@ -354,6 +356,12 @@ const SongDetails = () => {
   }, [displayProgress, syncedLyrics]);
 
   const currentLyric = activeLyricIndex >= 0 ? syncedLyrics[activeLyricIndex] : null;
+
+  const songDetailsPlayLabel = isBuffering
+    ? bufferMessage || "Loading song"
+    : isPlaying
+    ? "Pause song"
+    : "Play song";
 
   const activeWordIndex = useMemo(() => {
     if (!currentLyric?.words?.length) return -1;
@@ -1136,12 +1144,25 @@ const SongDetails = () => {
 
               <motion.button
                 type="button"
-                className="mobile-main-play"
+                className={`mobile-main-play ${
+                  isBuffering ? "details-play-loading" : ""
+                }`}
                 onClick={handlePlayPause}
                 whileTap={{ scale: 0.92 }}
-                aria-label={isPlaying ? "Pause song" : "Play song"}
+                aria-label={songDetailsPlayLabel}
+                title={songDetailsPlayLabel}
               >
-                {isPlaying ? <FaPause /> : <FaPlay />}
+                {isBuffering ? (
+                  <span className="details-player-loader" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </span>
+                ) : isPlaying ? (
+                  <FaPause />
+                ) : (
+                  <FaPlay />
+                )}
               </motion.button>
 
               <motion.button
@@ -1738,13 +1759,26 @@ const SongDetails = () => {
 
             <motion.button
               type="button"
-              className="play-button"
+              className={`play-button ${
+                isBuffering ? "details-play-loading" : ""
+              }`}
               onClick={handlePlayPause}
               whileHover={{ scale: 1.045 }}
               whileTap={{ scale: 0.94 }}
-              aria-label={isPlaying ? "Pause song" : "Play song"}
+              aria-label={songDetailsPlayLabel}
+              title={songDetailsPlayLabel}
             >
-              {isPlaying ? <FaPause /> : <FaPlay />}
+              {isBuffering ? (
+                <span className="details-player-loader" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              ) : isPlaying ? (
+                <FaPause />
+              ) : (
+                <FaPlay />
+              )}
             </motion.button>
 
             <motion.button

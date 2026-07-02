@@ -6830,3 +6830,52 @@ button {
   }
 }
 
+.play-button.details-play-loading,
+.mobile-main-play.details-play-loading {
+  background: linear-gradient(135deg, #1ed760, #12b84f);
+  box-shadow:
+    0 0 0 8px rgba(30, 215, 96, 0.12),
+    0 0 26px rgba(30, 215, 96, 0.5);
+  cursor: wait;
+}
+
+.details-player-loader {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 30px;
+  height: 24px;
+}
+
+.details-player-loader span {
+  display: block;
+  width: 5px;
+  height: 9px;
+  border-radius: 999px;
+  background: #06130a;
+  animation: detailsPlayerBounce 0.8s infinite ease-in-out;
+}
+
+.details-player-loader span:nth-child(2) {
+  height: 16px;
+  animation-delay: 0.12s;
+}
+
+.details-player-loader span:nth-child(3) {
+  height: 12px;
+  animation-delay: 0.24s;
+}
+
+@keyframes detailsPlayerBounce {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+    opacity: 0.65;
+  }
+
+  50% {
+    transform: scaleY(1.35);
+    opacity: 1;
+  }
+}

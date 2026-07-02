@@ -1,7 +1,7 @@
 import type { CapacitorElectronConfig } from '@capacitor-community/electron';
 import { getCapacitorElectronConfig, setupElectronDeepLinking } from '@capacitor-community/electron';
 import type { MenuItemConstructorOptions } from 'electron';
-import { app, MenuItem } from 'electron';
+import { app, MenuItem, session } from 'electron';
 import electronIsDev from 'electron-is-dev';
 import unhandled from 'electron-unhandled';
 import { autoUpdater } from 'electron-updater';
@@ -41,6 +41,25 @@ if (electronIsDev) {
 (async () => {
   // Wait for electron app to be ready.
   await app.whenReady();
+
+  // Allow geolocation permission for the Electron app.
+  session.defaultSession.setPermissionRequestHandler(
+    (_webContents, permission, callback) => {
+      if (permission === 'geolocation') {
+        callback(true);
+        return;
+      }
+
+      callback(false);
+    }
+  );
+
+  session.defaultSession.setPermissionCheckHandler(
+    (_webContents, permission) => {
+      return permission === 'geolocation';
+    }
+  );
+
   // Security - Set Content-Security-Policy based on whether or not we are in dev mode.
   setupContentSecurityPolicy(myCapacitorApp.getCustomURLScheme());
   // Initialize our app, build windows, and load content.
