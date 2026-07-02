@@ -359,3 +359,84 @@ export const getRecommendations = async (req, res) => {
     });
   }
 };
+
+
+
+
+// =====================================
+// BECAUSE YOU LIKED
+// =====================================
+
+export const getBecauseYouLiked = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate({
+      path: "likedSongs",
+      populate: [
+        {
+          path: "artist",
+        },
+        {
+          path: "album",
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.likedSongs || user.likedSongs.length === 0) {
+      return res.json({
+        success: true,
+        title: "Because You Liked",
+        basedOn: null,
+        songs: [],
+      });
+    }
+
+    const likedSong = user.likedSongs[0];
+
+    const similarSongs = await Song.find({
+      _id: {
+        $nin: user.likedSongs.map((song) => song._id),
+      },
+
+      status: "published",
+
+      $or: [
+        {
+          genre: likedSong.genre,
+        },
+        {
+          mood: likedSong.mood,
+        },
+        {
+          artist: likedSong.artist?._id || likedSong.artist,
+        },
+      ],
+    })
+      .populate("artist album")
+      .sort({
+        plays: -1,
+        createdAt: -1,
+      })
+      .limit(20);
+
+    res.json({
+      success: true,
+      title: `Because You Liked ${likedSong.title}`,
+      basedOn: likedSong,
+      songs: similarSongs,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
