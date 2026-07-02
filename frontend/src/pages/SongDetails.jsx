@@ -1004,7 +1004,7 @@ const SongDetails = () => {
 
     return (
       <motion.section
-        className="song-mobile-experience d-md-none"
+        className="song-mobile-experience d-block d-md-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
