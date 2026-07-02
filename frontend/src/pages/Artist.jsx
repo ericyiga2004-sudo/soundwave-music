@@ -4,12 +4,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   FaArrowLeft,
   FaCheckCircle,
+  FaCompactDisc,
   FaMapMarkerAlt,
   FaMusic,
   FaPlay,
   FaUserCheck,
   FaUserPlus,
   FaUsers,
+  FaHeart,
 } from "react-icons/fa";
 
 import SongItem from "../components/SongItem/SongItem";
@@ -24,6 +26,14 @@ const formatFollowers = (value = 0) => {
   }).format(Number(value || 0));
 };
 
+const getArtistIdFromSong = (song) => {
+  return (song?.artist?._id || song?.artist || song?.artistId || "").toString();
+};
+
+const getAlbumIdFromSong = (song) => {
+  return (song?.album?._id || song?.album || song?.albumId || "").toString();
+};
+
 const Artist = () => {
   const { artistId } = useParams();
   const navigate = useNavigate();
@@ -32,22 +42,46 @@ const Artist = () => {
   const { playSong } = useContext(MusicPlayerContext);
 
   const [artist, setArtist] = useState(null);
+  const [artistAlbums, setArtistAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [albumsLoading, setAlbumsLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
   const token = localStorage.getItem("token");
 
   const artistSongs = useMemo(() => {
-    return (songs || []).filter((song) => {
-      const songArtistId =
-        song?.artist?._id || song?.artist || song?.artistId || "";
-
-      return songArtistId?.toString() === artistId;
-    });
+    return (songs || []).filter((song) => getArtistIdFromSong(song) === artistId);
   }, [songs, artistId]);
 
-  const featuredSongs = artistSongs.slice(0, 8);
+  const featuredSongs = useMemo(() => {
+    return [...artistSongs]
+      .sort((a, b) => Number(b.plays || 0) - Number(a.plays || 0))
+      .slice(0, 8);
+  }, [artistSongs]);
+
+  const mostLikedSongs = useMemo(() => {
+    return [...artistSongs]
+      .sort((a, b) => Number(b.likes || 0) - Number(a.likes || 0))
+      .slice(0, 8);
+  }, [artistSongs]);
+
+  const albumSongsMap = useMemo(() => {
+    const map = {};
+
+    artistSongs.forEach((song) => {
+      const albumId = getAlbumIdFromSong(song);
+      if (!albumId) return;
+
+      if (!map[albumId]) {
+        map[albumId] = [];
+      }
+
+      map[albumId].push(song);
+    });
+
+    return map;
+  }, [artistSongs]);
 
   const fetchArtist = async () => {
     try {
@@ -62,6 +96,34 @@ const Artist = () => {
       console.log("Fetch artist error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchArtistAlbums = async () => {
+    try {
+      setAlbumsLoading(true);
+
+      const res = await axios.get(`${backendUrl}/api/albums`);
+
+      if (res.data.success) {
+        const albums = Array.isArray(res.data.albums) ? res.data.albums : [];
+
+        const filteredAlbums = albums.filter((album) => {
+          const albumArtistId =
+            album?.artist?._id || album?.artist || album?.artistId || "";
+
+          return albumArtistId?.toString() === artistId;
+        });
+
+        setArtistAlbums(filteredAlbums);
+      } else {
+        setArtistAlbums([]);
+      }
+    } catch (error) {
+      console.log("Fetch artist albums error:", error);
+      setArtistAlbums([]);
+    } finally {
+      setAlbumsLoading(false);
     }
   };
 
@@ -88,6 +150,7 @@ const Artist = () => {
 
   useEffect(() => {
     fetchArtist();
+    fetchArtistAlbums();
     checkFollowStatus();
   }, [artistId]);
 
@@ -133,6 +196,13 @@ const Artist = () => {
     if (!artistSongs.length) return;
 
     playSong(artistSongs[0], artistSongs);
+  };
+
+  const openAlbum = (albumId) => {
+    if (!albumId) return;
+
+    navigate(`/album/${albumId}`);
+    window.scrollTo(0, 0);
   };
 
   if (loading) {
@@ -209,6 +279,11 @@ const Artist = () => {
               </span>
 
               <span>
+                <FaCompactDisc />
+                {artistAlbums.length} albums
+              </span>
+
+              <span>
                 <FaMapMarkerAlt />
                 {artist.country || "Unknown Location"}
               </span>
@@ -276,6 +351,95 @@ const Artist = () => {
             <FaMusic />
             <p>No songs uploaded for this artist yet.</p>
           </div>
+        )}
+
+        <div className="artist-section-header artist-all-header">
+          <div>
+            <span>Albums</span>
+            <h2>Albums by {artist.name}</h2>
+          </div>
+        </div>
+
+        {albumsLoading ? (
+          <div className="artist-no-songs">
+            <FaCompactDisc />
+            <p>Loading albums...</p>
+          </div>
+        ) : artistAlbums.length > 0 ? (
+          <div className="artist-album-slider">
+            {artistAlbums.map((album) => {
+              const albumId = album._id;
+              const albumSongs = albumSongsMap[albumId] || [];
+
+              return (
+                <button
+                  type="button"
+                  className="artist-album-card"
+                  key={album._id}
+                  onClick={() => openAlbum(album._id)}
+                >
+                  <img
+                    src={
+                      album.coverImage ||
+                      album.imageUrl ||
+                      album.image ||
+                      "/fallback-cover.png"
+                    }
+                    alt={album.title || album.name || "Album"}
+                  />
+
+                  <span>
+                    <strong>{album.title || album.name || "Untitled Album"}</strong>
+                    <small>
+                      {album.releaseYear || album.year || "Album"} •{" "}
+                      {albumSongs.length} songs
+                    </small>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="artist-no-songs">
+            <FaCompactDisc />
+            <p>No albums found for this artist yet.</p>
+          </div>
+        )}
+
+        {mostLikedSongs.length > 0 && (
+          <>
+            <div className="artist-section-header artist-all-header">
+              <div>
+                <span>Fan Favorites</span>
+                <h2>Most Liked Songs</h2>
+              </div>
+            </div>
+
+            <div className="artist-liked-list">
+              {mostLikedSongs.map((song, index) => (
+                <button
+                  type="button"
+                  className="artist-liked-row"
+                  key={song._id}
+                  onClick={() => playSong(song, artistSongs)}
+                >
+                  <span className="artist-liked-index">{index + 1}</span>
+
+                  <img src={song.imageUrl || "/fallback-cover.png"} alt="" />
+
+                  <span className="artist-liked-copy">
+                    <strong>{song.title}</strong>
+                    <small>{song.genre || "Unknown Genre"}</small>
+                  </span>
+
+                  <span className="artist-liked-likes">
+                    <FaHeart />
+                    {Number(song.likes || 0).toLocaleString()}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {artistSongs.length > 8 && (
