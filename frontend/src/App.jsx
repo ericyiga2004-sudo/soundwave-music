@@ -15,6 +15,9 @@ import PlayList from "./pages/PlayList";
 import YearsPage from "./pages/YearsPage";
 import Dj from "./pages/Dj";
 import Artist from "./pages/Artist";
+import DjStudio from "./pages/DjStudio";
+import DrumSequencer from "./pages/DrumSequencer";
+import MusicStudio from "./pages/MusicStudio";
 
 const App = () => {
   const location = useLocation();
@@ -44,6 +47,8 @@ const App = () => {
           <Route path="/song/:songId" element={<SongDetails />} />
           <Route path="/album/:albumId" element={<Album />} />
           <Route path="/dj" element={<Dj />} />
+          <Route path="/studio" element={<DjStudio />} />
+          <Route path="/drumsequence" element={<MusicStudio />} />
           <Route path="/yearly/:yearSlug" element={<YearsPage />} />
           <Route path="/artist/:artistId" element={<Artist />} />
         </Routes>

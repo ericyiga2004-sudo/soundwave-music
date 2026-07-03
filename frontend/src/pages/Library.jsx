@@ -312,7 +312,15 @@ const Library = () => {
           className="library-create-btn text-decoration-none"
         >
           <FaHeadphones />
-          Open DJ
+          Open DJ Essentails
+        </Link>
+
+        <Link
+          to="/studio"
+          className="library-create-btn text-decoration-none"
+        >
+          <FaHeadphones />
+          Open Studio
         </Link>
       </div>
 

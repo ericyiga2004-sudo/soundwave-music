@@ -38,69 +38,72 @@ import { MusicContext } from "../context/ShopContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./CSS/Dj.css";
 
+const SFX_MAX_PLAY_MS = 12000;
+const sfx = (fileName) => `/sfx/${fileName}`;
+
 const djPads = [
-  { id: "airhorn", name: "Air Horn", icon: FaBullhorn, type: "horn" },
-  { id: "scratch", name: "Scratch", icon: FaCompactDisc, type: "scratch" },
-  { id: "laser", name: "Laser", icon: FaBolt, type: "laser" },
-  { id: "drop", name: "Bass Drop", icon: FaBomb, type: "drop" },
-  { id: "crowd", name: "Crowd", icon: FaUsers, type: "crowd" },
-  { id: "rewind", name: "Rewind", icon: FaBackward, type: "rewind" },
-  { id: "siren", name: "Siren", icon: FaExclamationTriangle, type: "siren" },
-  { id: "tag", name: "DJ Tag", icon: FaTag, type: "tag" },
-  { id: "impact", name: "Impact", icon: FaBolt, type: "drop" },
-  { id: "vinylstop", name: "Vinyl Stop", icon: FaStop, type: "rewind" },
-  { id: "transition", name: "Sweep", icon: FaWind, type: "laser" },
-  { id: "noise", name: "Noise", icon: FaVolumeUp, type: "crowd" },
+  { id: "airhorn", name: "Air Horn", icon: FaBullhorn, type: "horn", sample: sfx("airhorn.mp3") },
+  { id: "scratch", name: "Scratch", icon: FaCompactDisc, type: "scratch", sample: sfx("scratch.mp3") },
+  { id: "laser", name: "Laser", icon: FaBolt, type: "laser", sample: sfx("lazer.mp3") },
+  { id: "drop", name: "Bass Drop", icon: FaBomb, type: "drop", sample: sfx("bass-drop.mp3") },
+  { id: "crowd", name: "Crowd", icon: FaUsers, type: "crowd", sample: sfx("crowd.mp3") },
+  { id: "rewind", name: "Rewind", icon: FaBackward, type: "rewind", sample: sfx("rewind.mp3") },
+  { id: "siren", name: "Siren", icon: FaExclamationTriangle, type: "siren", sample: sfx("siren.mp3") },
+  { id: "tag", name: "DJ Tag", icon: FaTag, type: "tag", sample: sfx("dj-tag.mp3") },
+  { id: "impact", name: "Impact", icon: FaBolt, type: "drop", sample: sfx("impact.mp3") },
+  { id: "vinylstop", name: "Vinyl Stop", icon: FaStop, type: "rewind", sample: sfx("vinyl-stop.mp3") },
+  { id: "transition", name: "Sweep", icon: FaWind, type: "laser", sample: sfx("sweep.mp3") },
+  { id: "noise", name: "Noise", icon: FaVolumeUp, type: "crowd", sample: sfx("noise.mp3") },
 ];
 
 const fxButtons = [
-  { id: "echo", name: "Echo", icon: FaVolumeUp },
-  { id: "reverb", name: "Reverb", icon: FaBroadcastTower },
-  { id: "filter", name: "Filter", icon: FaFilter },
-  { id: "flanger", name: "Flanger", icon: FaCog },
-  { id: "brake", name: "Brake", icon: FaStop },
-  { id: "roll", name: "Roll", icon: FaRetweet },
-  { id: "siren", name: "Siren", icon: FaExclamationTriangle },
-  { id: "whoosh", name: "Whoosh", icon: FaWind },
-  { id: "stutter", name: "Stutter", icon: FaBolt },
+  { id: "echo", name: "Echo", icon: FaVolumeUp, sample: sfx("sweep.mp3") },
+  { id: "reverb", name: "Reverb", icon: FaBroadcastTower, sample: sfx("noise.mp3") },
+  { id: "filter", name: "Filter", icon: FaFilter, sample: sfx("sweep.mp3") },
+  { id: "flanger", name: "Flanger", icon: FaCog, sample: sfx("whoosh.mp3") },
+  { id: "brake", name: "Brake", icon: FaStop, sample: sfx("vinyl-stop.mp3") },
+  { id: "roll", name: "Roll", icon: FaRetweet, sample: sfx("beat.mp3") },
+  { id: "siren", name: "Siren", icon: FaExclamationTriangle, sample: sfx("siren.mp3") },
+  { id: "whoosh", name: "Whoosh", icon: FaWind, sample: sfx("whoosh.mp3") },
+  { id: "stutter", name: "Stutter", icon: FaBolt, sample: sfx("scratch.mp3") },
 ];
 
 const stemButtons = [
-  { id: "vocal", name: "Vocal", icon: FaMicrophone },
-  { id: "drums", name: "Drums", icon: FaDrum },
-  { id: "bass", name: "Bass", icon: FaSlidersH },
-  { id: "music", name: "Music", icon: FaKeyboard },
+  { id: "vocal", name: "Vocal", icon: FaMicrophone, sample: sfx("yes.mp3") },
+  { id: "drums", name: "Drums", icon: FaDrum, sample: sfx("drums.mp3") },
+  { id: "bass", name: "Bass", icon: FaSlidersH, sample: sfx("bass-drop.mp3") },
+  { id: "music", name: "Music", icon: FaKeyboard, sample: sfx("piano.mp3") },
 ];
 
 const loopSizes = ["1/2", "1", "2", "4"];
 
 const classicLeftButtons = [
-  { id: "piano", name: "Piano", type: "tone", tone: 523 },
-  { id: "yes", name: "YES", type: "tag" },
-  { id: "pick", name: "Pick", type: "click" },
-  { id: "duing", name: "Duing", type: "laser" },
-  { id: "squeak", name: "Squeak", type: "squeak" },
-  { id: "scratch-mini", name: "Scratch", type: "scratch" },
+  { id: "piano", name: "Piano", type: "tone", tone: 523, sample: sfx("piano.mp3") },
+  { id: "yes", name: "YES", type: "tag", sample: sfx("yes.mp3") },
+  { id: "pick", name: "Pick", type: "click", sample: sfx("pick.mp3") },
+  { id: "duing", name: "Duing", type: "laser", sample: sfx("lazer.mp3") },
+  { id: "squeak", name: "Squeak", type: "squeak", sample: sfx("squeak.mp3") },
+  { id: "scratch-mini", name: "Scratch", type: "scratch", sample: sfx("scratch.mp3") },
 ];
 
 const classicRightButtons = [
-  { id: "book", name: "Book", type: "click" },
-  { id: "pick2", name: "Pick", type: "click" },
-  { id: "walker", name: "Walker", type: "hey" },
-  { id: "whoosh", name: "Whoosh", type: "whoosh" },
-  { id: "drums", name: "Drums", type: "beat" },
-  { id: "beat", name: "Beat", type: "beat" },
+  { id: "book", name: "Book", type: "click", sample: sfx("book.mp3") },
+  { id: "pick2", name: "Pick", type: "click", sample: sfx("pick.mp3") },
+  { id: "walker", name: "Walker", type: "hey", sample: sfx("walker.mp3") },
+  { id: "whoosh", name: "Whoosh", type: "whoosh", sample: sfx("whoosh.mp3") },
+  { id: "drums", name: "Drums", type: "beat", sample: sfx("drums.mp3") },
+  { id: "beat", name: "Beat", type: "beat", sample: sfx("beat.mp3") },
 ];
 
 const classicAllButtons = [...classicLeftButtons, ...classicRightButtons];
 
 const classicColorPads = [
-  { id: "hat-a", name: "Hi Hat", type: "hihat", color: "pink" },
-  { id: "trouble-a", name: "Trouble", type: "trouble", color: "lime" },
-  { id: "laser-a", name: "Lazer", type: "laser", color: "orange" },
-  { id: "hat-b", name: "Hi Hat", type: "hihat", color: "yellow" },
-  { id: "trouble-b", name: "Trouble", type: "trouble", color: "green" },
-  { id: "laser-b", name: "Lazer", type: "laser", color: "blue" },
+  { id: "hat-a", name: "Hi Hat", type: "hihat", color: "pink", sample: sfx("hihat.mp3") },
+  { id: "trouble-a", name: "Trouble", type: "trouble", color: "lime", sample: sfx("trouble.mp3") },
+  { id: "laser-a", name: "Lazer", type: "laser", color: "orange", sample: sfx("lazer.mp3") },
+  { id: "hat-b", name: "Hi Hat", type: "hihat", color: "yellow", sample: sfx("hihat.mp3") },
+  { id: "trouble-b", name: "Trouble", type: "trouble", color: "green", sample: sfx("trouble.mp3") },
+  { id: "laser-b", name: "Lazer", type: "laser", color: "blue", sample: sfx("lazer.mp3") },
 ];
 
 const clamp = (value, min, max) => {
@@ -162,6 +165,8 @@ const Dj = () => {
   const deckLoadTokensRef = useRef({ A: 0, B: 0 });
   const waveTrackKeysRef = useRef({ A: null, B: null });
   const recordingUrlRef = useRef("");
+  const sfxHowlsRef = useRef({});
+  const sfxStopTimersRef = useRef({});
 
   const waveContainersRef = useRef({ A: null, B: null });
   const waveSurfersRef = useRef({ A: null, B: null });
@@ -248,6 +253,19 @@ const Dj = () => {
       mountedRef.current = false;
       activeTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
       activeTimeoutsRef.current.clear();
+      Object.values(sfxStopTimersRef.current).forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+      sfxStopTimersRef.current = {};
+      Object.values(sfxHowlsRef.current).forEach((sound) => {
+        try {
+          sound.stop();
+          sound.unload();
+        } catch (error) {
+          console.log("SFX cleanup error:", error);
+        }
+      });
+      sfxHowlsRef.current = {};
     };
   }, []);
 
@@ -374,6 +392,63 @@ const Dj = () => {
     if (!timeoutId) return;
     window.clearTimeout(timeoutId);
     activeTimeoutsRef.current.delete(timeoutId);
+  };
+
+  const stopSfxTimer = (key) => {
+    const timerId = sfxStopTimersRef.current[key];
+    if (!timerId) return;
+
+    window.clearTimeout(timerId);
+    delete sfxStopTimersRef.current[key];
+  };
+
+  const playSfxSample = async (item, options = {}) => {
+    if (!item?.sample) return false;
+
+    await unlockAudio();
+
+    const key = item.sample;
+    const maxPlayMs = options.maxPlayMs || SFX_MAX_PLAY_MS;
+    const sampleVolume = options.volume ?? 0.95;
+
+    try {
+      if (!sfxHowlsRef.current[key]) {
+        sfxHowlsRef.current[key] = new Howl({
+          src: [item.sample],
+          html5: false,
+          preload: true,
+          volume: sampleVolume,
+        });
+      }
+
+      const sound = sfxHowlsRef.current[key];
+
+      stopSfxTimer(key);
+      sound.stop();
+      sound.volume(sampleVolume);
+
+      const soundId = sound.play();
+
+      sfxStopTimersRef.current[key] = window.setTimeout(() => {
+        try {
+          sound.fade(sampleVolume, 0, 180, soundId);
+
+          window.setTimeout(() => {
+            sound.stop(soundId);
+            sound.volume(sampleVolume, soundId);
+          }, 200);
+        } catch (error) {
+          sound.stop(soundId);
+        } finally {
+          delete sfxStopTimersRef.current[key];
+        }
+      }, maxPlayMs);
+
+      return true;
+    } catch (error) {
+      console.log("SFX sample error:", error);
+      return false;
+    }
   };
 
   const setDeckPlaying = (side, value) => {
@@ -1461,6 +1536,12 @@ const Dj = () => {
     setActivePad(item.id);
     scheduleTimeout(() => setActivePad(""), 180);
 
+    const playedSample = await playSfxSample(item);
+
+    if (playedSample) {
+      return;
+    }
+
     if (item.type === "tone") {
       playTone({
         frequency: item.tone || 523,
@@ -1593,6 +1674,12 @@ const Dj = () => {
     setActivePad(pad.id);
     scheduleTimeout(() => setActivePad(""), 220);
 
+    const playedSample = await playSfxSample(pad);
+
+    if (playedSample) {
+      return;
+    }
+
     if (pad.type === "horn") {
       playTone({
         frequency: 466,
@@ -1686,7 +1773,10 @@ const Dj = () => {
     setActiveFx(fxId);
     scheduleTimeout(() => setActiveFx(""), 350);
 
-    if (fxId === "echo") {
+    const fx = fxButtons.find((item) => item.id === fxId);
+    const playedFxSample = await playSfxSample(fx, { volume: 0.8 });
+
+    if (fxId === "echo" && !playedFxSample) {
       playTone({
         frequency: 420,
         duration: 0.1,
@@ -1713,11 +1803,11 @@ const Dj = () => {
       }, 300);
     }
 
-    if (fxId === "reverb") {
+    if (fxId === "reverb" && !playedFxSample) {
       playNoise(0.8, 0.055);
     }
 
-    if (fxId === "filter") {
+    if (fxId === "filter" && !playedFxSample) {
       playTone({
         startFrequency: 220,
         endFrequency: 1500,
@@ -1727,7 +1817,7 @@ const Dj = () => {
       });
     }
 
-    if (fxId === "flanger") {
+    if (fxId === "flanger" && !playedFxSample) {
       playTone({
         startFrequency: 440,
         endFrequency: 520,
@@ -1755,11 +1845,11 @@ const Dj = () => {
       getTargetSides().forEach((side) => jumpDeck(side, -0.25));
     }
 
-    if (fxId === "siren") {
+    if (fxId === "siren" && !playedFxSample) {
       triggerPad({ id: "fx-siren", type: "siren" });
     }
 
-    if (fxId === "whoosh") {
+    if (fxId === "whoosh" && !playedFxSample) {
       triggerClassicPad({ id: "fx-whoosh", type: "whoosh" });
     }
 
@@ -1799,37 +1889,43 @@ const Dj = () => {
     setActiveStem(stemId);
     scheduleTimeout(() => setActiveStem(""), 550);
 
-    if (stemId === "vocal") {
-      playTone({
-        frequency: 740,
-        duration: 0.09,
-        type: "sine",
-        volume: 0.07,
-      });
-    }
+    const stem = stemButtons.find((item) => item.id === stemId);
 
-    if (stemId === "drums") {
-      triggerClassicPad({ id: "stem-drums", type: "beat" });
-    }
+    playSfxSample(stem, { volume: 0.8 }).then((playedSample) => {
+      if (playedSample) return;
 
-    if (stemId === "bass") {
-      playTone({
-        startFrequency: 120,
-        endFrequency: 62,
-        duration: 0.2,
-        type: "sine",
-        volume: 0.16,
-      });
-    }
+      if (stemId === "vocal") {
+        playTone({
+          frequency: 740,
+          duration: 0.09,
+          type: "sine",
+          volume: 0.07,
+        });
+      }
 
-    if (stemId === "music") {
-      playTone({
-        frequency: 523,
-        duration: 0.12,
-        type: "triangle",
-        volume: 0.075,
-      });
-    }
+      if (stemId === "drums") {
+        triggerClassicPad({ id: "stem-drums", type: "beat" });
+      }
+
+      if (stemId === "bass") {
+        playTone({
+          startFrequency: 120,
+          endFrequency: 62,
+          duration: 0.2,
+          type: "sine",
+          volume: 0.16,
+        });
+      }
+
+      if (stemId === "music") {
+        playTone({
+          frequency: 523,
+          duration: 0.12,
+          type: "triangle",
+          volume: 0.075,
+        });
+      }
+    });
   };
 
   const randomLoad = () => {
