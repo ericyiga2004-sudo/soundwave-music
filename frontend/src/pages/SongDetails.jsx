@@ -29,6 +29,7 @@ import {
   FaMusic,
   FaChevronUp,
   FaChevronLeft,
+  FaCompactDisc,
 } from "react-icons/fa";
 import { MdRepeatOne } from "react-icons/md";
 
@@ -907,6 +908,17 @@ const SongDetails = () => {
     navigate("/");
   }, [navigate]);
 
+  const openVisualizer = useCallback(() => {
+    if (!activeSong?._id) return;
+
+    navigate(`/visualizer/${activeSong._id}`, {
+      state: {
+        song: activeSong,
+        playlist: playlist?.length ? playlist : songs,
+      },
+    });
+  }, [activeSong, navigate, playlist, songs]);
+
   const scrollToMobileDetails = useCallback(() => {
     mobileDetailsRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -1224,6 +1236,16 @@ const SongDetails = () => {
 
               <motion.button
                 type="button"
+                className="mobile-pill-action visualizer-action"
+                onClick={openVisualizer}
+                whileTap={{ scale: 0.94 }}
+                aria-label="Open visualizer"
+              >
+                <FaCompactDisc />
+              </motion.button>
+
+              <motion.button
+                type="button"
                 className="mobile-pill-action"
                 onClick={handleDownload}
                 whileTap={{ scale: 0.94 }}
@@ -1253,18 +1275,33 @@ const SongDetails = () => {
               </motion.button>
             </div>
 
-            <motion.button
-              type="button"
-              className="mobile-lyrics-launch"
-              onClick={() => setLyricsModalOpen(true)}
-              whileTap={{ scale: 0.96 }}
-              aria-label="Open full screen lyrics"
-            >
-              <span className="mobile-lyrics-launch-icon">
-                <FaMusic />
-              </span>
-              <span>Full Screen Lyrics</span>
-            </motion.button>
+            <div className="mobile-mode-launchers">
+              <motion.button
+                type="button"
+                className="mobile-mode-launch visualizer-launch"
+                onClick={openVisualizer}
+                whileTap={{ scale: 0.96 }}
+                aria-label="Open music visualizer"
+              >
+                <span className="mobile-lyrics-launch-icon">
+                  <FaCompactDisc />
+                </span>
+                <span>Visualizer</span>
+              </motion.button>
+
+              <motion.button
+                type="button"
+                className="mobile-mode-launch"
+                onClick={() => setLyricsModalOpen(true)}
+                whileTap={{ scale: 0.96 }}
+                aria-label="Open full screen lyrics"
+              >
+                <span className="mobile-lyrics-launch-icon">
+                  <FaMusic />
+                </span>
+                <span>Lyrics</span>
+              </motion.button>
+            </div>
 
             <motion.button
               type="button"
@@ -1466,7 +1503,17 @@ const SongDetails = () => {
                 aria-label="Open full screen lyrics"
               >
                 <FaMusic />
-                <span>Lyrics View</span>
+                <span>Lyrics</span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-action-btn visualizer-action"
+                onClick={openVisualizer}
+                aria-label="Open visualizer"
+              >
+                <FaCompactDisc />
+                <span>Visualizer</span>
               </button>
 
               <button
@@ -1872,6 +1919,17 @@ const SongDetails = () => {
               aria-label="Add to playlist"
             >
               <FaPlus />
+            </motion.button>
+
+            <motion.button
+              type="button"
+              className="icon-button visualizer-action"
+              onClick={openVisualizer}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Open visualizer"
+              title="Open visualizer"
+            >
+              <FaCompactDisc />
             </motion.button>
 
             <motion.button

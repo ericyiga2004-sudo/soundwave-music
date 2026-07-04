@@ -6879,3 +6879,342 @@ button {
     opacity: 1;
   }
 }
+
+
+/* Mobile compact fixes for SongDetails.jsx
+   Goal: iPhone 7 / 375x667 fits without lower buttons leaving the viewport. */
+
+   @media (max-width: 767.98px) {
+    .song-details {
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+  
+    .song-back-button {
+      top: max(8px, env(safe-area-inset-top));
+      left: 10px;
+      min-height: 34px;
+      padding: 7px 10px;
+      border-radius: 13px;
+      font-size: 0.78rem;
+      z-index: 12;
+    }
+  
+    .mobile-now-playing-hero {
+      min-height: 100dvh;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      align-items: stretch;
+    }
+  
+    .mobile-hero-content {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(8px, 1.45vh, 14px);
+      padding:
+        max(48px, calc(env(safe-area-inset-top) + 42px))
+        14px
+        max(12px, env(safe-area-inset-bottom));
+    }
+  
+    .mobile-top-label {
+      min-height: 18px;
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+    }
+  
+    .mobile-premium-cover {
+      width: clamp(170px, 58vw, 245px);
+      max-width: 68vw;
+      margin-inline: auto;
+    }
+  
+    .mobile-cover-visualizer {
+      height: 34px;
+      gap: 3px;
+    }
+  
+    .mobile-cover-visualizer span {
+      width: 3px;
+      max-height: 30px;
+    }
+  
+    .mobile-hero-song-copy {
+      text-align: center;
+      min-height: 56px;
+    }
+  
+    .mobile-hero-song-copy p {
+      margin-bottom: 3px;
+      font-size: 0.72rem;
+    }
+  
+    .mobile-hero-song-copy h1 {
+      max-width: 92vw;
+      margin: 0 auto;
+      font-size: clamp(1.35rem, 7vw, 2.05rem);
+      line-height: 1.03;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  
+    .mobile-hero-progress {
+      width: min(100%, 430px);
+      margin: 0 auto;
+    }
+  
+    .mobile-premium-progress {
+      height: 5px;
+    }
+  
+    .mobile-hero-time-row {
+      margin-top: 5px;
+      font-size: 0.67rem;
+    }
+  
+    .mobile-primary-controls {
+      width: min(100%, 390px);
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: 38px 38px 58px 38px 38px;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(8px, 2.2vw, 12px);
+    }
+  
+    .mobile-icon-control,
+    .mobile-pill-action,
+    .mobile-mini-button {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 14px;
+      font-size: 0.86rem;
+    }
+  
+    .mobile-main-play {
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      font-size: 1.25rem;
+    }
+  
+    .details-player-loader {
+      transform: scale(0.82);
+    }
+  
+    .mobile-secondary-actions {
+      width: min(100%, 360px);
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      justify-items: center;
+      gap: 6px;
+    }
+  
+    .mobile-secondary-actions .mobile-pill-action {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 13px;
+      font-size: 0.8rem;
+    }
+  
+    .visualizer-action {
+      color: #67f5ff !important;
+      border-color: rgba(103, 245, 255, 0.36) !important;
+      background:
+        radial-gradient(circle at 28% 18%, rgba(103, 245, 255, 0.25), transparent 42%),
+        rgba(255, 255, 255, 0.09) !important;
+    }
+  
+    .mobile-mode-launchers {
+      width: min(100%, 390px);
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+  
+    .mobile-mode-launch,
+    .mobile-lyrics-launch {
+      min-height: 40px;
+      border-radius: 16px;
+      padding: 9px 10px;
+      font-size: 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.085);
+      color: #fff;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  
+    .visualizer-launch {
+      background:
+        linear-gradient(135deg, rgba(103, 245, 255, 0.18), rgba(255, 43, 122, 0.14)),
+        rgba(255, 255, 255, 0.075);
+    }
+  
+    .mobile-lyrics-launch-icon {
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+    }
+  
+    .mobile-scroll-cue {
+      margin-top: 0;
+      min-height: 30px;
+      gap: 5px;
+      font-size: 0.68rem;
+    }
+  
+    .mobile-details-stage {
+      padding: 14px 10px 95px;
+    }
+  
+    .mobile-detail-panel {
+      border-radius: 22px;
+      padding: 16px;
+    }
+  
+    .mobile-action-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+  
+    .mobile-action-btn {
+      min-height: 46px;
+      border-radius: 16px;
+      padding: 10px;
+      font-size: 0.82rem;
+    }
+  }
+  
+  @media (max-width: 390px), (max-height: 690px) {
+    .mobile-hero-content {
+      gap: 7px;
+      padding:
+        max(42px, calc(env(safe-area-inset-top) + 36px))
+        12px
+        max(9px, env(safe-area-inset-bottom));
+    }
+  
+    .mobile-premium-cover {
+      width: clamp(140px, 48vw, 178px);
+    }
+  
+    .mobile-cover-visualizer {
+      height: 26px;
+    }
+  
+    .mobile-hero-song-copy {
+      min-height: 46px;
+    }
+  
+    .mobile-hero-song-copy p {
+      font-size: 0.64rem;
+    }
+  
+    .mobile-hero-song-copy h1 {
+      font-size: clamp(1.08rem, 6vw, 1.42rem);
+      -webkit-line-clamp: 2;
+    }
+  
+    .mobile-hero-time-row {
+      margin-top: 3px;
+      font-size: 0.6rem;
+    }
+  
+    .mobile-primary-controls {
+      grid-template-columns: 32px 32px 48px 32px 32px;
+      gap: 7px;
+    }
+  
+    .mobile-icon-control,
+    .mobile-pill-action,
+    .mobile-mini-button {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+    }
+  
+    .mobile-main-play {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      font-size: 1rem;
+    }
+  
+    .mobile-secondary-actions {
+      max-width: 320px;
+      gap: 4px;
+    }
+  
+    .mobile-secondary-actions .mobile-pill-action {
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      border-radius: 11px;
+      font-size: 0.68rem;
+    }
+  
+    .mobile-mode-launchers {
+      gap: 6px;
+    }
+  
+    .mobile-mode-launch,
+    .mobile-lyrics-launch {
+      min-height: 34px;
+      padding: 7px 8px;
+      border-radius: 14px;
+      font-size: 0.68rem;
+    }
+  
+    .mobile-lyrics-launch-icon {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 8px;
+      font-size: 0.68rem;
+    }
+  
+    .mobile-scroll-cue {
+      min-height: 24px;
+      font-size: 0.6rem;
+    }
+  }
+  
+  @media (max-height: 620px) {
+    .mobile-top-label,
+    .mobile-scroll-cue {
+      display: none;
+    }
+  
+    .mobile-hero-content {
+      gap: 6px;
+    }
+  
+    .mobile-premium-cover {
+      width: clamp(118px, 38vw, 146px);
+    }
+  
+    .mobile-mode-launch,
+    .mobile-lyrics-launch {
+      min-height: 31px;
+    }
+  }
+  

@@ -18,6 +18,7 @@ import Artist from "./pages/Artist";
 import DjStudio from "./pages/DjStudio";
 import DrumSequencer from "./pages/DrumSequencer";
 import MusicStudio from "./pages/MusicStudio";
+import Visualizer from "./pages/Visualizer";
 
 const App = () => {
   const location = useLocation();
@@ -51,6 +52,7 @@ const App = () => {
           <Route path="/drumsequence" element={<MusicStudio />} />
           <Route path="/yearly/:yearSlug" element={<YearsPage />} />
           <Route path="/artist/:artistId" element={<Artist />} />
+          <Route path="/visualizer/:songId" element={<Visualizer />} />
         </Routes>
       </main>
 
