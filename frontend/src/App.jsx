@@ -16,7 +16,6 @@ import YearsPage from "./pages/YearsPage";
 import Dj from "./pages/Dj";
 import Artist from "./pages/Artist";
 import DjStudio from "./pages/DjStudio";
-import DrumSequencer from "./pages/DrumSequencer";
 import MusicStudio from "./pages/MusicStudio";
 import Visualizer from "./pages/Visualizer";
 
@@ -24,7 +23,9 @@ const App = () => {
   const location = useLocation();
 
   const isFullScreenMusicPage =
-    location.pathname.startsWith("/song/") || location.pathname === "/dj";
+    location.pathname.startsWith("/song/") ||
+    location.pathname.startsWith("/visualizer/") ||
+    location.pathname === "/dj";
 
   return (
     <div className={isFullScreenMusicPage ? "app app-fullscreen-music" : "app"}>
@@ -56,7 +57,7 @@ const App = () => {
         </Routes>
       </main>
 
-      {/* Keep MusicPlay mounted so audio/player context keeps working */}
+      {/* Keep this mounted so the real audio element stays alive */}
       <div
         className={
           isFullScreenMusicPage

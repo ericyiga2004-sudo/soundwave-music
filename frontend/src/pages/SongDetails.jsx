@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   FaPlay,
   FaPause,
@@ -220,6 +220,7 @@ const normalizeSyncedLyrics = (lyrics = []) => {
 
 const SongDetails = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { songs = [], backendUrl, token } = useContext(MusicContext);
 
   const {
@@ -268,6 +269,7 @@ const SongDetails = () => {
   const [queueOpen, setQueueOpen] = useState(false);
   const [lyricsModalOpen, setLyricsModalOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [visualizerOpening, setVisualizerOpening] = useState(false);
 
   const mobileDetailsRef = useRef(null);
   const lyricsContainerRef = useRef(null);
@@ -276,6 +278,9 @@ const SongDetails = () => {
   const modalLyricRefs = useRef({});
   const animationFrameRef = useRef(null);
   const lastSessionRef = useRef(null);
+  const visualizerNavigateTimerRef = useRef(null);
+  const visualizerNavigateFrameRef = useRef(null);
+  const visualizerOpeningCancelledRef = useRef(false);
 
   const activeSong = currentSong || restoredSongPreview;
 
@@ -695,6 +700,22 @@ const SongDetails = () => {
     };
   }, [lyricsModalOpen]);
 
+  useEffect(() => {
+    return () => {
+      visualizerOpeningCancelledRef.current = true;
+
+      if (visualizerNavigateTimerRef.current) {
+        window.clearTimeout(visualizerNavigateTimerRef.current);
+        visualizerNavigateTimerRef.current = null;
+      }
+
+      if (visualizerNavigateFrameRef.current) {
+        window.cancelAnimationFrame(visualizerNavigateFrameRef.current);
+        visualizerNavigateFrameRef.current = null;
+      }
+    };
+  }, []);
+
   const fetchPlaylists = useCallback(async () => {
     if (!backendUrl || !token) {
       setPlaylists([]);
@@ -900,24 +921,83 @@ const SongDetails = () => {
 
 
   const handleGoBack = useCallback(() => {
+    const safeFallback = location.state?.songDetailsBackPath || "/";
+
     if (window.history.length > 1) {
       navigate(-1);
       return;
     }
 
-    navigate("/");
-  }, [navigate]);
+    navigate(safeFallback, { replace: true });
+  }, [location.state, navigate]);
+
+  const cancelVisualizerOpening = useCallback(() => {
+    visualizerOpeningCancelledRef.current = true;
+
+    if (visualizerNavigateTimerRef.current) {
+      window.clearTimeout(visualizerNavigateTimerRef.current);
+      visualizerNavigateTimerRef.current = null;
+    }
+
+    if (visualizerNavigateFrameRef.current) {
+      window.cancelAnimationFrame(visualizerNavigateFrameRef.current);
+      visualizerNavigateFrameRef.current = null;
+    }
+
+    setVisualizerOpening(false);
+  }, []);
 
   const openVisualizer = useCallback(() => {
-    if (!activeSong?._id) return;
+    if (!activeSong?._id || visualizerOpening) return;
 
-    navigate(`/visualizer/${activeSong._id}`, {
-      state: {
-        song: activeSong,
-        playlist: playlist?.length ? playlist : songs,
-      },
+    const targetPath = `/visualizer/${activeSong._id}`;
+    const queue = playlist?.length ? playlist : songs;
+
+    visualizerOpeningCancelledRef.current = false;
+    setVisualizerOpening(true);
+    saveCurrentSession();
+
+    if (visualizerNavigateTimerRef.current) {
+      window.clearTimeout(visualizerNavigateTimerRef.current);
+      visualizerNavigateTimerRef.current = null;
+    }
+
+    if (visualizerNavigateFrameRef.current) {
+      window.cancelAnimationFrame(visualizerNavigateFrameRef.current);
+      visualizerNavigateFrameRef.current = null;
+    }
+
+    // Give the loader one paint frame before the heavier visualizer route mounts.
+    visualizerNavigateFrameRef.current = window.requestAnimationFrame(() => {
+      visualizerNavigateFrameRef.current = null;
+
+      if (visualizerOpeningCancelledRef.current) return;
+
+      visualizerNavigateTimerRef.current = window.setTimeout(() => {
+        visualizerNavigateTimerRef.current = null;
+
+        if (visualizerOpeningCancelledRef.current) return;
+
+        navigate(targetPath, {
+          replace: true,
+          state: {
+            song: activeSong,
+            playlist: queue,
+            from: `/song/${activeSong._id}`,
+            songDetailsBackPath: location.state?.songDetailsBackPath || "/",
+          },
+        });
+      }, 260);
     });
-  }, [activeSong, navigate, playlist, songs]);
+  }, [
+    activeSong,
+    location.state,
+    navigate,
+    playlist,
+    songs,
+    saveCurrentSession,
+    visualizerOpening,
+  ]);
 
   const scrollToMobileDetails = useCallback(() => {
     mobileDetailsRef.current?.scrollIntoView({
@@ -1236,12 +1316,22 @@ const SongDetails = () => {
 
               <motion.button
                 type="button"
-                className="mobile-pill-action visualizer-action"
+                className={`mobile-pill-action visualizer-action ${
+                  visualizerOpening ? "is-loading" : ""
+                }`}
                 onClick={openVisualizer}
+                disabled={visualizerOpening}
                 whileTap={{ scale: 0.94 }}
-                aria-label="Open visualizer"
+                aria-label={
+                  visualizerOpening ? "Opening visualizer" : "Open visualizer"
+                }
+                aria-busy={visualizerOpening}
               >
-                <FaCompactDisc />
+                {visualizerOpening ? (
+                  <span className="song-visualizer-spinner" aria-hidden="true" />
+                ) : (
+                  <FaCompactDisc />
+                )}
               </motion.button>
 
               <motion.button
@@ -1278,15 +1368,27 @@ const SongDetails = () => {
             <div className="mobile-mode-launchers">
               <motion.button
                 type="button"
-                className="mobile-mode-launch visualizer-launch"
+                className={`mobile-mode-launch visualizer-launch ${
+                  visualizerOpening ? "is-loading" : ""
+                }`}
                 onClick={openVisualizer}
+                disabled={visualizerOpening}
                 whileTap={{ scale: 0.96 }}
-                aria-label="Open music visualizer"
+                aria-label={
+                  visualizerOpening
+                    ? "Opening music visualizer"
+                    : "Open music visualizer"
+                }
+                aria-busy={visualizerOpening}
               >
                 <span className="mobile-lyrics-launch-icon">
-                  <FaCompactDisc />
+                  {visualizerOpening ? (
+                    <span className="song-visualizer-spinner" aria-hidden="true" />
+                  ) : (
+                    <FaCompactDisc />
+                  )}
                 </span>
-                <span>Visualizer</span>
+                <span>{visualizerOpening ? "Opening..." : "Visualizer"}</span>
               </motion.button>
 
               <motion.button
@@ -1508,12 +1610,22 @@ const SongDetails = () => {
 
               <button
                 type="button"
-                className="mobile-action-btn visualizer-action"
+                className={`mobile-action-btn visualizer-action ${
+                  visualizerOpening ? "is-loading" : ""
+                }`}
                 onClick={openVisualizer}
-                aria-label="Open visualizer"
+                disabled={visualizerOpening}
+                aria-label={
+                  visualizerOpening ? "Opening visualizer" : "Open visualizer"
+                }
+                aria-busy={visualizerOpening}
               >
-                <FaCompactDisc />
-                <span>Visualizer</span>
+                {visualizerOpening ? (
+                  <span className="song-visualizer-spinner" aria-hidden="true" />
+                ) : (
+                  <FaCompactDisc />
+                )}
+                <span>{visualizerOpening ? "Opening..." : "Visualizer"}</span>
               </button>
 
               <button
@@ -1575,6 +1687,50 @@ const SongDetails = () => {
       <div className="song-details-bg" aria-hidden="true">
         <img src={activeSong.imageUrl} alt="" />
       </div>
+
+      <AnimatePresence>
+        {visualizerOpening && (
+          <motion.div
+            className="visualizer-route-loader"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            role="status"
+            aria-live="polite"
+            aria-label="Opening visualizer"
+          >
+            <div className="visualizer-route-loader-bg" aria-hidden="true">
+              <img src={activeSong.imageUrl || "/fallback.jpg"} alt="" />
+            </div>
+
+            <motion.div
+              className="visualizer-route-loader-card"
+              initial={{ y: 18, scale: 0.96, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <span className="visualizer-route-loader-disc" aria-hidden="true">
+                <FaCompactDisc />
+              </span>
+
+              <div>
+                <strong>Opening Visualizer</strong>
+                <small>Keeping your song playing...</small>
+              </div>
+
+              <button
+                type="button"
+                className="visualizer-route-loader-cancel"
+                onClick={cancelVisualizerOpening}
+                aria-label="Cancel opening visualizer"
+              >
+                <FaTimes />
+                <span>Cancel</span>
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.button
         type="button"
@@ -1923,13 +2079,23 @@ const SongDetails = () => {
 
             <motion.button
               type="button"
-              className="icon-button visualizer-action"
+              className={`icon-button visualizer-action ${
+                visualizerOpening ? "is-loading" : ""
+              }`}
               onClick={openVisualizer}
+              disabled={visualizerOpening}
               whileTap={{ scale: 0.9 }}
-              aria-label="Open visualizer"
-              title="Open visualizer"
+              aria-label={
+                visualizerOpening ? "Opening visualizer" : "Open visualizer"
+              }
+              aria-busy={visualizerOpening}
+              title={visualizerOpening ? "Opening visualizer" : "Open visualizer"}
             >
-              <FaCompactDisc />
+              {visualizerOpening ? (
+                <span className="song-visualizer-spinner" aria-hidden="true" />
+              ) : (
+                <FaCompactDisc />
+              )}
             </motion.button>
 
             <motion.button
