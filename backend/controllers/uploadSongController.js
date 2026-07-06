@@ -666,7 +666,9 @@ export const searchSongs = async (req, res) => {
   try {
     const { q = "" } = req.query;
 
-    if (!q.trim()) {
+    const query = q.trim();
+
+    if (!query) {
       return res.json({
         success: true,
         songs: [],
@@ -675,11 +677,11 @@ export const searchSongs = async (req, res) => {
       });
     }
 
-    const search = escapeRegex(q.trim());
+    const search = escapeRegex(query);
 
-    // -------------------------
-    // Search Artists
-    // -------------------------
+    // ==========================================
+    // SEARCH ARTISTS
+    // ==========================================
 
     const artists = await Artist.find({
       $or: [
@@ -697,14 +699,12 @@ export const searchSongs = async (req, res) => {
         },
       ],
     })
-      .sort({
-        followers: -1,
-      })
+      .sort({ followers: -1 })
       .limit(8);
 
-    // -------------------------
-    // Search Albums
-    // -------------------------
+    // ==========================================
+    // SEARCH ALBUMS
+    // ==========================================
 
     const albums = await Album.find({
       $or: [
@@ -723,20 +723,14 @@ export const searchSongs = async (req, res) => {
       ],
     })
       .populate("artist")
-      .sort({
-        createdAt: -1,
-      })
       .limit(8);
 
-    // -------------------------
-    // Search Songs
-    // -------------------------
+    // ==========================================
+    // SEARCH SONGS
+    // (NO artistIds or albumIds here)
+    // ==========================================
 
-    const artistIds = artists.map((a) => a._id);
-
-    const albumIds = albums.map((a) => a._id);
-
-    const songs = await populateSong(
+    let songs = await populateSong(
       Song.find({
         status: "published",
         $or: [
@@ -746,53 +740,88 @@ export const searchSongs = async (req, res) => {
               $options: "i",
             },
           },
-
           {
             genre: {
               $regex: search,
               $options: "i",
             },
           },
-
           {
             mood: {
               $regex: search,
               $options: "i",
             },
           },
-
-          {
-            country: {
-              $regex: search,
-              $options: "i",
-            },
-          },
-
           {
             tags: {
               $in: [new RegExp(search, "i")],
             },
           },
-
-          {
-            artist: {
-              $in: artistIds,
-            },
-          },
-
-          {
-            album: {
-              $in: albumIds,
-            },
-          },
         ],
       })
-    )
-      .sort({
-        plays: -1,
-        likes: -1,
-      })
-      .limit(15);
+    );
+
+    // ==========================================
+    // IF USER SEARCHED AN ARTIST,
+    // INCLUDE THEIR SONGS
+    // ==========================================
+
+    const exactArtist = artists.find(
+      (artist) =>
+        artist.name.toLowerCase() ===
+        query.toLowerCase()
+    );
+
+    if (exactArtist) {
+      const artistSongs = await populateSong(
+        Song.find({
+          status: "published",
+          artist: exactArtist._id,
+        })
+      );
+
+      const ids = new Set(
+        songs.map((song) => song._id.toString())
+      );
+
+      artistSongs.forEach((song) => {
+        if (!ids.has(song._id.toString())) {
+          songs.push(song);
+        }
+      });
+    }
+
+    // ==========================================
+    // RANK RESULTS
+    // Exact > Starts With > Contains
+    // ==========================================
+
+    const lowerQuery = query.toLowerCase();
+
+    songs.sort((a, b) => {
+      const aTitle = a.title.toLowerCase();
+      const bTitle = b.title.toLowerCase();
+
+      const aExact = aTitle === lowerQuery;
+      const bExact = bTitle === lowerQuery;
+
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+
+      const aStarts = aTitle.startsWith(lowerQuery);
+      const bStarts = bTitle.startsWith(lowerQuery);
+
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+
+      return (
+        (b.plays || 0) +
+          (b.likes || 0) -
+        ((a.plays || 0) + (a.likes || 0))
+      );
+    });
+
+    songs = songs.slice(0, 15);
 
     return res.json({
       success: true,
