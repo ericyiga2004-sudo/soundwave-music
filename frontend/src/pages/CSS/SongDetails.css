@@ -4442,3 +4442,192 @@ button {
     flex-basis: 22px !important;
   }
 }
+
+/* =====================================================
+   OFFLINE DOWNLOAD UI
+   Added for SongDetails.jsx offline playback/download states
+===================================================== */
+
+.offline-status {
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.88);
+  background:
+    linear-gradient(135deg, rgba(30, 215, 96, 0.16), rgba(0, 212, 255, 0.08)),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(30, 215, 96, 0.22);
+  font-size: 0.74rem;
+  font-weight: 850;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.spin-icon {
+  animation: offlineDownloadSpin 0.82s linear infinite;
+}
+
+.icon-button.offline-saved,
+.mobile-pill-action.offline-saved,
+.mobile-action-btn.offline-saved {
+  color: #031208 !important;
+  background:
+    linear-gradient(135deg, #ffffff 0%, var(--sd-accent) 100%),
+    var(--sd-accent) !important;
+  border-color: rgba(30, 215, 96, 0.58) !important;
+  box-shadow:
+    0 0 24px rgba(30, 215, 96, 0.24),
+    0 12px 26px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42) !important;
+}
+
+.icon-button.offline-loading,
+.mobile-pill-action.offline-loading,
+.mobile-action-btn.offline-loading {
+  cursor: wait !important;
+  opacity: 0.84 !important;
+}
+
+.offline-extra-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.offline-file-button {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045)),
+    rgba(8, 10, 18, 0.58);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.offline-file-button:hover:not(:disabled),
+.offline-file-button:focus-visible {
+  color: #ffffff;
+  border-color: rgba(30, 215, 96, 0.36);
+  background:
+    linear-gradient(145deg, rgba(30, 215, 96, 0.14), rgba(0, 212, 255, 0.08)),
+    rgba(255, 255, 255, 0.075);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.26),
+    0 0 26px rgba(30, 215, 96, 0.13);
+}
+
+.offline-file-button:active {
+  transform: scale(0.96);
+}
+
+.offline-file-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mobile-offline-actions {
+  width: min(100%, 380px);
+  margin: 4px auto 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.mobile-offline-actions .offline-status {
+  margin-top: 0;
+  border-radius: 16px;
+}
+
+.mobile-offline-actions .offline-file-button {
+  width: 100%;
+  min-height: 42px;
+}
+
+.dock-actions .offline-status {
+  max-width: 280px;
+  margin: 0 auto;
+  font-size: 0.68rem;
+}
+
+.dock-actions .offline-extra-actions {
+  margin-top: 0;
+}
+
+.dock-actions .offline-file-button {
+  min-height: 34px;
+  padding: 8px 12px;
+  font-size: 0.7rem;
+}
+
+@keyframes offlineDownloadSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .mobile-pill-action.offline-saved {
+    color: #031208 !important;
+  }
+
+  .mobile-action-btn.offline-saved {
+    color: #031208 !important;
+  }
+
+  .offline-status {
+    font-size: 0.7rem;
+    padding: 8px 10px;
+  }
+
+  .offline-file-button {
+    min-height: 38px;
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobile-offline-actions {
+    gap: 6px;
+  }
+
+  .offline-status {
+    border-radius: 14px;
+    font-size: 0.64rem;
+    padding: 7px 9px;
+  }
+
+  .offline-file-button {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 0.66rem;
+  }
+}

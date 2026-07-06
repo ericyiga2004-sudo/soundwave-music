@@ -17,6 +17,44 @@
   -webkit-backdrop-filter: blur(18px);
 }
 
+
+.sw-search-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  outline: none;
+  background: #1b1b1b;
+  color: #a8a8a8;
+  border-radius: 50px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: 0.25s;
+  min-width: 220px;
+}
+
+.sw-search-btn:hover {
+  background: #252525;
+  color: white;
+}
+
+.sw-search-btn span {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .sw-search-btn {
+    min-width: 50px;
+    padding: 12px;
+    justify-content: center;
+  }
+
+  .sw-search-btn span {
+    display: none;
+  }
+}
+
 .sw-logo-link {
   display: flex;
   align-items: center;

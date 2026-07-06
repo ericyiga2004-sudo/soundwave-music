@@ -58,7 +58,7 @@ const FollowedArtists = () => {
         const artistId = song?.artist?._id || song?.artist || song?.artistId;
         return followedIds.includes(artistId?.toString());
       })
-      .slice(0, MAX_FOLLOWED_ARTIST_SONGS);
+      .slice(0, 50);
   }, [songs, followedArtists]);
 
   if (!loading && followedArtistSongs.length === 0) {

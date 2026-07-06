@@ -21,6 +21,8 @@ import {
   FaHeart,
   FaRegHeart,
   FaDownload,
+  FaSpinner,
+  FaTrash,
   FaShareAlt,
   FaListUl,
   FaPlus,
@@ -36,6 +38,11 @@ import { MdRepeatOne } from "react-icons/md";
 import "./CSS/SongDetails.css";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
+import {
+  saveSongForOffline,
+  isSongOfflineAvailable,
+  removeOfflineSong,
+} from "../utils/offlineDownload";
 
 const PLAYER_STORAGE_KEY = "music_app_last_song_session";
 
@@ -99,6 +106,219 @@ const getDuration = (song, playerDuration, liveAudioDuration) => {
   ];
 
   return candidates.map(normalizeDuration).find(Boolean) || 0;
+};
+
+const normalizeText = (value = "") =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .trim();
+
+const getSongCountryText = (song) =>
+  [
+    song?.country,
+    song?.countryName,
+    song?.originCountry,
+    song?.market,
+    song?.region,
+    song?.language,
+    song?.artist?.country,
+    song?.artist?.countryName,
+    song?.artist?.originCountry,
+    song?.artist?.region,
+    song?.artist?.nationality,
+    song?.album?.country,
+    song?.metadata?.country,
+    song?.metadata?.market,
+  ]
+    .filter(Boolean)
+    .map(normalizeText)
+    .join(" ");
+
+const getSongGenreText = (song) =>
+  [
+    song?.genre,
+    song?.category,
+    song?.style,
+    song?.mood,
+    song?.artist?.genre,
+    song?.album?.genre,
+    song?.metadata?.genre,
+    ...(Array.isArray(song?.genres) ? song.genres : []),
+    ...(Array.isArray(song?.tags) ? song.tags : []),
+  ]
+    .filter(Boolean)
+    .map(normalizeText)
+    .join(" ");
+
+const hasAnyToken = (text, tokens = []) =>
+  tokens.some((token) => text.includes(token));
+
+const inferSongMarket = (song) => {
+  const countryText = getSongCountryText(song);
+  const genreText = getSongGenreText(song);
+  const allText = `${countryText} ${genreText}`;
+
+  if (
+    hasAnyToken(allText, [
+      "uganda",
+      "ugandan",
+      "kampala",
+      "luganda",
+      "runyankole",
+      "acholi",
+    ])
+  ) {
+    return "uganda";
+  }
+
+  if (
+    hasAnyToken(allText, [
+      "kenya",
+      "kenyan",
+      "tanzania",
+      "tanzanian",
+      "nigeria",
+      "nigerian",
+      "ghana",
+      "ghanaian",
+      "south africa",
+      "south african",
+      "rwanda",
+      "rwandan",
+      "zambia",
+      "zambian",
+      "africa",
+      "african",
+      "afrobeats",
+      "afrobeat",
+      "afropop",
+      "amapiano",
+      "bongo",
+      "gengetone",
+      "singeli",
+    ])
+  ) {
+    return "africa";
+  }
+
+  if (
+    hasAnyToken(allText, [
+      "uk",
+      "united kingdom",
+      "britain",
+      "british",
+      "england",
+      "english",
+      "london",
+      "grime",
+      "uk drill",
+      "britpop",
+    ])
+  ) {
+    return "uk";
+  }
+
+  if (
+    hasAnyToken(allText, [
+      "usa",
+      "america",
+      "american",
+      "united states",
+      "western",
+      "edm",
+      "electronic",
+      "pop",
+      "hip hop",
+      "rap",
+      "rnb",
+      "rock",
+      "country music",
+      "dance pop",
+      "future bass",
+      "trap",
+      "dubstep",
+    ])
+  ) {
+    return "western";
+  }
+
+  return "unknown";
+};
+
+const inferSongGenreBucket = (song) => {
+  const genreText = getSongGenreText(song);
+
+  if (hasAnyToken(genreText, ["gospel", "worship", "christian"])) return "gospel";
+  if (hasAnyToken(genreText, ["afrobeats", "afrobeat", "afropop"])) return "afrobeats";
+  if (hasAnyToken(genreText, ["amapiano"])) return "amapiano";
+  if (hasAnyToken(genreText, ["dancehall", "ragga", "reggae"])) return "dancehall";
+  if (hasAnyToken(genreText, ["edm", "electronic", "house", "dubstep", "future bass"])) return "edm";
+  if (hasAnyToken(genreText, ["hip hop", "rap", "trap", "drill", "grime"])) return "hiphop";
+  if (hasAnyToken(genreText, ["rnb", "r&b", "soul"])) return "rnb";
+  if (hasAnyToken(genreText, ["rock", "metal", "punk"])) return "rock";
+  if (hasAnyToken(genreText, ["pop", "dance pop"])) return "pop";
+
+  return normalizeText(song?.genre || song?.category || "") || "unknown";
+};
+
+const getSongIdentity = (song) => song?._id || song?.id || song?.audioUrl || "";
+
+const isSameSongCollection = (left = [], right = []) => {
+  if (!left.length || left.length !== right.length) return false;
+
+  const leftIds = left.map(getSongIdentity).filter(Boolean).sort();
+  const rightIds = right.map(getSongIdentity).filter(Boolean).sort();
+
+  if (leftIds.length !== rightIds.length) return false;
+
+  return leftIds.every((id, index) => id === rightIds[index]);
+};
+
+const getSmartQueueForSong = (activeSong, allSongs = []) => {
+  if (!activeSong?._id || !Array.isArray(allSongs) || !allSongs.length) {
+    return activeSong ? [activeSong] : [];
+  }
+
+  const activeMarket = inferSongMarket(activeSong);
+  const activeGenre = inferSongGenreBucket(activeSong);
+
+  const scoredSongs = allSongs
+    .filter((song) => song?._id && song._id !== activeSong._id)
+    .map((song, index) => {
+      const market = inferSongMarket(song);
+      const genre = inferSongGenreBucket(song);
+      const marketCompatible =
+        activeMarket === "unknown" ||
+        market === "unknown" ||
+        market === activeMarket ||
+        (activeMarket === "uganda" && market === "africa") ||
+        (activeMarket === "africa" && market === "uganda") ||
+        (activeMarket === "western" && market === "uk") ||
+        (activeMarket === "uk" && market === "western");
+      let score = 0;
+
+      if (market === activeMarket && market !== "unknown") score += 80;
+      if (activeMarket === "uganda" && market === "africa") score += 46;
+      if (activeMarket === "africa" && market === "uganda") score += 46;
+      if (activeMarket === "western" && market === "uk") score += 22;
+      if (activeMarket === "uk" && market === "western") score += 22;
+      if (market === "unknown" || activeMarket === "unknown") score += 8;
+      if (genre === activeGenre && genre !== "unknown") score += 24;
+
+      return {
+        song,
+        score,
+        marketCompatible,
+        index,
+      };
+    })
+    .filter(({ marketCompatible }) => marketCompatible)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+
+  const nextSongs = scoredSongs.map(({ song }) => song);
+
+  return [activeSong, ...nextSongs];
 };
 
 const repeatLabel = (repeat) => {
@@ -269,6 +489,9 @@ const SongDetails = () => {
   const [queueOpen, setQueueOpen] = useState(false);
   const [lyricsModalOpen, setLyricsModalOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [offlineSaved, setOfflineSaved] = useState(false);
+  const [offlineLoading, setOfflineLoading] = useState(false);
+  const [offlineStatus, setOfflineStatus] = useState("");
   const [visualizerOpening, setVisualizerOpening] = useState(false);
 
   const mobileDetailsRef = useRef(null);
@@ -304,13 +527,25 @@ const SongDetails = () => {
     [displayProgress, totalDuration]
   );
 
-  const recommendedSongs = useMemo(() => {
-    if (!Array.isArray(songs)) return [];
+  const smartQueue = useMemo(() => {
+    return getSmartQueueForSong(activeSong, songs);
+  }, [activeSong, songs]);
 
-    return songs
+  const shouldUseContextQueue = useMemo(() => {
+    if (!playlist.length) return false;
+    return !isSameSongCollection(playlist, songs);
+  }, [playlist, songs]);
+
+  const displayQueue = useMemo(() => {
+    if (shouldUseContextQueue) return playlist;
+    return smartQueue.length ? smartQueue : activeSong ? [activeSong] : [];
+  }, [activeSong, playlist, shouldUseContextQueue, smartQueue]);
+
+  const recommendedSongs = useMemo(() => {
+    return displayQueue
       .filter((song) => song?._id && song._id !== activeSong?._id)
       .slice(0, 12);
-  }, [songs, activeSong?._id]);
+  }, [activeSong?._id, displayQueue]);
 
   const syncedLyrics = useMemo(() => {
     const lrcLines = parseLrcLyrics(activeSong?.lrcLyrics);
@@ -391,7 +626,7 @@ const SongDetails = () => {
   const buildSessionPayload = useCallback(() => {
     if (!activeSong?._id) return null;
 
-    const queueSource = playlist.length ? playlist : songs;
+    const queueSource = displayQueue.length ? displayQueue : songs;
     const queueIds = Array.isArray(queueSource)
       ? queueSource.map((song) => song?._id).filter(Boolean)
       : [];
@@ -407,7 +642,7 @@ const SongDetails = () => {
     };
   }, [
     activeSong?._id,
-    playlist,
+    displayQueue,
     songs,
     displayProgress,
     totalDuration,
@@ -626,6 +861,37 @@ const SongDetails = () => {
     setPlaylistStatus("");
     setSelectedPlaylistId("");
   }, [activeSong?._id, activeSong?.likes]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkOfflineStatus = async () => {
+      if (!activeSong?._id) {
+        setOfflineSaved(false);
+        return;
+      }
+
+      try {
+        const saved = await isSongOfflineAvailable(activeSong);
+
+        if (!cancelled) {
+          setOfflineSaved(Boolean(saved));
+        }
+      } catch (error) {
+        console.error("Failed to check offline song status:", error);
+
+        if (!cancelled) {
+          setOfflineSaved(false);
+        }
+      }
+    };
+
+    checkOfflineStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSong?._id, activeSong?.audioUrl]);
 
   useEffect(() => {
     const checkLikeStatus = async () => {
@@ -856,16 +1122,61 @@ const SongDetails = () => {
     window.setTimeout(saveCurrentSession, 0);
   };
 
-  const handleDownload = () => {
-    if (!activeSong?.audioUrl) return;
+  const clearOfflineStatusSoon = useCallback((delay = 3000) => {
+    window.setTimeout(() => {
+      setOfflineStatus("");
+    }, delay);
+  }, []);
 
-    const link = document.createElement("a");
-    link.href = activeSong.audioUrl;
-    link.download = `${activeSong.title || "song"}.mp3`;
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleSaveOffline = async () => {
+    if (!activeSong?._id || !activeSong?.audioUrl || offlineLoading) return;
+
+    try {
+      setOfflineLoading(true);
+      setOfflineStatus("Saving song inside the app...");
+
+      await saveSongForOffline(activeSong);
+
+      setOfflineSaved(true);
+      setOfflineStatus("Saved in the app. This song can now play offline.");
+      clearOfflineStatusSoon(3500);
+    } catch (error) {
+      console.error("Failed to save offline song:", error);
+      setOfflineStatus(error.message || "Could not save this song offline.");
+      clearOfflineStatusSoon(4500);
+    } finally {
+      setOfflineLoading(false);
+    }
+  };
+
+  const handleRemoveOfflineSong = async () => {
+    if (!activeSong?._id || offlineLoading) return;
+
+    try {
+      setOfflineLoading(true);
+      setOfflineStatus("Removing saved offline song...");
+
+      await removeOfflineSong(activeSong);
+
+      setOfflineSaved(false);
+      setOfflineStatus("Offline song removed.");
+      clearOfflineStatusSoon(3000);
+    } catch (error) {
+      console.error("Failed to remove offline song:", error);
+      setOfflineStatus(error.message || "Could not remove offline song.");
+      clearOfflineStatusSoon(4500);
+    } finally {
+      setOfflineLoading(false);
+    }
+  };
+
+  const handleOfflineAction = () => {
+    if (offlineSaved) {
+      handleRemoveOfflineSong();
+      return;
+    }
+
+    handleSaveOffline();
   };
 
   const handleShare = async () => {
@@ -894,20 +1205,34 @@ const SongDetails = () => {
   };
 
   const handlePlayRecommended = (song) => {
+    const queueToPlay = shouldUseContextQueue
+      ? displayQueue
+      : getSmartQueueForSong(song, songs);
+    const queueIds = queueToPlay.map((item) => item?._id).filter(Boolean);
+
     setRestoredSongPreview(null);
-    playSong?.(song, songs);
+    playSong?.(song, queueToPlay);
 
     const payload = {
       songId: song?._id,
       position: 0,
       duration: Number(song?.duration) || 0,
       wasPlaying: true,
-      currentIndex: songs.findIndex((item) => item?._id === song?._id),
-      playlistIds: songs.map((item) => item?._id).filter(Boolean),
+      currentIndex: queueToPlay.findIndex((item) => item?._id === song?._id),
+      playlistIds: queueIds,
       savedAt: Date.now(),
     };
 
     localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(payload));
+  };
+
+  const handlePlayFromQueue = (song) => {
+    if (shouldUseContextQueue) {
+      playSong?.(song, displayQueue);
+      return;
+    }
+
+    handlePlayRecommended(song);
   };
 
   const handlePlaylistSelect = async (playlistId) => {
@@ -951,7 +1276,7 @@ const SongDetails = () => {
     if (!activeSong?._id || visualizerOpening) return;
 
     const targetPath = `/visualizer/${activeSong._id}`;
-    const queue = playlist?.length ? playlist : songs;
+    const queue = displayQueue.length ? displayQueue : songs;
 
     visualizerOpeningCancelledRef.current = false;
     setVisualizerOpening(true);
@@ -993,7 +1318,7 @@ const SongDetails = () => {
     activeSong,
     location.state,
     navigate,
-    playlist,
+    displayQueue,
     songs,
     saveCurrentSession,
     visualizerOpening,
@@ -1123,7 +1448,7 @@ const SongDetails = () => {
 
   const renderMobileSongDetails = () => {
     const progressPercent = progressMax ? (displayProgress / progressMax) * 100 : 0;
-    const queueSongs = playlist?.length ? playlist : songs;
+    const queueSongs = displayQueue.length ? displayQueue : smartQueue;
 
     return (
       <motion.section
@@ -1336,12 +1661,29 @@ const SongDetails = () => {
 
               <motion.button
                 type="button"
-                className="mobile-pill-action"
-                onClick={handleDownload}
+                className={`mobile-pill-action ${offlineSaved ? "active" : ""}`}
+                onClick={handleOfflineAction}
+                disabled={offlineLoading || !activeSong?.audioUrl}
                 whileTap={{ scale: 0.94 }}
-                aria-label="Download song"
+                aria-label={
+                  offlineSaved
+                    ? "Remove saved offline song"
+                    : "Save song for offline playback"
+                }
+                aria-pressed={offlineSaved}
+                title={
+                  offlineSaved
+                    ? "Remove saved offline song"
+                    : "Save for offline playback"
+                }
               >
-                <FaDownload />
+                {offlineLoading ? (
+                  <FaSpinner className="spin-icon" />
+                ) : offlineSaved ? (
+                  <FaCheck />
+                ) : (
+                  <FaDownload />
+                )}
               </motion.button>
 
               <motion.button
@@ -1364,6 +1706,26 @@ const SongDetails = () => {
                 <FaListUl />
               </motion.button>
             </div>
+
+            {offlineSaved && (
+              <div className="mobile-offline-actions">
+                <button
+                  type="button"
+                  className="offline-file-button danger"
+                  onClick={handleRemoveOfflineSong}
+                  disabled={offlineLoading}
+                >
+                  <FaTrash />
+                  Remove offline
+                </button>
+              </div>
+            )}
+
+            {offlineStatus && (
+              <p className="offline-status mobile" role="status">
+                {offlineStatus}
+              </p>
+            )}
 
             <div className="mobile-mode-launchers">
               <motion.button
@@ -1536,7 +1898,7 @@ const SongDetails = () => {
                   className={`mobile-recommended-song ${
                     song?._id === activeSong?._id ? "active" : ""
                   }`}
-                  onClick={() => handlePlayRecommended(song)}
+                  onClick={() => handlePlayFromQueue(song)}
                   whileTap={{ scale: 0.98 }}
                   aria-label={`Play ${song.title} by ${getArtistName(song)}`}
                 >
@@ -1590,12 +1952,24 @@ const SongDetails = () => {
 
               <button
                 type="button"
-                className="mobile-action-btn"
-                onClick={handleDownload}
-                aria-label="Download song"
+                className={`mobile-action-btn ${offlineSaved ? "active" : ""}`}
+                onClick={handleOfflineAction}
+                disabled={offlineLoading || !activeSong?.audioUrl}
+                aria-label={
+                  offlineSaved
+                    ? "Remove saved offline song"
+                    : "Save song for offline playback"
+                }
+                aria-pressed={offlineSaved}
               >
-                <FaDownload />
-                <span>Download</span>
+                {offlineLoading ? (
+                  <FaSpinner className="spin-icon" />
+                ) : offlineSaved ? (
+                  <FaCheck />
+                ) : (
+                  <FaDownload />
+                )}
+                <span>{offlineSaved ? "Offline" : "Save Offline"}</span>
               </button>
 
               <button
@@ -2100,12 +2474,29 @@ const SongDetails = () => {
 
             <motion.button
               type="button"
-              className="icon-button"
-              onClick={handleDownload}
+              className={`icon-button ${offlineSaved ? "active" : ""}`}
+              onClick={handleOfflineAction}
+              disabled={offlineLoading || !activeSong?.audioUrl}
               whileTap={{ scale: 0.9 }}
-              aria-label="Download song"
+              aria-label={
+                offlineSaved
+                  ? "Remove saved offline song"
+                  : "Save song for offline playback"
+              }
+              aria-pressed={offlineSaved}
+              title={
+                offlineSaved
+                  ? "Remove saved offline song"
+                  : "Save for offline playback"
+              }
             >
-              <FaDownload />
+              {offlineLoading ? (
+                <FaSpinner className="spin-icon" />
+              ) : offlineSaved ? (
+                <FaCheck />
+              ) : (
+                <FaDownload />
+              )}
             </motion.button>
 
             <div className="share-wrap">
@@ -2133,6 +2524,26 @@ const SongDetails = () => {
               </AnimatePresence>
             </div>
           </div>
+
+          {offlineSaved && (
+            <div className="offline-extra-actions">
+              <button
+                type="button"
+                className="offline-file-button danger"
+                onClick={handleRemoveOfflineSong}
+                disabled={offlineLoading}
+              >
+                <FaTrash />
+                Remove
+              </button>
+            </div>
+          )}
+
+          {offlineStatus && (
+            <p className="offline-status" role="status">
+              {offlineStatus}
+            </p>
+          )}
 
           <div className=" d-flex align-items-center justify-content-center mx-auto">
             <button
@@ -2296,14 +2707,14 @@ const SongDetails = () => {
               </div>
 
               <div className="queue-list">
-                {(playlist.length ? playlist : songs).map((song, index) => (
+                {(displayQueue.length ? displayQueue : smartQueue).map((song, index) => (
                   <button
                     key={song._id}
                     type="button"
                     className={`queue-item ${
                       song._id === activeSong._id ? "active" : ""
                     }`}
-                    onClick={() => handlePlayRecommended(song)}
+                    onClick={() => handlePlayFromQueue(song)}
                   >
                     <span className="queue-index">
                       {song._id === activeSong._id ? <FaMusic /> : index + 1}

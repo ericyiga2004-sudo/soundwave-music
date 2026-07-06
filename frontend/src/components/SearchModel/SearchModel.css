@@ -1,0 +1,261 @@
+/* ===========================
+   OVERLAY
+=========================== */
+
+.sw-search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(14px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 99999;
+    animation: fadeIn .25s ease;
+  }
+  
+  /* ===========================
+     MODAL
+  =========================== */
+  
+  .sw-search-modal {
+    width: 100%;
+    max-width: 700px;
+    height: 92vh;
+    background: #101010;
+    border-radius: 0 0 30px 30px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideDown .35s ease;
+    box-shadow: 0 25px 60px rgba(0,0,0,.55);
+  }
+  
+  /* ===========================
+     HANDLE
+  =========================== */
+  
+  .sw-search-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    cursor: pointer;
+    color: white;
+  }
+  
+  .sw-search-handle svg{
+      transition:.25s;
+  }
+  
+  .sw-search-handle:hover svg{
+      transform:translateY(3px);
+  }
+  
+  /* ===========================
+     HEADER
+  =========================== */
+  
+  .sw-search-header{
+      padding:0 22px 20px;
+  }
+  
+  /* ===========================
+     SEARCH BOX
+  =========================== */
+  
+  .sw-search-input{
+      display:flex;
+      align-items:center;
+      gap:15px;
+      background:#1b1b1b;
+      border-radius:18px;
+      padding:16px 18px;
+      border:1px solid rgba(255,255,255,.05);
+  }
+  
+  .sw-search-input svg{
+      color:#8b8b8b;
+  }
+  
+  .sw-search-input input{
+      flex:1;
+      background:none;
+      border:none;
+      outline:none;
+      color:white;
+      font-size:16px;
+  }
+  
+  .sw-search-input input::placeholder{
+      color:#888;
+  }
+  
+  .sw-search-input button{
+      background:none;
+      border:none;
+      color:white;
+      cursor:pointer;
+  }
+  
+  /* ===========================
+     RESULTS
+  =========================== */
+  
+  .sw-search-results{
+      overflow:auto;
+      flex:1;
+      padding:0 22px 30px;
+  }
+  
+  /* nice scrollbar */
+  
+  .sw-search-results::-webkit-scrollbar{
+      width:6px;
+  }
+  
+  .sw-search-results::-webkit-scrollbar-thumb{
+      background:#333;
+      border-radius:20px;
+  }
+  
+  /* ===========================
+     TITLES
+  =========================== */
+  
+  .sw-search-results h3{
+      color:white;
+      font-size:18px;
+      margin:28px 0 16px;
+  }
+  
+  /* ===========================
+     ITEM
+  =========================== */
+  
+  .sw-search-item{
+      display:flex;
+      align-items:center;
+      gap:15px;
+      padding:12px;
+      border-radius:16px;
+      cursor:pointer;
+      transition:.25s;
+      margin-bottom:10px;
+  }
+  
+  .sw-search-item:hover{
+      background:#1f1f1f;
+      transform:translateX(5px);
+  }
+  
+  .sw-search-item img{
+      width:60px;
+      height:60px;
+      object-fit:cover;
+      border-radius:14px;
+      flex-shrink:0;
+  }
+  
+  .sw-search-item div{
+      flex:1;
+  }
+  
+  .sw-search-item h4{
+      color:white;
+      margin:0;
+      font-size:15px;
+      font-weight:600;
+  }
+  
+  .sw-search-item p{
+      margin-top:6px;
+      color:#9d9d9d;
+      font-size:13px;
+  }
+  
+  .sw-search-item svg{
+      color:#777;
+  }
+  
+  /* ===========================
+     EMPTY
+  =========================== */
+  
+  .sw-search-empty{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      color:white;
+      padding:60px 20px;
+  }
+  
+  .sw-search-empty svg{
+      color:#666;
+      margin-bottom:25px;
+  }
+  
+  .sw-search-empty h2{
+      margin-bottom:10px;
+      font-size:28px;
+  }
+  
+  .sw-search-empty p{
+      color:#8b8b8b;
+      max-width:320px;
+      line-height:1.6;
+  }
+  
+  /* ===========================
+     ANIMATIONS
+  =========================== */
+  
+  @keyframes slideDown{
+  
+      from{
+          transform:translateY(-100%);
+      }
+  
+      to{
+          transform:translateY(0);
+      }
+  
+  }
+  
+  @keyframes fadeIn{
+  
+      from{
+          opacity:0;
+      }
+  
+      to{
+          opacity:1;
+      }
+  
+  }
+  
+  /* ===========================
+     MOBILE
+  =========================== */
+  
+  @media(max-width:768px){
+  
+  .sw-search-modal{
+      height:100vh;
+      max-width:none;
+      border-radius:0;
+  }
+  
+  .sw-search-item img{
+      width:55px;
+      height:55px;
+  }
+  
+  .sw-search-empty h2{
+      font-size:24px;
+  }
+  
+  }

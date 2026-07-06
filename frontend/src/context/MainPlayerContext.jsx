@@ -25,6 +25,7 @@ const DEFAULT_AUDIO_EFFECTS = {
 };
 
 const MIN_BUFFER_SECONDS = 3;
+const OFFLINE_CACHE_NAME = "music-app-offline-songs-v1";
 
 const normalizePlaylist = (songs = []) => {
   const seen = new Set();
@@ -54,14 +55,6 @@ const getArtistName = (song) =>
 const getAlbumTitle = (song) =>
   song?.album?.title || song?.albumTitle || song?.album || "";
 
-const getSongAudioUrl = (song) =>
-  song?.audioUrl ||
-  song?.audio ||
-  song?.songUrl ||
-  song?.fileUrl ||
-  song?.url ||
-  "";
-
 const getBufferedAhead = (audio) => {
   if (!audio || !audio.buffered || audio.buffered.length === 0) return 0;
 
@@ -89,6 +82,24 @@ const hasEnoughBuffer = (audio, minSeconds = MIN_BUFFER_SECONDS) => {
   return bufferedAhead >= minSeconds;
 };
 
+const getOfflineAudioObjectUrl = async (song) => {
+  if (
+    !song?.audioUrl ||
+    typeof window === "undefined" ||
+    !("caches" in window)
+  ) {
+    return "";
+  }
+
+  const cache = await caches.open(OFFLINE_CACHE_NAME);
+  const cachedAudio = await cache.match(song.audioUrl);
+
+  if (!cachedAudio) return "";
+
+  const blob = await cachedAudio.blob();
+  return URL.createObjectURL(blob);
+};
+
 export const MusicPlayerProvider = ({ children }) => {
   const audioRef = useRef(null);
 
@@ -100,13 +111,12 @@ export const MusicPlayerProvider = ({ children }) => {
   const isChangingTrackRef = useRef(false);
   const userWantedPlayRef = useRef(false);
   const recoveryTimerRef = useRef(null);
+  const offlineAudioObjectUrlRef = useRef("");
 
   const musicContext = useContext(MusicContext);
 
-const backendUrl =
-  musicContext?.backendUrl ||
-  import.meta.env.VITE_BACKEND_URL ||
-  "";
+  const token = musicContext?.token || "";
+  const backendUrl = musicContext?.backendUrl || "";
 
   const [audioReady, setAudioReady] = useState(false);
   const [currentSong, setCurrentSong] = useState(null);
@@ -134,10 +144,47 @@ const backendUrl =
     setBufferMessage(value ? message || "Buffering song..." : "");
   }, []);
 
+  const releaseOfflineAudioObjectUrl = useCallback(() => {
+    if (!offlineAudioObjectUrlRef.current) return;
+
+    URL.revokeObjectURL(offlineAudioObjectUrlRef.current);
+    offlineAudioObjectUrlRef.current = "";
+  }, []);
+
+  const resolvePlayableAudioUrl = useCallback(
+    async (song) => {
+      if (!song?.audioUrl) return "";
+
+      const shouldUseOfflineCache =
+        typeof navigator !== "undefined" && !navigator.onLine;
+
+      if (!shouldUseOfflineCache) {
+        releaseOfflineAudioObjectUrl();
+        return song.audioUrl;
+      }
+
+      try {
+        const offlineObjectUrl = await getOfflineAudioObjectUrl(song);
+
+        if (offlineObjectUrl) {
+          releaseOfflineAudioObjectUrl();
+          offlineAudioObjectUrlRef.current = offlineObjectUrl;
+          return offlineObjectUrl;
+        }
+      } catch (error) {
+        console.warn("Unable to read offline audio cache:", error);
+      }
+
+      releaseOfflineAudioObjectUrl();
+      return song.audioUrl;
+    },
+    [releaseOfflineAudioObjectUrl]
+  );
+
   const tryResumeAfterBuffer = useCallback(async () => {
     const audio = audioRef.current;
 
-    if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
+    if (!audio || !currentSongRef.current?.audioUrl) return;
     if (!userWantedPlayRef.current) return;
     if (!audio.paused) {
       setBufferingState(false);
@@ -247,9 +294,7 @@ const backendUrl =
 
   const addSongToHistory = useCallback(
     async (song) => {
-      const savedToken = localStorage.getItem("token");
-
-      if (!savedToken || !backendUrl || !song?._id) return;
+      if (!token || !backendUrl || !song?._id) return;
 
       try {
         await axios.post(
@@ -259,28 +304,22 @@ const backendUrl =
           },
           {
             headers: {
-              token: savedToken,
+              token,
             },
           }
         );
 
         window.dispatchEvent(new Event("music-history-updated"));
-        console.log("Saving history:", song?._id, backendUrl);
       } catch (error) {
         console.error("Unable to add song to history:", error);
       }
     },
-    [backendUrl]
+    [backendUrl, token]
   );
 
   const playSong = useCallback(
     async (song, queue = []) => {
-      const audioUrl = getSongAudioUrl(song);
-
-      if (!audioUrl) {
-        console.error("Song has no audio URL:", song);
-        return;
-      }
+      if (!song?.audioUrl) return;
 
       const audio = audioRef.current;
 
@@ -298,7 +337,13 @@ const backendUrl =
       try {
         setBufferingState(true, "Loading song...");
 
-        if (!isSameSong || audio.src !== audioUrl) {
+        const audioSource = await resolvePlayableAudioUrl(song);
+
+        if (!audioSource) {
+          throw new Error("Song audio URL is missing.");
+        }
+
+        if (!isSameSong || audio.src !== audioSource) {
           isChangingTrackRef.current = true;
 
           audio.preload = "auto";
@@ -307,7 +352,7 @@ const backendUrl =
           audio.setAttribute("webkit-playsinline", "true");
           audio.setAttribute("x-webkit-airplay", "allow");
 
-          audio.src = audioUrl;
+          audio.src = audioSource;
           audio.load();
 
           setProgress(0);
@@ -337,6 +382,7 @@ const backendUrl =
       clearRecoveryTimer,
       setBufferingState,
       syncTrackState,
+      resolvePlayableAudioUrl,
       tryResumeAfterBuffer,
     ]
   );
@@ -356,9 +402,8 @@ const backendUrl =
   const resumeSong = useCallback(async () => {
     const audio = audioRef.current;
     const activeSong = currentSongRef.current;
-    const audioUrl = getSongAudioUrl(activeSong);
 
-    if (!audio || !audioUrl) return;
+    if (!audio || !activeSong?.audioUrl) return;
 
     userWantedPlayRef.current = true;
     clearRecoveryTimer();
@@ -372,7 +417,11 @@ const backendUrl =
       audio.setAttribute("x-webkit-airplay", "allow");
 
       if (!audio.src) {
-        audio.src = audioUrl;
+        const audioSource = await resolvePlayableAudioUrl(activeSong);
+
+        if (!audioSource) return;
+
+        audio.src = audioSource;
         audio.load();
       }
 
@@ -393,11 +442,16 @@ const backendUrl =
         tryResumeAfterBuffer();
       }, 1200);
     }
-  }, [clearRecoveryTimer, setBufferingState, tryResumeAfterBuffer]);
+  }, [
+    clearRecoveryTimer,
+    resolvePlayableAudioUrl,
+    setBufferingState,
+    tryResumeAfterBuffer,
+  ]);
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current;
-    if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
+    if (!audio || !currentSongRef.current?.audioUrl) return;
 
     if (audio.paused) {
       await resumeSong();
@@ -677,17 +731,20 @@ const backendUrl =
 
       recoveryTimerRef.current = window.setTimeout(() => {
         const activeSong = currentSongRef.current;
-        const audioUrl = getSongAudioUrl(activeSong);
 
-        if (!audioUrl || !userWantedPlayRef.current) return;
+        if (!activeSong?.audioUrl || !userWantedPlayRef.current) return;
 
-        try {
-          audio.src = audioUrl;
-          audio.load();
-          tryResumeAfterBuffer();
-        } catch (error) {
-          console.error("Audio reload failed:", error);
-        }
+        resolvePlayableAudioUrl(activeSong)
+          .then((audioSource) => {
+            if (!audioSource) return;
+
+            audio.src = audioSource;
+            audio.load();
+            tryResumeAfterBuffer();
+          })
+          .catch((error) => {
+            console.error("Audio reload failed:", error);
+          });
       }, 1800);
     };
 
@@ -752,6 +809,8 @@ const backendUrl =
     audioReady,
     clearRecoveryTimer,
     nextSong,
+    releaseOfflineAudioObjectUrl,
+    resolvePlayableAudioUrl,
     setBufferingState,
     tryResumeAfterBuffer,
   ]);
@@ -888,11 +947,40 @@ const backendUrl =
       }
     };
 
-    const handleOffline = () => {
+    const handleOffline = async () => {
       setBufferingState(true, "You are offline. Waiting for connection...");
 
       const audio = audioRef.current;
       if (audio) {
+        const activeSong = currentSongRef.current;
+
+        if (activeSong?.audioUrl && userWantedPlayRef.current) {
+          try {
+            const currentTime = Number.isFinite(audio.currentTime)
+              ? audio.currentTime
+              : 0;
+            const offlineObjectUrl = await getOfflineAudioObjectUrl(activeSong);
+
+            if (offlineObjectUrl) {
+              releaseOfflineAudioObjectUrl();
+              offlineAudioObjectUrlRef.current = offlineObjectUrl;
+              audio.src = offlineObjectUrl;
+              audio.load();
+
+              if (currentTime > 0) {
+                audio.currentTime = currentTime;
+              }
+
+              await audio.play();
+              setIsPlaying(true);
+              setBufferingState(false);
+              return;
+            }
+          } catch (error) {
+            console.error("Unable to continue with offline audio:", error);
+          }
+        }
+
         try {
           audio.pause();
         } catch {
@@ -908,7 +996,7 @@ const backendUrl =
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [setBufferingState, tryResumeAfterBuffer]);
+  }, [releaseOfflineAudioObjectUrl, setBufferingState, tryResumeAfterBuffer]);
 
   useEffect(() => {
     return () => {
@@ -921,8 +1009,10 @@ const backendUrl =
         audio.removeAttribute("src");
         audio.load();
       }
+
+      releaseOfflineAudioObjectUrl();
     };
-  }, [clearRecoveryTimer]);
+  }, [clearRecoveryTimer, releaseOfflineAudioObjectUrl]);
 
   const value = useMemo(
     () => ({
