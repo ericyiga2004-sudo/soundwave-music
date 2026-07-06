@@ -659,62 +659,149 @@ export const getSongById = async (req, res) => {
 // =========================
 // SEARCH SONGS
 // =========================
+// =========================
+// SEARCH SONGS / ARTISTS / ALBUMS
+// =========================
 export const searchSongs = async (req, res) => {
   try {
     const { q = "" } = req.query;
-    const safeQuery = escapeRegex(q);
+
+    if (!q.trim()) {
+      return res.json({
+        success: true,
+        songs: [],
+        artists: [],
+        albums: [],
+      });
+    }
+
+    const search = escapeRegex(q.trim());
+
+    // -------------------------
+    // Search Artists
+    // -------------------------
+
+    const artists = await Artist.find({
+      $or: [
+        {
+          name: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          country: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ],
+    })
+      .sort({
+        followers: -1,
+      })
+      .limit(8);
+
+    // -------------------------
+    // Search Albums
+    // -------------------------
+
+    const albums = await Album.find({
+      $or: [
+        {
+          title: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ],
+    })
+      .populate("artist")
+      .sort({
+        createdAt: -1,
+      })
+      .limit(8);
+
+    // -------------------------
+    // Search Songs
+    // -------------------------
+
+    const artistIds = artists.map((a) => a._id);
+
+    const albumIds = albums.map((a) => a._id);
 
     const songs = await populateSong(
       Song.find({
+        status: "published",
         $or: [
           {
             title: {
-              $regex: safeQuery,
+              $regex: search,
               $options: "i",
             },
           },
+
           {
             genre: {
-              $regex: safeQuery,
+              $regex: search,
               $options: "i",
             },
           },
-          {
-            tags: {
-              $in: [new RegExp(safeQuery, "i")],
-            },
-          },
+
           {
             mood: {
-              $regex: safeQuery,
+              $regex: search,
               $options: "i",
             },
           },
-          {
-            language: {
-              $regex: safeQuery,
-              $options: "i",
-            },
-          },
+
           {
             country: {
-              $regex: safeQuery,
+              $regex: search,
               $options: "i",
+            },
+          },
+
+          {
+            tags: {
+              $in: [new RegExp(search, "i")],
+            },
+          },
+
+          {
+            artist: {
+              $in: artistIds,
+            },
+          },
+
+          {
+            album: {
+              $in: albumIds,
             },
           },
         ],
       })
-    ).sort({
-      plays: -1,
-      createdAt: -1,
-    });
+    )
+      .sort({
+        plays: -1,
+        likes: -1,
+      })
+      .limit(15);
 
     return res.json({
       success: true,
       songs,
+      artists,
+      albums,
     });
   } catch (error) {
-    console.error("Search Songs Error:", error);
+    console.error("Search Error:", error);
 
     return res.status(500).json({
       success: false,
