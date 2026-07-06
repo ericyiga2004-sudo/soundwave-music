@@ -29,6 +29,68 @@ const escapeRegex = (value) => {
   return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
+const exactTextMatch = (value) => {
+  return new RegExp(`^${escapeRegex(String(value || "").trim())}$`, "i");
+};
+
+const getCountryAliases = (country) => {
+  const rawCountry = String(country || "").trim();
+  const normalizedCountry = rawCountry
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+
+  const aliases = {
+    us: ["United States", "United States of America", "USA", "US", "America"],
+    usa: ["United States", "United States of America", "USA", "US", "America"],
+    america: ["United States", "United States of America", "USA", "US", "America"],
+    "united states": [
+      "United States",
+      "United States of America",
+      "USA",
+      "US",
+      "America",
+    ],
+    "united states of america": [
+      "United States",
+      "United States of America",
+      "USA",
+      "US",
+      "America",
+    ],
+    uk: ["United Kingdom", "UK", "Britain", "Great Britain"],
+    britain: ["United Kingdom", "UK", "Britain", "Great Britain"],
+    "great britain": ["United Kingdom", "UK", "Britain", "Great Britain"],
+    "united kingdom": ["United Kingdom", "UK", "Britain", "Great Britain"],
+  };
+
+  return aliases[normalizedCountry] || [rawCountry];
+};
+
+const exactCountryMatch = (country) => {
+  const aliases = getCountryAliases(country).filter(Boolean);
+
+  if (aliases.length <= 1) {
+    return exactTextMatch(aliases[0] || country);
+  }
+
+  return {
+    $in: aliases.map(exactTextMatch),
+  };
+};
+
+const applyCountryGenreFilters = (query, { country, genre } = {}) => {
+  if (country) {
+    query.country = exactCountryMatch(country);
+  }
+
+  if (genre) {
+    query.genre = exactTextMatch(genre);
+  }
+
+  return query;
+};
+
 const safeParseJSON = (value, fallback = null) => {
   if (!value) return fallback;
 
@@ -166,6 +228,7 @@ const buildSongFilterQuery = (filters = {}) => {
     tag,
     mood,
     language,
+    songLanguage,
     country,
     year,
     fromYear,
@@ -178,6 +241,7 @@ const buildSongFilterQuery = (filters = {}) => {
   } = filters;
 
   const query = {};
+  const languageValue = songLanguage || language;
 
   if (status) {
     query.status = status;
@@ -215,7 +279,7 @@ const buildSongFilterQuery = (filters = {}) => {
         },
       },
       {
-        language: {
+        songLanguage: {
           $regex: safeSearch,
           $options: "i",
         },
@@ -230,7 +294,7 @@ const buildSongFilterQuery = (filters = {}) => {
   }
 
   if (genre) {
-    query.genre = new RegExp(`^${escapeRegex(genre)}$`, "i");
+    query.genre = exactTextMatch(genre);
   }
 
   if (tag) {
@@ -240,15 +304,15 @@ const buildSongFilterQuery = (filters = {}) => {
   }
 
   if (mood) {
-    query.mood = new RegExp(`^${escapeRegex(mood)}$`, "i");
+    query.mood = exactTextMatch(mood);
   }
 
-  if (language) {
-    query.language = new RegExp(`^${escapeRegex(language)}$`, "i");
+  if (languageValue) {
+    query.songLanguage = exactTextMatch(languageValue);
   }
 
   if (country) {
-    query.country = new RegExp(`^${escapeRegex(country)}$`, "i");
+    query.country = exactCountryMatch(country);
   }
 
   if (year) {
@@ -310,6 +374,7 @@ export const uploadSong = async (req, res) => {
       tags,
       mood,
       language,
+      songLanguage,
       country,
       releaseDate,
       releaseYear,
@@ -432,6 +497,8 @@ export const uploadSong = async (req, res) => {
       artistExists.country ||
       albumExists.country ||
       "Unknown";
+    const finalSongLanguage =
+      songLanguage?.trim() || language?.trim() || "Unknown";
 
     const song = await Song.create({
       title: title.trim(),
@@ -441,7 +508,7 @@ export const uploadSong = async (req, res) => {
       genre: genre || "Unknown",
       tags: parsedTags,
       mood: mood || "Unknown",
-      language: language || "Unknown",
+      songLanguage: finalSongLanguage,
       country: finalCountry,
       releaseDate:
         parsedReleaseDate && !Number.isNaN(parsedReleaseDate.getTime())
@@ -501,6 +568,7 @@ export const getSongs = async (req, res) => {
         "tag",
         "mood",
         "language",
+        "songLanguage",
         "country",
         "year",
         "fromYear",
@@ -602,7 +670,7 @@ export const getFilterOptions = async (req, res) => {
         Song.distinct("genre"),
         Song.distinct("country"),
         Song.distinct("mood"),
-        Song.distinct("language"),
+        Song.distinct("songLanguage"),
         Song.distinct("releaseYear"),
         Song.distinct("tags"),
       ]);
@@ -679,10 +747,6 @@ export const searchSongs = async (req, res) => {
 
     const search = escapeRegex(query);
 
-    // ==========================================
-    // SEARCH ARTISTS
-    // ==========================================
-
     const artists = await Artist.find({
       $or: [
         {
@@ -702,10 +766,6 @@ export const searchSongs = async (req, res) => {
       .sort({ followers: -1 })
       .limit(8);
 
-    // ==========================================
-    // SEARCH ALBUMS
-    // ==========================================
-
     const albums = await Album.find({
       $or: [
         {
@@ -724,11 +784,6 @@ export const searchSongs = async (req, res) => {
     })
       .populate("artist")
       .limit(8);
-
-    // ==========================================
-    // SEARCH SONGS
-    // (NO artistIds or albumIds here)
-    // ==========================================
 
     let songs = await populateSong(
       Song.find({
@@ -753,6 +808,18 @@ export const searchSongs = async (req, res) => {
             },
           },
           {
+            songLanguage: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            country: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
             tags: {
               $in: [new RegExp(search, "i")],
             },
@@ -761,15 +828,8 @@ export const searchSongs = async (req, res) => {
       })
     );
 
-    // ==========================================
-    // IF USER SEARCHED AN ARTIST,
-    // INCLUDE THEIR SONGS
-    // ==========================================
-
     const exactArtist = artists.find(
-      (artist) =>
-        artist.name.toLowerCase() ===
-        query.toLowerCase()
+      (artist) => artist.name.toLowerCase() === query.toLowerCase()
     );
 
     if (exactArtist) {
@@ -780,9 +840,7 @@ export const searchSongs = async (req, res) => {
         })
       );
 
-      const ids = new Set(
-        songs.map((song) => song._id.toString())
-      );
+      const ids = new Set(songs.map((song) => song._id.toString()));
 
       artistSongs.forEach((song) => {
         if (!ids.has(song._id.toString())) {
@@ -790,11 +848,6 @@ export const searchSongs = async (req, res) => {
         }
       });
     }
-
-    // ==========================================
-    // RANK RESULTS
-    // Exact > Starts With > Contains
-    // ==========================================
 
     const lowerQuery = query.toLowerCase();
 
@@ -815,9 +868,7 @@ export const searchSongs = async (req, res) => {
       if (!aStarts && bStarts) return 1;
 
       return (
-        (b.plays || 0) +
-          (b.likes || 0) -
-        ((a.plays || 0) + (a.likes || 0))
+        (b.plays || 0) + (b.likes || 0) - ((a.plays || 0) + (a.likes || 0))
       );
     });
 
@@ -943,13 +994,7 @@ export const getTrendingSongs = async (req, res) => {
       status: "published",
     };
 
-    if (country) {
-      query.country = new RegExp(`^${escapeRegex(country)}$`, "i");
-    }
-
-    if (genre) {
-      query.genre = new RegExp(`^${escapeRegex(genre)}$`, "i");
-    }
+    applyCountryGenreFilters(query, { country, genre });
 
     const songs = await populateSong(Song.find(query))
       .sort({
@@ -982,13 +1027,7 @@ export const getNewReleases = async (req, res) => {
       status: "published",
     };
 
-    if (country) {
-      query.country = new RegExp(`^${escapeRegex(country)}$`, "i");
-    }
-
-    if (genre) {
-      query.genre = new RegExp(`^${escapeRegex(genre)}$`, "i");
-    }
+    applyCountryGenreFilters(query, { country, genre });
 
     const songs = await populateSong(Song.find(query))
       .sort({
@@ -1032,7 +1071,7 @@ export const getTopSongsByCountry = async (req, res) => {
     const songs = await populateSong(
       Song.find({
         status: "published",
-        country: new RegExp(`^${escapeRegex(country)}$`, "i"),
+        country: exactCountryMatch(country),
       })
     )
       .sort(sortOption)
@@ -1099,13 +1138,7 @@ export const getOldSongs = async (req, res) => {
       },
     };
 
-    if (country) {
-      query.country = new RegExp(`^${escapeRegex(country)}$`, "i");
-    }
-
-    if (genre) {
-      query.genre = new RegExp(`^${escapeRegex(genre)}$`, "i");
-    }
+    applyCountryGenreFilters(query, { country, genre });
 
     const songs = await populateSong(Song.find(query))
       .sort({
@@ -1144,7 +1177,7 @@ export const getMonthlyRecap = async (req, res) => {
     };
 
     if (country) {
-      matchQuery.country = new RegExp(`^${escapeRegex(country)}$`, "i");
+      matchQuery.country = exactCountryMatch(country);
     }
 
     const songs = await Song.aggregate([
@@ -1303,13 +1336,7 @@ export const getMostLikedSongs = async (req, res) => {
       status: "published",
     };
 
-    if (country) {
-      query.country = new RegExp(`^${escapeRegex(country)}$`, "i");
-    }
-
-    if (genre) {
-      query.genre = new RegExp(`^${escapeRegex(genre)}$`, "i");
-    }
+    applyCountryGenreFilters(query, { country, genre });
 
     const songs = await populateSong(Song.find(query))
       .sort({
@@ -1339,7 +1366,7 @@ export const getArtistsByCountry = async (req, res) => {
     const { country } = req.params;
 
     const artists = await Artist.find({
-      country: new RegExp(escapeRegex(country), "i"),
+      country: exactCountryMatch(country),
     });
 
     return res.json({
