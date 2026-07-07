@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "./components/Navbar/Navbar";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { initPushNotifications } from "./utils/notifications";
 import Explore from "./pages/Explore";
 import Library from "./pages/Library";
 import Liked from "./pages/Liked";
@@ -22,16 +23,13 @@ import Visualizer from "./pages/Visualizer";
 const LAUNCH_SEEN_KEY = "soundwave_launch_intro_seen";
 
 const loadingHints = [
-  "Enjoy the DJ essentials set in your library.",
-  "Call or WhatsApp 0743073520 for more assistance.",
-  "Add your request in the contacts menu for quick support.",
-  "Listen with lyrics by clicking the lyrics button.",
-  "Enjoy undisturbed visualizer mode for the full experience.",
-  "Create playlists and keep your favorite songs close.",
-  "Explore new sounds and artists inside SoundWave.",
+  "Use Explore to discover new songs and artists.",
+  "Call or WhatsApp 0743073520 for support.",
+  "Create playlists to keep your favorite songs together.",
+  "Tap the lyrics button to listen with lyrics.",
+  "Use visualizer mode for a full-screen music experience.",
+  "Visit your Library to find saved music quickly.",
 ];
-
-const floatingNotes = ["♪", "♫", "♬", "♩", "♭", "♯"];
 
 const LaunchLoadout = () => {
   const randomHint = useMemo(() => {
@@ -40,68 +38,24 @@ const LaunchLoadout = () => {
   }, []);
 
   return (
-    <div className="launch-loadout">
-      <div className="launch-bg-grid"></div>
+    <div className="launch-whatsapp">
+      <div className="launch-whatsapp-center">
+        <div className="launch-whatsapp-logo">
+          <span>♪</span>
+        </div>
 
-      <div className="launch-glow launch-glow-one"></div>
-      <div className="launch-glow launch-glow-two"></div>
-      <div className="launch-glow launch-glow-three"></div>
+        <h1>SoundWave</h1>
 
-      <div className="launch-stars">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+        <p>{randomHint}</p>
       </div>
 
-      <div className="launch-notes" aria-hidden="true">
-        {floatingNotes.map((note, index) => (
-          <span key={`${note}-${index}`} style={{ "--i": index }}>
-            {note}
-          </span>
-        ))}
-      </div>
-
-      <div className="launch-card">
-        <div className="launch-badge">Now entering</div>
-
-        <div className="launch-orb">
-          <span></span>
-          <i></i>
-        </div>
-
-        <div className="launch-equalizer" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+      <div className="launch-whatsapp-bottom">
+        <div className="launch-whatsapp-loader" aria-label="Loading">
           <span></span>
         </div>
 
-        <h1>
-          Sound<span>wave</span>
-        </h1>
-
-        <p className="launch-subtitle">Turning up your music experience...</p>
-
-        <div className="launch-hint">
-          <small>Tip of the moment</small>
-          <span>{randomHint}</span>
-        </div>
-
-        <div className="launch-loader">
-          <span></span>
-        </div>
-
-        <div className="launch-status">
-          <em>Syncing beats</em>
-          <b></b>
-          <em>Loading vibes</em>
-        </div>
-
-        <div className="launch-developed">
-          Developed by <strong>Ericom Co.</strong>
-        </div>
+        <small>from</small>
+        <strong>Ericom Co.</strong>
       </div>
     </div>
   );
@@ -115,12 +69,16 @@ const App = () => {
   });
 
   useEffect(() => {
+    initPushNotifications();
+  }, []);
+
+  useEffect(() => {
     if (!isLaunching) return;
 
     const timer = setTimeout(() => {
       sessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
       setIsLaunching(false);
-    }, 8500);
+    }, 4500);
 
     return () => clearTimeout(timer);
   }, [isLaunching]);
