@@ -1,4 +1,11 @@
 config/firebase-service-account.json
 
-.env
+
 node_modules/
+
+# Environment files
+.env
+**/.env
+
+# Firebase Admin SDK credentials
+config/soundwave-2f9cd-firebase-adminsdk-fbsvc-18692f5cb7.json
