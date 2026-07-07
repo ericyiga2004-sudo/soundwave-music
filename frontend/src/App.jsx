@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "./components/Navbar/Navbar";
 import { Route, Routes, useLocation } from "react-router-dom";
-import { initPushNotifications } from "./utils/notifications";
 import Explore from "./pages/Explore";
 import Library from "./pages/Library";
 import Liked from "./pages/Liked";
@@ -68,9 +67,6 @@ const App = () => {
     return sessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true";
   });
 
-  useEffect(() => {
-    initPushNotifications();
-  }, []);
 
   useEffect(() => {
     if (!isLaunching) return;

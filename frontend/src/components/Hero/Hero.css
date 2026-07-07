@@ -16,6 +16,8 @@
       center/cover no-repeat;
 }
 
+
+
 .hero::after {
   content: "";
   position: absolute;

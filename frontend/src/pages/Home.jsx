@@ -12,6 +12,7 @@ import YouLiked from "../components/YouLiked/YouLiked";
 import Country from "../components/Country/Country";
 import FollowedArtists from "../components/FollowedArtists/FollowedArtists";
 import "./CSS/Home.css";
+import DownloadAd from "../components/DownloadAd/DownloadAd";
 
 const Home = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -116,11 +117,13 @@ const Home = () => {
       <YouLiked />
       <Country />
       <FollowedArtists />
+      <DownloadAd/>
       <NewRelease />
       <PopularArtist />
       <Albums />
       <FilterSongs />
       <Yearly />
+
     </div>
   );
 };
