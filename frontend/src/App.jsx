@@ -19,6 +19,8 @@ import DjStudio from "./pages/DjStudio";
 import MusicStudio from "./pages/MusicStudio";
 import Visualizer from "./pages/Visualizer";
 
+const LAUNCH_SEEN_KEY = "soundwave_launch_intro_seen";
+
 const loadingHints = [
   "Enjoy the DJ essentials set in your library.",
   "Call or WhatsApp 0743073520 for more assistance.",
@@ -80,9 +82,7 @@ const LaunchLoadout = () => {
           Sound<span>wave</span>
         </h1>
 
-        <p className="launch-subtitle">
-          Turning up your music experience...
-        </p>
+        <p className="launch-subtitle">Turning up your music experience...</p>
 
         <div className="launch-hint">
           <small>Tip of the moment</small>
@@ -109,15 +109,21 @@ const LaunchLoadout = () => {
 
 const App = () => {
   const location = useLocation();
-  const [isLaunching, setIsLaunching] = useState(true);
+
+  const [isLaunching, setIsLaunching] = useState(() => {
+    return sessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true";
+  });
 
   useEffect(() => {
+    if (!isLaunching) return;
+
     const timer = setTimeout(() => {
+      sessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
       setIsLaunching(false);
     }, 8500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLaunching]);
 
   const isFullScreenMusicPage =
     location.pathname.startsWith("/song/") ||

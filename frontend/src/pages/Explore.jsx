@@ -21,7 +21,10 @@ const normalizeCountryName = (country = "") => {
     lower === "u.s.a." ||
     lower === "us" ||
     lower === "u.s" ||
-    lower === "united states of america"
+    lower === "u.s." ||
+    lower === "united states of america" ||
+    lower === "unites states" ||
+    lower === "united state"
   ) {
     return "United States";
   }
@@ -126,9 +129,11 @@ const Explore = () => {
       setTopTenLoading(true);
       setError("");
 
+      const normalizedCountry = normalizeCountryName(country);
+
       const response = await fetch(
         `${BACKEND_URL}/api/songs/top-ten?country=${encodeURIComponent(
-          country
+          normalizedCountry
         )}`
       );
 
@@ -144,15 +149,11 @@ const Explore = () => {
       }));
 
       setTopTenSongs(songs);
-
-      if (songs.length > 0) {
-        setActiveSong(songs[0]);
-      } else {
-        setActiveSong(null);
-      }
+      setActiveSong(songs[0] || null);
     } catch (err) {
       console.error("Top Ten error:", err);
       setTopTenSongs([]);
+      setActiveSong(null);
       setError(err.message || "Could not load Top Ten songs");
     } finally {
       setTopTenLoading(false);
@@ -231,277 +232,304 @@ const Explore = () => {
   const heroSong = activeSong || topTenSongs[0] || countrySongs[0];
 
   return (
-    <div className="explore-page">
+    <div className="explore-page container-fluid">
       <section className="explore-hero">
         <div className="hero-bg-glow hero-bg-one"></div>
         <div className="hero-bg-glow hero-bg-two"></div>
 
-        <div className="hero-copy">
-          <span className="explore-kicker">Explore SoundWave</span>
+        <div className="row g-3 align-items-center">
+          <div className="col-12 col-lg-8">
+            <div className="hero-copy">
+              <span className="explore-kicker">Explore SoundWave</span>
 
-          <h1>
-            Discover the <span>Top Ten</span> sounds in {selectedCountry}
-          </h1>
+              <h1>
+                Discover the <span>Top Ten</span> sounds in {selectedCountry}
+              </h1>
 
-          <p>
-            Explore songs by country, mood, plays, artists, and fresh SoundWave
-            energy.
-          </p>
+              <p>
+                Explore songs by country, mood, plays, artists, and fresh
+                SoundWave energy.
+              </p>
 
-          <div className="explore-controls">
-            <label>
-              <span>Country</span>
-              <select
-                value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)}
-              >
-                {countries.map((country) => (
-                  <option key={country} value={country}>
-                    {country}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <div className="row g-2 explore-control-row">
+                <div className="col-12 col-md-5">
+                  <label className="explore-control-label">
+                    <span>Country</span>
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) =>
+                        setSelectedCountry(normalizeCountryName(e.target.value))
+                      }
+                    >
+                      {countries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
 
-            <label>
-              <span>Search</span>
-              <input
-                type="text"
-                placeholder="Search songs, artists, moods..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </label>
-          </div>
-        </div>
-
-        <div className="hero-feature-card">
-          {topTenLoading ? (
-            <div className="hero-feature-skeleton">
-              <span></span>
-              <i></i>
-              <b></b>
-            </div>
-          ) : heroSong ? (
-            <>
-              <div className="hero-rank-pill">
-                #{heroSong.topTenRank || 1} in {selectedCountry}
-              </div>
-
-              <img src={getSongImage(heroSong)} alt={heroSong.title} />
-
-              <div className="hero-song-info">
-                <h2>{heroSong.title}</h2>
-                <p>{getArtistName(heroSong)}</p>
-
-                <div className="hero-stats">
-                  <span>{heroSong.genre || "Unknown"}</span>
-                  <span>{heroSong.mood || "Mood"}</span>
-                  <span>{formatNumber(heroSong.plays)} plays</span>
+                <div className="col-12 col-md-7">
+                  <label className="explore-control-label">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      placeholder="Search songs, artists, moods..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </label>
                 </div>
               </div>
-            </>
-          ) : (
-            <div className="hero-empty">
-              <h2>No song selected yet</h2>
-              <p>Add Top Ten songs from the admin dashboard.</p>
             </div>
-          )}
+          </div>
+
+          <div className="col-12 col-lg-4">
+            <div className="hero-feature-card">
+              {topTenLoading ? (
+                <div className="hero-feature-skeleton">
+                  <span></span>
+                  <i></i>
+                  <b></b>
+                </div>
+              ) : heroSong ? (
+                <>
+                  <div className="hero-rank-pill">
+                    #{heroSong.topTenRank || 1} in {selectedCountry}
+                  </div>
+
+                  <img src={getSongImage(heroSong)} alt={heroSong.title} />
+
+                  <div className="hero-song-info">
+                    <h2>{heroSong.title}</h2>
+                    <p>{getArtistName(heroSong)}</p>
+
+                    <div className="hero-stats">
+                      <span>{heroSong.genre || "Unknown"}</span>
+                      <span>{heroSong.mood || "Mood"}</span>
+                      <span>{formatNumber(heroSong.plays)} plays</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="hero-empty">
+                  <h2>No song selected yet</h2>
+                  <p>Add Top Ten songs from the admin dashboard.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
       {error && <div className="explore-error">{error}</div>}
 
-      <section className="explore-layout">
-        <aside className="explore-side-panel">
-          <div className="panel-card">
-            <h3>Country Chart</h3>
-            <p>
-              Showing manually selected Top Ten songs for{" "}
-              <strong>{selectedCountry}</strong>.
-            </p>
+      <section className="row g-3 explore-content-row">
+        <aside className="col-12 col-lg-3 col-xl-2">
+          <div className="explore-sticky-stack">
+            <div className="panel-card">
+              <h3>Country Chart</h3>
+              <p>
+                Showing manually selected Top Ten songs for{" "}
+                <strong>{selectedCountry}</strong>.
+              </p>
 
-            <div className="mini-country-list">
-              {countries.slice(0, 10).map((country) => (
-                <button
-                  key={country}
-                  type="button"
-                  className={selectedCountry === country ? "active" : ""}
-                  onClick={() => setSelectedCountry(country)}
-                >
-                  {country}
-                </button>
-              ))}
+              <div className="mini-country-list">
+                {countries.slice(0, 10).map((country) => (
+                  <button
+                    key={country}
+                    type="button"
+                    className={selectedCountry === country ? "active" : ""}
+                    onClick={() => setSelectedCountry(country)}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="panel-card">
-            <h3>Mood Filter</h3>
+            <div className="panel-card">
+              <h3>Mood Filter</h3>
 
-            <div className="mood-list">
-              {moods.map((mood) => (
-                <button
-                  key={mood}
-                  type="button"
-                  className={selectedMood === mood ? "active" : ""}
-                  onClick={() => setSelectedMood(mood)}
-                >
-                  {mood}
-                </button>
-              ))}
+              <div className="mood-list">
+                {moods.map((mood) => (
+                  <button
+                    key={mood}
+                    type="button"
+                    className={selectedMood === mood ? "active" : ""}
+                    onClick={() => setSelectedMood(mood)}
+                  >
+                    {mood}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </aside>
 
-        <main className="explore-main">
-          <div className="section-heading">
-            <div>
-              <span>Official Picks</span>
-              <h2>Top Ten — {selectedCountry}</h2>
-            </div>
-
-            <small>{topTenSongs.length}/10 songs</small>
-          </div>
-
-          {topTenLoading ? (
-            <div className="top-ten-list">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <SongRowSkeleton key={index} />
-              ))}
-            </div>
-          ) : topTenSongs.length === 0 ? (
-            <div className="explore-empty">
-              <h3>No Top Ten songs for {selectedCountry} yet</h3>
-              <p>
-                Go to your admin page and assign songs to positions #1 to #10.
-              </p>
-            </div>
-          ) : (
-            <div className="top-ten-list">
-              {topTenSongs.map((song, index) => (
-                <div
-                  key={song._id}
-                  className={`top-ten-row ${
-                    activeSong?._id === song._id ? "active" : ""
-                  }`}
-                  onMouseEnter={() => setActiveSong(song)}
-                  onFocus={() => setActiveSong(song)}
-                >
-                  <div className="song-rank">
-                    #{song.topTenRank || index + 1}
-                  </div>
-
-                  <div className="top-ten-song-item">
-                    <SongItem song={song} queue={topTenSongs} />
-                  </div>
-
-                  <div className="top-song-meta">
-                    <span>{song.mood || "Unknown mood"}</span>
-                    <small>{formatNumber(song.plays)} plays</small>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="section-heading songs-by-mood-heading">
-            <div>
-              <span>Explore More</span>
-              <h2>
-                {selectedMood === "All"
-                  ? `Songs by mood in ${selectedCountry}`
-                  : `${selectedMood} songs in ${selectedCountry}`}
-              </h2>
-            </div>
-
-            <small>{filteredSongs.length} songs</small>
-          </div>
-
-          {loading ? (
-            <div className="explore-song-grid">
-              {Array.from({ length: 8 }).map((_, index) => (
-                <SongCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : selectedMood !== "All" || searchTerm ? (
-            filteredSongs.length > 0 ? (
-              <div className="explore-song-grid">
-                {filteredSongs.map((song) => (
-                  <SongItem key={song._id} song={song} queue={filteredSongs} />
-                ))}
+        <main className="col-12 col-lg-6 col-xl-8">
+          <div className="explore-main">
+            <div className="section-heading">
+              <div>
+                <span>Official Picks</span>
+                <h2>Top Ten — {selectedCountry}</h2>
               </div>
-            ) : (
-              <div className="explore-empty">
-                <h3>No songs found</h3>
-                <p>Try another mood, country, or search term.</p>
-              </div>
-            )
-          ) : (
-            <div className="mood-sections">
-              {moodGroups.map((group) => (
-                <div key={group.mood} className="mood-section">
-                  <div className="mood-section-title">
-                    <h3>{group.mood}</h3>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMood(group.mood)}
-                    >
-                      View all
-                    </button>
-                  </div>
 
-                  <div className="explore-song-grid">
-                    {group.songs.map((song) => (
-                      <SongItem key={song._id} song={song} queue={group.songs} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <small>{topTenSongs.length}/10 songs</small>
             </div>
-          )}
-        </main>
-
-        <aside className="explore-recommend-panel">
-          <div className="now-exploring-card">
-            <span className="pulse-dot"></span>
-            <h3>Now Exploring</h3>
 
             {topTenLoading ? (
-              <div className="side-skeleton">
-                <span></span>
-                <i></i>
-                <b></b>
+              <div className="top-ten-list">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <SongRowSkeleton key={index} />
+                ))}
               </div>
-            ) : heroSong ? (
-              <>
-                <img src={getSongImage(heroSong)} alt={heroSong.title} />
-                <h4>{heroSong.title}</h4>
-                <p>{getArtistName(heroSong)}</p>
-
-                <div className="recommend-tags">
-                  <span>{heroSong.country || selectedCountry}</span>
-                  <span>{heroSong.mood || "Mood"}</span>
-                  <span>{heroSong.genre || "Genre"}</span>
-                </div>
-              </>
+            ) : topTenSongs.length === 0 ? (
+              <div className="explore-empty">
+                <h3>No Top Ten songs for {selectedCountry} yet</h3>
+                <p>
+                  Go to your admin page and assign songs to positions #1 to #10.
+                </p>
+              </div>
             ) : (
-              <p>No song selected</p>
+              <div className="top-ten-list">
+                {topTenSongs.map((song, index) => (
+                  <div
+                    key={song._id}
+                    className={`top-ten-row ${
+                      activeSong?._id === song._id ? "active" : ""
+                    }`}
+                    onMouseEnter={() => setActiveSong(song)}
+                    onFocus={() => setActiveSong(song)}
+                  >
+                    <div className="song-rank">
+                      #{song.topTenRank || index + 1}
+                    </div>
+
+                    <div className="top-ten-song-item">
+                      <SongItem song={song} queue={topTenSongs} />
+                    </div>
+
+                    <div className="top-song-meta">
+                      <span>{song.mood || "Unknown mood"}</span>
+                      <small>{formatNumber(song.plays)} plays</small>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="section-heading songs-by-mood-heading">
+              <div>
+                <span>Explore More</span>
+                <h2>
+                  {selectedMood === "All"
+                    ? `Songs by mood in ${selectedCountry}`
+                    : `${selectedMood} songs in ${selectedCountry}`}
+                </h2>
+              </div>
+
+              <small>{filteredSongs.length} songs</small>
+            </div>
+
+            {loading ? (
+              <div className="row g-3">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="col-6 col-md-4 col-xl-3">
+                    <SongCardSkeleton />
+                  </div>
+                ))}
+              </div>
+            ) : selectedMood !== "All" || searchTerm ? (
+              filteredSongs.length > 0 ? (
+                <div className="row g-3">
+                  {filteredSongs.map((song) => (
+                    <div key={song._id} className="col-6 col-md-4 col-xl-3">
+                      <SongItem song={song} queue={filteredSongs} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="explore-empty">
+                  <h3>No songs found</h3>
+                  <p>Try another mood, country, or search term.</p>
+                </div>
+              )
+            ) : (
+              <div className="mood-sections">
+                {moodGroups.map((group) => (
+                  <div key={group.mood} className="mood-section">
+                    <div className="mood-section-title">
+                      <h3>{group.mood}</h3>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMood(group.mood)}
+                      >
+                        View all
+                      </button>
+                    </div>
+
+                    <div className="row g-3">
+                      {group.songs.map((song) => (
+                        <div key={song._id} className="col-6 col-md-4 col-xl-3">
+                          <SongItem
+                            song={song}
+                            queue={group.songs}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
+        </main>
 
-          <div className="recommend-card">
-            <h3>Recommended Moods</h3>
+        <aside className="col-12 col-lg-3 col-xl-2">
+          <div className="explore-sticky-stack">
+            <div className="now-exploring-card">
+              <span className="pulse-dot"></span>
+              <h3>Now Exploring</h3>
 
-            <div className="recommend-moods">
-              {moods.slice(1, 7).map((mood) => (
-                <button
-                  key={mood}
-                  type="button"
-                  onClick={() => setSelectedMood(mood)}
-                >
-                  {mood}
-                </button>
-              ))}
+              {topTenLoading ? (
+                <div className="side-skeleton">
+                  <span></span>
+                  <i></i>
+                  <b></b>
+                </div>
+              ) : heroSong ? (
+                <>
+                  <img src={getSongImage(heroSong)} alt={heroSong.title} />
+                  <h4>{heroSong.title}</h4>
+                  <p>{getArtistName(heroSong)}</p>
+
+                  <div className="recommend-tags">
+                    <span>{heroSong.country || selectedCountry}</span>
+                    <span>{heroSong.mood || "Mood"}</span>
+                    <span>{heroSong.genre || "Genre"}</span>
+                  </div>
+                </>
+              ) : (
+                <p>No song selected</p>
+              )}
+            </div>
+
+            <div className="recommend-card">
+              <h3>Recommended Moods</h3>
+
+              <div className="recommend-moods">
+                {moods.slice(1, 7).map((mood) => (
+                  <button
+                    key={mood}
+                    type="button"
+                    onClick={() => setSelectedMood(mood)}
+                  >
+                    {mood}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </aside>
