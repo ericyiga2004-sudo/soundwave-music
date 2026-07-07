@@ -10,7 +10,6 @@ import userRouter from "./routes/userRouter.js";
 import historyRouter from "./routes/historyRouter.js";
 import playlistRouter from "./routes/playListRoute.js";
 import likeRouter from "./routes/likeRouter.js";
-import notificationRouter from "./routes/notificationRouter.js";
 
 const port  = process.env.PORT || 4000;
  
@@ -23,7 +22,7 @@ app.use(express.json());
 connectDB()
 
 
-app.use("/api/notifications", notificationRouter);
+
 app.use("/api/songs", songRoutes)
 app.use("/api/artists", artistRoutes);
 app.use("/api/albums", albumRoutes);
