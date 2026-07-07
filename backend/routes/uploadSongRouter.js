@@ -22,6 +22,8 @@ import {
   getOldSongs,
   getMonthlyRecap,
   getSongsFeaturingArtist,
+  getTopTenSongs,
+  updateTopTenSong,
 } from "../controllers/uploadSongController.js";
 
 import { songUpload } from "../middleware/multer.js";
@@ -39,6 +41,14 @@ router.post(
   ]),
   uploadSong
 );
+
+// Admin-selected Top Ten songs
+// Example: /api/songs/top-ten?country=Uganda
+router.get("/top-ten", getTopTenSongs);
+
+// Admin marks/removes a song as Top Ten
+// Example: PATCH /api/songs/SONG_ID/top-ten
+router.patch("/:id/top-ten", updateTopTenSong);
 
 /* =========================
    SEARCH + FILTER ROUTES

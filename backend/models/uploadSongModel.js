@@ -204,7 +204,21 @@ const songSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
-
+    
+    isTopTen: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    
+    topTenRank: {
+      type: Number,
+      min: 1,
+      max: 10,
+      default: null,
+      index: true,
+    },
+    
     explicit: {
       type: Boolean,
       default: false,
@@ -267,5 +281,6 @@ songSchema.index({ status: 1, createdAt: -1 });
 songSchema.index({ status: 1, country: 1, plays: -1 });
 songSchema.index({ status: 1, songLanguage: 1, plays: -1 });
 songSchema.index({ status: 1, releaseYear: -1 });
+songSchema.index({ status: 1, country: 1, isTopTen: 1, topTenRank: 1 });
 
 export default mongoose.models.Song || mongoose.model("Song", songSchema);

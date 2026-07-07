@@ -723,6 +723,118 @@ export const searchSongs = async (req, res) => {
   }
 };
 
+export const updateTopTenSong = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isTopTen, topTenRank } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid song ID",
+      });
+    }
+
+    const shouldBeTopTen = isTopTen === true || isTopTen === "true";
+    const rank = Number(topTenRank);
+
+    if (shouldBeTopTen && (!rank || rank < 1 || rank > 10)) {
+      return res.status(400).json({
+        success: false,
+        message: "Top Ten rank must be between 1 and 10",
+      });
+    }
+
+    const song = await Song.findById(id);
+
+    if (!song) {
+      return res.status(404).json({
+        success: false,
+        message: "Song not found",
+      });
+    }
+
+    if (shouldBeTopTen) {
+      await Song.updateMany(
+        {
+          _id: {
+            $ne: id,
+          },
+          country: song.country,
+          topTenRank: rank,
+        },
+        {
+          $set: {
+            isTopTen: false,
+            topTenRank: null,
+          },
+        }
+      );
+
+      song.isTopTen = true;
+      song.topTenRank = rank;
+    } else {
+      song.isTopTen = false;
+      song.topTenRank = null;
+    }
+
+    await song.save();
+
+    const updatedSong = await populateSong(Song.findById(song._id));
+
+    return res.json({
+      success: true,
+      message: shouldBeTopTen
+        ? `Song added to ${song.country} Top Ten at position ${rank}`
+        : "Song removed from Top Ten",
+      song: updatedSong,
+    });
+  } catch (error) {
+    console.error("Update Top Ten Song Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Could not update Top Ten song",
+    });
+  }
+};
+
+export const getTopTenSongs = async (req, res) => {
+  try {
+    const { country } = req.query;
+
+    const query = {
+      status: "published",
+      isTopTen: true,
+      topTenRank: {
+        $gte: 1,
+        $lte: 10,
+      },
+    };
+
+    if (country) {
+      query.country = new RegExp(`^${escapeRegex(country)}$`, "i");
+    }
+
+    const songs = await populateSong(Song.find(query)).sort({
+      topTenRank: 1,
+    });
+
+    return res.json({
+      success: true,
+      country: country || "All",
+      songs,
+    });
+  } catch (error) {
+    console.error("Get Top Ten Songs Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Could not fetch Top Ten songs",
+    });
+  }
+};
+
 // =========================
 // INCREMENT PLAYS
 // Also updates monthly recap stats
