@@ -33,6 +33,34 @@
     transform 0.3s ease;
 }
 
+.buffer-close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 99999;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.buffer-close:hover {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.buffer-close:active {
+  transform: scale(0.95);
+}
+
 .player-toggle::before {
   content: "";
   position: absolute;

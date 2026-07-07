@@ -17,6 +17,57 @@
   -webkit-backdrop-filter: blur(18px);
 }
 
+.sw-brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  padding: 3px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #00ffc8, #6c5cff, #ff2bd6);
+  box-shadow:
+    0 0 22px rgba(0, 255, 200, 0.25),
+    0 0 34px rgba(108, 92, 255, 0.18);
+  flex: 0 0 auto;
+}
+
+.sw-brand-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 38%),
+    #070a12;
+  color: #00ffc8;
+  position: relative;
+  overflow: hidden;
+}
+
+.sw-brand-inner::before,
+.sw-brand-inner::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 12px;
+  border: 2px solid rgba(255, 43, 214, 0.7);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 999px;
+  transform: rotate(28deg);
+}
+
+.sw-brand-inner::after {
+  border-color: rgba(0, 255, 200, 0.7);
+  transform: rotate(-28deg);
+}
+
+.sw-brand-inner svg {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 7px rgba(0, 255, 200, 0.65));
+}
 
 .sw-search-btn {
   margin-left: auto;

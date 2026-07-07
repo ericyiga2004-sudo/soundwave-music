@@ -43,16 +43,18 @@ const Navbar = () => {
       {/* ================= TOP HEADER ================= */}
 
       <header className="sw-top-header">
-        <NavLink to="/" className="sw-logo-link">
-          <div className="sw-logo-icon">
-            <Music2 size={22} />
-          </div>
+      <NavLink to="/" className="sw-logo-link">
+  <div className="sw-brand-mark">
+    <div className="sw-brand-inner">
+      <Music2 size={21} strokeWidth={2.6} />
+    </div>
+  </div>
 
-          <div className="sw-logo-text">
-            <h1>SoundWave</h1>
-            <p>Feel the music</p>
-          </div>
-        </NavLink>
+  <div className="sw-logo-text">
+    <h1>SoundWave</h1>
+    <p>Feel the music</p>
+  </div>
+</NavLink>
 
         {/* SEARCH */}
 

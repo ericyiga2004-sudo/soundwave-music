@@ -112,154 +112,34 @@ const normalizeText = (value = "") =>
   String(value || "")
     .toLowerCase()
     .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 
-const getSongCountryText = (song) =>
-  [
-    song?.country,
-    song?.countryName,
-    song?.originCountry,
-    song?.market,
-    song?.region,
-    song?.language,
-    song?.artist?.country,
-    song?.artist?.countryName,
-    song?.artist?.originCountry,
-    song?.artist?.region,
-    song?.artist?.nationality,
-    song?.album?.country,
-    song?.metadata?.country,
-    song?.metadata?.market,
-  ]
-    .filter(Boolean)
-    .map(normalizeText)
-    .join(" ");
+const getSongCountryKey = (song) =>
+  normalizeText(
+    song?.country ||
+      song?.artist?.country ||
+      song?.album?.country ||
+      song?.metadata?.country ||
+      "Unknown"
+  );
 
-const getSongGenreText = (song) =>
-  [
-    song?.genre,
-    song?.category,
-    song?.style,
-    song?.mood,
-    song?.artist?.genre,
-    song?.album?.genre,
-    song?.metadata?.genre,
-    ...(Array.isArray(song?.genres) ? song.genres : []),
-    ...(Array.isArray(song?.tags) ? song.tags : []),
-  ]
-    .filter(Boolean)
-    .map(normalizeText)
-    .join(" ");
+const getSongGenreKey = (song) =>
+  normalizeText(
+    song?.genre ||
+      song?.category ||
+      song?.style ||
+      song?.metadata?.genre ||
+      "Unknown"
+  );
 
-const hasAnyToken = (text, tokens = []) =>
-  tokens.some((token) => text.includes(token));
+const getSongMoodKey = (song) =>
+  normalizeText(song?.mood || song?.metadata?.mood || "");
 
-const inferSongMarket = (song) => {
-  const countryText = getSongCountryText(song);
-  const genreText = getSongGenreText(song);
-  const allText = `${countryText} ${genreText}`;
+const getSongTags = (song) => {
+  if (!Array.isArray(song?.tags)) return [];
 
-  if (
-    hasAnyToken(allText, [
-      "uganda",
-      "ugandan",
-      "kampala",
-      "luganda",
-      "runyankole",
-      "acholi",
-    ])
-  ) {
-    return "uganda";
-  }
-
-  if (
-    hasAnyToken(allText, [
-      "kenya",
-      "kenyan",
-      "tanzania",
-      "tanzanian",
-      "nigeria",
-      "nigerian",
-      "ghana",
-      "ghanaian",
-      "south africa",
-      "south african",
-      "rwanda",
-      "rwandan",
-      "zambia",
-      "zambian",
-      "africa",
-      "african",
-      "afrobeats",
-      "afrobeat",
-      "afropop",
-      "amapiano",
-      "bongo",
-      "gengetone",
-      "singeli",
-    ])
-  ) {
-    return "africa";
-  }
-
-  if (
-    hasAnyToken(allText, [
-      "uk",
-      "united kingdom",
-      "britain",
-      "british",
-      "england",
-      "english",
-      "london",
-      "grime",
-      "uk drill",
-      "britpop",
-    ])
-  ) {
-    return "uk";
-  }
-
-  if (
-    hasAnyToken(allText, [
-      "usa",
-      "america",
-      "american",
-      "united states",
-      "western",
-      "edm",
-      "electronic",
-      "pop",
-      "hip hop",
-      "rap",
-      "rnb",
-      "rock",
-      "country music",
-      "dance pop",
-      "future bass",
-      "trap",
-      "dubstep",
-    ])
-  ) {
-    return "western";
-  }
-
-  return "unknown";
-};
-
-const inferSongGenreBucket = (song) => {
-  const genreText = getSongGenreText(song);
-
-  if (hasAnyToken(genreText, ["gospel", "worship", "christian"])) return "gospel";
-  if (hasAnyToken(genreText, ["afrobeats", "afrobeat", "afropop"])) return "afrobeats";
-  if (hasAnyToken(genreText, ["amapiano"])) return "amapiano";
-  if (hasAnyToken(genreText, ["dancehall", "ragga", "reggae"])) return "dancehall";
-  if (hasAnyToken(genreText, ["edm", "electronic", "house", "dubstep", "future bass"])) return "edm";
-  if (hasAnyToken(genreText, ["hip hop", "rap", "trap", "drill", "grime"])) return "hiphop";
-  if (hasAnyToken(genreText, ["rnb", "r&b", "soul"])) return "rnb";
-  if (hasAnyToken(genreText, ["rock", "metal", "punk"])) return "rock";
-  if (hasAnyToken(genreText, ["pop", "dance pop"])) return "pop";
-
-  return normalizeText(song?.genre || song?.category || "") || "unknown";
+  return song.tags.map(normalizeText).filter(Boolean);
 };
 
 const getSongIdentity = (song) => song?._id || song?.id || song?.audioUrl || "";
@@ -280,40 +160,37 @@ const getSmartQueueForSong = (activeSong, allSongs = []) => {
     return activeSong ? [activeSong] : [];
   }
 
-  const activeMarket = inferSongMarket(activeSong);
-  const activeGenre = inferSongGenreBucket(activeSong);
+  const activeCountry = getSongCountryKey(activeSong);
+  const activeGenre = getSongGenreKey(activeSong);
+  const activeMood = getSongMoodKey(activeSong);
+  const activeTags = getSongTags(activeSong);
 
   const scoredSongs = allSongs
-    .filter((song) => song?._id && song._id !== activeSong._id)
+    .filter((song) => {
+      if (!song?._id || song._id === activeSong._id) return false;
+
+      const songCountry = getSongCountryKey(song);
+
+      if (activeCountry === "unknown") return true;
+
+      return songCountry === activeCountry;
+    })
     .map((song, index) => {
-      const market = inferSongMarket(song);
-      const genre = inferSongGenreBucket(song);
-      const marketCompatible =
-        activeMarket === "unknown" ||
-        market === "unknown" ||
-        market === activeMarket ||
-        (activeMarket === "uganda" && market === "africa") ||
-        (activeMarket === "africa" && market === "uganda") ||
-        (activeMarket === "western" && market === "uk") ||
-        (activeMarket === "uk" && market === "western");
+      const genre = getSongGenreKey(song);
+      const mood = getSongMoodKey(song);
+      const tags = getSongTags(song);
       let score = 0;
 
-      if (market === activeMarket && market !== "unknown") score += 80;
-      if (activeMarket === "uganda" && market === "africa") score += 46;
-      if (activeMarket === "africa" && market === "uganda") score += 46;
-      if (activeMarket === "western" && market === "uk") score += 22;
-      if (activeMarket === "uk" && market === "western") score += 22;
-      if (market === "unknown" || activeMarket === "unknown") score += 8;
-      if (genre === activeGenre && genre !== "unknown") score += 24;
+      if (genre === activeGenre && genre !== "unknown") score += 100;
+      if (mood && mood === activeMood) score += 18;
+      if (activeTags.some((tag) => tags.includes(tag))) score += 12;
 
       return {
         song,
         score,
-        marketCompatible,
         index,
       };
     })
-    .filter(({ marketCompatible }) => marketCompatible)
     .sort((a, b) => b.score - a.score || a.index - b.index);
 
   const nextSongs = scoredSongs.map(({ song }) => song);

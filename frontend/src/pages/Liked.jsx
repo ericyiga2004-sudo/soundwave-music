@@ -11,6 +11,7 @@ import {
   FaMusic,
   FaPlay,
   FaTrash,
+  FaWifi,
 } from "react-icons/fa";
 
 import "./CSS/Liked.css";
@@ -26,14 +27,40 @@ const Liked = () => {
   const [likedSongs, setLikedSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState("");
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   const likedQueue = useMemo(() => {
     return likedSongs.filter(Boolean);
   }, [likedSongs]);
 
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+      setLoading(false);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const fetchLikedSongs = async () => {
     if (!token) {
       setLikedSongs([]);
+      setLoading(false);
+      return;
+    }
+
+    if (!navigator.onLine) {
+      setIsOffline(true);
       setLoading(false);
       return;
     }
@@ -54,6 +81,11 @@ const Liked = () => {
       }
     } catch (error) {
       console.log(error);
+
+      if (!navigator.onLine) {
+        setIsOffline(true);
+      }
+
       setLikedSongs([]);
     } finally {
       setLoading(false);
@@ -61,8 +93,20 @@ const Liked = () => {
   };
 
   useEffect(() => {
+    if (!isOffline) {
+      fetchLikedSongs();
+    }
+  }, [token, isOffline]);
+
+  const handleRetry = () => {
+    if (!navigator.onLine) {
+      setIsOffline(true);
+      return;
+    }
+
+    setIsOffline(false);
     fetchLikedSongs();
-  }, [token]);
+  };
 
   const getSongImage = (song) => {
     return (
@@ -125,6 +169,11 @@ const Liked = () => {
   const removeFromLiked = async (songId) => {
     if (!token || !songId) return;
 
+    if (!navigator.onLine) {
+      setIsOffline(true);
+      return;
+    }
+
     try {
       setRemovingId(songId);
 
@@ -147,11 +196,73 @@ const Liked = () => {
       }
     } catch (error) {
       console.log(error);
-      alert("Could not remove liked song");
+
+      if (!navigator.onLine) {
+        setIsOffline(true);
+      } else {
+        alert("Could not remove liked song");
+      }
     } finally {
       setRemovingId("");
     }
   };
+
+  if (isOffline) {
+    return (
+      <main className="liked-network-error">
+        <div className="liked-offline-bg">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div className="liked-note liked-note-one">♪</div>
+        <div className="liked-note liked-note-two">♫</div>
+        <div className="liked-note liked-note-three">♬</div>
+        <div className="liked-note liked-note-four">♪</div>
+
+        <section className="liked-offline-card">
+          <div className="liked-offline-character">
+            <div className="liked-heart-orbit">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div className="liked-big-heart">
+              <FaHeart />
+            </div>
+
+            <div className="liked-broken-wifi">
+              <FaWifi />
+              <div className="liked-wifi-slash"></div>
+            </div>
+
+            <div className="liked-offline-shadow"></div>
+          </div>
+
+          <div className="liked-offline-content">
+            <span className="liked-offline-badge">Offline Library</span>
+
+            <h1>Your liked songs are taking a pause</h1>
+
+            <p>
+              We need internet to sync your favorite tracks. Reconnect and your
+              liked songs will come back with all the music you saved.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="liked-retry-btn"
+            >
+              Try again
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   if (!token) {
     return (

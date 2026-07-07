@@ -1,0 +1,825 @@
+.explore-page {
+    min-height: 100vh;
+    padding: 18px;
+    color: #ffffff;
+    background:
+      radial-gradient(circle at top left, rgba(92, 246, 128, 0.12), transparent 30%),
+      radial-gradient(circle at top right, rgba(130, 90, 255, 0.14), transparent 34%),
+      linear-gradient(135deg, #050509, #0b0b14 45%, #050509);
+  }
+  
+  .explore-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(230px, 0.55fr);
+    gap: 20px;
+    min-height: 320px;
+    padding: clamp(18px, 4vw, 32px);
+    border-radius: 28px;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.04)),
+      rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  }
+  
+  .hero-bg-glow {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    filter: blur(45px);
+    opacity: 0.48;
+    animation: exploreGlow 6s ease-in-out infinite alternate;
+  }
+  
+  .hero-bg-one {
+    left: -80px;
+    top: -70px;
+    background: rgba(92, 246, 128, 0.38);
+  }
+  
+  .hero-bg-two {
+    right: -80px;
+    bottom: -90px;
+    background: rgba(126, 92, 255, 0.42);
+    animation-delay: 1.4s;
+  }
+  
+  .hero-copy,
+  .hero-feature-card {
+    position: relative;
+    z-index: 2;
+  }
+  
+  .explore-kicker {
+    display: inline-flex;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(92, 246, 128, 0.13);
+    color: #5cf680;
+    font-size: 0.68rem;
+    font-weight: 950;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+  
+  .hero-copy h1 {
+    max-width: 780px;
+    margin: 0;
+    font-size: clamp(2rem, 5.8vw, 4.4rem);
+    line-height: 0.98;
+    font-weight: 950;
+    letter-spacing: -0.06em;
+  }
+  
+  .hero-copy h1 span {
+    color: #5cf680;
+    text-shadow: 0 0 24px rgba(92, 246, 128, 0.32);
+  }
+  
+  .hero-copy p {
+    max-width: 590px;
+    margin: 14px 0 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: clamp(0.88rem, 2.2vw, 1rem);
+    font-weight: 650;
+  }
+  
+  .explore-controls {
+    display: grid;
+    grid-template-columns: minmax(170px, 230px) minmax(210px, 1fr);
+    gap: 12px;
+    max-width: 720px;
+    margin-top: 22px;
+  }
+  
+  .explore-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  
+  .explore-controls label span {
+    color: rgba(255, 255, 255, 0.66);
+    font-size: 0.74rem;
+    font-weight: 900;
+  }
+  
+  .explore-controls select,
+  .explore-controls input {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    outline: none;
+    border-radius: 16px;
+    padding: 12px 13px;
+    background: rgba(0, 0, 0, 0.22);
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+  
+  .explore-controls option {
+    background: #11111a;
+    color: #ffffff;
+  }
+  
+  .hero-feature-card {
+    align-self: stretch;
+    border-radius: 24px;
+    padding: 16px;
+    background:
+      linear-gradient(180deg, rgba(92, 246, 128, 0.15), rgba(255, 255, 255, 0.055)),
+      rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(92, 246, 128, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .hero-rank-pill {
+    display: inline-flex;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.32);
+    color: #9effb5;
+    font-size: 0.72rem;
+    font-weight: 950;
+  }
+  
+  .hero-feature-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 230px;
+    object-fit: cover;
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+  }
+  
+  .hero-song-info h2 {
+    margin: 13px 0 5px;
+    font-size: clamp(1rem, 2.8vw, 1.25rem);
+  }
+  
+  .hero-song-info p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+  
+  .hero-stats,
+  .recommend-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 11px;
+  }
+  
+  .hero-stats span,
+  .recommend-tags span {
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+  
+  .hero-empty {
+    min-height: 100%;
+    display: grid;
+    place-content: center;
+    text-align: center;
+  }
+  
+  .explore-error {
+    margin: 16px 0;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 70, 90, 0.13);
+    border: 1px solid rgba(255, 70, 90, 0.24);
+    color: #ff9ba6;
+    font-weight: 850;
+  }
+  
+  .explore-layout {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr) 250px;
+    gap: 18px;
+    margin-top: 20px;
+    align-items: start;
+  }
+  
+  .explore-side-panel,
+  .explore-recommend-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: sticky;
+    top: 18px;
+  }
+  
+  .panel-card,
+  .now-exploring-card,
+  .recommend-card,
+  .explore-main {
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(18px);
+  }
+  
+  .panel-card,
+  .now-exploring-card,
+  .recommend-card {
+    padding: 16px;
+  }
+  
+  .panel-card h3,
+  .now-exploring-card h3,
+  .recommend-card h3 {
+    margin: 0 0 9px;
+    font-size: 1rem;
+  }
+  
+  .panel-card p {
+    margin: 0 0 13px;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.82rem;
+    font-weight: 650;
+  }
+  
+  .mini-country-list,
+  .mood-list,
+  .recommend-moods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .mini-country-list button,
+  .mood-list button,
+  .recommend-moods button {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 11px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.74rem;
+    font-weight: 850;
+    cursor: pointer;
+  }
+  
+  .mini-country-list button.active,
+  .mood-list button.active {
+    background: #5cf680;
+    color: #061009;
+  }
+  
+  .explore-main {
+    padding: 18px;
+    min-width: 0;
+  }
+  
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  
+  .section-heading span {
+    color: #5cf680;
+    font-size: 0.68rem;
+    font-weight: 950;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  
+  .section-heading h2 {
+    margin: 4px 0 0;
+    font-size: clamp(1.2rem, 3vw, 1.45rem);
+    letter-spacing: -0.03em;
+  }
+  
+  .section-heading small {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+  
+  .top-ten-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+  
+  .top-ten-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.075);
+    border-radius: 20px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.055);
+    color: #ffffff;
+    transition: transform 0.2s ease, background 0.2s ease, border 0.2s ease;
+  }
+  
+  .top-ten-row:hover,
+  .top-ten-row.active {
+    transform: translateY(-2px);
+    background: rgba(92, 246, 128, 0.11);
+    border-color: rgba(92, 246, 128, 0.24);
+  }
+  
+  .song-rank {
+    color: #5cf680;
+    font-size: 1rem;
+    font-weight: 950;
+    text-align: center;
+  }
+  
+  .top-ten-song-item {
+    min-width: 0;
+  }
+  
+  .top-ten-song-item .song-carder {
+    width: 100%;
+  }
+  
+  .top-ten-song-item .song-linker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  
+  .top-ten-song-item .card-img-container {
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+  }
+  
+  .top-ten-song-item .card-img-container img {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    object-fit: cover;
+  }
+  
+  .top-ten-song-item .card-content {
+    min-width: 0;
+  }
+  
+  .top-ten-song-item .card-title {
+    margin: 0;
+    font-size: 0.94rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .top-ten-song-item .card-artist {
+    margin: 5px 0 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.58);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .top-song-meta {
+    text-align: right;
+  }
+  
+  .top-song-meta span {
+    display: block;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.75rem;
+    font-weight: 900;
+  }
+  
+  .top-song-meta small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.72rem;
+    font-weight: 750;
+  }
+  
+  .songs-by-mood-heading {
+    margin-top: 28px;
+  }
+  
+  .explore-song-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 14px;
+  }
+  
+  .mood-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .mood-section-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .mood-section-title h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  
+  .mood-section-title button {
+    border: none;
+    border-radius: 999px;
+    padding: 7px 11px;
+    background: rgba(92, 246, 128, 0.12);
+    color: #5cf680;
+    font-size: 0.74rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  
+  .explore-loading,
+  .explore-empty {
+    padding: 30px 18px;
+    border-radius: 22px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.045);
+    color: rgba(255, 255, 255, 0.68);
+    font-weight: 800;
+  }
+  
+  .explore-empty h3 {
+    margin: 0 0 8px;
+    color: #ffffff;
+    font-size: 1.05rem;
+  }
+  
+  .explore-empty p {
+    margin: 0;
+    font-size: 0.86rem;
+  }
+  
+  .now-exploring-card {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .pulse-dot {
+    width: 10px;
+    height: 10px;
+    display: inline-flex;
+    border-radius: 50%;
+    background: #5cf680;
+    box-shadow: 0 0 0 rgba(92, 246, 128, 0.7);
+    animation: pulseDot 1.4s infinite;
+  }
+  
+  .now-exploring-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 20px;
+    object-fit: cover;
+    margin: 13px 0;
+  }
+  
+  .now-exploring-card h4 {
+    margin: 0;
+    font-size: 0.98rem;
+  }
+  
+  .now-exploring-card p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.84rem;
+    font-weight: 750;
+  }
+  
+  /* Skeletons */
+  .explore-skeleton-row,
+  .explore-skeleton-card,
+  .hero-feature-skeleton,
+  .side-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.055);
+  }
+  
+  .explore-skeleton-row::after,
+  .explore-skeleton-card::after,
+  .hero-feature-skeleton::after,
+  .side-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.12),
+      transparent
+    );
+    animation: skeletonShine 1.3s infinite;
+  }
+  
+  .explore-skeleton-row {
+    display: grid;
+    grid-template-columns: 48px 58px minmax(0, 1fr) 90px;
+    gap: 12px;
+    align-items: center;
+    min-height: 82px;
+    border-radius: 20px;
+    padding: 10px;
+  }
+  
+  .skeleton-rank,
+  .skeleton-img,
+  .skeleton-pill,
+  .skeleton-text i,
+  .skeleton-text b,
+  .explore-skeleton-card span,
+  .explore-skeleton-card i,
+  .explore-skeleton-card b,
+  .hero-feature-skeleton span,
+  .hero-feature-skeleton i,
+  .hero-feature-skeleton b,
+  .side-skeleton span,
+  .side-skeleton i,
+  .side-skeleton b {
+    display: block;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.105);
+  }
+  
+  .skeleton-rank {
+    height: 18px;
+  }
+  
+  .skeleton-img {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+  }
+  
+  .skeleton-text i {
+    width: 70%;
+    height: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .skeleton-text b {
+    width: 45%;
+    height: 10px;
+  }
+  
+  .skeleton-pill {
+    height: 18px;
+  }
+  
+  .explore-skeleton-card {
+    min-height: 220px;
+    border-radius: 22px;
+    padding: 12px;
+  }
+  
+  .explore-skeleton-card span {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+  }
+  
+  .explore-skeleton-card i {
+    width: 80%;
+    height: 13px;
+    margin-top: 12px;
+  }
+  
+  .explore-skeleton-card b {
+    width: 55%;
+    height: 10px;
+    margin-top: 10px;
+  }
+  
+  .hero-feature-skeleton {
+    height: 100%;
+    min-height: 280px;
+    border-radius: 24px;
+    padding: 14px;
+  }
+  
+  .hero-feature-skeleton span {
+    width: 90px;
+    height: 22px;
+    margin-bottom: 12px;
+  }
+  
+  .hero-feature-skeleton i {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 22px;
+  }
+  
+  .hero-feature-skeleton b {
+    width: 70%;
+    height: 18px;
+    margin-top: 14px;
+  }
+  
+  .side-skeleton {
+    min-height: 250px;
+    border-radius: 18px;
+    padding: 12px;
+  }
+  
+  .side-skeleton span {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+  }
+  
+  .side-skeleton i {
+    width: 75%;
+    height: 14px;
+    margin-top: 12px;
+  }
+  
+  .side-skeleton b {
+    width: 55%;
+    height: 10px;
+    margin-top: 10px;
+  }
+  
+  @keyframes skeletonShine {
+    to {
+      transform: translateX(100%);
+    }
+  }
+  
+  @keyframes exploreGlow {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  
+    to {
+      transform: translate3d(24px, -16px, 0) scale(1.1);
+    }
+  }
+  
+  @keyframes pulseDot {
+    0% {
+      box-shadow: 0 0 0 0 rgba(92, 246, 128, 0.7);
+    }
+  
+    70% {
+      box-shadow: 0 0 0 10px rgba(92, 246, 128, 0);
+    }
+  
+    100% {
+      box-shadow: 0 0 0 0 rgba(92, 246, 128, 0);
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .explore-layout {
+      grid-template-columns: 220px minmax(0, 1fr);
+    }
+  
+    .explore-recommend-panel {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 900px) {
+    .explore-page {
+      padding: 14px;
+    }
+  
+    .explore-hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+  
+    .hero-feature-card {
+      max-width: 420px;
+    }
+  
+    .explore-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .explore-side-panel {
+      position: static;
+    }
+  
+    .explore-controls {
+      grid-template-columns: 1fr;
+    }
+  
+    .panel-card {
+      padding: 14px;
+    }
+  
+    .top-ten-row {
+      grid-template-columns: 42px minmax(0, 1fr);
+    }
+  
+    .top-song-meta {
+      grid-column: 2;
+      text-align: left;
+      padding-left: 70px;
+    }
+  }
+  
+  @media (max-width: 560px) {
+    .explore-page {
+      padding: 10px;
+    }
+  
+    .explore-hero {
+      padding: 18px;
+      border-radius: 22px;
+    }
+  
+    .hero-copy h1 {
+      font-size: clamp(1.85rem, 11vw, 2.65rem);
+      letter-spacing: -0.045em;
+    }
+  
+    .hero-copy p {
+      font-size: 0.84rem;
+    }
+  
+    .explore-main {
+      padding: 14px;
+      border-radius: 20px;
+    }
+  
+    .section-heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  
+    .top-ten-row {
+      grid-template-columns: 36px minmax(0, 1fr);
+      padding: 9px;
+    }
+  
+    .song-rank {
+      font-size: 0.9rem;
+    }
+  
+    .top-ten-song-item .song-linker {
+      gap: 10px;
+    }
+  
+    .top-ten-song-item .card-img-container,
+    .top-ten-song-item .card-img-container img {
+      width: 52px;
+      height: 52px;
+    }
+  
+    .top-song-meta {
+      padding-left: 62px;
+    }
+  
+    .explore-song-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  
+    .explore-skeleton-row {
+      grid-template-columns: 36px 52px minmax(0, 1fr);
+    }
+  
+    .skeleton-pill {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 380px) {
+    .explore-song-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .mini-country-list button,
+    .mood-list button,
+    .recommend-moods button {
+      font-size: 0.7rem;
+      padding: 7px 10px;
+    }
+  }
