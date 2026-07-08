@@ -188,6 +188,7 @@ export const deleteArtist = async (req, res) => {
 
 import Artist from "../models/artistModel.js";
 import User from "../models/userModel.js";
+import { ensurePreferences, increasePreference } from "../utils/preferencesHelper.js";
 
 // ======================================
 // Create Artist
@@ -401,6 +402,8 @@ export const toggleFollowArtist = async (req, res) => {
       });
     }
 
+    ensurePreferences(user);
+
     const alreadyFollowing = user.followedArtists.some(
       (id) => id.toString() === artistId
     );
@@ -408,15 +411,11 @@ export const toggleFollowArtist = async (req, res) => {
     let following;
 
     if (alreadyFollowing) {
-      await User.updateOne(
-        { _id: userId },
-        {
-          $pull: {
-            followedArtists: artistId,
-            favoriteArtists: artistId,
-          },
-        }
+      user.followedArtists = user.followedArtists.filter(
+        (id) => id.toString() !== artistId
       );
+
+      await user.save();
 
       await Artist.findByIdAndUpdate(artistId, {
         $inc: {
@@ -426,15 +425,15 @@ export const toggleFollowArtist = async (req, res) => {
 
       following = false;
     } else {
-      await User.updateOne(
-        { _id: userId },
-        {
-          $addToSet: {
-            followedArtists: artistId,
-            favoriteArtists: artistId,
-          },
-        }
-      );
+      user.followedArtists.addToSet(artist._id);
+
+      // Follow is the strongest signal.
+      increasePreference(user.preferences.artists, "artist", artist._id, 10);
+
+      // Artist country also matters, but less than the artist itself.
+      increasePreference(user.preferences.countries, "name", artist.country, 3);
+
+      await user.save();
 
       await Artist.findByIdAndUpdate(artistId, {
         $inc: {

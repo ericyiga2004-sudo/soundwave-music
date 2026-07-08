@@ -1,165 +1,6 @@
-/* import User from "../models/userModel.js";
-import Song from "../models/uploadSongModel.js";
-
-export const toggleLikeSong = async (req, res) => {
-  try {
-    const userId = req.userId;
-    const { songId } = req.params;
-
-    if (!songId) {
-      return res.json({
-        success: false,
-        message: "Song ID is required",
-      });
-    }
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    const song = await Song.findById(songId).select("_id likes");
-
-    if (!song) {
-      return res.json({
-        success: false,
-        message: "Song not found",
-      });
-    }
-
-    const alreadyLiked = user.likedSongs.some(
-      (likedSongId) => likedSongId.toString() === songId
-    );
-
-    let liked;
-    let updatedSong;
-
-    if (alreadyLiked) {
-      await User.updateOne(
-        { _id: userId },
-        { $pull: { likedSongs: songId } }
-      );
-
-      updatedSong = await Song.findByIdAndUpdate(
-        songId,
-        { $inc: { likes: -1 } },
-        { new: true }
-      ).select("likes");
-
-      if (updatedSong.likes < 0) {
-        updatedSong = await Song.findByIdAndUpdate(
-          songId,
-          { $set: { likes: 0 } },
-          { new: true }
-        ).select("likes");
-      }
-
-      liked = false;
-    } else {
-      await User.updateOne(
-        { _id: userId },
-        { $addToSet: { likedSongs: songId } }
-      );
-
-      updatedSong = await Song.findByIdAndUpdate(
-        songId,
-        { $inc: { likes: 1 } },
-        { new: true }
-      ).select("likes");
-
-      liked = true;
-    }
-
-    res.json({
-      success: true,
-      liked,
-      likes: updatedSong.likes,
-      message: liked ? "Song liked" : "Song unliked",
-    });
-  } catch (error) {
-    console.log(error);
-
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-export const getLikedSongs = async (req, res) => {
-  try {
-    const user = await User.findById(req.userId).populate({
-      path: "likedSongs",
-      populate: [
-        {
-          path: "artist",
-        },
-        {
-          path: "album",
-        },
-      ],
-    });
-
-    if (!user) {
-      return res.json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      likedSongs: user.likedSongs || [],
-    });
-  } catch (error) {
-    console.log(error);
-
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-export const checkSongLiked = async (req, res) => {
-  try {
-    const userId = req.userId;
-    const { songId } = req.params;
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    const liked = user.likedSongs.some(
-      (likedSongId) => likedSongId.toString() === songId
-    );
-
-    res.json({
-      success: true,
-      liked,
-    });
-  } catch (error) {
-    console.log(error);
-
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
-}; */
-
 import User from "../models/userModel.js";
 import Song from "../models/uploadSongModel.js";
-import { increasePreference } from "../utils/preferencesHelper.js";
+import { ensurePreferences, increasePreference } from "../utils/preferencesHelper.js";
 
 export const toggleLikeSong = async (req, res) => {
   try {
@@ -167,7 +8,7 @@ export const toggleLikeSong = async (req, res) => {
     const { songId } = req.params;
 
     if (!songId) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "Song ID is required",
       });
@@ -176,23 +17,24 @@ export const toggleLikeSong = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    // We need genre, mood and artist for recommendations
     const song = await Song.findById(songId).select(
       "_id likes genre mood artist country songLanguage releaseYear"
     );
 
     if (!song) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "Song not found",
       });
     }
+
+    ensurePreferences(user);
 
     const alreadyLiked = user.likedSongs.some(
       (likedSongId) => likedSongId.toString() === songId
@@ -202,13 +44,10 @@ export const toggleLikeSong = async (req, res) => {
     let updatedSong;
 
     if (alreadyLiked) {
-      // Remove like only
-      // (We intentionally DO NOT remove preferences because
-      // users may still like that genre overall.)
       user.likedSongs = user.likedSongs.filter(
         (id) => id.toString() !== songId
       );
-      
+
       await user.save();
 
       updatedSong = await Song.findByIdAndUpdate(
@@ -223,7 +62,7 @@ export const toggleLikeSong = async (req, res) => {
         }
       ).select("likes");
 
-      if (updatedSong.likes < 0) {
+      if (updatedSong && updatedSong.likes < 0) {
         updatedSong = await Song.findByIdAndUpdate(
           songId,
           {
@@ -239,55 +78,16 @@ export const toggleLikeSong = async (req, res) => {
 
       liked = false;
     } else {
-      // Add like
-      if (!user.likedSongs.includes(songId)) {
-        user.likedSongs.push(songId);
-      }
+      user.likedSongs.addToSet(song._id);
 
-// A like is a much stronger signal than a play
-increasePreference(
-  user.preferences.countries,
-  "name",
-  song.country,
-  5
-);
+      increasePreference(user.preferences.countries, "name", song.country, 5);
+      increasePreference(user.preferences.genres, "name", song.genre, 5);
+      increasePreference(user.preferences.moods, "name", song.mood, 5);
+      increasePreference(user.preferences.languages, "name", song.songLanguage, 5);
+      increasePreference(user.preferences.years, "year", song.releaseYear, 5);
+      increasePreference(user.preferences.artists, "artist", song.artist, 5);
 
-increasePreference(
-  user.preferences.genres,
-  "name",
-  song.genre,
-  5
-);
-
-increasePreference(
-  user.preferences.moods,
-  "name",
-  song.mood,
-  5
-);
-
-increasePreference(
-  user.preferences.languages,
-  "name",
-  song.songLanguage,
-  5
-);
-
-increasePreference(
-  user.preferences.years,
-  "year",
-  song.releaseYear,
-  5
-);
-
-increasePreference(
-  user.preferences.artists,
-  "artist",
-  song.artist,
-  5
-);
-
-await user.save();
+      await user.save();
 
       updatedSong = await Song.findByIdAndUpdate(
         songId,
@@ -304,16 +104,16 @@ await user.save();
       liked = true;
     }
 
-    res.json({
+    return res.json({
       success: true,
       liked,
-      likes: updatedSong.likes,
+      likes: updatedSong?.likes || 0,
       message: liked ? "Song liked" : "Song unliked",
     });
   } catch (error) {
     console.log(error);
 
-    res.json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -335,20 +135,20 @@ export const getLikedSongs = async (req, res) => {
     });
 
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       likedSongs: user.likedSongs || [],
     });
   } catch (error) {
     console.log(error);
 
-    res.json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -360,10 +160,10 @@ export const checkSongLiked = async (req, res) => {
     const userId = req.userId;
     const { songId } = req.params;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("likedSongs");
 
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         success: false,
         message: "User not found",
       });
@@ -373,14 +173,14 @@ export const checkSongLiked = async (req, res) => {
       (likedSongId) => likedSongId.toString() === songId
     );
 
-    res.json({
+    return res.json({
       success: true,
       liked,
     });
   } catch (error) {
     console.log(error);
 
-    res.json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
