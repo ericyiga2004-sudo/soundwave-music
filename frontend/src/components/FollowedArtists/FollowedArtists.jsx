@@ -7,23 +7,35 @@ import "./FollowedArtists.css";
 
 const MAX_FOLLOWED_ARTIST_SONGS = 20;
 
+const shuffleArray = (array) => {
+  return [...array].sort(() => Math.random() - 0.5);
+};
+
+const getSongArtistId = (song) => {
+  return (
+    song?.artist?._id ||
+    song?.artist ||
+    song?.artistId ||
+    ""
+  ).toString();
+};
+
 const FollowedArtists = () => {
   const { songs = [], backendUrl } = useContext(MusicContext);
 
   const [followedArtists, setFollowedArtists] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
-
   const fetchFollowedArtists = async () => {
-    if (!token) {
-      setFollowedArtists([]);
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setFollowedArtists([]);
+        return;
+      }
 
       const res = await axios.get(`${backendUrl}/api/artists/following`, {
         headers: {
@@ -46,19 +58,74 @@ const FollowedArtists = () => {
 
   useEffect(() => {
     fetchFollowedArtists();
+
+    window.addEventListener("artist-follow-updated", fetchFollowedArtists);
+
+    return () => {
+      window.removeEventListener("artist-follow-updated", fetchFollowedArtists);
+    };
   }, []);
 
   const followedArtistSongs = useMemo(() => {
-    if (!followedArtists.length) return [];
+    if (!followedArtists.length || !songs.length) return [];
 
-    const followedIds = followedArtists.map((artist) => artist._id);
+    const followedIds = followedArtists.map((artist) => artist._id?.toString());
 
-    return (songs || [])
-      .filter((song) => {
-        const artistId = song?.artist?._id || song?.artist || song?.artistId;
-        return followedIds.includes(artistId?.toString());
-      })
-      .slice(0, 50);
+    const songsFromFollowedArtists = (songs || []).filter((song) => {
+      const artistId = getSongArtistId(song);
+      return followedIds.includes(artistId);
+    });
+
+    if (!songsFromFollowedArtists.length) return [];
+
+    const groupedByArtist = {};
+
+    songsFromFollowedArtists.forEach((song) => {
+      const artistId = getSongArtistId(song);
+
+      if (!groupedByArtist[artistId]) {
+        groupedByArtist[artistId] = [];
+      }
+
+      groupedByArtist[artistId].push(song);
+    });
+
+    const artistGroups = Object.keys(groupedByArtist).map((artistId) => ({
+      artistId,
+      songs: shuffleArray(groupedByArtist[artistId]),
+    }));
+
+    const mixedSongs = [];
+    let lastArtistId = null;
+
+    while (
+      mixedSongs.length < MAX_FOLLOWED_ARTIST_SONGS &&
+      artistGroups.some((group) => group.songs.length > 0)
+    ) {
+      const availableGroups = artistGroups.filter(
+        (group) => group.songs.length > 0
+      );
+
+      let possibleGroups = availableGroups.filter(
+        (group) => group.artistId !== lastArtistId
+      );
+
+      if (possibleGroups.length === 0) {
+        possibleGroups = availableGroups;
+      }
+
+      const randomGroup =
+        possibleGroups[Math.floor(Math.random() * possibleGroups.length)];
+
+      const nextSong = randomGroup.songs.shift();
+
+      if (nextSong) {
+        mixedSongs.push(nextSong);
+        lastArtistId = randomGroup.artistId;
+      }
+    }
+
+    return mixedSongs;
   }, [songs, followedArtists]);
 
   if (!loading && followedArtistSongs.length === 0) {
@@ -79,7 +146,7 @@ const FollowedArtists = () => {
           <h2 className="followed-title">From Artists You Follow</h2>
 
           <p className="followed-subtitle">
-            Fresh picks from the artists you care about.
+            A random mix from the artists you care about.
           </p>
         </div>
       </div>

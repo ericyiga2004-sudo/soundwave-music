@@ -12,6 +12,143 @@ import "./SearchModel.css";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
+const normalizeText = (value) => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+const includesSearch = (value, search) => {
+  const normalizedValue = normalizeText(value);
+  const normalizedSearch = normalizeText(search);
+
+  if (!normalizedSearch) return true;
+
+  return normalizedValue.includes(normalizedSearch);
+};
+
+const getArtistName = (song) => {
+  return song?.artist?.name || song?.artistName || "Unknown Artist";
+};
+
+const getAlbumTitle = (song) => {
+  return song?.album?.title || song?.albumTitle || "";
+};
+
+const getSongCountry = (song) => {
+  return song?.country || song?.artist?.country || song?.album?.country || "";
+};
+
+const filterArtists = (artists = [], search = "") => {
+  return artists.filter((artist) => {
+    const searchableText = [
+      artist.name,
+      artist.country,
+      artist.bio,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return includesSearch(searchableText, search);
+  });
+};
+
+const filterAlbums = (albums = [], search = "") => {
+  return albums.filter((album) => {
+    const searchableText = [
+      album.title,
+      album.artist?.name,
+      album.artistName,
+      album.description,
+      album.country,
+      album.genre,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return includesSearch(searchableText, search);
+  });
+};
+
+const sortSongsByTaste = (songs = [], preferences = {}) => {
+  const countryRank = new Map();
+  const genreRank = new Map();
+  const moodRank = new Map();
+
+  (preferences.countries || []).forEach((item, index) => {
+    if (item?.name) {
+      countryRank.set(normalizeText(item.name), index);
+    }
+  });
+
+  (preferences.genres || []).forEach((item, index) => {
+    if (item?.name) {
+      genreRank.set(normalizeText(item.name), index);
+    }
+  });
+
+  (preferences.moods || []).forEach((item, index) => {
+    if (item?.name) {
+      moodRank.set(normalizeText(item.name), index);
+    }
+  });
+
+  return [...songs].sort((a, b) => {
+    const countryA = normalizeText(getSongCountry(a));
+    const countryB = normalizeText(getSongCountry(b));
+
+    const genreA = normalizeText(a.genre);
+    const genreB = normalizeText(b.genre);
+
+    const moodA = normalizeText(a.mood);
+    const moodB = normalizeText(b.mood);
+
+    const countryRankA = countryRank.has(countryA)
+      ? countryRank.get(countryA)
+      : 999;
+
+    const countryRankB = countryRank.has(countryB)
+      ? countryRank.get(countryB)
+      : 999;
+
+    if (countryRankA !== countryRankB) {
+      return countryRankA - countryRankB;
+    }
+
+    const genreRankA = genreRank.has(genreA) ? genreRank.get(genreA) : 999;
+    const genreRankB = genreRank.has(genreB) ? genreRank.get(genreB) : 999;
+
+    if (genreRankA !== genreRankB) {
+      return genreRankA - genreRankB;
+    }
+
+    const moodRankA = moodRank.has(moodA) ? moodRank.get(moodA) : 999;
+    const moodRankB = moodRank.has(moodB) ? moodRank.get(moodB) : 999;
+
+    if (moodRankA !== moodRankB) {
+      return moodRankA - moodRankB;
+    }
+
+    const scoreA = Number(a.recommendationScore || 0);
+    const scoreB = Number(b.recommendationScore || 0);
+
+    if (scoreB !== scoreA) {
+      return scoreB - scoreA;
+    }
+
+    const playsA = Number(a.plays || 0);
+    const playsB = Number(b.plays || 0);
+
+    if (playsB !== playsA) {
+      return playsB - playsA;
+    }
+
+    return Number(b.likes || 0) - Number(a.likes || 0);
+  });
+};
+
 const SearchModal = ({
   isOpen,
   onClose,
@@ -30,7 +167,6 @@ const SearchModal = ({
 
   const [loading, setLoading] = useState(false);
 
-  // Autofocus
   useEffect(() => {
     if (!isOpen) return;
 
@@ -39,7 +175,6 @@ const SearchModal = ({
     }, 200);
   }, [isOpen]);
 
-  // ESC
   useEffect(() => {
     if (!isOpen) return;
 
@@ -49,36 +184,23 @@ const SearchModal = ({
 
     window.addEventListener("keydown", handleKey);
 
-    return () =>
-      window.removeEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  // Outside click
   useEffect(() => {
     if (!isOpen) return;
 
     const handleClick = (e) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(e.target)
-      ) {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
         onClose();
       }
     };
 
-    document.addEventListener(
-      "mousedown",
-      handleClick
-    );
+    document.addEventListener("mousedown", handleClick);
 
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClick
-      );
+    return () => document.removeEventListener("mousedown", handleClick);
   }, [isOpen, onClose]);
 
-  // Backend Search
   useEffect(() => {
     if (!query.trim()) {
       setSongs([]);
@@ -91,22 +213,62 @@ const SearchModal = ({
       try {
         setLoading(true);
 
-        const { data } = await axios.get(
-          `${API_BASE_URL}/api/songs/search`,
-          {
-            params: {
-              query,
-            },
-          }
-        );
+        const token = localStorage.getItem("token");
 
-        if (data.success) {
-          setSongs(data.songs || []);
-          setArtists(data.artists || []);
-          setAlbums(data.albums || []);
-        }
+        const songsRequest = axios.get(`${API_BASE_URL}/api/songs/search`, {
+          params: {
+            q: query,
+          },
+        });
+
+        const artistsRequest = axios.get(`${API_BASE_URL}/api/artists`);
+
+        const albumsRequest = axios.get(`${API_BASE_URL}/api/albums`);
+
+        const preferencesRequest = token
+          ? axios.get(`${API_BASE_URL}/api/recommend/preferences`, {
+              headers: {
+                token,
+              },
+            })
+          : Promise.resolve({
+              data: {
+                success: true,
+                preferences: {},
+              },
+            });
+
+        const [songsRes, artistsRes, albumsRes, preferencesRes] =
+          await Promise.all([
+            songsRequest,
+            artistsRequest,
+            albumsRequest,
+            preferencesRequest,
+          ]);
+
+        const fetchedSongs = songsRes.data?.success
+          ? songsRes.data.songs || []
+          : [];
+
+        const fetchedArtists = artistsRes.data?.success
+          ? artistsRes.data.artists || []
+          : [];
+
+        const fetchedAlbums = albumsRes.data?.success
+          ? albumsRes.data.albums || []
+          : [];
+
+        const preferences = preferencesRes.data?.preferences || {};
+
+        setSongs(sortSongsByTaste(fetchedSongs, preferences).slice(0, 20));
+        setArtists(filterArtists(fetchedArtists, query).slice(0, 10));
+        setAlbums(filterAlbums(fetchedAlbums, query).slice(0, 10));
       } catch (err) {
-        console.log(err);
+        console.log("Search error:", err);
+
+        setSongs([]);
+        setArtists([]);
+        setAlbums([]);
       } finally {
         setLoading(false);
       }
@@ -119,14 +281,8 @@ const SearchModal = ({
 
   return (
     <div className="sw-search-overlay">
-      <div
-        className="sw-search-modal"
-        ref={modalRef}
-      >
-        <div
-          className="sw-search-handle"
-          onClick={onClose}
-        >
+      <div className="sw-search-modal" ref={modalRef}>
+        <div className="sw-search-handle" onClick={onClose}>
           <ChevronDown size={24} />
         </div>
 
@@ -137,16 +293,12 @@ const SearchModal = ({
             <input
               ref={inputRef}
               value={query}
-              onChange={(e) =>
-                setQuery(e.target.value)
-              }
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Search songs, artists, albums..."
             />
 
             {query && (
-              <button
-                onClick={() => setQuery("")}
-              >
+              <button onClick={() => setQuery("")}>
                 <X size={18} />
               </button>
             )}
@@ -157,10 +309,7 @@ const SearchModal = ({
           <div className="sw-search-empty">
             <Search size={60} />
             <h2>Search Music</h2>
-            <p>
-              Songs, Artists, Albums,
-              Genres, Countries...
-            </p>
+            <p>Songs, Artists, Albums, Genres, Countries...</p>
           </div>
         )}
 
@@ -172,7 +321,6 @@ const SearchModal = ({
 
         {!loading && query && (
           <div className="sw-search-results">
-
             {artists.length > 0 && (
               <>
                 <h3>Artists</h3>
@@ -181,20 +329,19 @@ const SearchModal = ({
                   <div
                     key={artist._id}
                     className="sw-search-item"
-                    onClick={() =>
-                      onArtistClick?.(artist)
-                    }
+                    onClick={() => {
+                      onArtistClick?.(artist);
+                      onClose?.();
+                    }}
                   >
                     <img
-                      src={artist.image}
-                      alt={artist.name}
+                      src={artist.image || "/fallback-cover.png"}
+                      alt={artist.name || "Artist"}
                     />
 
                     <div>
-                      <h4>{artist.name}</h4>
-                      <p>
-                        {artist.country}
-                      </p>
+                      <h4>{artist.name || "Unknown Artist"}</h4>
+                      <p>{artist.country || "Unknown Location"}</p>
                     </div>
 
                     <User size={18} />
@@ -211,21 +358,20 @@ const SearchModal = ({
                   <div
                     key={album._id}
                     className="sw-search-item"
-                    onClick={() =>
-                      onAlbumClick?.(album)
-                    }
+                    onClick={() => {
+                      onAlbumClick?.(album);
+                      onClose?.();
+                    }}
                   >
                     <img
-                      src={album.coverImage}
-                      alt={album.title}
+                      src={album.coverImage || "/fallback-cover.png"}
+                      alt={album.title || "Album"}
                     />
 
                     <div>
-                      <h4>{album.title}</h4>
+                      <h4>{album.title || "Untitled Album"}</h4>
                       <p>
-                        {album.artist?.name ||
-                          album.artistName ||
-                          "Album"}
+                        {album.artist?.name || album.artistName || "Album"}
                       </p>
                     </div>
 
@@ -243,21 +389,22 @@ const SearchModal = ({
                   <div
                     key={song._id}
                     className="sw-search-item"
-                    onClick={() =>
-                      onPlaySong?.(song)
-                    }
+                    onClick={() => {
+                      onPlaySong?.(song, songs);
+                      onClose?.();
+                    }}
                   >
                     <img
-                      src={song.imageUrl}
-                      alt={song.title}
+                      src={song.imageUrl || "/fallback-cover.png"}
+                      alt={song.title || "Song"}
                     />
 
                     <div>
-                      <h4>{song.title}</h4>
+                      <h4>{song.title || "Unknown Song"}</h4>
 
                       <p>
-                        {song.artist?.name} •{" "}
-                        {song.album?.title}
+                        {getArtistName(song)}
+                        {getAlbumTitle(song) ? ` • ${getAlbumTitle(song)}` : ""}
                       </p>
                     </div>
 
@@ -275,9 +422,7 @@ const SearchModal = ({
 
                   <h2>No Results</h2>
 
-                  <p>
-                    Nothing matched "{query}"
-                  </p>
+                  <p>Nothing matched "{query}"</p>
                 </div>
               )}
           </div>

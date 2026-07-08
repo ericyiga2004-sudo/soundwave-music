@@ -5,39 +5,60 @@ import "./YouLiked.css";
 
 const YouLiked = () => {
   const [songs, setSongs] = useState([]);
-  const [title, setTitle] = useState("Because You Liked");
   const [basedOn, setBasedOn] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchBecauseYouLiked = async () => {
     try {
+      setLoading(true);
+
       const token = localStorage.getItem("token");
 
       if (!token) {
         setSongs([]);
-        setLoading(false);
+        setBasedOn(null);
         return;
       }
 
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/because-you-liked`,
-        {
+      const [likedRes, recommendRes] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/likes/songs`, {
           headers: {
             token,
           },
-        }
-      );
+        }),
 
-      if (res.data.success) {
-        setTitle(res.data.title || "Because You Liked");
-        setBasedOn(res.data.basedOn || null);
-        setSongs(res.data.songs || []);
-      } else {
+        axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/recommend/liked?limit=20`,
+          {
+            headers: {
+              token,
+            },
+          }
+        ),
+      ]);
+
+      if (!likedRes.data.success || !recommendRes.data.success) {
         setSongs([]);
+        setBasedOn(null);
+        return;
       }
+
+      const likedSongs = likedRes.data.likedSongs || [];
+      const recommendedSongs = recommendRes.data.songs || [];
+
+      const seedSong = likedSongs[0] || null;
+
+      setBasedOn(seedSong);
+
+      const filteredSongs = seedSong
+        ? recommendedSongs.filter((song) => song._id !== seedSong._id)
+        : recommendedSongs;
+
+      setSongs(filteredSongs);
     } catch (error) {
       console.log("Because you liked error:", error);
       setSongs([]);
+      setBasedOn(null);
     } finally {
       setLoading(false);
     }
@@ -45,9 +66,15 @@ const YouLiked = () => {
 
   useEffect(() => {
     fetchBecauseYouLiked();
+
+    window.addEventListener("music-liked-updated", fetchBecauseYouLiked);
+
+    return () => {
+      window.removeEventListener("music-liked-updated", fetchBecauseYouLiked);
+    };
   }, []);
 
-  if (!loading && songs.length === 0) {
+  if (!loading && (!basedOn || songs.length === 0)) {
     return null;
   }
 
@@ -58,21 +85,29 @@ const YouLiked = () => {
       <div className="you-liked-header">
         <div>
           <span className="you-liked-badge">Personal Mix</span>
-          <h2 className="you-liked-title">{title}</h2>
+
+          <h2 className="you-liked-title">
+            {basedOn?.title
+              ? `Because You Liked ${basedOn.title}`
+              : "Because You Liked"}
+          </h2>
 
           <p className="you-liked-subtitle">
             {basedOn?.artist?.name
               ? `More songs with a similar feel to ${basedOn.artist.name}`
-              : "Songs matched from your favorite music taste"}
+              : "More songs matched from your liked music"}
           </p>
         </div>
 
         {basedOn?.imageUrl && (
           <div className="you-liked-seed">
             <img src={basedOn.imageUrl} alt={basedOn.title || "Liked song"} />
+
             <div>
               <small>Based on</small>
               <strong>{basedOn.title}</strong>
+
+              {basedOn?.artist?.name && <span>{basedOn.artist.name}</span>}
             </div>
           </div>
         )}

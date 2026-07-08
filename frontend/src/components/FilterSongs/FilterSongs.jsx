@@ -9,6 +9,92 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const tabs = ["Trending", "New", "Most Liked"];
 
+const getTabUrl = (tab, hasToken) => {
+  if (hasToken) {
+    if (tab === "Trending") return "/api/recommend/trending?limit=100";
+    if (tab === "New") return "/api/recommend/new-releases?limit=100";
+    if (tab === "Most Liked") return "/api/recommend/most-liked?limit=100";
+  }
+
+  if (tab === "Trending") return "/api/songs/trending/all?limit=100";
+  if (tab === "New") return "/api/songs/new-releases/all?limit=100";
+  if (tab === "Most Liked") return "/api/songs/most-liked/all?limit=100";
+
+  return "/api/songs/trending/all?limit=100";
+};
+
+const normalizeText = (value) => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+const includesSearch = (value, search) => {
+  const normalizedValue = normalizeText(value);
+  const normalizedSearch = normalizeText(search);
+
+  if (!normalizedSearch) return true;
+
+  return normalizedValue.includes(normalizedSearch);
+};
+
+const getSongCountry = (song) => {
+  return (
+    song?.country ||
+    song?.artist?.country ||
+    song?.album?.country ||
+    ""
+  );
+};
+
+const getArtistName = (song) => {
+  return (
+    song?.artist?.name ||
+    song?.artistName ||
+    "Unknown Artist"
+  );
+};
+
+const sortSongsAfterFilter = (songs = [], tab = "Trending") => {
+  return [...songs].sort((a, b) => {
+    const scoreA = Number(a.recommendationScore || 0);
+    const scoreB = Number(b.recommendationScore || 0);
+
+    if (scoreB !== scoreA) {
+      return scoreB - scoreA;
+    }
+
+    if (tab === "New") {
+      const dateA = new Date(a.releaseDate || a.createdAt || 0).getTime();
+      const dateB = new Date(b.releaseDate || b.createdAt || 0).getTime();
+
+      if (dateB !== dateA) {
+        return dateB - dateA;
+      }
+    }
+
+    if (tab === "Most Liked") {
+      const likesA = Number(a.likes || 0);
+      const likesB = Number(b.likes || 0);
+
+      if (likesB !== likesA) {
+        return likesB - likesA;
+      }
+    }
+
+    const playsA = Number(a.plays || 0);
+    const playsB = Number(b.plays || 0);
+
+    if (playsB !== playsA) {
+      return playsB - playsA;
+    }
+
+    return Number(b.likes || 0) - Number(a.likes || 0);
+  });
+};
+
 const FilterSongsSkeleton = () => {
   return (
     <section className="filter-results">
@@ -32,69 +118,117 @@ const FilterSongsSkeleton = () => {
 const FilterSongs = () => {
   const { playSong } = useContext(MusicPlayerContext);
 
+  const [allSongs, setAllSongs] = useState([]);
   const [songs, setSongs] = useState([]);
   const [tab, setTab] = useState("Trending");
   const [loading, setLoading] = useState(true);
 
   const [genre, setGenre] = useState("");
   const [country, setCountry] = useState("");
+  const [search, setSearch] = useState("");
 
-  const normalizeText = (value) => {
-    return String(value || "")
-      .trim()
-      .toLowerCase();
-  };
+  const [genres, setGenres] = useState([]);
 
-  const getSongCountry = (song) => {
-    return (
-      song?.country ||
-      song?.artist?.country ||
-      song?.album?.country ||
-      ""
-    );
+  const fetchFilterOptions = async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/songs/filter-options`);
+
+      if (res.data.success) {
+        setGenres(res.data.filters?.genres || []);
+      }
+    } catch (error) {
+      console.log("Filter options error:", error);
+
+      setGenres(["EDM", "Afrobeat", "Hip Hop"]);
+    }
   };
 
   const fetchSongs = async () => {
-    setLoading(true);
-
     try {
-      let url = "";
+      setLoading(true);
 
-      if (tab === "Trending") url = "/api/songs/trending/all";
-      if (tab === "New") url = "/api/songs/new-releases/all";
-      if (tab === "Most Liked") url = "/api/songs/most-liked/all";
+      const token = localStorage.getItem("token");
+      const hasToken = Boolean(token);
 
-      const res = await axios.get(`${backendUrl}${url}`);
+      const url = getTabUrl(tab, hasToken);
 
-      let data = res.data.songs || [];
+      const res = await axios.get(`${backendUrl}${url}`, {
+        headers: hasToken
+          ? {
+              token,
+            }
+          : {},
+      });
 
-      if (genre) {
-        data = data.filter(
-          (song) => normalizeText(song.genre) === normalizeText(genre)
-        );
+      if (res.data.success) {
+        setAllSongs(res.data.songs || []);
+      } else {
+        setAllSongs([]);
       }
-
-      if (country.trim()) {
-        const countrySearch = normalizeText(country);
-
-        data = data.filter((song) => {
-          const songCountry = normalizeText(getSongCountry(song));
-          return songCountry.includes(countrySearch);
-        });
-      }
-
-      setSongs(data);
     } catch (err) {
-      console.log(err);
-      setSongs([]);
+      console.log("Fetch filter songs error:", err);
+      setAllSongs([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  useEffect(() => {
     fetchSongs();
-  }, [tab, genre, country]);
+
+    window.addEventListener("music-history-updated", fetchSongs);
+    window.addEventListener("music-liked-updated", fetchSongs);
+    window.addEventListener("artist-follow-updated", fetchSongs);
+
+    return () => {
+      window.removeEventListener("music-history-updated", fetchSongs);
+      window.removeEventListener("music-liked-updated", fetchSongs);
+      window.removeEventListener("artist-follow-updated", fetchSongs);
+    };
+  }, [tab]);
+
+  useEffect(() => {
+    let filteredSongs = [...allSongs];
+
+    if (genre) {
+      filteredSongs = filteredSongs.filter((song) => {
+        return normalizeText(song.genre) === normalizeText(genre);
+      });
+    }
+
+    if (country.trim()) {
+      filteredSongs = filteredSongs.filter((song) => {
+        const songCountry = getSongCountry(song);
+
+        return includesSearch(songCountry, country);
+      });
+    }
+
+    if (search.trim()) {
+      filteredSongs = filteredSongs.filter((song) => {
+        const searchableText = [
+          song.title,
+          getArtistName(song),
+          song.genre,
+          song.mood,
+          song.songLanguage,
+          getSongCountry(song),
+          song.album?.title,
+          ...(Array.isArray(song.tags) ? song.tags : []),
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return includesSearch(searchableText, search);
+      });
+    }
+
+    setSongs(sortSongsAfterFilter(filteredSongs, tab));
+  }, [allSongs, genre, country, search, tab]);
 
   return (
     <section className="filter-section">
@@ -121,29 +255,41 @@ const FilterSongs = () => {
         </div>
 
         <div className="filters row g-2 g-md-3 align-items-center">
-          <div className="col-12 col-sm-5 col-md-4 col-lg-3">
+          <div className="col-12 col-sm-6 col-md-4 col-lg-3">
+            <input
+              className="w-100"
+              value={search}
+              placeholder="Search song, artist, mood..."
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12 col-sm-6 col-md-4 col-lg-3">
             <select
               className="w-100"
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
             >
               <option value="">All Genres</option>
-              <option value="EDM">EDM</option>
-              <option value="Afrobeat">Afrobeat</option>
-              <option value="Hip Hop">Hip Hop</option>
+
+              {genres.map((genreName) => (
+                <option value={genreName} key={genreName}>
+                  {genreName}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="col-12 col-sm-7 col-md-6 col-lg-5">
+          <div className="col-12 col-sm-8 col-md-4 col-lg-4">
             <input
               className="w-100"
               value={country}
-              placeholder="Country e.g. Uganda, Nigeria"
+              placeholder="Country e.g. Uganda, Nigeria, United States"
               onChange={(e) => setCountry(e.target.value)}
             />
           </div>
 
-          {(genre || country) && (
+          {(genre || country || search) && (
             <div className="col-12 col-md-auto">
               <button
                 type="button"
@@ -151,6 +297,7 @@ const FilterSongs = () => {
                 onClick={() => {
                   setGenre("");
                   setCountry("");
+                  setSearch("");
                 }}
               >
                 Clear
@@ -174,7 +321,10 @@ const FilterSongs = () => {
                     className="text-decoration-none"
                     to={`/song/${song._id}`}
                     state={{ playlist: songs }}
-                    onClick={(e) => {e.stopPropagation(); window.scrollTo(0,0)}}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.scrollTo(0, 0);
+                    }}
                   >
                     <div className="filter-release-image">
                       <img
@@ -198,7 +348,7 @@ const FilterSongs = () => {
                     <div className="filter-release-content">
                       <h3>{song.title || "Unknown Song"}</h3>
 
-                      <p>{song.artist?.name || "Unknown Artist"}</p>
+                      <p>{getArtistName(song)}</p>
 
                       {getSongCountry(song) && (
                         <span className="song-country">

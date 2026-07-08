@@ -20,7 +20,7 @@ const MadeForYou = () => {
       }
 
       const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/recommendations`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/recommend/for-you?limit=20`,
         {
           headers: {
             token,

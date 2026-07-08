@@ -3,7 +3,7 @@ import axios from "axios";
 import SongItem from "../SongItem/SongItem";
 import "./ContinueListening.css";
 
-const MIN_HISTORY_SONGS = 10;
+const MIN_HISTORY_SONGS = 1;
 const MAX_HISTORY_SONGS = 20;
 
 const ContinueListening = () => {
@@ -12,11 +12,12 @@ const ContinueListening = () => {
 
   const fetchHistory = async () => {
     try {
+      setLoading(true);
+
       const token = localStorage.getItem("token");
 
       if (!token) {
         setHistorySongs([]);
-        setLoading(false);
         return;
       }
 
