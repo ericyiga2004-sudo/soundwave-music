@@ -233,6 +233,21 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
 
+    /* favoriteCountries: {
+      type: [String],
+      default: [],
+    },
+    
+    favoriteLanguages: {
+      type: [String],
+      default: [],
+    },
+    
+    favoriteYears: {
+      type: [Number],
+      default: [],
+    }, */
+
     password: {
       type: String,
       required: true,
@@ -245,7 +260,7 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
-    favoriteGenres: {
+    /* favoriteGenres: {
       type: [String],
       default: [],
     },
@@ -260,7 +275,7 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Artist",
       },
-    ],
+    ], */
 
     followedArtists: [
       {
@@ -268,6 +283,72 @@ const userSchema = new mongoose.Schema(
         ref: "Artist",
       },
     ],
+
+    preferences: {
+      countries: [
+        {
+          name: String,
+          score: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+    
+      genres: [
+        {
+          name: String,
+          score: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+    
+      moods: [
+        {
+          name: String,
+          score: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+    
+      languages: [
+        {
+          name: String,
+          score: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+    
+      years: [
+        {
+          year: Number,
+          score: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+    
+      artists: [
+        {
+          artist: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Artist",
+          },
+    
+          score: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+    },
 
     location: {
       latitude: {

@@ -10,6 +10,7 @@ import userRouter from "./routes/userRouter.js";
 import historyRouter from "./routes/historyRouter.js";
 import playlistRouter from "./routes/playListRoute.js";
 import likeRouter from "./routes/likeRouter.js";
+import recommendationRouter from "./routes/recommendationRoute.js";
 
 const port  = process.env.PORT || 4000;
  
@@ -37,6 +38,11 @@ app.use(
   "/api/history",
   historyRouter
 )
+
+app.use(
+  "/api/recommend",
+  recommendationRouter
+);
 
 app.use("/api/likes", likeRouter);
 app.use("/api/playlist", playlistRouter);

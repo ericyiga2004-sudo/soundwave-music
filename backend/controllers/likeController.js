@@ -159,6 +159,7 @@ export const checkSongLiked = async (req, res) => {
 
 import User from "../models/userModel.js";
 import Song from "../models/uploadSongModel.js";
+import { increasePreference } from "../utils/preferencesHelper.js";
 
 export const toggleLikeSong = async (req, res) => {
   try {
@@ -183,7 +184,7 @@ export const toggleLikeSong = async (req, res) => {
 
     // We need genre, mood and artist for recommendations
     const song = await Song.findById(songId).select(
-      "_id likes genre mood artist"
+      "_id likes genre mood artist country songLanguage releaseYear"
     );
 
     if (!song) {
@@ -204,14 +205,11 @@ export const toggleLikeSong = async (req, res) => {
       // Remove like only
       // (We intentionally DO NOT remove preferences because
       // users may still like that genre overall.)
-      await User.updateOne(
-        { _id: userId },
-        {
-          $pull: {
-            likedSongs: songId,
-          },
-        }
+      user.likedSongs = user.likedSongs.filter(
+        (id) => id.toString() !== songId
       );
+      
+      await user.save();
 
       updatedSong = await Song.findByIdAndUpdate(
         songId,
@@ -242,19 +240,54 @@ export const toggleLikeSong = async (req, res) => {
       liked = false;
     } else {
       // Add like
-      await User.updateOne(
-        { _id: userId },
-        {
-          $addToSet: {
-            likedSongs: songId,
+      if (!user.likedSongs.includes(songId)) {
+        user.likedSongs.push(songId);
+      }
 
-            // Learn user preferences automatically
-            favoriteGenres: song.genre,
-            favoriteMoods: song.mood,
-            favoriteArtists: song.artist,
-          },
-        }
-      );
+// A like is a much stronger signal than a play
+increasePreference(
+  user.preferences.countries,
+  "name",
+  song.country,
+  5
+);
+
+increasePreference(
+  user.preferences.genres,
+  "name",
+  song.genre,
+  5
+);
+
+increasePreference(
+  user.preferences.moods,
+  "name",
+  song.mood,
+  5
+);
+
+increasePreference(
+  user.preferences.languages,
+  "name",
+  song.songLanguage,
+  5
+);
+
+increasePreference(
+  user.preferences.years,
+  "year",
+  song.releaseYear,
+  5
+);
+
+increasePreference(
+  user.preferences.artists,
+  "artist",
+  song.artist,
+  5
+);
+
+await user.save();
 
       updatedSong = await Song.findByIdAndUpdate(
         songId,
