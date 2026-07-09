@@ -29,22 +29,17 @@ const publicUser = (user) => {
 };
 
 const populatePlaylist = (query) => {
-  return query
-    .populate({
-      path: "songs",
-      populate: [
-        {
-          path: "artist",
-        },
-        {
-          path: "album",
-        },
-      ],
-    })
-    .populate({
-      path: "user",
-      select: "username name email",
-    });
+  return query.populate({
+    path: "songs",
+    populate: [
+      {
+        path: "artist",
+      },
+      {
+        path: "album",
+      },
+    ],
+  });
 };
 
 const populateShare = (query) => {
@@ -63,18 +58,16 @@ const populateShare = (query) => {
             },
           ],
         },
-        {
-          path: "user",
-          select: "username name email",
-        },
       ],
     })
     .populate({
       path: "fromUser",
+      model: User,
       select: "username name email",
     })
     .populate({
       path: "toUser",
+      model: User,
       select: "username name email",
     });
 };
@@ -116,6 +109,7 @@ export const createPlaylist = async (req, res) => {
       description: description?.trim() || "",
       user: userId,
       songs: [],
+      imageUrl: "",
       sharesCount: 0,
       plays: 0,
       saves: 0,
@@ -186,27 +180,28 @@ export const addSongToPlaylist = async (req, res) => {
       (song) => song.toString() === songId
     );
 
-    if (alreadyExists) {
-      return res.json({
-        success: true,
-        message: "Song already exists in playlist",
-      });
+    if (!alreadyExists) {
+      if (playlist.songs.length >= MAX_PLAYLIST_SONGS) {
+        return res.json({
+          success: false,
+          message: `Playlist can only contain ${MAX_PLAYLIST_SONGS} songs or less`,
+        });
+      }
+
+      playlist.songs.push(songId);
+      await playlist.save();
     }
 
-    if (playlist.songs.length >= MAX_PLAYLIST_SONGS) {
-      return res.json({
-        success: false,
-        message: `Playlist can only contain ${MAX_PLAYLIST_SONGS} songs or less`,
-      });
-    }
-
-    playlist.songs.push(songId);
-
-    await playlist.save();
+    const updatedPlaylist = await populatePlaylist(
+      Playlist.findById(playlist._id)
+    );
 
     return res.json({
       success: true,
-      message: "Song added to playlist",
+      message: alreadyExists
+        ? "Song already exists in playlist"
+        : "Song added to playlist",
+      playlist: updatedPlaylist,
     });
   } catch (error) {
     console.log("Add song to playlist error:", error);
@@ -241,9 +236,14 @@ export const removeSongFromPlaylist = async (req, res) => {
 
     await playlist.save();
 
+    const updatedPlaylist = await populatePlaylist(
+      Playlist.findById(playlist._id)
+    );
+
     return res.json({
       success: true,
       message: "Song removed from playlist",
+      playlist: updatedPlaylist,
     });
   } catch (error) {
     console.log("Remove song from playlist error:", error);
@@ -458,7 +458,11 @@ export const getReceivedPlaylistShares = async (req, res) => {
     );
 
     const cleanShares = shares.filter((share) => {
-      return share.playlist && share.playlist.songs?.length <= MAX_PLAYLIST_SONGS;
+      return (
+        share.playlist &&
+        Array.isArray(share.playlist.songs) &&
+        share.playlist.songs.length <= MAX_PLAYLIST_SONGS
+      );
     });
 
     return res.json({
