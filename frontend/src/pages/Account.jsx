@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
   FaMusic,
@@ -15,8 +15,44 @@ import SongItem from "../components/SongItem/SongItem";
 
 const MAX_HISTORY_SONGS = 20;
 
+const isBadTokenValue = (value) => {
+  if (!value) return true;
+
+  const cleanValue = String(value).trim().toLowerCase();
+
+  return (
+    cleanValue === "" ||
+    cleanValue === "false" ||
+    cleanValue === "null" ||
+    cleanValue === "undefined" ||
+    cleanValue === "none" ||
+    cleanValue === "nan"
+  );
+};
+
+const getValidToken = (value) => {
+  if (isBadTokenValue(value)) return "";
+
+  return String(value).trim();
+};
+
+const cleanStoredToken = () => {
+  const storedToken = localStorage.getItem("token");
+
+  if (isBadTokenValue(storedToken)) {
+    localStorage.removeItem("token");
+    return "";
+  }
+
+  return storedToken.trim();
+};
+
 const Account = () => {
   const { token, setToken, logout, backendUrl } = useContext(MusicContext);
+
+  const validToken = useMemo(() => {
+    return getValidToken(token || localStorage.getItem("token"));
+  }, [token]);
 
   const [historySongs, setHistorySongs] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -28,6 +64,18 @@ const Account = () => {
 
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(null);
+
+  useEffect(() => {
+    const cleanedToken = cleanStoredToken();
+
+    if (!cleanedToken && token) {
+      setToken("");
+    }
+
+    if (cleanedToken && cleanedToken !== token) {
+      setToken(cleanedToken);
+    }
+  }, []);
 
   const showNotice = (type, message) => {
     setNotice({ type, message });
@@ -79,7 +127,9 @@ const Account = () => {
   };
 
   const fetchHistory = async () => {
-    if (!token) {
+    const authToken = getValidToken(token || localStorage.getItem("token"));
+
+    if (!authToken) {
       setHistorySongs([]);
       setHistoryLoading(false);
       return;
@@ -89,7 +139,9 @@ const Account = () => {
       setHistoryLoading(true);
 
       const res = await axios.get(`${backendUrl}/api/history/get`, {
-        headers: { token },
+        headers: {
+          token: authToken,
+        },
       });
 
       if (res.data.success) {
@@ -104,6 +156,16 @@ const Account = () => {
       }
     } catch (error) {
       console.error("Fetch history error:", error);
+
+      if (
+        error.response?.status === 401 ||
+        error.response?.data?.message?.toLowerCase()?.includes("jwt") ||
+        error.response?.data?.message?.toLowerCase()?.includes("token")
+      ) {
+        localStorage.removeItem("token");
+        setToken("");
+      }
+
       setHistorySongs([]);
     } finally {
       setHistoryLoading(false);
@@ -119,6 +181,20 @@ const Account = () => {
       window.removeEventListener("music-history-updated", fetchHistory);
     };
   }, [backendUrl, token]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+
+    if (logout) {
+      logout();
+    }
+
+    setToken("");
+    setHistorySongs([]);
+    setHistoryLoading(false);
+
+    showNotice("success", "You have been logged out.");
+  };
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -153,12 +229,14 @@ const Account = () => {
         },
       });
 
-      if (res.data.success) {
-        setToken(res.data.token);
-        localStorage.setItem("token", res.data.token);
+      if (res.data.success && !isBadTokenValue(res.data.token)) {
+        const authToken = String(res.data.token).trim();
+
+        setToken(authToken);
+        localStorage.setItem("token", authToken);
 
         if (mode === "login") {
-          await saveLocationAfterAuth(res.data.token, location);
+          await saveLocationAfterAuth(authToken, location);
         }
 
         showNotice(
@@ -171,8 +249,16 @@ const Account = () => {
         setUsername("");
         setEmail("");
         setPassword("");
+
+        window.dispatchEvent(new Event("auth-updated"));
       } else {
-        showNotice("error", res.data.message || "Login failed. Please try again.");
+        localStorage.removeItem("token");
+        setToken("");
+
+        showNotice(
+          "error",
+          res.data.message || "Login failed. Please try again."
+        );
       }
     } catch (error) {
       console.log("Auth error:", error);
@@ -196,7 +282,7 @@ const Account = () => {
     </div>
   );
 
-  if (token) {
+  if (validToken) {
     return (
       <main className="account-dashboard">
         {noticeMarkup}
@@ -216,7 +302,11 @@ const Account = () => {
             </div>
 
             <div className="col-12 col-md-auto text-center text-md-end">
-              <button className="logout-btn" onClick={logout}>
+              <button
+                type="button"
+                className="logout-btn"
+                onClick={handleLogout}
+              >
                 Logout
               </button>
             </div>

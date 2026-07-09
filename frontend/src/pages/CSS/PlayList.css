@@ -14,6 +14,102 @@
    HERO
 ========================== */
 
+/* ===== Playlist Song Search & Filters Only ===== */
+
+.add-songs-section .row.g-2,
+.add-songs-section .row.g-md-3 {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.add-songs-section .position-relative {
+  width: 100%;
+}
+
+.add-songs-section input,
+.add-songs-section select {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  outline: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: 0.25s ease;
+}
+
+.add-songs-section input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.add-songs-section input:focus,
+.add-songs-section select:focus {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+}
+
+.add-songs-section select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.75) 50%),
+    linear-gradient(135deg, rgba(255,255,255,0.75) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 19px,
+    calc(100% - 12px) 19px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 38px;
+}
+
+.add-songs-section select option {
+  color: #111111;
+  background: #ffffff;
+}
+
+.add-songs-section .playlist-tab {
+  min-height: 44px;
+  border-radius: 14px;
+}
+
+.add-songs-section .text-center .play-selected-btn {
+  min-width: 190px;
+  justify-content: center;
+}
+
+.available-song-info small.playlist-empty-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Mobile filter spacing */
+@media (max-width: 576px) {
+  .add-songs-section .row.g-2,
+  .add-songs-section .row.g-md-3 {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .add-songs-section input,
+  .add-songs-section select {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .add-songs-section .text-center .play-selected-btn {
+    width: 100%;
+  }
+}
+
 .playlist-hero {
   width: 100%;
   max-width: 1220px;

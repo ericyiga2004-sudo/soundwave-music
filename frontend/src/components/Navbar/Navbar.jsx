@@ -27,11 +27,18 @@ const navLinks = [
 const Navbar = () => {
   const [openSearch, setOpenSearch] = useState(false);
 
-  const { songs = [], setCurrentSong } =
-    useContext(MusicPlayerContext);
+  const {
+    songs = [],
+    playSong: contextPlaySong,
+    setCurrentSong,
+  } = useContext(MusicPlayerContext);
 
-  const playSong = (song) => {
-    if (setCurrentSong) {
+  const playSongFromSearch = (song, playlist = []) => {
+    if (!song?._id) return;
+
+    if (contextPlaySong) {
+      contextPlaySong(song, playlist.length ? playlist : songs);
+    } else if (setCurrentSong) {
       setCurrentSong(song);
     }
 
@@ -40,63 +47,44 @@ const Navbar = () => {
 
   return (
     <>
-      {/* ================= TOP HEADER ================= */}
-
       <header className="sw-top-header">
-      <NavLink to="/" className="sw-logo-link">
-  <div className="sw-brand-mark">
-    <div className="sw-brand-inner">
-      <Music2 size={21} strokeWidth={2.6} />
-    </div>
-  </div>
+        <NavLink to="/" className="sw-logo-link">
+          <div className="sw-brand-mark">
+            <div className="sw-brand-inner">
+              <Music2 size={21} strokeWidth={2.6} />
+            </div>
+          </div>
 
-  <div className="sw-logo-text">
-    <h1>SoundWave</h1>
-    <p>Feel the music</p>
-  </div>
-</NavLink>
-
-        {/* SEARCH */}
+          <div className="sw-logo-text">
+            <h1>SoundWave</h1>
+            <p>Feel the music</p>
+          </div>
+        </NavLink>
 
         <button
+          type="button"
           className="sw-search-btn"
           onClick={() => setOpenSearch(true)}
         >
           <Search size={18} />
-
           <span>Search music...</span>
         </button>
       </header>
-
-      {/* SEARCH MODAL */}
 
       <SearchModal
         isOpen={openSearch}
         onClose={() => setOpenSearch(false)}
         songs={songs}
-        onPlaySong={playSong}
-        onArtistClick={() =>
-          setOpenSearch(false)
-        }
-        onAlbumClick={() =>
-          setOpenSearch(false)
-        }
+        onPlaySong={playSongFromSearch}
       />
-
-      {/* ================= BOTTOM NAV ================= */}
 
       <nav className="sw-bottom-nav">
         {navLinks.map((item) => {
           const Icon = item.icon;
 
           return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className="sw-bottom-item"
-            >
+            <NavLink key={item.path} to={item.path} className="sw-bottom-item">
               <Icon size={20} />
-
               <span>{item.label}</span>
             </NavLink>
           );

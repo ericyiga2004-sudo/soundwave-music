@@ -13,6 +13,7 @@ import Country from "../components/Country/Country";
 import FollowedArtists from "../components/FollowedArtists/FollowedArtists";
 import "./CSS/Home.css";
 import DownloadAd from "../components/DownloadAd/DownloadAd";
+import ShareWithMe from "../components/ShareWithMe/ShareWithMe";
 
 const Home = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -116,6 +117,7 @@ const Home = () => {
       <ContinueListening />
       <YouLiked />
       <Country />
+      <ShareWithMe/>
       <FollowedArtists />
       <DownloadAd/>
       <NewRelease />

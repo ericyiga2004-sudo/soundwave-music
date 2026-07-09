@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import SongItem from "../components/SongItem/SongItem";
 import "./CSS/Explore.css";
 
@@ -6,6 +6,17 @@ const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "https://soundwave-music.onrender.com";
 
 const fallbackImage = "/fallback.jpg";
+
+const normalizeText = (value = "") => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
 
 const normalizeCountryName = (country = "") => {
   const cleanCountry = String(country || "").trim();
@@ -35,7 +46,25 @@ const normalizeCountryName = (country = "") => {
 const getArtistName = (song) =>
   song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
+const getArtistId = (song) => {
+  return (song?.artist?._id || song?.artist || song?.artistId || "").toString();
+};
+
+const getPreferenceArtistId = (item) => {
+  return (item?.artist?._id || item?.artist || "").toString();
+};
+
 const getSongImage = (song) => song?.imageUrl || fallbackImage;
+
+const getSongCountry = (song) => {
+  return normalizeCountryName(
+    song?.country || song?.artist?.country || song?.album?.country || ""
+  );
+};
+
+const getSongLanguage = (song) => {
+  return song?.songLanguage || song?.language || "";
+};
 
 const formatNumber = (value = 0) => {
   const number = Number(value) || 0;
@@ -44,6 +73,264 @@ const formatNumber = (value = 0) => {
   if (number >= 1000) return `${(number / 1000).toFixed(1)}K`;
 
   return number;
+};
+
+const getPreferenceItems = (preferences = {}, key = "") => {
+  return Array.isArray(preferences[key]) ? preferences[key] : [];
+};
+
+const getPreferenceName = (item, key = "name") => {
+  if (!item) return "";
+
+  if (key === "artist") {
+    return getPreferenceArtistId(item);
+  }
+
+  return item?.[key] || item?.name || "";
+};
+
+const buildPreferenceScoreMap = (items = [], key = "name") => {
+  const map = new Map();
+
+  items.forEach((item, index) => {
+    const value = getPreferenceName(item, key);
+
+    if (!value) return;
+
+    const normalizedValue =
+      key === "artist" ? value.toString().toLowerCase() : normalizeText(value);
+
+    const score = Number(item.score || 0);
+
+    map.set(normalizedValue, {
+      score,
+      rank: index,
+    });
+  });
+
+  return map;
+};
+
+const getPreferenceScore = (map, value) => {
+  if (!value) return 0;
+
+  const item = map.get(normalizeText(value));
+
+  return Number(item?.score || 0);
+};
+
+const getArtistPreferenceScore = (map, artistId) => {
+  if (!artistId) return 0;
+
+  const item = map.get(artistId.toString().toLowerCase());
+
+  return Number(item?.score || 0);
+};
+
+const getSortedPreferenceValues = (items = [], key = "name") => {
+  return [...items]
+    .filter((item) => getPreferenceName(item, key))
+    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
+    .map((item) => getPreferenceName(item, key));
+};
+
+const getCountryStats = (songs = []) => {
+  const stats = new Map();
+
+  songs.forEach((song) => {
+    if (song?.status === "draft") return;
+
+    const country = getSongCountry(song);
+
+    if (!country || country === "Unknown") return;
+
+    const current = stats.get(country) || {
+      country,
+      count: 0,
+      plays: 0,
+      likes: 0,
+    };
+
+    current.count += 1;
+    current.plays += Number(song.plays || 0);
+    current.likes += Number(song.likes || 0);
+
+    stats.set(country, current);
+  });
+
+  return stats;
+};
+
+const getBestInitialCountry = ({ songs = [], countries = [], preferences = {} }) => {
+  const countryStats = getCountryStats(songs);
+  const preferredCountries = getSortedPreferenceValues(
+    getPreferenceItems(preferences, "countries"),
+    "name"
+  );
+
+  for (const preferredCountry of preferredCountries) {
+    const matchedCountry = countries.find(
+      (country) => normalizeText(country) === normalizeText(preferredCountry)
+    );
+
+    if (matchedCountry) return matchedCountry;
+  }
+
+  const topCountryByActivity = [...countryStats.values()].sort((a, b) => {
+    const scoreA = a.plays * 2 + a.likes * 5 + a.count * 20;
+    const scoreB = b.plays * 2 + b.likes * 5 + b.count * 20;
+
+    return scoreB - scoreA;
+  })[0];
+
+  if (topCountryByActivity?.country) return topCountryByActivity.country;
+
+  if (countries.includes("Uganda")) return "Uganda";
+
+  return countries[0] || "";
+};
+
+const getBestInitialGenre = ({
+  songs = [],
+  country = "",
+  preferences = {},
+}) => {
+  const preferredGenres = getSortedPreferenceValues(
+    getPreferenceItems(preferences, "genres"),
+    "name"
+  );
+
+  const countrySongs = songs.filter((song) => {
+    return (
+      song?.status !== "draft" &&
+      normalizeText(getSongCountry(song)) === normalizeText(country)
+    );
+  });
+
+  const availableGenres = [
+    ...new Set(
+      countrySongs
+        .map((song) => song.genre)
+        .filter(Boolean)
+        .map((genre) => genre.trim())
+    ),
+  ];
+
+  for (const preferredGenre of preferredGenres) {
+    const matchedGenre = availableGenres.find(
+      (genre) => normalizeText(genre) === normalizeText(preferredGenre)
+    );
+
+    if (matchedGenre) return matchedGenre;
+  }
+
+  return "All";
+};
+
+const sortCountriesByTaste = ({
+  countries = [],
+  songs = [],
+  preferences = {},
+}) => {
+  const countryScoreMap = buildPreferenceScoreMap(
+    getPreferenceItems(preferences, "countries"),
+    "name"
+  );
+
+  const countryStats = getCountryStats(songs);
+
+  return [...countries].sort((a, b) => {
+    const scoreA = getPreferenceScore(countryScoreMap, a);
+    const scoreB = getPreferenceScore(countryScoreMap, b);
+
+    if (scoreB !== scoreA) return scoreB - scoreA;
+
+    const statA = countryStats.get(a) || {
+      plays: 0,
+      likes: 0,
+      count: 0,
+    };
+
+    const statB = countryStats.get(b) || {
+      plays: 0,
+      likes: 0,
+      count: 0,
+    };
+
+    const activityA = statA.plays * 2 + statA.likes * 5 + statA.count * 20;
+    const activityB = statB.plays * 2 + statB.likes * 5 + statB.count * 20;
+
+    return activityB - activityA;
+  });
+};
+
+const sortValuesByPreference = (values = [], preferenceItems = []) => {
+  const scoreMap = buildPreferenceScoreMap(preferenceItems, "name");
+
+  return [...values].sort((a, b) => {
+    const scoreA = getPreferenceScore(scoreMap, a);
+    const scoreB = getPreferenceScore(scoreMap, b);
+
+    if (scoreB !== scoreA) return scoreB - scoreA;
+
+    return a.localeCompare(b);
+  });
+};
+
+const sortSongsByUserTaste = (songs = [], preferences = {}) => {
+  const countryScoreMap = buildPreferenceScoreMap(
+    getPreferenceItems(preferences, "countries"),
+    "name"
+  );
+
+  const genreScoreMap = buildPreferenceScoreMap(
+    getPreferenceItems(preferences, "genres"),
+    "name"
+  );
+
+  const moodScoreMap = buildPreferenceScoreMap(
+    getPreferenceItems(preferences, "moods"),
+    "name"
+  );
+
+  const languageScoreMap = buildPreferenceScoreMap(
+    getPreferenceItems(preferences, "languages"),
+    "name"
+  );
+
+  const artistScoreMap = buildPreferenceScoreMap(
+    getPreferenceItems(preferences, "artists"),
+    "artist"
+  );
+
+  return [...songs].sort((a, b) => {
+    const scoreSong = (song) => {
+      const country = getSongCountry(song);
+      const artistId = getArtistId(song);
+
+      return (
+        getPreferenceScore(countryScoreMap, country) * 500 +
+        getPreferenceScore(genreScoreMap, song.genre) * 400 +
+        getPreferenceScore(moodScoreMap, song.mood) * 250 +
+        getPreferenceScore(languageScoreMap, getSongLanguage(song)) * 120 +
+        getArtistPreferenceScore(artistScoreMap, artistId) * 600 +
+        Number(song.recommendationScore || 0) * 10 +
+        Number(song.plays || 0) * 2 +
+        Number(song.likes || 0) * 8
+      );
+    };
+
+    const scoreA = scoreSong(a);
+    const scoreB = scoreSong(b);
+
+    if (scoreB !== scoreA) return scoreB - scoreA;
+
+    if (Number(b.plays || 0) !== Number(a.plays || 0)) {
+      return Number(b.plays || 0) - Number(a.plays || 0);
+    }
+
+    return Number(b.likes || 0) - Number(a.likes || 0);
+  });
 };
 
 const SongRowSkeleton = () => (
@@ -67,52 +354,108 @@ const SongCardSkeleton = () => (
 );
 
 const Explore = () => {
-  const [selectedCountry, setSelectedCountry] = useState("Uganda");
+  const initialTasteAppliedRef = useRef(false);
+
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("All");
+  const [selectedMood, setSelectedMood] = useState("All");
+
   const [topTenSongs, setTopTenSongs] = useState([]);
   const [allSongs, setAllSongs] = useState([]);
-  const [countries, setCountries] = useState(["Uganda"]);
-  const [selectedMood, setSelectedMood] = useState("All");
+  const [countries, setCountries] = useState([]);
+
+  const [preferences, setPreferences] = useState({});
+
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSong, setActiveSong] = useState(null);
+
   const [loading, setLoading] = useState(true);
-  const [topTenLoading, setTopTenLoading] = useState(true);
+  const [topTenLoading, setTopTenLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchCountriesAndSongs = async () => {
+  const fetchExploreData = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await fetch(`${BACKEND_URL}/api/songs`);
-      const data = await response.json();
+      const token = localStorage.getItem("token");
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to fetch songs");
+      const songsRequest = fetch(`${BACKEND_URL}/api/songs?limit=500&sort=popular`);
+
+      const preferencesRequest = token
+        ? fetch(`${BACKEND_URL}/api/recommend/preferences`, {
+            headers: {
+              token,
+            },
+          })
+        : Promise.resolve(null);
+
+      const [songsResponse, preferencesResponse] = await Promise.all([
+        songsRequest,
+        preferencesRequest,
+      ]);
+
+      const songsData = await songsResponse.json();
+
+      if (!songsResponse.ok || !songsData.success) {
+        throw new Error(songsData.message || "Failed to fetch songs");
       }
 
-      const songs = (data.songs || []).map((song) => ({
-        ...song,
-        country: normalizeCountryName(song.country),
-      }));
+      let fetchedPreferences = {};
 
-      setAllSongs(songs);
+      if (preferencesResponse) {
+        try {
+          const preferencesData = await preferencesResponse.json();
+
+          if (preferencesData.success) {
+            fetchedPreferences = preferencesData.preferences || {};
+          }
+        } catch (preferencesError) {
+          console.log("Explore preferences error:", preferencesError);
+        }
+      }
+
+      const songs = (songsData.songs || []).map((song) => ({
+        ...song,
+        country: getSongCountry(song),
+      }));
 
       const uniqueCountries = [
         ...new Set(
           songs
-            .map((song) => normalizeCountryName(song.country))
-            .filter(Boolean)
+            .map((song) => getSongCountry(song))
+            .filter((country) => country && country !== "Unknown")
         ),
-      ].sort();
+      ];
 
-      if (uniqueCountries.length > 0) {
-        setCountries(uniqueCountries);
+      const sortedCountries = sortCountriesByTaste({
+        countries: uniqueCountries,
+        songs,
+        preferences: fetchedPreferences,
+      });
 
-        if (!uniqueCountries.includes(selectedCountry)) {
-          setSelectedCountry(
-            uniqueCountries.includes("Uganda") ? "Uganda" : uniqueCountries[0]
-          );
-        }
+      setAllSongs(songs);
+      setPreferences(fetchedPreferences);
+      setCountries(sortedCountries);
+
+      if (!initialTasteAppliedRef.current) {
+        const bestCountry = getBestInitialCountry({
+          songs,
+          countries: sortedCountries,
+          preferences: fetchedPreferences,
+        });
+
+        const bestGenre = getBestInitialGenre({
+          songs,
+          country: bestCountry,
+          preferences: fetchedPreferences,
+        });
+
+        setSelectedCountry(bestCountry);
+        setSelectedGenre(bestGenre);
+        setSelectedMood("All");
+
+        initialTasteAppliedRef.current = true;
       }
     } catch (err) {
       console.error("Explore songs error:", err);
@@ -129,6 +472,9 @@ const Explore = () => {
       setTopTenLoading(true);
       setError("");
 
+      setTopTenSongs([]);
+      setActiveSong(null);
+
       const normalizedCountry = normalizeCountryName(country);
 
       const response = await fetch(
@@ -140,81 +486,155 @@ const Explore = () => {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to fetch Top Ten songs");
+        setTopTenSongs([]);
+        setActiveSong(null);
+        return;
       }
 
       const songs = (data.songs || []).map((song) => ({
         ...song,
-        country: normalizeCountryName(song.country),
+        country: getSongCountry(song),
       }));
 
-      setTopTenSongs(songs);
-      setActiveSong(songs[0] || null);
+      const sortedSongs = [...songs].sort((a, b) => {
+        const rankA = Number(a.topTenRank || 999);
+        const rankB = Number(b.topTenRank || 999);
+
+        if (rankA !== rankB) return rankA - rankB;
+
+        return Number(b.plays || 0) - Number(a.plays || 0);
+      });
+
+      setTopTenSongs(sortedSongs);
+      setActiveSong(sortedSongs[0] || null);
     } catch (err) {
       console.error("Top Ten error:", err);
       setTopTenSongs([]);
       setActiveSong(null);
-      setError(err.message || "Could not load Top Ten songs");
     } finally {
       setTopTenLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCountriesAndSongs();
+    fetchExploreData();
+
+    window.addEventListener("music-history-updated", fetchExploreData);
+    window.addEventListener("music-liked-updated", fetchExploreData);
+    window.addEventListener("artist-follow-updated", fetchExploreData);
+
+    return () => {
+      window.removeEventListener("music-history-updated", fetchExploreData);
+      window.removeEventListener("music-liked-updated", fetchExploreData);
+      window.removeEventListener("artist-follow-updated", fetchExploreData);
+    };
   }, []);
 
   useEffect(() => {
+    if (!selectedCountry) return;
+
     fetchTopTenSongs(selectedCountry);
-    setSelectedMood("All");
-    setSearchTerm("");
   }, [selectedCountry]);
 
   const countrySongs = useMemo(() => {
-    return allSongs.filter(
-      (song) =>
-        normalizeCountryName(song.country).toLowerCase() ===
-          selectedCountry.toLowerCase() && song.status !== "draft"
-    );
-  }, [allSongs, selectedCountry]);
+    const songs = allSongs.filter((song) => {
+      return (
+        normalizeText(getSongCountry(song)) === normalizeText(selectedCountry) &&
+        song.status !== "draft"
+      );
+    });
+
+    return sortSongsByUserTaste(songs, preferences);
+  }, [allSongs, selectedCountry, preferences]);
+
+  const genres = useMemo(() => {
+    const uniqueGenres = [
+      ...new Set(
+        countrySongs
+          .map((song) => song.genre)
+          .filter(Boolean)
+          .map((genre) => genre.trim())
+      ),
+    ];
+
+    return [
+      "All",
+      ...sortValuesByPreference(
+        uniqueGenres,
+        getPreferenceItems(preferences, "genres")
+      ),
+    ];
+  }, [countrySongs, preferences]);
+
+  const genreSongs = useMemo(() => {
+    if (selectedGenre === "All") return countrySongs;
+
+    return countrySongs.filter((song) => {
+      return normalizeText(song.genre) === normalizeText(selectedGenre);
+    });
+  }, [countrySongs, selectedGenre]);
 
   const moods = useMemo(() => {
     const uniqueMoods = [
       ...new Set(
-        countrySongs
+        genreSongs
           .map((song) => song.mood)
           .filter(Boolean)
           .map((mood) => mood.trim())
       ),
-    ].sort();
+    ];
 
-    return ["All", ...uniqueMoods];
-  }, [countrySongs]);
+    return [
+      "All",
+      ...sortValuesByPreference(
+        uniqueMoods,
+        getPreferenceItems(preferences, "moods")
+      ),
+    ];
+  }, [genreSongs, preferences]);
 
   const filteredSongs = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
+    const search = normalizeText(searchTerm);
 
-    return countrySongs.filter((song) => {
+    return genreSongs.filter((song) => {
       const matchesMood =
         selectedMood === "All" ||
-        song.mood?.toLowerCase() === selectedMood.toLowerCase();
+        normalizeText(song.mood) === normalizeText(selectedMood);
 
-      const matchesSearch =
-        !search ||
-        song.title?.toLowerCase().includes(search) ||
-        getArtistName(song).toLowerCase().includes(search) ||
-        song.genre?.toLowerCase().includes(search) ||
-        song.mood?.toLowerCase().includes(search);
+      const searchableText = normalizeText(
+        [
+          song.title,
+          getArtistName(song),
+          song.genre,
+          song.mood,
+          getSongCountry(song),
+          getSongLanguage(song),
+          ...(Array.isArray(song.tags) ? song.tags : []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+
+      const matchesSearch = !search || searchableText.includes(search);
 
       return matchesMood && matchesSearch;
     });
-  }, [countrySongs, selectedMood, searchTerm]);
+  }, [genreSongs, selectedMood, searchTerm]);
+
+  const displayTopSongs = useMemo(() => {
+    if (topTenSongs.length > 0) {
+      return sortSongsByUserTaste(topTenSongs, preferences).slice(0, 10);
+    }
+
+    return filteredSongs.slice(0, 10);
+  }, [topTenSongs, filteredSongs, preferences]);
 
   const moodGroups = useMemo(() => {
     const groups = {};
 
-    countrySongs.forEach((song) => {
+    genreSongs.forEach((song) => {
       const mood = song.mood || "Unknown";
+
       groups[mood] = groups[mood] || [];
       groups[mood].push(song);
     });
@@ -222,14 +642,63 @@ const Explore = () => {
     return Object.entries(groups)
       .map(([mood, songs]) => ({
         mood,
-        songs: songs
-          .sort((a, b) => Number(b.plays || 0) - Number(a.plays || 0))
-          .slice(0, 6),
+        songs: sortSongsByUserTaste(songs, preferences).slice(0, 6),
       }))
-      .slice(0, 5);
-  }, [countrySongs]);
+      .sort((a, b) => {
+        const moodScoreMap = buildPreferenceScoreMap(
+          getPreferenceItems(preferences, "moods"),
+          "name"
+        );
 
-  const heroSong = activeSong || topTenSongs[0] || countrySongs[0];
+        const scoreA = getPreferenceScore(moodScoreMap, a.mood);
+        const scoreB = getPreferenceScore(moodScoreMap, b.mood);
+
+        if (scoreB !== scoreA) return scoreB - scoreA;
+
+        const playsA = a.songs.reduce(
+          (total, song) => total + Number(song.plays || 0),
+          0
+        );
+
+        const playsB = b.songs.reduce(
+          (total, song) => total + Number(song.plays || 0),
+          0
+        );
+
+        return playsB - playsA;
+      })
+      .slice(0, 5);
+  }, [genreSongs, preferences]);
+
+  const heroSong =
+    activeSong ||
+    displayTopSongs[0] ||
+    filteredSongs[0] ||
+    countrySongs[0] ||
+    allSongs[0];
+
+  const handleCountryChange = (country) => {
+    const normalizedCountry = normalizeCountryName(country);
+
+    const bestGenre = getBestInitialGenre({
+      songs: allSongs,
+      country: normalizedCountry,
+      preferences,
+    });
+
+    setSelectedCountry(normalizedCountry);
+    setSelectedGenre(bestGenre);
+    setSelectedMood("All");
+    setSearchTerm("");
+    setActiveSong(null);
+  };
+
+  const handleGenreChange = (genre) => {
+    setSelectedGenre(genre);
+    setSelectedMood("All");
+    setSearchTerm("");
+    setActiveSong(null);
+  };
 
   return (
     <div className="explore-page container-fluid">
@@ -243,24 +712,27 @@ const Explore = () => {
               <span className="explore-kicker">Explore SoundWave</span>
 
               <h1>
-                Discover the <span>Top Ten</span> sounds in {selectedCountry}
+                Discover <span>your sound</span>
+                {selectedCountry ? ` in ${selectedCountry}` : ""}
               </h1>
 
               <p>
-                Explore songs by country, mood, plays, artists, and fresh
-                SoundWave energy.
+                Explore songs ranked by your listening taste, favorite country,
+                genre, mood, artists, likes, and plays.
               </p>
 
               <div className="row g-2 explore-control-row">
-                <div className="col-12 col-md-5">
+                <div className="col-12 col-md-4">
                   <label className="explore-control-label">
                     <span>Country</span>
                     <select
                       value={selectedCountry}
-                      onChange={(e) =>
-                        setSelectedCountry(normalizeCountryName(e.target.value))
-                      }
+                      onChange={(e) => handleCountryChange(e.target.value)}
                     >
+                      {countries.length === 0 && (
+                        <option value="">Loading countries...</option>
+                      )}
+
                       {countries.map((country) => (
                         <option key={country} value={country}>
                           {country}
@@ -270,12 +742,28 @@ const Explore = () => {
                   </label>
                 </div>
 
-                <div className="col-12 col-md-7">
+                <div className="col-12 col-md-4">
+                  <label className="explore-control-label">
+                    <span>Genre</span>
+                    <select
+                      value={selectedGenre}
+                      onChange={(e) => handleGenreChange(e.target.value)}
+                    >
+                      {genres.map((genre) => (
+                        <option key={genre} value={genre}>
+                          {genre}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="col-12 col-md-4">
                   <label className="explore-control-label">
                     <span>Search</span>
                     <input
                       type="text"
-                      placeholder="Search songs, artists, moods..."
+                      placeholder="Songs, artists, moods..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -287,7 +775,7 @@ const Explore = () => {
 
           <div className="col-12 col-lg-4">
             <div className="hero-feature-card">
-              {topTenLoading ? (
+              {topTenLoading || loading ? (
                 <div className="hero-feature-skeleton">
                   <span></span>
                   <i></i>
@@ -296,7 +784,9 @@ const Explore = () => {
               ) : heroSong ? (
                 <>
                   <div className="hero-rank-pill">
-                    #{heroSong.topTenRank || 1} in {selectedCountry}
+                    {topTenSongs.length > 0
+                      ? `#${heroSong.topTenRank || 1} in ${selectedCountry}`
+                      : `Recommended in ${selectedCountry}`}
                   </div>
 
                   <img src={getSongImage(heroSong)} alt={heroSong.title} />
@@ -315,7 +805,7 @@ const Explore = () => {
               ) : (
                 <div className="hero-empty">
                   <h2>No song selected yet</h2>
-                  <p>Add Top Ten songs from the admin dashboard.</p>
+                  <p>Add songs from the admin dashboard.</p>
                 </div>
               )}
             </div>
@@ -329,10 +819,10 @@ const Explore = () => {
         <aside className="col-12 col-lg-3 col-xl-2">
           <div className="explore-sticky-stack">
             <div className="panel-card">
-              <h3>Country Chart</h3>
+              <h3>For Your Country</h3>
               <p>
-                Showing manually selected Top Ten songs for{" "}
-                <strong>{selectedCountry}</strong>.
+                Starting with the country closest to your listening taste:
+                <strong> {selectedCountry || "Loading..."}</strong>.
               </p>
 
               <div className="mini-country-list">
@@ -341,9 +831,26 @@ const Explore = () => {
                     key={country}
                     type="button"
                     className={selectedCountry === country ? "active" : ""}
-                    onClick={() => setSelectedCountry(country)}
+                    onClick={() => handleCountryChange(country)}
                   >
                     {country}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="panel-card">
+              <h3>Genre Filter</h3>
+
+              <div className="mood-list">
+                {genres.map((genre) => (
+                  <button
+                    key={genre}
+                    type="button"
+                    className={selectedGenre === genre ? "active" : ""}
+                    onClick={() => handleGenreChange(genre)}
+                  >
+                    {genre}
                   </button>
                 ))}
               </div>
@@ -372,29 +879,37 @@ const Explore = () => {
           <div className="explore-main">
             <div className="section-heading">
               <div>
-                <span>Official Picks</span>
-                <h2>Top Ten — {selectedCountry}</h2>
+                <span>
+                  {topTenSongs.length > 0 ? "Official Picks" : "Recommended"}
+                </span>
+
+                <h2>
+                  {topTenSongs.length > 0
+                    ? `Top Ten — ${selectedCountry}`
+                    : `For You — ${selectedCountry}`}
+                </h2>
               </div>
 
-              <small>{topTenSongs.length}/10 songs</small>
+              <small>{displayTopSongs.length}/10 songs</small>
             </div>
 
-            {topTenLoading ? (
+            {topTenLoading || loading ? (
               <div className="top-ten-list">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <SongRowSkeleton key={index} />
                 ))}
               </div>
-            ) : topTenSongs.length === 0 ? (
+            ) : displayTopSongs.length === 0 ? (
               <div className="explore-empty">
-                <h3>No Top Ten songs for {selectedCountry} yet</h3>
+                <h3>No songs for {selectedCountry || "this country"} yet</h3>
                 <p>
-                  Go to your admin page and assign songs to positions #1 to #10.
+                  Try another country, genre, or add more songs from the admin
+                  dashboard.
                 </p>
               </div>
             ) : (
               <div className="top-ten-list">
-                {topTenSongs.map((song, index) => (
+                {displayTopSongs.map((song, index) => (
                   <div
                     key={song._id}
                     className={`top-ten-row ${
@@ -408,7 +923,7 @@ const Explore = () => {
                     </div>
 
                     <div className="top-ten-song-item">
-                      <SongItem song={song} queue={topTenSongs} />
+                      <SongItem song={song} queue={displayTopSongs} />
                     </div>
 
                     <div className="top-song-meta">
@@ -423,9 +938,12 @@ const Explore = () => {
             <div className="section-heading songs-by-mood-heading">
               <div>
                 <span>Explore More</span>
+
                 <h2>
                   {selectedMood === "All"
-                    ? `Songs by mood in ${selectedCountry}`
+                    ? selectedGenre === "All"
+                      ? `Songs by mood in ${selectedCountry}`
+                      : `${selectedGenre} songs in ${selectedCountry}`
                     : `${selectedMood} songs in ${selectedCountry}`}
                 </h2>
               </div>
@@ -441,7 +959,7 @@ const Explore = () => {
                   </div>
                 ))}
               </div>
-            ) : selectedMood !== "All" || searchTerm ? (
+            ) : selectedMood !== "All" || selectedGenre !== "All" || searchTerm ? (
               filteredSongs.length > 0 ? (
                 <div className="row g-3">
                   {filteredSongs.map((song) => (
@@ -453,7 +971,7 @@ const Explore = () => {
               ) : (
                 <div className="explore-empty">
                   <h3>No songs found</h3>
-                  <p>Try another mood, country, or search term.</p>
+                  <p>Try another mood, genre, country, or search term.</p>
                 </div>
               )
             ) : (
@@ -462,6 +980,7 @@ const Explore = () => {
                   <div key={group.mood} className="mood-section">
                     <div className="mood-section-title">
                       <h3>{group.mood}</h3>
+
                       <button
                         type="button"
                         onClick={() => setSelectedMood(group.mood)}
@@ -473,10 +992,7 @@ const Explore = () => {
                     <div className="row g-3">
                       {group.songs.map((song) => (
                         <div key={song._id} className="col-6 col-md-4 col-xl-3">
-                          <SongItem
-                            song={song}
-                            queue={group.songs}
-                          />
+                          <SongItem song={song} queue={group.songs} />
                         </div>
                       ))}
                     </div>
@@ -493,7 +1009,7 @@ const Explore = () => {
               <span className="pulse-dot"></span>
               <h3>Now Exploring</h3>
 
-              {topTenLoading ? (
+              {topTenLoading || loading ? (
                 <div className="side-skeleton">
                   <span></span>
                   <i></i>
@@ -502,18 +1018,35 @@ const Explore = () => {
               ) : heroSong ? (
                 <>
                   <img src={getSongImage(heroSong)} alt={heroSong.title} />
+
                   <h4>{heroSong.title}</h4>
                   <p>{getArtistName(heroSong)}</p>
 
                   <div className="recommend-tags">
-                    <span>{heroSong.country || selectedCountry}</span>
+                    <span>{getSongCountry(heroSong) || selectedCountry}</span>
+                    <span>{heroSong.genre || selectedGenre || "Genre"}</span>
                     <span>{heroSong.mood || "Mood"}</span>
-                    <span>{heroSong.genre || "Genre"}</span>
                   </div>
                 </>
               ) : (
                 <p>No song selected</p>
               )}
+            </div>
+
+            <div className="recommend-card">
+              <h3>Recommended Genres</h3>
+
+              <div className="recommend-moods">
+                {genres.slice(1, 7).map((genre) => (
+                  <button
+                    key={genre}
+                    type="button"
+                    onClick={() => handleGenreChange(genre)}
+                  >
+                    {genre}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="recommend-card">

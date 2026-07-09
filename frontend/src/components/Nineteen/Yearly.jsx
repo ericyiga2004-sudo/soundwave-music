@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
@@ -47,6 +47,14 @@ const yearSections = [
 
 const skeletonCards = Array.from({ length: 6 });
 
+const normalizeText = (value) => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
 
@@ -55,6 +63,130 @@ const normalizeSongs = (songs = []) => {
 
     seen.add(song._id);
     return true;
+  });
+};
+
+const getSongCountry = (song) => {
+  return song?.country || song?.artist?.country || song?.album?.country || "";
+};
+
+const getDateValue = (song = {}) => {
+  const value =
+    song.releaseDate ||
+    song.createdAt ||
+    song.updatedAt ||
+    song.uploadedAt ||
+    song.uploadTime;
+
+  if (!value) return 0;
+
+  const dateValue =
+    typeof value === "number" ? value : new Date(value).getTime();
+
+  return Number.isNaN(dateValue) ? 0 : dateValue;
+};
+
+const buildRankMap = (items = [], key = "name") => {
+  const map = new Map();
+
+  items.forEach((item, index) => {
+    const value = item?.[key];
+
+    if (value !== undefined && value !== null && value !== "") {
+      map.set(normalizeText(value), index);
+    }
+  });
+
+  return map;
+};
+
+const sortSongsByUserTaste = (songs = [], preferences = {}) => {
+  const countryRank = buildRankMap(preferences.countries || [], "name");
+  const genreRank = buildRankMap(preferences.genres || [], "name");
+  const moodRank = buildRankMap(preferences.moods || [], "name");
+  const languageRank = buildRankMap(preferences.languages || [], "name");
+
+  return normalizeSongs(songs).sort((a, b) => {
+    const countryA = normalizeText(getSongCountry(a));
+    const countryB = normalizeText(getSongCountry(b));
+
+    const genreA = normalizeText(a.genre);
+    const genreB = normalizeText(b.genre);
+
+    const moodA = normalizeText(a.mood);
+    const moodB = normalizeText(b.mood);
+
+    const languageA = normalizeText(a.songLanguage);
+    const languageB = normalizeText(b.songLanguage);
+
+    const countryRankA = countryRank.has(countryA)
+      ? countryRank.get(countryA)
+      : 999;
+
+    const countryRankB = countryRank.has(countryB)
+      ? countryRank.get(countryB)
+      : 999;
+
+    // 1. User preferred country first
+    if (countryRankA !== countryRankB) {
+      return countryRankA - countryRankB;
+    }
+
+    // 2. Most listened songs in that country
+    const playsA = Number(a.plays || 0);
+    const playsB = Number(b.plays || 0);
+
+    if (playsB !== playsA) {
+      return playsB - playsA;
+    }
+
+    // 3. User preferred genre
+    const genreRankA = genreRank.has(genreA) ? genreRank.get(genreA) : 999;
+    const genreRankB = genreRank.has(genreB) ? genreRank.get(genreB) : 999;
+
+    if (genreRankA !== genreRankB) {
+      return genreRankA - genreRankB;
+    }
+
+    // 4. User preferred mood
+    const moodRankA = moodRank.has(moodA) ? moodRank.get(moodA) : 999;
+    const moodRankB = moodRank.has(moodB) ? moodRank.get(moodB) : 999;
+
+    if (moodRankA !== moodRankB) {
+      return moodRankA - moodRankB;
+    }
+
+    // 5. User preferred language
+    const languageRankA = languageRank.has(languageA)
+      ? languageRank.get(languageA)
+      : 999;
+
+    const languageRankB = languageRank.has(languageB)
+      ? languageRank.get(languageB)
+      : 999;
+
+    if (languageRankA !== languageRankB) {
+      return languageRankA - languageRankB;
+    }
+
+    // 6. Most liked
+    const likesA = Number(a.likes || 0);
+    const likesB = Number(b.likes || 0);
+
+    if (likesB !== likesA) {
+      return likesB - likesA;
+    }
+
+    // 7. Backend recommendation score
+    const scoreA = Number(a.recommendationScore || 0);
+    const scoreB = Number(b.recommendationScore || 0);
+
+    if (scoreB !== scoreA) {
+      return scoreB - scoreA;
+    }
+
+    // 8. Newest tie-breaker
+    return getDateValue(b) - getDateValue(a);
   });
 };
 
@@ -86,95 +218,166 @@ const Yearly = () => {
     }))
   );
 
-  useEffect(() => {
-    const fetchSections = async () => {
-      if (!API_BASE_URL) {
-        console.error("VITE_BACKEND_URL is missing");
+  const [preferences, setPreferences] = useState({});
 
-        setSections((prev) =>
-          prev.map((section) => ({
-            ...section,
-            loading: false,
-            error: "Backend URL is missing.",
-          }))
-        );
+  const fetchSections = async () => {
+    if (!API_BASE_URL) {
+      console.error("VITE_BACKEND_URL is missing");
 
-        return;
+      setSections((prev) =>
+        prev.map((section) => ({
+          ...section,
+          loading: false,
+          error: "Backend URL is missing.",
+        }))
+      );
+
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      let fetchedPreferences = {};
+
+      if (token) {
+        try {
+          const preferencesRes = await fetch(
+            `${API_BASE_URL}/api/recommend/preferences`,
+            {
+              headers: {
+                token,
+              },
+            }
+          );
+
+          const preferencesData = await preferencesRes.json();
+
+          if (preferencesData.success) {
+            fetchedPreferences = preferencesData.preferences || {};
+          }
+        } catch (error) {
+          console.log("Yearly preferences error:", error);
+        }
       }
 
-      try {
-        const results = await Promise.allSettled(
-          yearSections.map(async (section) => {
-            const url = new URL("/api/songs/filter", API_BASE_URL);
+      setPreferences(fetchedPreferences);
+
+      const results = await Promise.allSettled(
+        yearSections.map(async (section) => {
+          let url;
+
+          if (token) {
+            url = new URL("/api/recommend/years", API_BASE_URL);
 
             url.searchParams.set("fromYear", String(section.fromYear));
             url.searchParams.set("toYear", String(section.toYear));
-            url.searchParams.set("limit", "6");
+            url.searchParams.set("limit", "20");
+          } else {
+            url = new URL("/api/songs/filter", API_BASE_URL);
+
+            url.searchParams.set("fromYear", String(section.fromYear));
+            url.searchParams.set("toYear", String(section.toYear));
+            url.searchParams.set("limit", "20");
             url.searchParams.set("sort", "popular");
-
-            const res = await fetch(url.toString());
-
-            if (!res.ok) {
-              throw new Error(`Request failed with status ${res.status}`);
-            }
-
-            const data = await res.json();
-
-            console.log("YEAR SECTION RESPONSE:", section.title, {
-              url: url.toString(),
-              total: data.total,
-              songs: data.songs,
-            });
-
-            return {
-              ...section,
-              songs: data.success ? data.songs || [] : [],
-              loading: false,
-              error: data.success ? "" : data.message || "Failed to load songs",
-            };
-          })
-        );
-
-        const updatedSections = results.map((result, index) => {
-          if (result.status === "fulfilled") {
-            return result.value;
           }
 
-          console.error(
-            `Failed to fetch songs for ${yearSections[index].title}:`,
-            result.reason
-          );
+          const res = await fetch(url.toString(), {
+            headers: token
+              ? {
+                  token,
+                }
+              : {},
+          });
+
+          if (!res.ok) {
+            throw new Error(`Request failed with status ${res.status}`);
+          }
+
+          const data = await res.json();
+
+          const fetchedSongs = data.success ? data.songs || [] : [];
+
+          const sortedSongs = token
+            ? sortSongsByUserTaste(fetchedSongs, fetchedPreferences)
+            : normalizeSongs(fetchedSongs).sort((a, b) => {
+                const playsA = Number(a.plays || 0);
+                const playsB = Number(b.plays || 0);
+
+                if (playsB !== playsA) {
+                  return playsB - playsA;
+                }
+
+                const likesA = Number(a.likes || 0);
+                const likesB = Number(b.likes || 0);
+
+                if (likesB !== likesA) {
+                  return likesB - likesA;
+                }
+
+                return getDateValue(b) - getDateValue(a);
+              });
 
           return {
-            ...yearSections[index],
-            songs: [],
-            loading: false,
-            error: "Could not load songs for this collection.",
-          };
-        });
-
-        setSections(updatedSections);
-      } catch (error) {
-        console.error("Failed to fetch yearly songs:", error);
-
-        setSections((prev) =>
-          prev.map((section) => ({
             ...section,
+            songs: sortedSongs.slice(0, 6),
             loading: false,
-            error: "Could not load songs.",
-          }))
-        );
-      }
-    };
+            error: data.success ? "" : data.message || "Failed to load songs",
+          };
+        })
+      );
 
+      const updatedSections = results.map((result, index) => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        }
+
+        console.error(
+          `Failed to fetch songs for ${yearSections[index].title}:`,
+          result.reason
+        );
+
+        return {
+          ...yearSections[index],
+          songs: [],
+          loading: false,
+          error: "Could not load songs for this collection.",
+        };
+      });
+
+      setSections(updatedSections);
+    } catch (error) {
+      console.error("Failed to fetch yearly songs:", error);
+
+      setSections((prev) =>
+        prev.map((section) => ({
+          ...section,
+          loading: false,
+          error: "Could not load songs.",
+        }))
+      );
+    }
+  };
+
+  useEffect(() => {
     fetchSections();
+
+    window.addEventListener("music-history-updated", fetchSections);
+    window.addEventListener("music-liked-updated", fetchSections);
+    window.addEventListener("artist-follow-updated", fetchSections);
+
+    return () => {
+      window.removeEventListener("music-history-updated", fetchSections);
+      window.removeEventListener("music-liked-updated", fetchSections);
+      window.removeEventListener("artist-follow-updated", fetchSections);
+    };
   }, []);
 
   const handlePlaySong = (event, song, sectionSongs) => {
     event.preventDefault();
     event.stopPropagation();
 
-    const playlist = normalizeSongs(sectionSongs);
+    const playlist = sortSongsByUserTaste(sectionSongs, preferences);
 
     playSong(song, playlist);
   };
@@ -184,16 +387,18 @@ const Yearly = () => {
       <div className="container py-4 py-lg-5">
         <div className="yearly-header mb-4">
           <span className="yearly-kicker">Browse by year</span>
+
           <h1>Yearly Music Collections</h1>
+
           <p>
-            Explore classics, decade hits, and fresh releases grouped by release
-            year.
+            Explore decade hits ranked by your likes, plays, favorite country,
+            genre, and mood.
           </p>
         </div>
 
         <div className="yearly-sections">
           {sections.map((section) => {
-            const playlist = normalizeSongs(section.songs);
+            const playlist = sortSongsByUserTaste(section.songs, preferences);
 
             return (
               <section className="year-block" key={section.slug}>
@@ -211,6 +416,7 @@ const Yearly = () => {
                     </span>
 
                     <h2>{section.title}</h2>
+
                     <p>{section.subtitle}</p>
                   </div>
 
@@ -231,9 +437,11 @@ const Yearly = () => {
                       />
                     ))}
                   </div>
-                ) : section.songs.length > 0 ? (
+                ) : section.error ? (
+                  <div className="year-section-error">{section.error}</div>
+                ) : playlist.length > 0 ? (
                   <div className="row g-3 mt-2">
-                    {section.songs.map((song) => (
+                    {playlist.map((song) => (
                       <div className="col-6 col-md-4 col-lg-2" key={song._id}>
                         <div className="year-song-card">
                           <Link
@@ -268,12 +476,19 @@ const Yearly = () => {
 
                             <div className="year-song-info">
                               <h3>{song.title || "Unknown Song"}</h3>
+
                               <p>
                                 {song.artist?.name ||
                                   song.artist?.artistName ||
                                   "Unknown Artist"}
                               </p>
-                              <span>{song.releaseYear || "Unknown year"}</span>
+
+                              <span>
+                                {song.releaseYear || "Unknown year"}
+                                {getSongCountry(song)
+                                  ? ` • ${getSongCountry(song)}`
+                                  : ""}
+                              </span>
                             </div>
                           </Link>
                         </div>

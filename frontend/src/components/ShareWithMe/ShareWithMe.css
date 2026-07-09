@@ -1,0 +1,350 @@
+/* Shared With Me Page - responsive UI only */
+
+.shared-page {
+    padding-bottom: 110px;
+  }
+  
+  .shared-hero {
+    margin-bottom: 18px;
+  }
+  
+  .shared-toolbar {
+    max-width: 1180px;
+    margin-bottom: 18px;
+    padding: 14px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .shared-search-wrap {
+    position: relative;
+    width: 100%;
+  }
+  
+  .shared-search-wrap svg {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.65;
+    pointer-events: none;
+  }
+  
+  .shared-search-wrap input {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px 12px 44px;
+    border-radius: 16px;
+    outline: none;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.075);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: 0.25s ease;
+  }
+  
+  .shared-search-wrap input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  
+  .shared-search-wrap input:focus {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.11);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+  }
+  
+  .shared-count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    width: 100%;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #ffffff;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.085);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Grid/card */
+  .shared-grid {
+    max-width: 1180px;
+  }
+  
+  .shared-playlist-full-card {
+    overflow: hidden;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.065);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.18);
+  }
+  
+  .shared-playlist-full-card.unread {
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow:
+      0 22px 55px rgba(0, 0, 0, 0.22),
+      0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+  
+  .shared-playlist-cover {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    min-height: 240px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  
+  .shared-playlist-cover img {
+    width: 100%;
+    height: 100%;
+    min-height: 120px;
+    object-fit: cover;
+  }
+  
+  .shared-playlist-empty-cover {
+    grid-column: 1 / -1;
+    display: grid;
+    place-items: center;
+    min-height: 240px;
+    font-size: 42px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .shared-playlist-body {
+    height: 100%;
+    padding: 18px;
+  }
+  
+  .shared-playlist-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  
+  .shared-playlist-top h2 {
+    margin: 8px 0 6px;
+    font-size: clamp(1.25rem, 2.6vw, 2rem);
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    color: #ffffff;
+  }
+  
+  .shared-playlist-top p {
+    margin: 0;
+    max-width: 780px;
+    color: rgba(255, 255, 255, 0.66);
+  }
+  
+  .shared-playlist-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  
+  .shared-playlist-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.76);
+    background: rgba(255, 255, 255, 0.07);
+  }
+  
+  .shared-playlist-message {
+    width: fit-content;
+    max-width: 100%;
+    margin: 12px 0;
+    padding: 12px 14px;
+    border-radius: 16px;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.075);
+  }
+  
+  .shared-playlist-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  
+  .shared-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    color: #ffffff;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .shared-secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  
+  .shared-playlist-song-preview {
+    display: grid;
+    gap: 8px;
+  }
+  
+  .shared-playlist-song-preview .playlist-song-row {
+    width: 100%;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .shared-playlist-song-preview .playlist-song-row:hover {
+    transform: translateY(-1px);
+  }
+  
+  .min-w-0 {
+    min-width: 0;
+  }
+  
+  /* Loading skeleton */
+  .shared-skeleton-card {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 18px;
+    padding: 18px;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .shared-skeleton-cover,
+  .shared-skeleton-lines span {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .shared-skeleton-cover {
+    min-height: 180px;
+    border-radius: 20px;
+  }
+  
+  .shared-skeleton-lines {
+    display: grid;
+    align-content: center;
+    gap: 14px;
+  }
+  
+  .shared-skeleton-lines span {
+    display: block;
+    height: 18px;
+    border-radius: 999px;
+  }
+  
+  .shared-skeleton-lines span:nth-child(1) {
+    width: 55%;
+    height: 30px;
+  }
+  
+  .shared-skeleton-lines span:nth-child(2) {
+    width: 80%;
+  }
+  
+  .shared-skeleton-lines span:nth-child(3) {
+    width: 42%;
+  }
+  
+  .shared-skeleton-cover::after,
+  .shared-skeleton-lines span::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    animation: sharedSkeleton 1.25s infinite;
+  }
+  
+  @keyframes sharedSkeleton {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  /* Tablet */
+  @media (max-width: 991px) {
+    .shared-count-pill {
+      width: fit-content;
+    }
+  
+    .shared-playlist-body {
+      padding: 16px;
+    }
+  }
+  
+  /* Mobile */
+  @media (max-width: 767px) {
+    .shared-toolbar {
+      border-radius: 18px;
+    }
+  
+    .shared-playlist-full-card {
+      border-radius: 22px;
+    }
+  
+    .shared-playlist-cover {
+      min-height: 220px;
+    }
+  
+    .shared-playlist-cover img {
+      min-height: 110px;
+    }
+  
+    .shared-playlist-top {
+      align-items: flex-start;
+    }
+  
+    .shared-playlist-actions .play-selected-btn,
+    .shared-playlist-actions .shared-secondary-btn {
+      width: 100%;
+    }
+  
+    .shared-skeleton-card {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .shared-playlist-body {
+      padding: 14px;
+    }
+  
+    .shared-playlist-cover {
+      min-height: 190px;
+    }
+  
+    .shared-playlist-cover img {
+      min-height: 95px;
+    }
+  
+    .shared-playlist-meta span {
+      width: 100%;
+    }
+  
+    .shared-count-pill {
+      width: 100%;
+    }
+  }
