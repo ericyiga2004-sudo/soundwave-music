@@ -1,11 +1,91 @@
 import Playlist from "../models/playlistModel.js";
+import PlaylistShare from "../models/playlistShareModel.js";
+import User from "../models/userModel.js";
+
+const MAX_PLAYLIST_SONGS = 50;
+
+const escapeRegex = (value = "") => {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const maskEmail = (email = "") => {
+  if (!email || !email.includes("@")) return "";
+
+  const [name, domain] = email.split("@");
+
+  const visibleName =
+    name.length <= 2 ? `${name[0] || ""}*` : `${name.slice(0, 2)}***`;
+
+  return `${visibleName}@${domain}`;
+};
+
+const publicUser = (user) => {
+  return {
+    _id: user._id,
+    username: user.username || user.name || "SoundWave User",
+    name: user.name || user.username || "SoundWave User",
+    email: user.email || "",
+    maskedEmail: maskEmail(user.email || ""),
+  };
+};
+
+const populatePlaylist = (query) => {
+  return query
+    .populate({
+      path: "songs",
+      populate: [
+        {
+          path: "artist",
+        },
+        {
+          path: "album",
+        },
+      ],
+    })
+    .populate({
+      path: "user",
+      select: "username name email",
+    });
+};
+
+const populateShare = (query) => {
+  return query
+    .populate({
+      path: "playlist",
+      populate: [
+        {
+          path: "songs",
+          populate: [
+            {
+              path: "artist",
+            },
+            {
+              path: "album",
+            },
+          ],
+        },
+        {
+          path: "user",
+          select: "username name email",
+        },
+      ],
+    })
+    .populate({
+      path: "fromUser",
+      select: "username name email",
+    })
+    .populate({
+      path: "toUser",
+      select: "username name email",
+    });
+};
 
 export const createPlaylist = async (req, res) => {
   try {
     const userId = req.userId;
     const { name, description } = req.body;
 
-    if (!name) {
+    if (!name?.trim()) {
       return res.json({
         success: false,
         message: "Playlist name is required",
@@ -13,8 +93,8 @@ export const createPlaylist = async (req, res) => {
     }
 
     const playlist = await Playlist.create({
-      name,
-      description,
+      name: name.trim(),
+      description: description?.trim() || "",
       user: userId,
       songs: [],
     });
@@ -36,21 +116,11 @@ export const createPlaylist = async (req, res) => {
 
 export const getUserPlaylists = async (req, res) => {
   try {
-    const playlists = await Playlist.find({
-      user: req.userId,
-    })
-      .populate({
-        path: "songs",
-        populate: [
-          {
-            path: "artist",
-          },
-          {
-            path: "album",
-          },
-        ],
-      })
-      .sort({ createdAt: -1 });
+    const playlists = await populatePlaylist(
+      Playlist.find({
+        user: req.userId,
+      }).sort({ createdAt: -1 })
+    );
 
     res.json({
       success: true,
@@ -71,6 +141,13 @@ export const addSongToPlaylist = async (req, res) => {
     const userId = req.userId;
     const { playlistId, songId } = req.body;
 
+    if (!playlistId || !songId) {
+      return res.json({
+        success: false,
+        message: "Playlist and song are required",
+      });
+    }
+
     const playlist = await Playlist.findOne({
       _id: playlistId,
       user: userId,
@@ -87,10 +164,23 @@ export const addSongToPlaylist = async (req, res) => {
       (song) => song.toString() === songId
     );
 
-    if (!alreadyExists) {
-      playlist.songs.push(songId);
-      await playlist.save();
+    if (alreadyExists) {
+      return res.json({
+        success: true,
+        message: "Song already exists in playlist",
+      });
     }
+
+    if (playlist.songs.length >= MAX_PLAYLIST_SONGS) {
+      return res.json({
+        success: false,
+        message: `Playlist can only contain ${MAX_PLAYLIST_SONGS} songs or less`,
+      });
+    }
+
+    playlist.songs.push(songId);
+
+    await playlist.save();
 
     res.json({
       success: true,
@@ -160,12 +250,373 @@ export const deletePlaylist = async (req, res) => {
       });
     }
 
+    await PlaylistShare.updateMany(
+      {
+        playlist: playlist._id,
+        status: "active",
+      },
+      {
+        $set: {
+          status: "revoked",
+        },
+      }
+    );
+
     res.json({
       success: true,
       message: "Playlist deleted",
     });
   } catch (error) {
     console.log(error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const searchUsersForPlaylistShare = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const q = String(req.query.q || "").trim();
+
+    if (q.length < 2) {
+      return res.json({
+        success: true,
+        users: [],
+      });
+    }
+
+    const regex = new RegExp(escapeRegex(q), "i");
+
+    const users = await User.find({
+      _id: {
+        $ne: userId,
+      },
+      $or: [
+        {
+          username: regex,
+        },
+        {
+          name: regex,
+        },
+        {
+          email: regex,
+        },
+      ],
+    })
+      .select("username name email")
+      .limit(10);
+
+    res.json({
+      success: true,
+      users: users.map(publicUser),
+    });
+  } catch (error) {
+    console.log("Search users for playlist share error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const sharePlaylistToUser = async (req, res) => {
+  try {
+    const fromUser = req.userId;
+    const { playlistId, receiverId, message } = req.body;
+
+    if (!playlistId || !receiverId) {
+      return res.json({
+        success: false,
+        message: "Playlist and receiver are required",
+      });
+    }
+
+    if (fromUser.toString() === receiverId.toString()) {
+      return res.json({
+        success: false,
+        message: "You cannot share a playlist with yourself",
+      });
+    }
+
+    const playlist = await Playlist.findOne({
+      _id: playlistId,
+      user: fromUser,
+    });
+
+    if (!playlist) {
+      return res.json({
+        success: false,
+        message: "Playlist not found",
+      });
+    }
+
+    if (playlist.songs.length === 0) {
+      return res.json({
+        success: false,
+        message: "Add songs before sharing this playlist",
+      });
+    }
+
+    if (playlist.songs.length > MAX_PLAYLIST_SONGS) {
+      return res.json({
+        success: false,
+        message: `Playlist can only contain ${MAX_PLAYLIST_SONGS} songs or less`,
+      });
+    }
+
+    const receiver = await User.findById(receiverId).select("username name email");
+
+    if (!receiver) {
+      return res.json({
+        success: false,
+        message: "Receiver not found",
+      });
+    }
+
+    const share = await PlaylistShare.findOneAndUpdate(
+      {
+        playlist: playlist._id,
+        fromUser,
+        toUser: receiverId,
+      },
+      {
+        $set: {
+          message: String(message || "").trim().slice(0, 300),
+          status: "active",
+          readAt: null,
+        },
+        $setOnInsert: {
+          playlist: playlist._id,
+          fromUser,
+          toUser: receiverId,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+      }
+    );
+
+    const activeSharesCount = await PlaylistShare.countDocuments({
+      playlist: playlist._id,
+      status: "active",
+    });
+
+    playlist.sharesCount = activeSharesCount;
+    await playlist.save();
+
+    const populatedShare = await populateShare(PlaylistShare.findById(share._id));
+
+    res.json({
+      success: true,
+      message: `Playlist sent to ${receiver.username || receiver.name || receiver.email}`,
+      share: populatedShare,
+    });
+  } catch (error) {
+    console.log("Share playlist to user error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getReceivedPlaylistShares = async (req, res) => {
+  try {
+    const shares = await populateShare(
+      PlaylistShare.find({
+        toUser: req.userId,
+        status: "active",
+      }).sort({ createdAt: -1 })
+    );
+
+    const cleanShares = shares.filter((share) => {
+      return share.playlist && share.playlist.songs?.length <= MAX_PLAYLIST_SONGS;
+    });
+
+    res.json({
+      success: true,
+      shares: cleanShares,
+    });
+  } catch (error) {
+    console.log("Get received playlist shares error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getSentPlaylistShares = async (req, res) => {
+  try {
+    const shares = await populateShare(
+      PlaylistShare.find({
+        fromUser: req.userId,
+        status: "active",
+      }).sort({ createdAt: -1 })
+    );
+
+    res.json({
+      success: true,
+      shares,
+    });
+  } catch (error) {
+    console.log("Get sent playlist shares error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const markPlaylistShareRead = async (req, res) => {
+  try {
+    const { shareId } = req.params;
+
+    const share = await PlaylistShare.findOneAndUpdate(
+      {
+        _id: shareId,
+        toUser: req.userId,
+        status: "active",
+      },
+      {
+        $set: {
+          readAt: new Date(),
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!share) {
+      return res.json({
+        success: false,
+        message: "Shared playlist not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Marked as read",
+      share,
+    });
+  } catch (error) {
+    console.log("Mark playlist share read error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const removeReceivedPlaylistShare = async (req, res) => {
+  try {
+    const { shareId } = req.params;
+
+    const share = await PlaylistShare.findOneAndUpdate(
+      {
+        _id: shareId,
+        toUser: req.userId,
+        status: "active",
+      },
+      {
+        $set: {
+          status: "removed",
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!share) {
+      return res.json({
+        success: false,
+        message: "Shared playlist not found",
+      });
+    }
+
+    await Playlist.updateOne(
+      {
+        _id: share.playlist,
+      },
+      {
+        $inc: {
+          sharesCount: -1,
+        },
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Shared playlist removed",
+    });
+  } catch (error) {
+    console.log("Remove received playlist share error:", error);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const revokePlaylistShare = async (req, res) => {
+  try {
+    const { shareId } = req.params;
+
+    const share = await PlaylistShare.findOneAndUpdate(
+      {
+        _id: shareId,
+        fromUser: req.userId,
+        status: "active",
+      },
+      {
+        $set: {
+          status: "revoked",
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!share) {
+      return res.json({
+        success: false,
+        message: "Share not found",
+      });
+    }
+
+    await Playlist.updateOne(
+      {
+        _id: share.playlist,
+        sharesCount: {
+          $gt: 0,
+        },
+      },
+      {
+        $inc: {
+          sharesCount: -1,
+        },
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Playlist share revoked",
+    });
+  } catch (error) {
+    console.log("Revoke playlist share error:", error);
 
     res.json({
       success: false,

@@ -7,38 +7,43 @@ import {
   addSongToPlaylist,
   removeSongFromPlaylist,
   deletePlaylist,
+  searchUsersForPlaylistShare,
+  sharePlaylistToUser,
+  getReceivedPlaylistShares,
+  getSentPlaylistShares,
+  markPlaylistShareRead,
+  removeReceivedPlaylistShare,
+  revokePlaylistShare,
 } from "../controllers/playlistController.js";
 
 const playlistRouter = express.Router();
 
-playlistRouter.post(
-  "/create",
-  authUser,
-  createPlaylist
-);
+playlistRouter.post("/create", authUser, createPlaylist);
 
-playlistRouter.get(
-  "/get",
-  authUser,
-  getUserPlaylists
-);
+playlistRouter.get("/get", authUser, getUserPlaylists);
 
-playlistRouter.post(
-  "/add-song",
-  authUser,
-  addSongToPlaylist
-);
+playlistRouter.post("/add-song", authUser, addSongToPlaylist);
 
-playlistRouter.post(
-  "/remove-song",
-  authUser,
-  removeSongFromPlaylist
-);
+playlistRouter.post("/remove-song", authUser, removeSongFromPlaylist);
+
+playlistRouter.post("/delete", authUser, deletePlaylist);
+
+playlistRouter.get("/share/users/search", authUser, searchUsersForPlaylistShare);
+
+playlistRouter.post("/share/send", authUser, sharePlaylistToUser);
+
+playlistRouter.get("/share/received", authUser, getReceivedPlaylistShares);
+
+playlistRouter.get("/share/sent", authUser, getSentPlaylistShares);
+
+playlistRouter.post("/share/:shareId/read", authUser, markPlaylistShareRead);
 
 playlistRouter.post(
-  "/delete",
+  "/share/:shareId/remove",
   authUser,
-  deletePlaylist
+  removeReceivedPlaylistShare
 );
+
+playlistRouter.post("/share/:shareId/revoke", authUser, revokePlaylistShare);
 
 export default playlistRouter;
