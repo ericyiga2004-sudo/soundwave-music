@@ -46,16 +46,19 @@ const playlistSchema = new mongoose.Schema(
     sharesCount: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     plays: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     saves: {
       type: Number,
       default: 0,
+      min: 0,
     },
   },
   {

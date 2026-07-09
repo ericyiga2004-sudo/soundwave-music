@@ -24,7 +24,6 @@ const publicUser = (user) => {
     _id: user._id,
     username: user.username || user.name || "SoundWave User",
     name: user.name || user.username || "SoundWave User",
-    email: user.email || "",
     maskedEmail: maskEmail(user.email || ""),
   };
 };
@@ -80,6 +79,26 @@ const populateShare = (query) => {
     });
 };
 
+const updatePlaylistSharesCount = async (playlistId) => {
+  if (!playlistId) return;
+
+  const count = await PlaylistShare.countDocuments({
+    playlist: playlistId,
+    status: "active",
+  });
+
+  await Playlist.updateOne(
+    {
+      _id: playlistId,
+    },
+    {
+      $set: {
+        sharesCount: count,
+      },
+    }
+  );
+};
+
 export const createPlaylist = async (req, res) => {
   try {
     const userId = req.userId;
@@ -97,17 +116,20 @@ export const createPlaylist = async (req, res) => {
       description: description?.trim() || "",
       user: userId,
       songs: [],
+      sharesCount: 0,
+      plays: 0,
+      saves: 0,
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "Playlist created",
       playlist,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Create playlist error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -122,14 +144,14 @@ export const getUserPlaylists = async (req, res) => {
       }).sort({ createdAt: -1 })
     );
 
-    res.json({
+    return res.json({
       success: true,
       playlists,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Get user playlists error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -182,14 +204,14 @@ export const addSongToPlaylist = async (req, res) => {
 
     await playlist.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Song added to playlist",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Add song to playlist error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -219,14 +241,14 @@ export const removeSongFromPlaylist = async (req, res) => {
 
     await playlist.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Song removed from playlist",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Remove song from playlist error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -262,14 +284,14 @@ export const deletePlaylist = async (req, res) => {
       }
     );
 
-    res.json({
+    return res.json({
       success: true,
       message: "Playlist deleted",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Delete playlist error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -309,14 +331,14 @@ export const searchUsersForPlaylistShare = async (req, res) => {
       .select("username name email")
       .limit(10);
 
-    res.json({
+    return res.json({
       success: true,
       users: users.map(publicUser),
     });
   } catch (error) {
     console.log("Search users for playlist share error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -368,7 +390,9 @@ export const sharePlaylistToUser = async (req, res) => {
       });
     }
 
-    const receiver = await User.findById(receiverId).select("username name email");
+    const receiver = await User.findById(receiverId).select(
+      "username name email"
+    );
 
     if (!receiver) {
       return res.json({
@@ -401,25 +425,23 @@ export const sharePlaylistToUser = async (req, res) => {
       }
     );
 
-    const activeSharesCount = await PlaylistShare.countDocuments({
-      playlist: playlist._id,
-      status: "active",
-    });
+    await updatePlaylistSharesCount(playlist._id);
 
-    playlist.sharesCount = activeSharesCount;
-    await playlist.save();
+    const populatedShare = await populateShare(
+      PlaylistShare.findById(share._id)
+    );
 
-    const populatedShare = await populateShare(PlaylistShare.findById(share._id));
-
-    res.json({
+    return res.json({
       success: true,
-      message: `Playlist sent to ${receiver.username || receiver.name || receiver.email}`,
+      message: `Playlist sent to ${
+        receiver.username || receiver.name || receiver.email
+      }`,
       share: populatedShare,
     });
   } catch (error) {
     console.log("Share playlist to user error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -439,14 +461,14 @@ export const getReceivedPlaylistShares = async (req, res) => {
       return share.playlist && share.playlist.songs?.length <= MAX_PLAYLIST_SONGS;
     });
 
-    res.json({
+    return res.json({
       success: true,
       shares: cleanShares,
     });
   } catch (error) {
     console.log("Get received playlist shares error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -462,14 +484,14 @@ export const getSentPlaylistShares = async (req, res) => {
       }).sort({ createdAt: -1 })
     );
 
-    res.json({
+    return res.json({
       success: true,
       shares,
     });
   } catch (error) {
     console.log("Get sent playlist shares error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -503,7 +525,7 @@ export const markPlaylistShareRead = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Marked as read",
       share,
@@ -511,7 +533,7 @@ export const markPlaylistShareRead = async (req, res) => {
   } catch (error) {
     console.log("Mark playlist share read error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -545,25 +567,16 @@ export const removeReceivedPlaylistShare = async (req, res) => {
       });
     }
 
-    await Playlist.updateOne(
-      {
-        _id: share.playlist,
-      },
-      {
-        $inc: {
-          sharesCount: -1,
-        },
-      }
-    );
+    await updatePlaylistSharesCount(share.playlist);
 
-    res.json({
+    return res.json({
       success: true,
       message: "Shared playlist removed",
     });
   } catch (error) {
     console.log("Remove received playlist share error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
@@ -597,28 +610,16 @@ export const revokePlaylistShare = async (req, res) => {
       });
     }
 
-    await Playlist.updateOne(
-      {
-        _id: share.playlist,
-        sharesCount: {
-          $gt: 0,
-        },
-      },
-      {
-        $inc: {
-          sharesCount: -1,
-        },
-      }
-    );
+    await updatePlaylistSharesCount(share.playlist);
 
-    res.json({
+    return res.json({
       success: true,
       message: "Playlist share revoked",
     });
   } catch (error) {
     console.log("Revoke playlist share error:", error);
 
-    res.json({
+    return res.json({
       success: false,
       message: error.message,
     });
