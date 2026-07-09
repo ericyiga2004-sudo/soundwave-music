@@ -402,9 +402,9 @@ const PlayList = () => {
 
   const hasMoreSongs = filteredAvailableSongs.length > visibleSongCount;
 
-  const hasOwnPlaylists = playlists && playlists.length > 0;
+  const hasOwnPlaylists = Array.isArray(playlists) && playlists.length > 0;
   const hasReceivedShares =
-    receivedPlaylistShares && receivedPlaylistShares.length > 0;
+    Array.isArray(receivedPlaylistShares) && receivedPlaylistShares.length > 0;
   const hasSelectedContent = selectedPlaylist || selectedSharedPlaylist;
 
   useEffect(() => {
@@ -437,7 +437,13 @@ const PlayList = () => {
 
   useEffect(() => {
     setVisibleSongCount(SONGS_PER_PAGE);
-  }, [selectedPlaylistId, songSearch, selectedCountry, selectedGenre, selectedMood]);
+  }, [
+    selectedPlaylistId,
+    songSearch,
+    selectedCountry,
+    selectedGenre,
+    selectedMood,
+  ]);
 
   useEffect(() => {
     if (!selectedPlaylistId) return;
@@ -543,9 +549,7 @@ const PlayList = () => {
 
         const currentSongs = playlist.songs || [];
 
-        const alreadyExists = currentSongs.some(
-          (song) => song._id === songId
-        );
+        const alreadyExists = currentSongs.some((song) => song._id === songId);
 
         if (alreadyExists) return playlist;
 
@@ -989,10 +993,10 @@ const PlayList = () => {
               </form>
             </div>
 
-            {hasOwnPlaylists && (
-              <div className="user-playlists-card mt-3 mt-lg-4">
-                <h2>Your Playlists</h2>
+            <div className="user-playlists-card mt-3 mt-lg-4">
+              <h2>Your Playlists</h2>
 
+              {hasOwnPlaylists ? (
                 <div className="playlist-list">
                   {playlists.map((playlist) => (
                     <button
@@ -1017,15 +1021,19 @@ const PlayList = () => {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="playlist-empty-text mb-0">
+                  No playlists yet. Create your first one.
+                </p>
+              )}
+            </div>
 
-            {hasReceivedShares && (
-              <div className="user-playlists-card mt-3 mt-lg-4">
-                <h2>
-                  <FaInbox /> Shared With Me
-                </h2>
+            <div className="user-playlists-card mt-3 mt-lg-4">
+              <h2>
+                <FaInbox /> Shared With Me
+              </h2>
 
+              {hasReceivedShares ? (
                 <div className="playlist-list">
                   {receivedPlaylistShares.map((share) => (
                     <button
@@ -1050,8 +1058,12 @@ const PlayList = () => {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="playlist-empty-text mb-0">
+                  No playlists shared with you yet.
+                </p>
+              )}
+            </div>
           </aside>
 
           {hasSelectedContent && (
@@ -1314,11 +1326,15 @@ const PlayList = () => {
                           <div className="col-12 col-sm-4 col-lg-2">
                             <select
                               value={selectedCountry}
-                              onChange={(e) => setSelectedCountry(e.target.value)}
+                              onChange={(e) =>
+                                setSelectedCountry(e.target.value)
+                              }
                             >
                               {filterOptions.countries.map((country) => (
                                 <option key={country} value={country}>
-                                  {country === "All" ? "All Countries" : country}
+                                  {country === "All"
+                                    ? "All Countries"
+                                    : country}
                                 </option>
                               ))}
                             </select>
@@ -1327,7 +1343,9 @@ const PlayList = () => {
                           <div className="col-12 col-sm-4 col-lg-2">
                             <select
                               value={selectedGenre}
-                              onChange={(e) => setSelectedGenre(e.target.value)}
+                              onChange={(e) =>
+                                setSelectedGenre(e.target.value)
+                              }
                             >
                               {filterOptions.genres.map((genre) => (
                                 <option key={genre} value={genre}>
@@ -1410,7 +1428,9 @@ const PlayList = () => {
                               type="button"
                               className="play-selected-btn"
                               onClick={() =>
-                                setVisibleSongCount((prev) => prev + SONGS_PER_PAGE)
+                                setVisibleSongCount(
+                                  (prev) => prev + SONGS_PER_PAGE
+                                )
                               }
                             >
                               <FaPlus />
