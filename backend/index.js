@@ -11,6 +11,7 @@ import historyRouter from "./routes/historyRouter.js";
 import playlistRouter from "./routes/playListRoute.js";
 import likeRouter from "./routes/likeRouter.js";
 import recommendationRouter from "./routes/recommendationRoute.js";
+import notificationRouter from "./routes/notificationRouter.js";
 
 const port  = process.env.PORT || 4000;
  
@@ -31,7 +32,7 @@ app.use(
   "/api/user",
   userRouter
 );
-
+app.use("/api/notifications", notificationRouter);
 
 
 app.use(

@@ -1,6 +1,7 @@
 import Playlist from "../models/playlistModel.js";
 import PlaylistShare from "../models/playlistShareModel.js";
 import User from "../models/userModel.js";
+import { createNotificationForUser } from "./notificationController.js";
 
 const MAX_PLAYLIST_SONGS = 50;
 
@@ -427,9 +428,26 @@ export const sharePlaylistToUser = async (req, res) => {
 
     await updatePlaylistSharesCount(playlist._id);
 
-    const populatedShare = await populateShare(
-      PlaylistShare.findById(share._id)
-    );
+const sender = await User.findById(fromUser).select("username name email");
+
+const senderName =
+  sender?.username || sender?.name || sender?.email || "Someone";
+
+await createNotificationForUser({
+  user: receiverId,
+  fromUser,
+  type: "playlist_shared",
+  title: "New playlist shared",
+  message: `${senderName} shared "${playlist.name}" with you`,
+  link: "/playlist",
+  relatedPlaylist: playlist._id,
+  relatedShare: share._id,
+  dedupeKey: `playlist_shared:${playlist._id}:${fromUser}:${receiverId}`,
+});
+
+const populatedShare = await populateShare(
+  PlaylistShare.findById(share._id)
+);
 
     return res.json({
       success: true,
