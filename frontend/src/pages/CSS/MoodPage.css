@@ -1,0 +1,418 @@
+.mood-page {
+    min-height: 100vh;
+    padding: 28px 0 110px;
+    background:
+      radial-gradient(circle at top left, rgba(29, 185, 84, 0.22), transparent 34%),
+      radial-gradient(circle at top right, rgba(30, 215, 96, 0.12), transparent 30%),
+      linear-gradient(180deg, #121212 0%, #080808 100%);
+    color: #ffffff;
+    font-family: "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  
+  /* Hero */
+  .mood-page-hero {
+    max-width: 1180px;
+    position: relative;
+    overflow: hidden;
+    padding: clamp(24px, 5vw, 44px);
+    border-radius: 32px;
+    text-align: center;
+    background:
+      linear-gradient(135deg, rgba(29, 185, 84, 0.24), rgba(255, 255, 255, 0.065)),
+      rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(16px);
+  }
+  
+  .mood-page-hero::before {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    right: -120px;
+    top: -150px;
+    border-radius: 50%;
+    background: rgba(29, 185, 84, 0.16);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+  
+  .mood-back-btn {
+    position: absolute;
+    left: 22px;
+    top: 22px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.55rem 0.95rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 800;
+    transition: 0.2s ease;
+  }
+  
+  .mood-back-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-2px);
+  }
+  
+  .mood-page-icon {
+    width: 104px;
+    height: 104px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 18px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #1db954, #1ed760);
+    color: #000000;
+    box-shadow: 0 20px 40px rgba(29, 185, 84, 0.3);
+  }
+  
+  .mood-page-icon svg {
+    font-size: 44px;
+  }
+  
+  .mood-page-hero > span {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1ed760;
+  }
+  
+  .mood-page-hero h1 {
+    margin: 8px 0;
+    font-size: clamp(2.4rem, 7vw, 5.4rem);
+    font-weight: 950;
+    line-height: 0.95;
+    letter-spacing: -0.07em;
+    text-transform: capitalize;
+  }
+  
+  .mood-page-hero p {
+    margin: 0 auto 22px;
+    max-width: 520px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .mood-play-btn,
+  .mood-song-body button,
+  .mood-empty button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 999px;
+    background: #1db954;
+    color: #000000;
+    font-weight: 900;
+    transition: 0.22s ease;
+  }
+  
+  .mood-play-btn {
+    min-height: 48px;
+    padding: 0.75rem 1.5rem;
+  }
+  
+  .mood-play-btn:hover:not(:disabled),
+  .mood-song-body button:hover,
+  .mood-empty button:hover {
+    background: #1ed760;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(29, 185, 84, 0.25);
+  }
+  
+  .mood-play-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  
+  /* Songs Grid */
+  .mood-songs-grid {
+    max-width: 1180px;
+    margin-top: 28px;
+  }
+  
+  /* Custom Bootstrap row-cols-xxl-7 */
+  @media (min-width: 1400px) {
+    .row-cols-xxl-7 > * {
+      flex: 0 0 auto;
+      width: 14.285714%;
+    }
+  }
+  
+  /* Card */
+  .mood-song-card {
+    height: 100%;
+    overflow: hidden;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.085);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+    transition: 0.25s ease;
+  }
+  
+  .mood-song-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.085);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.35);
+  }
+  
+  .mood-song-card img {
+    width: 100%;
+    height: 145px;
+    object-fit: cover;
+    display: block;
+    background: #222222;
+  }
+  
+  .mood-song-body {
+    padding: 10px;
+  }
+  
+  .mood-song-body h3 {
+    margin: 0 0 5px;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .mood-song-body p {
+    margin: 0;
+    color: #cfcfcf;
+    font-size: 0.74rem;
+    line-height: 1.3;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .mood-song-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 9px 0;
+  }
+  
+  .mood-song-meta span {
+    max-width: 100%;
+    padding: 3px 6px;
+    border-radius: 999px;
+    color: #dcdcdc;
+    font-size: 0.58rem;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.09);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .mood-song-body button {
+    width: 100%;
+    min-height: 34px;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.7rem;
+  }
+  
+  /* Empty */
+  .mood-empty {
+    max-width: 540px;
+    margin-top: 42px;
+    padding: 36px 24px;
+    text-align: center;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .mood-empty svg {
+    font-size: 44px;
+    color: #1db954;
+    margin-bottom: 16px;
+  }
+  
+  .mood-empty h2 {
+    margin-bottom: 10px;
+    color: #ffffff;
+    font-weight: 900;
+  }
+  
+  .mood-empty p {
+    color: #cfcfcf;
+    line-height: 1.6;
+  }
+  
+  .mood-empty button {
+    margin-top: 8px;
+    padding: 0.75rem 1.35rem;
+  }
+  
+  /* Desktop spacing */
+  @media (min-width: 1200px) {
+    .mood-song-card img {
+      height: 125px;
+    }
+  
+    .mood-song-body {
+      padding: 9px;
+    }
+  
+    .mood-song-body h3 {
+      font-size: 0.78rem;
+    }
+  
+    .mood-song-body p {
+      font-size: 0.68rem;
+    }
+  
+    .mood-song-body button {
+      min-height: 32px;
+      font-size: 0.64rem;
+    }
+  }
+  
+  /* Tablet */
+  @media (max-width: 991px) {
+    .mood-page {
+      padding-top: 22px;
+    }
+  
+    .mood-song-card img {
+      height: 150px;
+    }
+  }
+  
+  /* Mobile */
+  @media (max-width: 768px) {
+    .mood-page {
+      padding-top: 18px;
+    }
+  
+    .mood-page-hero {
+      border-radius: 24px;
+      padding: 24px 16px;
+    }
+  
+    .mood-back-btn {
+      position: static;
+      margin-bottom: 18px;
+    }
+  
+    .mood-page-icon {
+      width: 84px;
+      height: 84px;
+      border-radius: 22px;
+    }
+  
+    .mood-page-icon svg {
+      font-size: 36px;
+    }
+  
+    .mood-page-hero h1 {
+      font-size: clamp(2.2rem, 12vw, 3.5rem);
+    }
+  
+    .mood-song-card {
+      border-radius: 16px;
+    }
+  
+    .mood-song-card img {
+      height: 135px;
+    }
+  
+    .mood-song-body {
+      padding: 9px;
+    }
+  
+    .mood-song-body h3 {
+      font-size: 0.82rem;
+    }
+  
+    .mood-song-body p {
+      font-size: 0.7rem;
+    }
+  
+    .mood-song-body button {
+      min-height: 34px;
+      font-size: 0.68rem;
+    }
+  }
+  
+  /* Small phones */
+  @media (max-width: 480px) {
+    .mood-songs-grid {
+      margin-top: 20px;
+    }
+  
+    .mood-song-card img {
+      height: 120px;
+    }
+  
+    .mood-song-body h3 {
+      font-size: 0.78rem;
+    }
+  
+    .mood-song-body p {
+      font-size: 0.66rem;
+    }
+  
+    .mood-song-meta {
+      gap: 3px;
+      margin: 8px 0;
+    }
+  
+    .mood-song-meta span {
+      font-size: 0.55rem;
+      padding: 3px 5px;
+    }
+  
+    .mood-song-body button {
+      min-height: 32px;
+      font-size: 0.64rem;
+    }
+  }
+  
+  /* Very small phones */
+  @media (max-width: 360px) {
+    .mood-song-card img {
+      height: 108px;
+    }
+  
+    .mood-song-body {
+      padding: 8px;
+    }
+  
+    .mood-song-body h3 {
+      font-size: 0.72rem;
+    }
+  
+    .mood-song-body p {
+      font-size: 0.62rem;
+    }
+  
+    .mood-song-meta span {
+      font-size: 0.5rem;
+    }
+  
+    .mood-song-body button {
+      padding: 0.4rem 0.55rem;
+    }
+  }

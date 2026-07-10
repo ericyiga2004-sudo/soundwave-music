@@ -14,6 +14,7 @@ import FollowedArtists from "../components/FollowedArtists/FollowedArtists";
 import "./CSS/Home.css";
 import DownloadAd from "../components/DownloadAd/DownloadAd";
 import ShareWithMe from "../components/ShareWithMe/ShareWithMe";
+import Mood from "../components/Mood/Mood";
 
 const Home = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -116,6 +117,7 @@ const Home = () => {
       <MadeForYou />
       <ContinueListening />
       <YouLiked />
+      <Mood/>
       <Country />
       <ShareWithMe/>
       <FollowedArtists />

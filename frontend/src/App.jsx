@@ -18,6 +18,7 @@ import Artist from "./pages/Artist";
 import DjStudio from "./pages/DjStudio";
 import MusicStudio from "./pages/MusicStudio";
 import Visualizer from "./pages/Visualizer";
+import MoodPage from "./pages/MoodPage";
 
 const LAUNCH_SEEN_KEY = "soundwave_launch_intro_seen";
 
@@ -115,6 +116,7 @@ const App = () => {
           <Route path="/yearly/:yearSlug" element={<YearsPage />} />
           <Route path="/artist/:artistId" element={<Artist />} />
           <Route path="/visualizer/:songId" element={<Visualizer />} />
+          <Route path="/mood/:moodSlug" element={<MoodPage />} />
         </Routes>
       </main>
 

@@ -11,6 +11,85 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+/* ── Responsive Album Action Buttons Fix ── */
+
+.album-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.3rem;
+  min-width: 0;
+}
+
+.album-actions button {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Medium screens */
+@media (max-width: 768px) {
+  .album-actions {
+    gap: 0.35rem;
+  }
+
+  .album-actions button {
+    flex: 1 1 0;
+    padding: 0.38rem 0.45rem;
+    font-size: 0.62rem;
+  }
+
+  .album-actions button svg {
+    font-size: 0.72rem;
+    flex-shrink: 0;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .featured-overlay {
+    padding: 0.65rem;
+  }
+
+  .album-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+  }
+
+  .album-actions button {
+    width: 100%;
+    flex: none;
+    padding: 0.42rem 0.5rem;
+    font-size: 0.62rem;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+  .featured-album-card {
+    width: 132px;
+  }
+
+  .featured-overlay {
+    padding: 0.55rem;
+  }
+
+  .album-actions button {
+    padding: 0.36rem 0.45rem;
+    font-size: 0.58rem;
+  }
+
+  .album-label {
+    font-size: 0.48rem;
+    padding: 0.12rem 0.32rem;
+  }
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.35; }

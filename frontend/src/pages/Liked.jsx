@@ -1,18 +1,7 @@
-import React, {
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import {
-  FaHeart,
-  FaMusic,
-  FaPlay,
-  FaTrash,
-  FaWifi,
-} from "react-icons/fa";
+import { FaHeart, FaMusic, FaPlay, FaTrash, FaWifi } from "react-icons/fa";
 
 import "./CSS/Liked.css";
 import { MusicContext } from "../context/ShopContext";
@@ -188,9 +177,7 @@ const Liked = () => {
       );
 
       if (res.data.success) {
-        setLikedSongs((songs) =>
-          songs.filter((song) => song._id !== songId)
-        );
+        setLikedSongs((songs) => songs.filter((song) => song._id !== songId));
       } else {
         alert(res.data.message || "Could not remove liked song");
       }
@@ -279,10 +266,7 @@ const Liked = () => {
               Login to view your liked songs and keep your favorite tracks saved.
             </p>
 
-            <button
-              type="button"
-              onClick={() => navigate("/account")}
-            >
+            <button type="button" onClick={() => navigate("/account")}>
               Go to Login
             </button>
           </section>
@@ -320,9 +304,8 @@ const Liked = () => {
             <h1>Liked Songs</h1>
 
             <p>
-              {likedSongs.length}{" "}
-              {likedSongs.length === 1 ? "song" : "songs"} saved to your
-              collection.
+              {likedSongs.length} {likedSongs.length === 1 ? "song" : "songs"}{" "}
+              saved to your collection.
             </p>
           </div>
 
@@ -341,7 +324,7 @@ const Liked = () => {
 
         {likedSongs.length > 0 ? (
           <section className="liked-table-card mx-auto">
-            <div className="liked-table-head d-none d-lg-grid">
+            <div className="liked-table-head d-none d-xl-grid">
               <span>#</span>
               <span>Title</span>
               <span>Album</span>
@@ -353,7 +336,7 @@ const Liked = () => {
             <div className="liked-list">
               {likedSongs.map((song, index) => (
                 <article className="liked-row" key={song._id}>
-                  <span className="liked-index d-none d-md-inline">
+                  <span className="liked-index d-none d-md-flex">
                     {index + 1}
                   </span>
 
@@ -374,18 +357,24 @@ const Liked = () => {
                     <div className="liked-song-text">
                       <h3>{song.title || "Unknown Song"}</h3>
                       <p>{getArtistName(song)}</p>
+
+                      <div className="liked-mobile-meta d-xl-none">
+                        <span>{getAlbumName(song)}</span>
+                        <span>{song.genre || "Unknown"}</span>
+                        <span>{formatDuration(song.duration)}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <span className="liked-album d-none d-lg-inline">
+                  <span className="liked-album d-none d-xl-inline">
                     {getAlbumName(song)}
                   </span>
 
-                  <span className="liked-genre d-none d-lg-inline">
+                  <span className="liked-genre d-none d-xl-inline">
                     {song.genre || "Unknown"}
                   </span>
 
-                  <span className="liked-duration d-none d-md-inline">
+                  <span className="liked-duration d-none d-xl-inline">
                     {formatDuration(song.duration)}
                   </span>
 
@@ -421,14 +410,9 @@ const Liked = () => {
 
             <h1>No Liked Songs Yet</h1>
 
-            <p>
-              Tap the heart button on any song and it will appear here.
-            </p>
+            <p>Tap the heart button on any song and it will appear here.</p>
 
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-            >
+            <button type="button" onClick={() => navigate("/")}>
               Discover Music
             </button>
           </section>
