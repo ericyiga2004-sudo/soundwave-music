@@ -14,6 +14,7 @@ import "./Navbar.css";
 
 import SearchModal from "../../components/SearchModel/SearchModel";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
+import NotificationBell from "../../pages/NotificationBell";
 
 const navLinks = [
   { path: "/", label: "Home", icon: House },
@@ -69,14 +70,16 @@ const Navbar = () => {
           <Search size={18} />
           <span>Search music...</span>
         </button>
+      <NotificationBell/>
+        
       </header>
-
       <SearchModal
         isOpen={openSearch}
         onClose={() => setOpenSearch(false)}
         songs={songs}
         onPlaySong={playSongFromSearch}
       />
+     
 
       <nav className="sw-bottom-nav">
         {navLinks.map((item) => {

@@ -884,6 +884,7 @@ const PlayList = () => {
         await fetchReceivedPlaylistShares?.();
 
         showNotice(res.data.message || "Playlist sent.");
+        window.dispatchEvent(new Event("notification-updated"));
       } else {
         alert(res.data.message || "Could not share playlist");
       }
