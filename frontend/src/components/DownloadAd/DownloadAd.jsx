@@ -3,7 +3,7 @@ import { isWebsite } from "../../utils/platform";
 import "./DownloadAd.css";
 
 const ANDROID_APK_URL =
-  "https://github.com/ericyiga2004-sudo/soundwave-music/releases/download/v1.0.0/SoundWave.apk";
+  "https://github.com/ericyiga2004-sudo/soundwave-music/releases/download/V2.0.0/SoundWave";
 
 const WINDOWS_EXE_URL =
   "https://github.com/ericyiga2004-sudo/soundwave-music/releases/download/v1.0.1/SoundWave.Setup.1.0.0.exe";
