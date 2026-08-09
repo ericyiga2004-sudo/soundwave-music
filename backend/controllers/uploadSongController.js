@@ -215,7 +215,7 @@ const buildSongFilterQuery = (filters = {}) => {
         },
       },
       {
-        language: {
+        songLanguage: {
           $regex: safeSearch,
           $options: "i",
         },
@@ -244,7 +244,7 @@ const buildSongFilterQuery = (filters = {}) => {
   }
 
   if (language) {
-    query.language = new RegExp(`^${escapeRegex(language)}$`, "i");
+    query.songLanguage = new RegExp(`^${escapeRegex(language)}$`, "i");
   }
 
   if (country) {
@@ -309,6 +309,7 @@ export const uploadSong = async (req, res) => {
       genre,
       tags,
       mood,
+      songLanguage,
       language,
       country,
       releaseDate,
@@ -433,6 +434,11 @@ export const uploadSong = async (req, res) => {
       albumExists.country ||
       "Unknown";
 
+    // The admin sends `songLanguage`; keep `language` as a legacy alias for
+    // older clients while storing only the schema-safe `songLanguage` field.
+    const finalSongLanguage =
+      songLanguage?.trim() || language?.trim() || "Unknown";
+
     const song = await Song.create({
       title: title.trim(),
       artist,
@@ -441,7 +447,7 @@ export const uploadSong = async (req, res) => {
       genre: genre || "Unknown",
       tags: parsedTags,
       mood: mood || "Unknown",
-      language: language || "Unknown",
+      songLanguage: finalSongLanguage,
       country: finalCountry,
       releaseDate:
         parsedReleaseDate && !Number.isNaN(parsedReleaseDate.getTime())
@@ -602,7 +608,7 @@ export const getFilterOptions = async (req, res) => {
         Song.distinct("genre"),
         Song.distinct("country"),
         Song.distinct("mood"),
-        Song.distinct("language"),
+        Song.distinct("songLanguage"),
         Song.distinct("releaseYear"),
         Song.distinct("tags"),
       ]);
@@ -691,7 +697,7 @@ export const searchSongs = async (req, res) => {
             },
           },
           {
-            language: {
+            songLanguage: {
               $regex: safeQuery,
               $options: "i",
             },

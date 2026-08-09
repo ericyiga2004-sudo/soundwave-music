@@ -12,6 +12,7 @@ import playlistRouter from "./routes/playListRoute.js";
 import likeRouter from "./routes/likeRouter.js";
 import recommendationRouter from "./routes/recommendationRoute.js";
 import notificationRouter from "./routes/notificationRouter.js";
+import orbitIntegrationRouter from "./routes/orbitIntegrationRouter.js";
 
 const port  = process.env.PORT || 4000;
  
@@ -47,6 +48,7 @@ app.use(
 
 app.use("/api/likes", likeRouter);
 app.use("/api/playlist", playlistRouter);
+app.use("/api/integrations/orbit", orbitIntegrationRouter);
 app.get("/", (req,res)=> {
     res.send("MUSIC API WORKING!!")
 });
