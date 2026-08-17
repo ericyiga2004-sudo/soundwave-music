@@ -1,10 +1,12 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  ArrowRight,
   CirclePlus,
   Copy,
   Headphones,
   HeartHandshake,
+  MessageCircleHeart,
   Music2,
   Play,
   RadioTower,
@@ -20,6 +22,7 @@ import { getArtistName, getSongCover } from "../utils/catalog";
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
+import SocialSongPicker from "../components/Social/SocialSongPicker";
 import "./CSS/Social.css";
 
 const personName = (user) => user?.username || user?.name || "Listener";
@@ -55,6 +58,7 @@ const Social = () => {
   const [home, setHome] = useState(null);
   const [loading, setLoading] = useState(Boolean(authToken));
   const [error, setError] = useState("");
+  const [socialApiPending, setSocialApiPending] = useState(false);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const [circleName, setCircleName] = useState("");
@@ -70,11 +74,13 @@ const Social = () => {
   const [friendMix, setFriendMix] = useState([]);
 
   const headers = useMemo(() => authHeaders(authToken), [authToken]);
+  const heroSongs = useMemo(() => (songs || []).filter((song) => song?._id && getSongCover(song)).slice(0, 5), [songs]);
 
   const loadHome = async () => {
     if (!authToken) return;
     setLoading(true);
     setError("");
+    setSocialApiPending(false);
     try {
       const { data } = await apiClient.get("/api/social/home", { headers });
       if (!data?.success) throw new Error(data?.message || "Could not load SoundWave Social");
@@ -84,7 +90,19 @@ const Social = () => {
         if (mine?.song?._id) setDailySongId(mine.song._id);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || err.message || "Could not load SoundWave Social");
+      if (err?.response?.status === 404) {
+        // The social frontend can arrive a few seconds before Render finishes
+        // publishing the matching backend. Keep the page useful instead of blank.
+        setSocialApiPending(true);
+        try {
+          const profile = await apiClient.get("/api/user/profile", { headers });
+          setHome({ me: profile?.data?.user || null, circles: [], dailyPicks: [], feed: [], people: [], following: [], rooms: [] });
+        } catch {
+          setError("The social API is still deploying. Retry in a moment.");
+        }
+      } else {
+        setError(err?.response?.data?.message || err.message || "Could not load SoundWave Social");
+      }
     } finally {
       setLoading(false);
     }
@@ -96,8 +114,15 @@ const Social = () => {
     if (!authToken) { navigate("/account"); return null; }
     setBusy(key); setMessage("");
     try { return await action(); }
-    catch (err) { setMessage(err?.response?.data?.message || err.message || "That action could not be completed."); return null; }
-    finally { setBusy(""); }
+    catch (err) {
+      if (err?.response?.status === 404 && String(err?.config?.url || "").includes("/api/social/")) {
+        setSocialApiPending(true);
+        setMessage("SoundWave Social is still deploying on the backend. Your music player is unaffected.");
+      } else {
+        setMessage(err?.response?.data?.message || err.message || "That action could not be completed.");
+      }
+      return null;
+    } finally { setBusy(""); }
   };
 
   const createCircle = async (event) => {
@@ -131,7 +156,11 @@ const Social = () => {
     event.preventDefault();
     if (!dailySongId) return;
     const response = await run("daily", () => apiClient.post("/api/social/daily", { songId: dailySongId, note: dailyNote.trim() }, { headers }));
-    if (response?.data?.success) { setDailyNote(""); setMessage("Today's song is live for your music friends."); loadHome(); }
+    if (response?.data?.success) {
+      setDailyNote("");
+      setMessage("Today's song is live for your music friends.");
+      loadHome();
+    }
   };
 
   const follow = async (userId) => {
@@ -172,8 +201,11 @@ const Social = () => {
   };
 
   const copyCode = async (code) => {
-    try { await navigator.clipboard.writeText(code); setMessage("Invite code copied."); } catch { setMessage(`Invite code: ${code}`); }
+    try { await navigator.clipboard.writeText(code); setMessage("Invite code copied."); }
+    catch { setMessage(`Invite code: ${code}`); }
   };
+
+  const jumpTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   if (!authToken) return <div className="sw-social-page"><AccountRequired /></div>;
   if (loading && !home) return <div className="sw-social-page"><CatalogSkeleton count={10} /></div>;
@@ -182,33 +214,78 @@ const Social = () => {
   const people = listenerResults.length ? listenerResults : (home?.people || []);
   const friends = home?.following || [];
 
+  const quickLinks = [
+    { id: "social-daily", label: "Song Today", sub: "Share one track", icon: Music2, image: heroSongs[0] },
+    { id: "social-circles", label: "Circles", sub: "Private music groups", icon: UsersRound, image: heroSongs[1] || heroSongs[0] },
+    { id: "social-rooms", label: "Pass the Aux", sub: "Live shared queue", icon: RadioTower, image: heroSongs[2] || heroSongs[0] },
+    { id: "social-mix", label: "Friend Mix", sub: "Blend your taste", icon: Sparkles, image: heroSongs[3] || heroSongs[0] },
+  ];
+
   return (
     <div className="sw-social-page container-fluid px-0">
-      <header className="sw-social-header">
-        <div>
+      <header className="sw-social-header sw-social-header-rich">
+        <div className="sw-social-hero-copy">
           <span className="sw-social-kicker">SoundWave Social</span>
           <h1>Music is better with people.</h1>
           <p>Share one song, react at the exact moment, build Circles, compare taste and pass the aux.</p>
+          <div className="sw-social-hero-actions">
+            <button type="button" className="sw-primary-btn" onClick={() => jumpTo("social-daily")}><Music2 size={15}/> Pick today's song</button>
+            <button type="button" className="sw-secondary-btn" onClick={() => jumpTo("social-rooms")}><Headphones size={15}/> Open live rooms</button>
+          </div>
         </div>
-        <button type="button" className="sw-social-profile-button" onClick={() => home?.me?._id && navigate(`/u/${home.me._id}`)}>
-          <span className="sw-social-avatar">{home?.me?.image ? <img src={home.me.image} alt=""/> : personName(home?.me).slice(0,1).toUpperCase()}</span>
-          <span><small>Your music profile</small><strong>{personName(home?.me)}</strong></span>
-        </button>
+
+        <div className="sw-social-hero-media" aria-label="Music from your SoundWave catalog">
+          <div className="sw-social-cover-stack">
+            {heroSongs.slice(0, 4).map((song, index) => (
+              <button type="button" key={song._id} className={`cover-${index + 1}`} onClick={() => playSong(song, heroSongs)} title={`Play ${song.title}`}>
+                <img src={getSongCover(song)} alt="" loading="lazy" decoding="async" />
+                <span><Play size={13} fill="currentColor"/></span>
+              </button>
+            ))}
+          </div>
+          <button type="button" className="sw-social-profile-button" onClick={() => home?.me?._id && navigate(`/u/${home.me._id}`)}>
+            <span className="sw-social-avatar">{home?.me?.image ? <img src={home.me.image} alt=""/> : personName(home?.me).slice(0,1).toUpperCase()}</span>
+            <span><small>Your music profile</small><strong>{personName(home?.me)}</strong></span>
+            <ArrowRight size={16}/>
+          </button>
+        </div>
       </header>
+
+      {socialApiPending ? (
+        <div className="sw-social-deploy-notice" role="status">
+          <RadioTower size={18}/>
+          <span><strong>Social backend is updating.</strong><small>The page stays usable, but social writes will work after Render finishes the latest deployment.</small></span>
+          <button type="button" onClick={loadHome}>Retry</button>
+        </div>
+      ) : null}
+
+      <div className="sw-social-quick-grid" aria-label="Social shortcuts">
+        {quickLinks.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button type="button" key={item.id} onClick={() => jumpTo(item.id)}>
+              {item.image ? <img src={getSongCover(item.image)} alt="" loading="lazy" decoding="async"/> : null}
+              <span className="sw-social-quick-icon"><Icon size={17}/></span>
+              <span><strong>{item.label}</strong><small>{item.sub}</small></span>
+              <ArrowRight size={15}/>
+            </button>
+          );
+        })}
+      </div>
 
       {message ? <div className="sw-social-message" role="status">{message}</div> : null}
 
       <div className="row g-3 g-xl-4">
         <div className="col-12 col-xl-8">
-          <section className="sw-social-panel">
-            <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Today</span><h2>One Song Today</h2></div><Music2 size={20}/></div>
-            <form className="sw-daily-form" onSubmit={submitDailyPick}>
-              <select value={dailySongId} onChange={(e) => setDailySongId(e.target.value)} aria-label="Choose today's song">
-                <option value="">Choose one song…</option>
-                {songs.slice(0,120).map((song) => <option key={song._id} value={song._id}>{song.title} — {getArtistName(song)}</option>)}
-              </select>
-              <input value={dailyNote} onChange={(e)=>setDailyNote(e.target.value.slice(0,180))} placeholder="Why this one? Optional" />
-              <button type="submit" className="sw-primary-btn" disabled={!dailySongId || busy === "daily"}>{busy === "daily" ? "Sharing…" : "Share today's song"}</button>
+          <section className="sw-social-panel sw-social-feature-panel" id="social-daily">
+            <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Today</span><h2>One Song Today</h2></div><MessageCircleHeart size={20}/></div>
+            <p className="sw-social-muted mb-3">Pick the exact real song from your catalog. Tap the play icon first if you want to hear it before sharing.</p>
+            <form onSubmit={submitDailyPick}>
+              <SocialSongPicker songs={songs} value={dailySongId} onChange={setDailySongId} label="Choose today's song" maxVisible={10}/>
+              <div className="sw-social-compose-row mt-3">
+                <input value={dailyNote} onChange={(e)=>setDailyNote(e.target.value.slice(0,180))} placeholder="Why this one? Optional" />
+                <button type="submit" className="sw-primary-btn" disabled={!dailySongId || busy === "daily"}>{busy === "daily" ? "Sharing…" : "Share today's song"}</button>
+              </div>
             </form>
             <div className="sw-daily-strip">
               {(home?.dailyPicks || []).length ? home.dailyPicks.map((pick) => (
@@ -232,9 +309,9 @@ const Social = () => {
             ))}</div> : <p className="sw-social-muted">Follow listeners to build your music activity feed.</p>}
           </section>
 
-          <section className="sw-social-panel mt-3 mt-xl-4">
+          <section className="sw-social-panel mt-3 mt-xl-4" id="social-mix">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Compatibility</span><h2>Friend Mix</h2></div><Sparkles size={20}/></div>
-            <p className="sw-social-muted mb-3">Choose up to four friends. SoundWave combines everyone’s taste without downloading extra audio.</p>
+            <p className="sw-social-muted mb-3">Choose up to four friends. SoundWave combines everyone's taste without downloading extra audio.</p>
             <div className="sw-friend-select">
               {friends.length ? friends.map((friend) => (
                 <button type="button" className={friendSelection.includes(friend._id) ? "sw-friend-chip active" : "sw-friend-chip"} key={friend._id} onClick={() => toggleFriend(friend._id)}>
@@ -251,7 +328,7 @@ const Social = () => {
         </div>
 
         <div className="col-12 col-xl-4">
-          <section className="sw-social-panel">
+          <section className="sw-social-panel" id="social-circles">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Private groups</span><h2>Sound Circles</h2></div><UsersRound size={20}/></div>
             <div className="sw-circle-list">
               {(home?.circles || []).map((circle) => (
@@ -266,9 +343,9 @@ const Social = () => {
             <details className="sw-social-details"><summary><UserPlus size={16}/> Join with code</summary><form onSubmit={joinCircle}><input value={joinCircleCode} onChange={(e)=>setJoinCircleCode(e.target.value.toUpperCase())} placeholder="Invite code"/><button className="sw-secondary-btn" type="submit" disabled={busy === "circle-join"}>Join Circle</button></form></details>
           </section>
 
-          <section className="sw-social-panel mt-3 mt-xl-4">
+          <section className="sw-social-panel mt-3 mt-xl-4" id="social-rooms">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Live queue</span><h2>Pass the Aux</h2></div><RadioTower size={20}/></div>
-            <p className="sw-social-muted">Create a lightweight room. Friends add songs and vote; the host advances the shared queue.</p>
+            <p className="sw-social-muted">Create a lightweight room. Friends add real songs, preview them and vote; the host advances the shared queue.</p>
             {(home?.rooms || []).map((room) => <button type="button" key={room._id} className="sw-room-link" onClick={() => navigate(`/social/rooms/${room.code}`)}><Headphones size={17}/><span><strong>{room.name}</strong><small>{room.members?.length || 1} listening · {room.code}</small></span></button>)}
             <input className="sw-social-input mt-3" value={roomName} onChange={(e)=>setRoomName(e.target.value)} placeholder="Room name"/>
             <button type="button" className="sw-primary-btn w-100 mt-2" onClick={createRoom} disabled={busy === "room-create"}>Start a room</button>

@@ -345,3 +345,20 @@
     .sw-bottom-nav { bottom: max(8px, env(safe-area-inset-bottom)); }
   }
 }
+
+/* Social is intentionally available in both the top actions and mobile tab bar.
+   This keeps the feature discoverable even on devices that hide labels. */
+.sw-social-top-link {
+  flex: 0 0 34px;
+  text-decoration: none;
+}
+
+.sw-social-top-link.active {
+  color: var(--sw-accent);
+  background: var(--sw-accent-soft);
+}
+
+@media (max-width: 360px) {
+  .sw-bottom-item { font-size: 0.56rem; }
+  .sw-bottom-item svg { width: 18px; height: 18px; }
+}

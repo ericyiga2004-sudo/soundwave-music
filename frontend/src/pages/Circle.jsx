@@ -8,6 +8,7 @@ import { getArtistName, getSongCover } from "../utils/catalog";
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
+import SocialSongPicker from "../components/Social/SocialSongPicker";
 import "./CSS/Social.css";
 
 const nameOf = (u) => u?.username || u?.name || "Listener";
@@ -49,7 +50,10 @@ const Circle = () => {
     {message?<div className="sw-social-message">{message}</div>:null}
     <div className="row g-3 g-xl-4">
       <div className="col-12 col-lg-8"><section className="sw-social-panel"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Shared queue</span><h2>Circle songs</h2></div></div>
-        <form className="sw-circle-add" onSubmit={addSong}><select value={songId} onChange={e=>setSongId(e.target.value)}><option value="">Choose a song…</option>{songs.slice(0,120).map(song=><option key={song._id} value={song._id}>{song.title} — {getArtistName(song)}</option>)}</select><input value={note} onChange={e=>setNote(e.target.value.slice(0,220))} placeholder="Add a note"/><button className="sw-primary-btn" type="submit"><Plus size={15}/> Share</button></form>
+        <form className="sw-circle-share-form" onSubmit={addSong}>
+          <SocialSongPicker songs={songs} value={songId} onChange={setSongId} label="Choose a song to share" maxVisible={8} compact/>
+          <div className="sw-social-compose-row mt-3"><input value={note} onChange={e=>setNote(e.target.value.slice(0,220))} placeholder="Add a note"/><button className="sw-primary-btn" type="submit" disabled={!songId}><Plus size={15}/> Share</button></div>
+        </form>
         {(circle.songs||[]).length?<div className="sw-circle-song-list">{circle.songs.map((entry)=><article key={entry._id}><button type="button" className="sw-circle-song-main" onClick={()=>{player?.playSong?.(entry.song,circleSongs);navigate(`/song/${entry.song._id}`,{state:{song:entry.song,playlist:circleSongs}})}}><img src={getSongCover(entry.song)} alt=""/><span><strong>{entry.song?.title}</strong><small>{getArtistName(entry.song)} · added by {nameOf(entry.addedBy)}</small>{entry.note?<em>{entry.note}</em>:null}</span><Play size={16}/></button></article>)}</div>:<p className="sw-social-muted">No songs yet. Share the first one.</p>}
       </section></div>
       <div className="col-12 col-lg-4"><section className="sw-social-panel"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Members</span><h2>{circle.members?.length||1} people</h2></div></div><div className="sw-members-list">{(circle.members||[]).map(member=><button type="button" key={member.user?._id||member._id} onClick={()=>member.user?._id&&navigate(`/u/${member.user._id}`)}><span className="sw-social-avatar small">{member.user?.image?<img src={member.user.image} alt=""/>:nameOf(member.user).slice(0,1).toUpperCase()}</span><span><strong>{nameOf(member.user)}</strong><small>{member.role}</small></span></button>)}</div></section></div>

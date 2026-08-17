@@ -134,6 +134,15 @@ const Navbar = () => {
         </button>
 
         <div className="sw-top-actions">
+          <NavLink
+            to="/social"
+            className={({ isActive }) => `sw-icon-btn sw-social-top-link ${isActive ? "active" : ""}`}
+            title="SoundWave Social"
+            aria-label="Open SoundWave Social"
+          >
+            <UsersRound size={18} />
+          </NavLink>
+
           <div className="sw-settings-wrap">
             <button
               type="button"

@@ -27,11 +27,11 @@ admin/.env.*.local
 !.env.example
 !**/.env.example
 # Dependencies
-# Generated builds
+# Generated files
 .vite/
 .cache/
 coverage/
-# Local/runtime files
+# Runtime/local files
 *.log
 uploads/
 tmp/

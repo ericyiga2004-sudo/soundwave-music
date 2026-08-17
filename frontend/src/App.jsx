@@ -3,6 +3,11 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Sidebar from "./components/SideBar/SideBar";
 import Home from "./pages/Home";
+import Social from "./pages/Social";
+import SocialProfile from "./pages/SocialProfile";
+import Circle from "./pages/Circle";
+import LiveRoom from "./pages/LiveRoom";
+import RouteErrorBoundary from "./components/UI/RouteErrorBoundary";
 import MusicPlay from "./pages/MusicPlay";
 import {
   getBatterySaver,
@@ -28,10 +33,6 @@ const MusicStudio = lazy(() => import("./pages/MusicStudio"));
 const Visualizer = lazy(() => import("./pages/Visualizer"));
 const MoodPage = lazy(() => import("./pages/MoodPage"));
 const Radio = lazy(() => import("./pages/Radio"));
-const Social = lazy(() => import("./pages/Social"));
-const SocialProfile = lazy(() => import("./pages/SocialProfile"));
-const Circle = lazy(() => import("./pages/Circle"));
-const LiveRoom = lazy(() => import("./pages/LiveRoom"));
 const ArtistsPage = lazy(() => import("./pages/ArtistsPage"));
 const AlbumsPage = lazy(() => import("./pages/AlbumsPage"));
 const SongsPage = lazy(() => import("./pages/SongsPage"));
@@ -134,7 +135,7 @@ const App = () => {
             <Navbar />
 
             <main className="main-content">
-              <Suspense fallback={<RouteFallback />}>
+              <RouteErrorBoundary resetKey={location.pathname}><Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/explore" element={<Explore />} />
@@ -159,7 +160,7 @@ const App = () => {
                 <Route path="/mood/:moodSlug" element={<MoodPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              </Suspense>
+              </Suspense></RouteErrorBoundary>
             </main>
           </div>
 

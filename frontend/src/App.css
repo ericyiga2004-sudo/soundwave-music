@@ -272,3 +272,6 @@ html[data-sw-battery-saver="true"] *::after {
     min-height: 100svh;
   }
 }
+
+.sw-route-error{max-width:680px;margin:48px auto;padding:20px;border:1px solid var(--sw-border);border-radius:16px;background:var(--sw-surface);color:var(--sw-text)}
+.sw-route-error strong{display:block;font-size:1rem}.sw-route-error p{margin:6px 0 14px;color:var(--sw-text-secondary);font-size:.8rem;line-height:1.5}.sw-route-error button{border:0;border-radius:9px;background:var(--sw-accent);color:#fff;padding:8px 12px;font-size:.75rem;font-weight:800}
