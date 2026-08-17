@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 import "./Albums.css";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL as backendUrl } from "../../config/api";
 
-const MAX_ALBUM_STATS_SONGS = 400;
+const MAX_ALBUM_STATS_SONGS = 80;
 
 const getAlbumIdFromSong = (song) => {
   return (
@@ -51,7 +51,7 @@ const buildPreferenceScoreMap = (items = [], key = "name") => {
       key === "artist" ? getPreferenceArtistId(item) : item?.[key];
 
     if (value !== undefined && value !== null && value !== "") {
-      map.set(value.toString().toLowerCase(), Number(item.score || 0));
+      map.set(value.toString().toLowerCase(), Number(item.effectiveScore ?? item.score ?? 0));
     }
   });
 
@@ -168,6 +168,13 @@ const sortAlbumsByUserTaste = ({
     "artist"
   );
 
+  const albumScoreMap = new Map(
+    (preferences.albums || []).map((item) => [
+      String(item?.album?._id || item?.album || "").toLowerCase(),
+      Number(item?.effectiveScore ?? item?.score ?? 0),
+    ]).filter(([id]) => id)
+  );
+
   const countryScoreMap = buildPreferenceScoreMap(
     preferences.countries || [],
     "name"
@@ -230,6 +237,10 @@ const sortAlbumsByUserTaste = ({
         moodCounts: new Map(),
       };
 
+      const directAlbumScore = Number(
+        albumScoreMap.get(albumId?.toLowerCase()) || 0
+      );
+
       const albumArtistScore = Number(
         artistScoreMap.get(albumArtistId?.toLowerCase()) || 0
       );
@@ -239,18 +250,19 @@ const sortAlbumsByUserTaste = ({
       );
 
       const rankingScore =
-        albumArtistScore * 1500 +
-        stats.artistScore * 800 +
-        albumCountryScore * 400 +
-        stats.countryScore * 250 +
-        stats.genreScore * 200 +
-        stats.moodScore * 150 +
-        stats.languageScore * 90 +
-        stats.yearScore * 50 +
-        stats.totalLikes * 10 +
-        stats.totalPlays * 2 +
-        Number(album.totalPlays || 0) * 2 +
-        stats.songCount * 25;
+        directAlbumScore * 1800 +
+        albumArtistScore * 900 +
+        stats.artistScore * 500 +
+        albumCountryScore * 180 +
+        stats.countryScore * 100 +
+        stats.genreScore * 160 +
+        stats.moodScore * 90 +
+        stats.languageScore * 150 +
+        stats.yearScore * 35 +
+        Math.log1p(stats.totalLikes) * 18 +
+        Math.log1p(stats.totalPlays) * 9 +
+        Math.log1p(Number(album.totalPlays || 0)) * 9 +
+        stats.songCount * 8;
 
       return {
         ...album,
@@ -294,7 +306,7 @@ const Albums = () => {
 
       const token = localStorage.getItem("token");
 
-      const albumsRequest = axios.get(`${backendUrl}/api/albums`);
+      const albumsRequest = axios.get(`${backendUrl}/api/albums?limit=36&sort=popular`);
 
       const songsRequest = axios.get(
         `${backendUrl}/api/songs?limit=${MAX_ALBUM_STATS_SONGS}&sort=popular`
@@ -352,11 +364,13 @@ const Albums = () => {
     window.addEventListener("music-history-updated", fetchAlbums);
     window.addEventListener("music-liked-updated", fetchAlbums);
     window.addEventListener("artist-follow-updated", fetchAlbums);
+    window.addEventListener("soundwave-personalization-updated", fetchAlbums);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchAlbums);
       window.removeEventListener("music-liked-updated", fetchAlbums);
       window.removeEventListener("artist-follow-updated", fetchAlbums);
+      window.removeEventListener("soundwave-personalization-updated", fetchAlbums);
     };
   }, []);
 
@@ -399,7 +413,7 @@ const Albums = () => {
               album.coverImage ||
               album.imageUrl ||
               album.image ||
-              "/fallback-cover.png";
+              "/fallback-cover.svg";
 
             const artistName =
               album.artist?.name ||

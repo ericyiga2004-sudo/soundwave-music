@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SongItem from "../SongItem/SongItem";
 import "./YouLiked.css";
+import { API_BASE_URL } from "../../config/api";
 
 const YouLiked = () => {
   const [songs, setSongs] = useState([]);
@@ -21,14 +22,14 @@ const YouLiked = () => {
       }
 
       const [likedRes, recommendRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/likes/songs`, {
+        axios.get(`${API_BASE_URL}/api/likes/songs`, {
           headers: {
             token,
           },
         }),
 
         axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/recommend/liked?limit=20`,
+          `${API_BASE_URL}/api/recommend/liked?limit=20`,
           {
             headers: {
               token,
@@ -101,7 +102,7 @@ const YouLiked = () => {
 
         {basedOn?.imageUrl && (
           <div className="you-liked-seed">
-            <img src={basedOn.imageUrl} alt={basedOn.title || "Liked song"} />
+            <img src={basedOn.imageUrl} alt={basedOn.title || "Liked song"}  loading="lazy" decoding="async" />
 
             <div>
               <small>Based on</small>

@@ -118,7 +118,7 @@
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #1db954;
+  color: #fa233b;
 }
 
 .albums-header > div h2 {
@@ -234,7 +234,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #1db954;
+  color: #fa233b;
   background: rgba(29, 185, 84, 0.1);
   border: 1px solid rgba(29, 185, 84, 0.3);
   border-radius: 4px;
@@ -306,12 +306,12 @@
 }
 
 .album-actions button:first-child {
-  background: #1db954;
+  background: #fa233b;
   color: #000;
 }
 
 .album-actions button:first-child:hover {
-  background: #1ed760;
+  background: #ff375f;
   transform: scale(1.05);
 }
 

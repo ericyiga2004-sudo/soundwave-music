@@ -18,6 +18,7 @@ import SongItem from "../components/SongItem/SongItem";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/Artist.css";
+import { trackTasteEvent } from "../utils/personalization";
 
 const formatFollowers = (value = 0) => {
   return new Intl.NumberFormat("en", {
@@ -154,6 +155,11 @@ const Artist = () => {
     checkFollowStatus();
   }, [artistId]);
 
+  useEffect(() => {
+    if (artist?._id) trackTasteEvent("artist_view", { artistId: artist._id }, { cooldownMs: 90000 });
+  }, [artist?._id]);
+
+
   const handleFollow = async () => {
     if (!token) {
       navigate("/account");
@@ -234,7 +240,7 @@ const Artist = () => {
   return (
     <main className="artist-page">
       <div className="artist-bg" aria-hidden="true">
-        <img src={artist.image || "/fallback-cover.png"} alt="" />
+        <img src={artist.image || "/fallback-cover.svg"} alt="" />
       </div>
 
       <button
@@ -250,7 +256,7 @@ const Artist = () => {
         <div className="row g-4 align-items-end">
           <div className="col-12 col-md-auto text-center text-md-start">
             <div className="artist-hero-image mx-auto mx-md-0">
-              <img src={artist.image || "/fallback-cover.png"} alt={artist.name} />
+              <img src={artist.image || "/fallback-cover.svg"} alt={artist.name} />
 
               {artist.verified && (
                 <span className="artist-verified">
@@ -383,7 +389,7 @@ const Artist = () => {
                       album.coverImage ||
                       album.imageUrl ||
                       album.image ||
-                      "/fallback-cover.png"
+                      "/fallback-cover.svg"
                     }
                     alt={album.title || album.name || "Album"}
                   />
@@ -425,7 +431,7 @@ const Artist = () => {
                 >
                   <span className="artist-liked-index">{index + 1}</span>
 
-                  <img src={song.imageUrl || "/fallback-cover.png"} alt="" />
+                  <img src={song.imageUrl || "/fallback-cover.svg"} alt="" />
 
                   <span className="artist-liked-copy">
                     <strong>{song.title}</strong>

@@ -9,6 +9,8 @@ import {
 } from "react";
 import axios from "axios";
 import { MusicContext } from "./ShopContext";
+import { getLowData } from "../utils/uiPreferences";
+import { trackTasteEvent } from "../utils/personalization";
 
 export const MusicPlayerContext = createContext(null);
 
@@ -112,6 +114,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const userWantedPlayRef = useRef(false);
   const recoveryTimerRef = useRef(null);
   const offlineAudioObjectUrlRef = useRef("");
+  const tasteSignalsRef = useRef({ songId: "", sent20: false, sent60: false, completed: false });
 
   const musicContext = useContext(MusicContext);
 
@@ -328,7 +331,16 @@ export const MusicPlayerProvider = ({ children }) => {
         return;
       }
 
-      const isSameSong = currentSongRef.current?._id === song._id;
+      const previousSong = currentSongRef.current;
+      const isSameSong = previousSong?._id === song._id;
+
+      if (!isSameSong && previousSong?._id && audio.currentTime > 0 && audio.currentTime < 12) {
+        trackTasteEvent("skip_early", { songId: previousSong._id }, { cooldownMs: 8000 });
+      }
+
+      if (!isSameSong) {
+        tasteSignalsRef.current = { songId: song._id, sent20: false, sent60: false, completed: false };
+      }
 
       userWantedPlayRef.current = true;
       syncTrackState(song, queue);
@@ -611,8 +623,22 @@ export const MusicPlayerProvider = ({ children }) => {
     };
 
     const handleTimeUpdate = () => {
-      setProgress(Number.isFinite(audio.currentTime) ? audio.currentTime : 0);
+      const currentTime = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+      setProgress(currentTime);
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+
+      const activeSong = currentSongRef.current;
+      const signals = tasteSignalsRef.current;
+      if (activeSong?._id && signals.songId === activeSong._id) {
+        if (currentTime >= 20 && !signals.sent20) {
+          signals.sent20 = true;
+          trackTasteEvent("play_20s", { songId: activeSong._id }, { cooldownMs: 0 });
+        }
+        if (currentTime >= 60 && !signals.sent60) {
+          signals.sent60 = true;
+          trackTasteEvent("play_60s", { songId: activeSong._id }, { cooldownMs: 0 });
+        }
+      }
 
       if (userWantedPlayRef.current && !audio.paused && hasEnoughBuffer(audio, 1)) {
         setBufferingState(false);
@@ -752,8 +778,15 @@ export const MusicPlayerProvider = ({ children }) => {
       if (isChangingTrackRef.current) return;
 
       const repeatMode = repeatRef.current;
+      const activeSong = currentSongRef.current;
+      if (activeSong?._id && !tasteSignalsRef.current.completed) {
+        tasteSignalsRef.current.completed = true;
+        trackTasteEvent("complete", { songId: activeSong._id }, { cooldownMs: 0 });
+      }
 
       if (repeatMode === REPEAT_MODES.ONE) {
+        if (activeSong?._id) trackTasteEvent("repeat", { songId: activeSong._id }, { cooldownMs: 5000 });
+        tasteSignalsRef.current = { songId: activeSong?._id || "", sent20: false, sent60: false, completed: false };
         audio.currentTime = 0;
 
         try {
@@ -768,6 +801,18 @@ export const MusicPlayerProvider = ({ children }) => {
           console.error("Unable to repeat song:", error);
         }
 
+        return;
+      }
+
+      // Low Data Mode avoids silently starting another full audio stream.
+      // Explicit Repeat All still behaves as requested by the listener.
+      if (getLowData() && repeatMode === REPEAT_MODES.OFF) {
+        userWantedPlayRef.current = false;
+        audio.pause();
+        audio.currentTime = 0;
+        setProgress(0);
+        setIsPlaying(false);
+        setBufferingState(false);
         return;
       }
 

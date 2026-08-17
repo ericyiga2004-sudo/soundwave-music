@@ -1,2615 +1,301 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  FaPlay,
-  FaPause,
-  FaStepBackward,
-  FaStepForward,
-  FaRandom,
-  FaRedoAlt,
-  FaVolumeUp,
-  FaVolumeMute,
-  FaHeart,
-  FaRegHeart,
-  FaDownload,
-  FaSpinner,
-  FaTrash,
-  FaShareAlt,
-  FaListUl,
-  FaPlus,
-  FaTimes,
-  FaCheck,
-  FaMusic,
-  FaChevronUp,
-  FaChevronLeft,
-  FaCompactDisc,
-} from "react-icons/fa";
-import { MdRepeatOne } from "react-icons/md";
-
-import "./CSS/SongDetails.css";
+  Check,
+  ChevronLeft,
+  Download,
+  Heart,
+  ListPlus,
+  MoreHorizontal,
+  Pause,
+  Play,
+  Share2,
+  Trash2,
+} from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import {
-  saveSongForOffline,
-  isSongOfflineAvailable,
-  removeOfflineSong,
-} from "../utils/offlineDownload";
+import { apiClient, authHeaders, cachedGet } from "../config/apiClient";
+import { formatCompactNumber, formatDuration, getArtistName, getSongCover } from "../utils/catalog";
+import { getBatterySaver } from "../utils/uiPreferences";
+import { isSongOfflineAvailable, removeOfflineSong, saveSongForOffline } from "../utils/offlineDownload";
+import { trackTasteEvent } from "../utils/personalization";
+import CatalogSkeleton from "../components/UI/CatalogSkeleton";
+import EmptyState from "../components/UI/EmptyState";
+import "./CSS/SongDetails.css";
 
-const PLAYER_STORAGE_KEY = "music_app_last_song_session";
-
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
-const safeJsonParse = (value) => {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-};
-
-const normalizeDuration = (value) => {
-  const durationValue = Number(value);
-
-  if (!Number.isFinite(durationValue) || durationValue <= 0) return 0;
-
-  // Some APIs store duration in milliseconds. Keep normal song seconds untouched.
-  return durationValue > 10000 ? durationValue / 1000 : durationValue;
-};
-
-const formatTime = (seconds = 0) => {
-  const safeSeconds = normalizeDuration(seconds);
-
-  if (!safeSeconds) return "0:00";
-
-  const mins = Math.floor(safeSeconds / 60);
-  const secs = Math.floor(safeSeconds % 60);
-
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-};
-
-const formatDate = (date) => {
-  if (!date) return "Unknown";
-
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return "Unknown";
-
-  return parsed.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
-const getArtistName = (song) =>
-  song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
-
-const getAlbumTitle = (song) =>
-  song?.album?.title || song?.albumTitle || song?.album || "Unknown Album";
-
-const getDuration = (song, playerDuration, liveAudioDuration) => {
-  const candidates = [
-    liveAudioDuration,
-    playerDuration,
-    song?.duration,
-    song?.audioDuration,
-    song?.length,
-    song?.metadata?.duration,
-  ];
-
-  return candidates.map(normalizeDuration).find(Boolean) || 0;
-};
-
-const normalizeText = (value = "") =>
-  String(value || "")
-    .toLowerCase()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const getSongCountryKey = (song) =>
-  normalizeText(
-    song?.country ||
-      song?.artist?.country ||
-      song?.album?.country ||
-      song?.metadata?.country ||
-      "Unknown"
-  );
-
-const getSongGenreKey = (song) =>
-  normalizeText(
-    song?.genre ||
-      song?.category ||
-      song?.style ||
-      song?.metadata?.genre ||
-      "Unknown"
-  );
-
-const getSongMoodKey = (song) =>
-  normalizeText(song?.mood || song?.metadata?.mood || "");
-
-const getSongTags = (song) => {
-  if (!Array.isArray(song?.tags)) return [];
-
-  return song.tags.map(normalizeText).filter(Boolean);
-};
-
-const getSongIdentity = (song) => song?._id || song?.id || song?.audioUrl || "";
-
-const isSameSongCollection = (left = [], right = []) => {
-  if (!left.length || left.length !== right.length) return false;
-
-  const leftIds = left.map(getSongIdentity).filter(Boolean).sort();
-  const rightIds = right.map(getSongIdentity).filter(Boolean).sort();
-
-  if (leftIds.length !== rightIds.length) return false;
-
-  return leftIds.every((id, index) => id === rightIds[index]);
-};
-
-const getSmartQueueForSong = (activeSong, allSongs = []) => {
-  if (!activeSong?._id || !Array.isArray(allSongs) || !allSongs.length) {
-    return activeSong ? [activeSong] : [];
-  }
-
-  const activeCountry = getSongCountryKey(activeSong);
-  const activeGenre = getSongGenreKey(activeSong);
-  const activeMood = getSongMoodKey(activeSong);
-  const activeTags = getSongTags(activeSong);
-
-  const scoredSongs = allSongs
-    .filter((song) => {
-      if (!song?._id || song._id === activeSong._id) return false;
-
-      const songCountry = getSongCountryKey(song);
-
-      if (activeCountry === "unknown") return true;
-
-      return songCountry === activeCountry;
-    })
-    .map((song, index) => {
-      const genre = getSongGenreKey(song);
-      const mood = getSongMoodKey(song);
-      const tags = getSongTags(song);
-      let score = 0;
-
-      if (genre === activeGenre && genre !== "unknown") score += 100;
-      if (mood && mood === activeMood) score += 18;
-      if (activeTags.some((tag) => tags.includes(tag))) score += 12;
-
-      return {
-        song,
-        score,
-        index,
-      };
-    })
-    .sort((a, b) => b.score - a.score || a.index - b.index);
-
-  const nextSongs = scoredSongs.map(({ song }) => song);
-
-  return [activeSong, ...nextSongs];
-};
-
-const repeatLabel = (repeat) => {
-  if (repeat === "one" || repeat === 1) return "Repeat one";
-  if (repeat === "all" || repeat === true) return "Repeat all";
-  return "Repeat off";
-};
-
-const parseLrcTimestamp = (timestamp) => {
-  const match = timestamp.match(/^(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?$/);
-  if (!match) return null;
-
-  const minutes = Number(match[1]);
-  const seconds = Number(match[2]);
-  const fractionRaw = match[3] || "0";
-
-  if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
-
-  const fraction =
-    fractionRaw.length === 1
-      ? Number(fractionRaw) / 10
-      : fractionRaw.length === 2
-      ? Number(fractionRaw) / 100
-      : Number(fractionRaw) / 1000;
-
-  return minutes * 60 + seconds + fraction;
-};
-
-const parseLrcLyrics = (lrcLyrics = "") => {
-  if (typeof lrcLyrics !== "string" || !lrcLyrics.trim()) return [];
-
-  const metadataTags = new Set([
-    "ar",
-    "al",
-    "ti",
-    "au",
-    "by",
-    "offset",
-    "length",
-    "re",
-    "ve",
-  ]);
-
-  const parsedLines = [];
-
-  lrcLyrics.split(/\r?\n/).forEach((rawLine) => {
-    const line = rawLine.trim();
-    if (!line) return;
-
-    const tagMatches = [...line.matchAll(/\[([^\]]+)\]/g)];
-    if (!tagMatches.length) return;
-
-    const text = line.replace(/\[[^\]]+\]/g, "").trim();
-
-    tagMatches.forEach((tagMatch) => {
-      const rawTag = tagMatch[1].trim();
-      const lowerTag = rawTag.toLowerCase();
-
-      if (metadataTags.has(lowerTag.split(":")[0])) return;
-
-      const start = parseLrcTimestamp(rawTag);
-      if (start === null) return;
-
-      parsedLines.push({
-        text: text || "♪",
-        start,
-        end: null,
-        words: [],
-      });
+const parseLrc = (value = "") => {
+  if (!value || typeof value !== "string") return [];
+  const output = [];
+  value.split(/\r?\n/).forEach((line) => {
+    const matches = [...line.matchAll(/\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g)];
+    if (!matches.length) return;
+    const text = line.replace(/\[[^\]]+\]/g, "").trim() || "♪";
+    matches.forEach((match) => {
+      const mins = Number(match[1]); const secs = Number(match[2]);
+      const fractionRaw = match[3] || "0";
+      const fraction = Number(fractionRaw) / (fractionRaw.length === 1 ? 10 : fractionRaw.length === 2 ? 100 : 1000);
+      const start = mins * 60 + secs + fraction;
+      if (Number.isFinite(start)) output.push({ start, text });
     });
   });
-
-  return parsedLines
-    .sort((a, b) => a.start - b.start)
-    .map((line, index, lines) => {
-      const nextLine = lines[index + 1];
-
-      return {
-        ...line,
-        end: nextLine ? Math.max(nextLine.start - 0.01, line.start + 0.01) : null,
-      };
-    });
+  return output.sort((a,b)=>a.start-b.start).map((line,index,all)=>({ ...line, end: all[index+1]?.start ?? null }));
 };
 
-const normalizeSyncedLyrics = (lyrics = []) => {
-  if (!Array.isArray(lyrics)) return [];
-
-  return lyrics
-    .filter((line) => line?.text && Number.isFinite(Number(line.start)))
-    .map((line) => ({
-      text: String(line.text),
-      start: Number(line.start),
-      end: Number.isFinite(Number(line.end)) ? Number(line.end) : null,
-      words: Array.isArray(line.words)
-        ? line.words
-            .filter((word) => word?.text && Number.isFinite(Number(word.start)))
-            .map((word) => ({
-              text: String(word.text),
-              start: Number(word.start),
-              end: Number.isFinite(Number(word.end)) ? Number(word.end) : null,
-            }))
-        : [],
-    }))
-    .sort((a, b) => a.start - b.start)
-    .map((line, index, lines) => {
-      const nextLine = lines[index + 1];
-
-      return {
-        ...line,
-        end:
-          Number(line.end) > line.start
-            ? Number(line.end)
-            : nextLine
-            ? Math.max(nextLine.start - 0.01, line.start + 0.01)
-            : null,
-      };
-    });
+const normalizeLyrics = (song) => {
+  if (Array.isArray(song?.syncedLyrics) && song.syncedLyrics.length) {
+    return song.syncedLyrics
+      .map((line) => ({ start: Number(line.start || 0), end: line.end == null ? null : Number(line.end), text: String(line.text || "♪") }))
+      .filter((line) => Number.isFinite(line.start))
+      .sort((a,b)=>a.start-b.start);
+  }
+  const lrc = parseLrc(song?.lrcLyrics || "");
+  if (lrc.length) return lrc;
+  if (typeof song?.lyrics === "string" && song.lyrics.trim()) {
+    return song.lyrics.split(/\r?\n/).map((text) => text.trim()).filter(Boolean).map((text) => ({ start: null, end: null, text }));
+  }
+  return [];
 };
 
 const SongDetails = () => {
+  const { songId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { songs = [], backendUrl, token } = useContext(MusicContext);
+  const { songs: globalSongs = [], getAuthToken, playlists = [], fetchPlaylists } = useContext(MusicContext);
+  const player = useContext(MusicPlayerContext);
+  const token = getAuthToken?.() || "";
 
-  const {
-    currentSong,
-    playlist = [],
-    currentIndex = 0,
-    isPlaying,
-    isBuffering,
-    bufferMessage,
-    progress = 0,
-    duration = 0,
-    playSong,
-    pauseSong,
-    resumeSong,
-    togglePlay,
-    nextSong,
-    prevSong,
-    seekTo,
-    shuffle,
-    setShuffle,
-    repeat,
-    setRepeat,
-    cycleRepeat,
-    audioRef,
-  } = useContext(MusicPlayerContext);
-
-  const [liveProgress, setLiveProgress] = useState(Number(progress) || 0);
-  const [liveDuration, setLiveDuration] = useState(normalizeDuration(duration));
-  const [restoredSongPreview, setRestoredSongPreview] = useState(null);
-  const [restoreAttempted, setRestoreAttempted] = useState(false);
-
+  const [song, setSong] = useState(location.state?.song || null);
+  const [loading, setLoading] = useState(!location.state?.song);
+  const [error, setError] = useState("");
+  const [recommendations, setRecommendations] = useState([]);
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(0);
-  const [likeLoading, setLikeLoading] = useState(false);
-
-  const [volume, setVolume] = useState(1);
-  const [muted, setMuted] = useState(false);
-  const lastVolumeRef = useRef(1);
-
-  const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
-  const [playlists, setPlaylists] = useState([]);
-  const [playlistLoading, setPlaylistLoading] = useState(false);
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState("");
-  const [playlistStatus, setPlaylistStatus] = useState("");
-
-  const [queueOpen, setQueueOpen] = useState(false);
-  const [lyricsModalOpen, setLyricsModalOpen] = useState(false);
-  const [shareStatus, setShareStatus] = useState("");
+  const [likes, setLikes] = useState(Number(location.state?.song?.likes || 0));
+  const [likeBusy, setLikeBusy] = useState(false);
   const [offlineSaved, setOfflineSaved] = useState(false);
-  const [offlineLoading, setOfflineLoading] = useState(false);
-  const [offlineStatus, setOfflineStatus] = useState("");
-  const [visualizerOpening, setVisualizerOpening] = useState(false);
+  const [offlineBusy, setOfflineBusy] = useState(false);
+  const [status, setStatus] = useState("");
+  const [playlistOpen, setPlaylistOpen] = useState(false);
 
-  const mobileDetailsRef = useRef(null);
-  const lyricsContainerRef = useRef(null);
-  const lyricsModalContainerRef = useRef(null);
-  const lyricRefs = useRef({});
-  const modalLyricRefs = useRef({});
-  const animationFrameRef = useRef(null);
-  const lastSessionRef = useRef(null);
-  const visualizerNavigateTimerRef = useRef(null);
-  const visualizerNavigateFrameRef = useRef(null);
-  const visualizerOpeningCancelledRef = useRef(false);
+  const [comments, setComments] = useState([]);
+  const [commentPage, setCommentPage] = useState(1);
+  const [commentTotal, setCommentTotal] = useState(0);
+  const [commentsMore, setCommentsMore] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentBody, setCommentBody] = useState("");
+  const [commentBusy, setCommentBusy] = useState(false);
+  const [editingId, setEditingId] = useState("");
+  const [editBody, setEditBody] = useState("");
 
-  const activeSong = currentSong || restoredSongPreview;
+  const lyricsRef = useRef(null);
+  const lineRefs = useRef([]);
 
-  const totalDuration = useMemo(
-    () => getDuration(activeSong, duration, liveDuration),
-    [activeSong, duration, liveDuration]
+  const routePlaylist = location.state?.playlist;
+  const playlistFromRoute = useMemo(
+    () => (Array.isArray(routePlaylist) ? routePlaylist : []),
+    [routePlaylist]
   );
-
-  const displayProgress = useMemo(() => {
-    const audioTime = Number(liveProgress);
-    const contextTime = Number(progress);
-
-    if (Number.isFinite(audioTime) && audioTime >= 0) return audioTime;
-    if (Number.isFinite(contextTime) && contextTime >= 0) return contextTime;
-
-    return 0;
-  }, [liveProgress, progress]);
-
-  const progressMax = useMemo(
-    () => Math.max(Number(totalDuration) || 0, Number(displayProgress) || 0, 0),
-    [displayProgress, totalDuration]
-  );
-
-  const smartQueue = useMemo(() => {
-    return getSmartQueueForSong(activeSong, songs);
-  }, [activeSong, songs]);
-
-  const shouldUseContextQueue = useMemo(() => {
-    if (!playlist.length) return false;
-    return !isSameSongCollection(playlist, songs);
-  }, [playlist, songs]);
-
-  const displayQueue = useMemo(() => {
-    if (shouldUseContextQueue) return playlist;
-    return smartQueue.length ? smartQueue : activeSong ? [activeSong] : [];
-  }, [activeSong, playlist, shouldUseContextQueue, smartQueue]);
-
-  const recommendedSongs = useMemo(() => {
-    return displayQueue
-      .filter((song) => song?._id && song._id !== activeSong?._id)
-      .slice(0, 12);
-  }, [activeSong?._id, displayQueue]);
-
-  const syncedLyrics = useMemo(() => {
-    const lrcLines = parseLrcLyrics(activeSong?.lrcLyrics);
-
-    if (lrcLines.length) return lrcLines;
-
-    const syncedLines = normalizeSyncedLyrics(activeSong?.syncedLyrics);
-
-    if (syncedLines.length) return syncedLines;
-
-    if (typeof activeSong?.lyrics === "string" && activeSong.lyrics.trim()) {
-      return activeSong.lyrics
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .map((line, index) => ({
-          text: line.trim(),
-          start: index * 5,
-          end: index * 5 + 4.99,
-          words: [],
-        }));
-    }
-
-    return [];
-  }, [activeSong?.lrcLyrics, activeSong?.syncedLyrics, activeSong?.lyrics]);
-
+  const queue = useMemo(() => playlistFromRoute.length ? playlistFromRoute : (globalSongs.length ? globalSongs : song ? [song] : []), [playlistFromRoute, globalSongs, song]);
+  const isCurrent = player?.currentSong?._id === song?._id;
+  const isPlaying = isCurrent && player?.isPlaying;
+  const progress = isCurrent ? Number(player?.progress || 0) : 0;
+  const lyrics = useMemo(() => normalizeLyrics(song), [song]);
+  const synced = lyrics.some((line) => Number.isFinite(line.start));
   const activeLyricIndex = useMemo(() => {
-    if (!syncedLyrics.length) return -1;
-
-    const currentTime = Number(displayProgress) || 0;
-
-    const exactIndex = syncedLyrics.findIndex((line, index) => {
-      const nextLine = syncedLyrics[index + 1];
-      const start = Number(line.start) || 0;
-      const end =
-        Number(line.end) > start
-          ? Number(line.end)
-          : Number(nextLine?.start) > start
-          ? Number(nextLine.start)
-          : Number.MAX_SAFE_INTEGER;
-
-      return currentTime >= start && currentTime < end;
-    });
-
-    if (exactIndex !== -1) return exactIndex;
-
-    return syncedLyrics.findLastIndex(
-      (line) => currentTime >= (Number(line.start) || 0)
-    );
-  }, [displayProgress, syncedLyrics]);
-
-  const currentLyric = activeLyricIndex >= 0 ? syncedLyrics[activeLyricIndex] : null;
-
-  const songDetailsPlayLabel = isBuffering
-    ? bufferMessage || "Loading song"
-    : isPlaying
-    ? "Pause song"
-    : "Play song";
-
-  const activeWordIndex = useMemo(() => {
-    if (!currentLyric?.words?.length) return -1;
-
-    const currentTime = Number(displayProgress) || 0;
-
-    return currentLyric.words.findIndex((word, index) => {
-      const nextWord = currentLyric.words[index + 1];
-      const start = Number(word.start) || 0;
-      const end =
-        Number(word.end) > start
-          ? Number(word.end)
-          : Number(nextWord?.start) > start
-          ? Number(nextWord.start)
-          : start + 0.35;
-
-      return currentTime >= start && currentTime < end;
-    });
-  }, [currentLyric, displayProgress]);
-
-  const buildSessionPayload = useCallback(() => {
-    if (!activeSong?._id) return null;
-
-    const queueSource = displayQueue.length ? displayQueue : songs;
-    const queueIds = Array.isArray(queueSource)
-      ? queueSource.map((song) => song?._id).filter(Boolean)
-      : [];
-
-    return {
-      songId: activeSong._id,
-      position: Number(displayProgress) || 0,
-      duration: Number(totalDuration) || 0,
-      wasPlaying: Boolean(isPlaying),
-      currentIndex: Number(currentIndex) || 0,
-      playlistIds: queueIds,
-      savedAt: Date.now(),
-    };
-  }, [
-    activeSong?._id,
-    displayQueue,
-    songs,
-    displayProgress,
-    totalDuration,
-    isPlaying,
-    currentIndex,
-  ]);
-
-  const saveCurrentSession = useCallback(() => {
-    const payload = buildSessionPayload();
-    if (!payload) return;
-
-    lastSessionRef.current = payload;
-    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(payload));
-  }, [buildSessionPayload]);
-
-  useEffect(() => {
-    const payload = buildSessionPayload();
-    if (payload) {
-      lastSessionRef.current = payload;
-    }
-  }, [buildSessionPayload]);
-
-  useEffect(() => {
-    if (!activeSong?._id) return;
-
-    saveCurrentSession();
-
-    const intervalId = window.setInterval(() => {
-      saveCurrentSession();
-    }, 1000);
-
-    const handleBeforeUnload = () => {
-      const payload = lastSessionRef.current || buildSessionPayload();
-
-      if (payload) {
-        localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(payload));
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.clearInterval(intervalId);
-      handleBeforeUnload();
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [activeSong?._id, saveCurrentSession, buildSessionPayload]);
-
-  useEffect(() => {
-    if (currentSong?._id) {
-      setRestoredSongPreview(null);
-      setRestoreAttempted(true);
-      return;
-    }
-
-    if (restoreAttempted) return;
-    if (!Array.isArray(songs) || !songs.length) return;
-
-    const savedSession = safeJsonParse(localStorage.getItem(PLAYER_STORAGE_KEY));
-
-    if (!savedSession?.songId) {
-      setRestoreAttempted(true);
-      return;
-    }
-
-    const songToRestore = songs.find((song) => song?._id === savedSession.songId);
-
-    if (!songToRestore) {
-      setRestoreAttempted(true);
-      return;
-    }
-
-    const savedQueue =
-      Array.isArray(savedSession.playlistIds) && savedSession.playlistIds.length
-        ? savedSession.playlistIds
-            .map((id) => songs.find((song) => song?._id === id))
-            .filter(Boolean)
-        : songs;
-
-    const queueToRestore = savedQueue.length ? savedQueue : songs;
-    const savedPosition = Number(savedSession.position) || 0;
-
-    setRestoredSongPreview(songToRestore);
-    setLiveProgress(savedPosition);
-    setRestoreAttempted(true);
-
-    Promise.resolve().then(() => {
-      playSong?.(songToRestore, queueToRestore);
-
-      window.setTimeout(() => {
-        if (savedPosition > 0) {
-          seekTo?.(savedPosition);
-          setLiveProgress(savedPosition);
-        }
-
-        if (savedSession.wasPlaying) {
-          resumeSong?.();
-        } else {
-          pauseSong?.();
-        }
-      }, 250);
-    });
-  }, [
-    currentSong?._id,
-    restoreAttempted,
-    songs,
-    playSong,
-    seekTo,
-    resumeSong,
-    pauseSong,
-  ]);
-
-  useEffect(() => {
-    setLiveProgress(Number(progress) || 0);
-  }, [progress, activeSong?._id]);
-
-  useEffect(() => {
-    const audio = audioRef?.current;
-
-    const syncFromAudio = () => {
-      const currentTime = Number(audio?.currentTime);
-
-      if (Number.isFinite(currentTime)) {
-        setLiveProgress(currentTime);
-      }
-
-      if (isPlaying) {
-        animationFrameRef.current = requestAnimationFrame(syncFromAudio);
-      }
-    };
-
-    if (isPlaying && audio) {
-      animationFrameRef.current = requestAnimationFrame(syncFromAudio);
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [audioRef, isPlaying, activeSong?._id]);
-
-  useEffect(() => {
-    const fallbackDuration = getDuration(activeSong, 0, 0);
-
-    setLiveDuration(fallbackDuration);
-
-    const audio = audioRef?.current;
-    if (!audio) return;
-
-    const syncProgress = () => {
-      const currentTime = Number(audio.currentTime);
-
-      if (Number.isFinite(currentTime) && currentTime >= 0) {
-        setLiveProgress(currentTime);
-      }
-    };
-
-    const syncDuration = () => {
-      const audioDuration = normalizeDuration(audio.duration);
-
-      setLiveDuration(audioDuration || fallbackDuration);
-    };
-
-    const syncAudioState = () => {
-      syncProgress();
-      syncDuration();
-    };
-
-    const activeSource =
-      activeSong?.audioUrl ||
-      activeSong?.audio ||
-      activeSong?.fileUrl ||
-      activeSong?.url ||
-      "";
-
-    const audioSource = audio.currentSrc || audio.src || "";
-    const sourceLooksCurrent =
-      !activeSource ||
-      !audioSource ||
-      audioSource === activeSource ||
-      audioSource.includes(activeSource) ||
-      activeSource.includes(audioSource);
-
-    if (audio.readyState >= 1 && sourceLooksCurrent) {
-      syncAudioState();
-    }
-
-    audio.addEventListener("timeupdate", syncProgress);
-    audio.addEventListener("seeked", syncProgress);
-    audio.addEventListener("loadedmetadata", syncAudioState);
-    audio.addEventListener("durationchange", syncDuration);
-    audio.addEventListener("canplay", syncAudioState);
-
-    return () => {
-      audio.removeEventListener("timeupdate", syncProgress);
-      audio.removeEventListener("seeked", syncProgress);
-      audio.removeEventListener("loadedmetadata", syncAudioState);
-      audio.removeEventListener("durationchange", syncDuration);
-      audio.removeEventListener("canplay", syncAudioState);
-    };
-  }, [
-    audioRef,
-    activeSong?._id,
-    activeSong?.audioUrl,
-    activeSong?.audio,
-    activeSong?.fileUrl,
-    activeSong?.url,
-    activeSong?.duration,
-    duration,
-  ]);
-
-  useEffect(() => {
-    setLikesCount(Number(activeSong?.likes) || 0);
-    setLiked(false);
-    setPlaylistStatus("");
-    setSelectedPlaylistId("");
-  }, [activeSong?._id, activeSong?.likes]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const checkOfflineStatus = async () => {
-      if (!activeSong?._id) {
-        setOfflineSaved(false);
-        return;
-      }
-
-      try {
-        const saved = await isSongOfflineAvailable(activeSong);
-
-        if (!cancelled) {
-          setOfflineSaved(Boolean(saved));
-        }
-      } catch (error) {
-        console.error("Failed to check offline song status:", error);
-
-        if (!cancelled) {
-          setOfflineSaved(false);
-        }
-      }
-    };
-
-    checkOfflineStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeSong?._id, activeSong?.audioUrl]);
-
-  useEffect(() => {
-    const checkLikeStatus = async () => {
-      if (!backendUrl || !token || !activeSong?._id) return;
-
-      try {
-        const res = await axios.get(
-          `${backendUrl}/api/likes/check/${activeSong._id}`,
-          {
-            headers: { token },
-          }
-        );
-
-        if (res.data?.success) {
-          setLiked(Boolean(res.data.liked));
-        }
-      } catch (error) {
-        console.error("Failed to check like status:", error);
-      }
-    };
-
-    checkLikeStatus();
-  }, [backendUrl, token, activeSong?._id]);
-
-  useEffect(() => {
-    if (activeLyricIndex < 0) return;
-
-    const targets = [
-      {
-        container: lyricsContainerRef.current,
-        activeNode: lyricRefs.current[activeLyricIndex],
-      },
-      {
-        container: lyricsModalContainerRef.current,
-        activeNode: modalLyricRefs.current[activeLyricIndex],
-      },
-    ];
-
-    targets.forEach(({ container, activeNode }) => {
-      if (!container || !activeNode) return;
-
-      const containerHeight = container.clientHeight;
-      const activeOffsetTop = activeNode.offsetTop;
-      const activeHeight = activeNode.offsetHeight;
-
-      const targetScrollTop =
-        activeOffsetTop - containerHeight / 2 + activeHeight / 2;
-
-      container.scrollTo({
-        top: Math.max(0, targetScrollTop),
-        behavior: "smooth",
-      });
-    });
-  }, [activeLyricIndex, lyricsModalOpen]);
-
-  useEffect(() => {
-    const audio = audioRef?.current;
-    if (!audio) return;
-
-    audio.volume = muted ? 0 : volume;
-    audio.muted = muted;
-  }, [audioRef, muted, volume]);
-
-  useEffect(() => {
-    if (!lyricsModalOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [lyricsModalOpen]);
-
-  useEffect(() => {
-    return () => {
-      visualizerOpeningCancelledRef.current = true;
-
-      if (visualizerNavigateTimerRef.current) {
-        window.clearTimeout(visualizerNavigateTimerRef.current);
-        visualizerNavigateTimerRef.current = null;
-      }
-
-      if (visualizerNavigateFrameRef.current) {
-        window.cancelAnimationFrame(visualizerNavigateFrameRef.current);
-        visualizerNavigateFrameRef.current = null;
-      }
-    };
-  }, []);
-
-  const fetchPlaylists = useCallback(async () => {
-    if (!backendUrl || !token) {
-      setPlaylists([]);
-      return;
-    }
-
+    if (!synced || !isCurrent) return -1;
+    let active = -1;
+    lyrics.forEach((line, index) => { if (Number.isFinite(line.start) && progress >= line.start) active = index; });
+    return active;
+  }, [lyrics, progress, synced, isCurrent]);
+
+  const fetchSong = useCallback(async () => {
+    setLoading(true); setError("");
     try {
-      setPlaylistLoading(true);
-      const res = await axios.get(`${backendUrl}/api/playlist/get`, {
-        headers: { token },
-      });
+      const data = await cachedGet(`/api/songs/${songId}`, { ttl: 20000 });
+      if (!data?.success || !data.song) throw new Error(data?.message || "Song not found");
+      setSong(data.song); setLikes(Number(data.song.likes || 0));
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || "Could not load this song");
+    } finally { setLoading(false); }
+  }, [songId]);
 
-      if (res.data?.success) {
-        setPlaylists(res.data.playlists || []);
+  useEffect(() => { if (!song?._id || String(song._id) !== String(songId)) fetchSong(); else { setLoading(false); setLikes(Number(song.likes || 0)); } }, [fetchSong, song, songId]);
+
+  useEffect(() => {
+    if (!song?._id) return;
+    const controller = new AbortController();
+    const genre = song.genre && song.genre !== "Unknown" ? song.genre : "";
+    cachedGet("/api/songs/filter", { params: { genre, limit: 8, sort: "popular" }, ttl: 35000, signal: controller.signal })
+      .then((data) => setRecommendations((data?.songs || []).filter((item) => item._id !== song._id).slice(0,6)))
+      .catch(() => setRecommendations([]));
+    return () => controller.abort();
+  }, [song?._id, song?.genre]);
+
+  useEffect(() => {
+    if (!song?._id) return;
+    isSongOfflineAvailable(song).then(setOfflineSaved).catch(() => setOfflineSaved(false));
+  }, [song]);
+
+  useEffect(() => {
+    if (song?._id) trackTasteEvent("song_view", { songId: song._id }, { cooldownMs: 60000 });
+  }, [song?._id]);
+
+  useEffect(() => {
+    if (!song?._id || !token) { setLiked(false); return; }
+    apiClient.get(`/api/likes/check/${song._id}`, { headers: authHeaders(token) })
+      .then(({data}) => { if (data?.success) setLiked(Boolean(data.liked)); })
+      .catch(() => {});
+  }, [song?._id, token]);
+
+  const loadComments = useCallback(async ({ page = 1, append = false } = {}) => {
+    if (!songId) return;
+    setCommentsLoading(true);
+    try {
+      const { data } = await apiClient.get(`/api/comments/song/${songId}`, { params: { page, limit: 12 }, headers: authHeaders(token) });
+      if (data?.success) {
+        setComments((current) => append ? [...current, ...(data.comments || [])] : (data.comments || []));
+        setCommentPage(page); setCommentTotal(Number(data.total || 0)); setCommentsMore(Boolean(data.hasMore));
       }
-    } catch (error) {
-      console.error("Failed to fetch playlists:", error);
-      setPlaylistStatus("Could not load playlists.");
-    } finally {
-      setPlaylistLoading(false);
-    }
-  }, [backendUrl, token]);
+    } catch { if (!append) setComments([]); }
+    finally { setCommentsLoading(false); }
+  }, [songId, token]);
+  useEffect(() => { loadComments({page:1}); }, [loadComments]);
 
-  const openPlaylistModal = async () => {
-    setPlaylistModalOpen(true);
-    setPlaylistStatus("");
-    await fetchPlaylists();
+  useEffect(() => {
+    if (activeLyricIndex < 0 || !lineRefs.current[activeLyricIndex]) return;
+    const behavior = getBatterySaver() ? "auto" : "smooth";
+    lineRefs.current[activeLyricIndex]?.scrollIntoView({ behavior, block: "center" });
+  }, [activeLyricIndex]);
+
+  const handlePlay = () => {
+    if (!song) return;
+    if (isCurrent) player?.togglePlay?.(); else player?.playSong?.(song, queue.length ? queue : [song]);
   };
 
-  const handleToggleLike = async () => {
-    if (!backendUrl || !token || !activeSong?._id || likeLoading) return;
-
-    const previousLiked = liked;
-    const previousCount = likesCount;
-
+  const toggleLike = async () => {
+    if (!token) { navigate("/account"); return; }
+    if (!song?._id || likeBusy) return;
+    setLikeBusy(true);
     try {
-      setLikeLoading(true);
-
-      setLiked(!previousLiked);
-      setLikesCount((count) => Math.max(0, count + (previousLiked ? -1 : 1)));
-
-      const res = await axios.post(
-        `${backendUrl}/api/likes/toggle/${activeSong._id}`,
-        {},
-        {
-          headers: { token },
-        }
-      );
-
-      if (res.data?.success) {
-        setLiked(Boolean(res.data.liked));
-        setLikesCount(Number(res.data.likes) || 0);
-      } else {
-        setLiked(previousLiked);
-        setLikesCount(previousCount);
-      }
-    } catch (error) {
-      console.error("Failed to toggle like:", error);
-      setLiked(previousLiked);
-      setLikesCount(previousCount);
-    } finally {
-      setLikeLoading(false);
-    }
+      const { data } = await apiClient.post(`/api/likes/toggle/${song._id}`, {}, { headers: authHeaders(token) });
+      if (data?.success) { setLiked(Boolean(data.liked)); setLikes(Number(data.likes ?? likes)); }
+    } catch { setStatus("Could not update Favorite."); }
+    finally { setLikeBusy(false); }
   };
 
-  const handleSeek = (event) => {
-    const value = Number(event.target.value);
-    const safeValue = clamp(value, 0, totalDuration || value);
-
-    setLiveProgress(safeValue);
-    seekTo?.(safeValue);
-
-    window.setTimeout(saveCurrentSession, 0);
-  };
-
-  const handleLyricClick = (start) => {
-    const timestamp = Number(start) || 0;
-
-    setLiveProgress(timestamp);
-    seekTo?.(timestamp);
-
-    if (!isPlaying) {
-      resumeSong?.();
-    }
-
-    window.setTimeout(saveCurrentSession, 0);
-  };
-
-  const handleVolumeChange = (event) => {
-    const nextVolume = clamp(Number(event.target.value), 0, 1);
-
-    setVolume(nextVolume);
-    setMuted(nextVolume === 0);
-
-    if (nextVolume > 0) {
-      lastVolumeRef.current = nextVolume;
-    }
-  };
-
-  const handleMute = () => {
-    if (muted || volume === 0) {
-      const restoredVolume = lastVolumeRef.current || 0.8;
-      setVolume(restoredVolume);
-      setMuted(false);
-      return;
-    }
-
-    lastVolumeRef.current = volume;
-    setMuted(true);
-  };
-
-  const handleShuffle = () => {
-    setShuffle?.(!shuffle);
-  };
-
-  const handleRepeat = () => {
-    if (typeof cycleRepeat === "function") {
-      cycleRepeat();
-      return;
-    }
-
-    if (typeof setRepeat === "function") {
-      if (repeat === "off" || repeat === false) setRepeat("all");
-      else if (repeat === "all" || repeat === true) setRepeat("one");
-      else setRepeat("off");
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (typeof togglePlay === "function") {
-      togglePlay();
-    } else if (isPlaying) {
-      pauseSong?.();
-    } else {
-      resumeSong?.();
-    }
-
-    window.setTimeout(saveCurrentSession, 0);
-  };
-
-  const clearOfflineStatusSoon = useCallback((delay = 3000) => {
-    window.setTimeout(() => {
-      setOfflineStatus("");
-    }, delay);
-  }, []);
-
-  const handleSaveOffline = async () => {
-    if (!activeSong?._id || !activeSong?.audioUrl || offlineLoading) return;
-
+  const toggleOffline = async () => {
+    if (!song?._id || offlineBusy) return;
+    setOfflineBusy(true); setStatus("");
     try {
-      setOfflineLoading(true);
-      setOfflineStatus("Saving song inside the app...");
-
-      await saveSongForOffline(activeSong);
-
-      setOfflineSaved(true);
-      setOfflineStatus("Saved in the app. This song can now play offline.");
-      clearOfflineStatusSoon(3500);
-    } catch (error) {
-      console.error("Failed to save offline song:", error);
-      setOfflineStatus(error.message || "Could not save this song offline.");
-      clearOfflineStatusSoon(4500);
-    } finally {
-      setOfflineLoading(false);
-    }
+      if (offlineSaved) { await removeOfflineSong(song); setOfflineSaved(false); setStatus("Removed offline copy."); }
+      else { await saveSongForOffline(song); setOfflineSaved(true); setStatus("Saved for offline listening."); }
+    } catch (err) { setStatus(err.message || "Offline save failed."); }
+    finally { setOfflineBusy(false); }
   };
 
-  const handleRemoveOfflineSong = async () => {
-    if (!activeSong?._id || offlineLoading) return;
-
+  const shareSong = async () => {
+    if (!song) return;
+    const url = window.location.href;
     try {
-      setOfflineLoading(true);
-      setOfflineStatus("Removing saved offline song...");
-
-      await removeOfflineSong(activeSong);
-
-      setOfflineSaved(false);
-      setOfflineStatus("Offline song removed.");
-      clearOfflineStatusSoon(3000);
-    } catch (error) {
-      console.error("Failed to remove offline song:", error);
-      setOfflineStatus(error.message || "Could not remove offline song.");
-      clearOfflineStatusSoon(4500);
-    } finally {
-      setOfflineLoading(false);
-    }
+      if (navigator.share) await navigator.share({ title: `${song.title} — ${getArtistName(song)}`, url });
+      else { await navigator.clipboard.writeText(url); setStatus("Link copied."); }
+    } catch { /* sharing cancelled */ }
   };
 
-  const handleOfflineAction = () => {
-    if (offlineSaved) {
-      handleRemoveOfflineSong();
-      return;
-    }
-
-    handleSaveOffline();
-  };
-
-  const handleShare = async () => {
-    if (!activeSong) return;
-
-    const shareData = {
-      title: activeSong.title,
-      text: `Listen to ${activeSong.title} by ${getArtistName(activeSong)}`,
-      url: window.location.href,
-    };
-
+  const addToPlaylist = async (playlistId) => {
+    if (!token) { navigate("/account"); return; }
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-        setShareStatus("Shared");
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        setShareStatus("Link copied");
-      }
-
-      window.setTimeout(() => setShareStatus(""), 1800);
-    } catch (error) {
-      console.error("Share failed:", error);
-      setShareStatus("");
-    }
+      const { data } = await apiClient.post("/api/playlist/add-song", { playlistId, songId: song._id }, { headers: authHeaders(token) });
+      setStatus(data?.message || (data?.success ? "Added to playlist." : "Could not add song."));
+      if (data?.success) fetchPlaylists?.();
+      setPlaylistOpen(false);
+    } catch (err) { setStatus(err?.response?.data?.message || "Could not add song."); }
   };
 
-  const handlePlayRecommended = (song) => {
-    const queueToPlay = shouldUseContextQueue
-      ? displayQueue
-      : getSmartQueueForSong(song, songs);
-    const queueIds = queueToPlay.map((item) => item?._id).filter(Boolean);
-
-    setRestoredSongPreview(null);
-    playSong?.(song, queueToPlay);
-
-    const payload = {
-      songId: song?._id,
-      position: 0,
-      duration: Number(song?.duration) || 0,
-      wasPlaying: true,
-      currentIndex: queueToPlay.findIndex((item) => item?._id === song?._id),
-      playlistIds: queueIds,
-      savedAt: Date.now(),
-    };
-
-    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(payload));
+  const submitComment = async (event) => {
+    event.preventDefault();
+    if (!token) { navigate("/account"); return; }
+    const body = commentBody.trim(); if (!body || commentBusy) return;
+    setCommentBusy(true);
+    try {
+      const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body }, { headers: authHeaders(token) });
+      if (data?.success && data.comment) { setComments((current) => [data.comment, ...current]); setCommentTotal((n)=>n+1); setCommentBody(""); }
+    } catch (err) { setStatus(err?.response?.data?.message || "Could not post comment."); }
+    finally { setCommentBusy(false); }
   };
 
-  const handlePlayFromQueue = (song) => {
-    if (shouldUseContextQueue) {
-      playSong?.(song, displayQueue);
-      return;
-    }
-
-    handlePlayRecommended(song);
+  const startEdit = (comment) => { setEditingId(comment._id); setEditBody(comment.body); };
+  const saveEdit = async (commentId) => {
+    const body=editBody.trim(); if(!body)return;
+    try { const {data}=await apiClient.patch(`/api/comments/${commentId}`,{body},{headers:authHeaders(token)}); if(data?.success)setComments(c=>c.map(item=>item._id===commentId?data.comment:item)); setEditingId(""); } catch { setStatus("Could not edit comment."); }
+  };
+  const deleteComment = async (commentId) => {
+    try { const {data}=await apiClient.delete(`/api/comments/${commentId}`,{headers:authHeaders(token)}); if(data?.success){setComments(c=>c.filter(item=>item._id!==commentId));setCommentTotal(n=>Math.max(0,n-1));} } catch { setStatus("Could not delete comment."); }
+  };
+  const likeComment = async (commentId) => {
+    if(!token){navigate("/account");return;}
+    try { const {data}=await apiClient.post(`/api/comments/${commentId}/like`,{}, {headers:authHeaders(token)}); if(data?.success)setComments(c=>c.map(item=>item._id===commentId?{...item,liked:data.liked,likes:data.likes}:item)); } catch { setStatus("Could not update comment."); }
   };
 
-  const handlePlaylistSelect = async (playlistId) => {
-    setSelectedPlaylistId(playlistId);
-
-    const selected = playlists.find((playlist) => playlist._id === playlistId);
-    const playlistName = selected?.name || selected?.title || "playlist";
-
-    setPlaylistStatus(`Selected ${playlistName}`);
-  };
-
-
-  const handleGoBack = useCallback(() => {
-    const safeFallback = location.state?.songDetailsBackPath || "/";
-
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-
-    navigate(safeFallback, { replace: true });
-  }, [location.state, navigate]);
-
-  const cancelVisualizerOpening = useCallback(() => {
-    visualizerOpeningCancelledRef.current = true;
-
-    if (visualizerNavigateTimerRef.current) {
-      window.clearTimeout(visualizerNavigateTimerRef.current);
-      visualizerNavigateTimerRef.current = null;
-    }
-
-    if (visualizerNavigateFrameRef.current) {
-      window.cancelAnimationFrame(visualizerNavigateFrameRef.current);
-      visualizerNavigateFrameRef.current = null;
-    }
-
-    setVisualizerOpening(false);
-  }, []);
-
-  const openVisualizer = useCallback(() => {
-    if (!activeSong?._id || visualizerOpening) return;
-
-    const targetPath = `/visualizer/${activeSong._id}`;
-    const queue = displayQueue.length ? displayQueue : songs;
-
-    visualizerOpeningCancelledRef.current = false;
-    setVisualizerOpening(true);
-    saveCurrentSession();
-
-    if (visualizerNavigateTimerRef.current) {
-      window.clearTimeout(visualizerNavigateTimerRef.current);
-      visualizerNavigateTimerRef.current = null;
-    }
-
-    if (visualizerNavigateFrameRef.current) {
-      window.cancelAnimationFrame(visualizerNavigateFrameRef.current);
-      visualizerNavigateFrameRef.current = null;
-    }
-
-    // Give the loader one paint frame before the heavier visualizer route mounts.
-    visualizerNavigateFrameRef.current = window.requestAnimationFrame(() => {
-      visualizerNavigateFrameRef.current = null;
-
-      if (visualizerOpeningCancelledRef.current) return;
-
-      visualizerNavigateTimerRef.current = window.setTimeout(() => {
-        visualizerNavigateTimerRef.current = null;
-
-        if (visualizerOpeningCancelledRef.current) return;
-
-        navigate(targetPath, {
-          replace: true,
-          state: {
-            song: activeSong,
-            playlist: queue,
-            from: `/song/${activeSong._id}`,
-            songDetailsBackPath: location.state?.songDetailsBackPath || "/",
-          },
-        });
-      }, 260);
-    });
-  }, [
-    activeSong,
-    location.state,
-    navigate,
-    displayQueue,
-    songs,
-    saveCurrentSession,
-    visualizerOpening,
-  ]);
-
-  const scrollToMobileDetails = useCallback(() => {
-    mobileDetailsRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, []);
-
-  const renderRepeatIcon = () => {
-    if (repeat === "one" || repeat === 1) return <MdRepeatOne />;
-    return <FaRedoAlt />;
-  };
-
-  const renderLyricsContent = (variant = "page") => {
-    const isModal = variant === "modal";
-    const refs = isModal ? modalLyricRefs : lyricRefs;
-    const containerRef = isModal ? lyricsModalContainerRef : lyricsContainerRef;
-
-    return (
-      <>
-        <div className={`lyrics-header ${isModal ? "lyrics-header-modal" : ""}`}>
-          <div>
-            <p className="eyebrow">Live Lyrics</p>
-            <h2>{isModal ? activeSong.title : "Karaoke Mode"}</h2>
-            {isModal && <small>{getArtistName(activeSong)}</small>}
-          </div>
-
-          <div className="lyrics-header-actions">
-            <span className="lyrics-time">
-              {formatTime(displayProgress)}
-              {isModal ? ` / ${formatTime(totalDuration)}` : ""}
-            </span>
-
-            {isModal && (
-              <button
-                type="button"
-                className="icon-button"
-                onClick={() => setLyricsModalOpen(false)}
-                aria-label="Close lyrics"
-              >
-                <FaTimes />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div
-          className="lyrics-scroll"
-          ref={containerRef}
-          tabIndex={0}
-          aria-live="polite"
-        >
-          {syncedLyrics.length ? (
-            syncedLyrics.map((line, index) => {
-              const isActive = index === activeLyricIndex;
-              const isPast = index < activeLyricIndex;
-              const isUpcoming = index > activeLyricIndex;
-
-              return (
-                <motion.button
-                  key={`${variant}-${line.start}-${line.text}-${index}`}
-                  ref={(node) => {
-                    if (node) {
-                      refs.current[index] = node;
-                    } else {
-                      delete refs.current[index];
-                    }
-                  }}
-                  type="button"
-                  className={[
-                    "lyric-line",
-                    isActive ? "active" : "",
-                    isPast ? "past" : "",
-                    isUpcoming ? "upcoming" : "",
-                  ].join(" ")}
-                  onClick={() => handleLyricClick(line.start)}
-                  aria-label={`Jump to lyric at ${formatTime(line.start)}: ${
-                    line.text
-                  }`}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{
-                    opacity: isActive ? 1 : isPast ? 0.36 : 0.72,
-                    y: 0,
-                    scale: isActive ? 1.025 : 1,
-                  }}
-                  transition={{ duration: 0.22 }}
-                  whileHover={{ scale: isActive ? 1.025 : 1.01 }}
-                  whileTap={{ scale: 0.985 }}
-                >
-                  {isActive && Array.isArray(line.words) && line.words.length ? (
-                    <span className="lyric-words">
-                      {line.words.map((word, wordIndex) => (
-                        <span
-                          key={`${word.text}-${word.start}-${wordIndex}`}
-                          className={
-                            wordIndex <= activeWordIndex
-                              ? "lyric-word sung"
-                              : "lyric-word"
-                          }
-                        >
-                          {word.text}
-                          {wordIndex < line.words.length - 1 ? " " : ""}
-                        </span>
-                      ))}
-                    </span>
-                  ) : (
-                    line.text
-                  )}
-                </motion.button>
-              );
-            })
-          ) : (
-            <div className="no-lyrics">
-              <FaMusic aria-hidden="true" />
-              <h3>No synchronized lyrics available</h3>
-              <p>This song does not include LRC lyrics yet.</p>
-            </div>
-          )}
-        </div>
-      </>
-    );
-  };
-
-  const renderMobileSongDetails = () => {
-    const progressPercent = progressMax ? (displayProgress / progressMax) * 100 : 0;
-    const queueSongs = displayQueue.length ? displayQueue : smartQueue;
-
-    return (
-      <motion.section
-        className="song-mobile-experience d-block d-md-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.45 }}
-        aria-label="Mobile now playing"
-      >
-        <section className="mobile-now-playing-hero" aria-label="Full screen now playing">
-          <div className="mobile-hero-bg" aria-hidden="true">
-            <img src={activeSong.imageUrl} alt="" />
-          </div>
-
-          <div className="mobile-hero-shade" aria-hidden="true" />
-
-          <motion.div
-            className="mobile-hero-content"
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-          >
-            <div className="mobile-top-label">
-              <span></span>
-              <span>{getAlbumTitle(activeSong)}</span>
-            </div>
-
-            <motion.div
-              className={`mobile-premium-cover ${isPlaying ? "is-playing" : ""}`}
-              initial={{ opacity: 0, scale: 0.92, y: 24 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: isPlaying ? [0, -6, 0] : 0,
-              }}
-              transition={{
-                opacity: { duration: 0.45 },
-                scale: { duration: 0.45, ease: "easeOut" },
-                y: {
-                  duration: 4,
-                  repeat: isPlaying ? Infinity : 0,
-                  ease: "easeInOut",
-                },
-              }}
-            >
-              <img
-                src={activeSong.imageUrl}
-                alt={`${activeSong.title} album cover`}
-              />
-
-              <div className="mobile-cover-visualizer" aria-hidden="true">
-                {Array.from({ length: 10 }).map((_, index) => (
-                  <span
-                    key={index}
-                    className={isPlaying ? "playing" : ""}
-                    style={{
-                      "--delay": `${index * 0.08}s`,
-                      "--height": `${14 + ((index * 13) % 32)}px`,
-                    }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-
-            <div className="mobile-hero-song-copy">
-              <p>{getArtistName(activeSong)}</p>
-              <h1>{activeSong.title}</h1>
-            </div>
-
-            <div className="mobile-hero-progress">
-              <input
-                className="progress-slider mobile-premium-progress"
-                type="range"
-                min="0"
-                max={progressMax || 0}
-                step="0.01"
-                value={clamp(Number(displayProgress) || 0, 0, progressMax || 0)}
-                onChange={handleSeek}
-                aria-label="Song progress"
-                style={{ "--progress-percent": `${progressPercent}%` }}
-              />
-
-              <div className="mobile-hero-time-row">
-                <time>{formatTime(displayProgress)}</time>
-                <time>{formatTime(totalDuration)}</time>
-              </div>
-            </div>
-
-            <div className="mobile-primary-controls" aria-label="Player controls">
-              <motion.button
-                type="button"
-                className={`mobile-icon-control ${shuffle ? "active" : ""}`}
-                onClick={handleShuffle}
-                whileTap={{ scale: 0.88 }}
-                aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
-                aria-pressed={Boolean(shuffle)}
-              >
-                <FaRandom />
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="mobile-icon-control"
-                onClick={prevSong}
-                whileTap={{ scale: 0.88 }}
-                aria-label="Previous song"
-              >
-                <FaStepBackward />
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className={`mobile-main-play ${
-                  isBuffering ? "details-play-loading" : ""
-                }`}
-                onClick={handlePlayPause}
-                whileTap={{ scale: 0.92 }}
-                aria-label={songDetailsPlayLabel}
-                title={songDetailsPlayLabel}
-              >
-                {isBuffering ? (
-                  <span className="details-player-loader" aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </span>
-                ) : isPlaying ? (
-                  <FaPause />
-                ) : (
-                  <FaPlay />
-                )}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="mobile-icon-control"
-                onClick={nextSong}
-                whileTap={{ scale: 0.88 }}
-                aria-label="Next song"
-              >
-                <FaStepForward />
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className={`mobile-icon-control ${
-                  repeat === "one" ||
-                  repeat === "all" ||
-                  repeat === true ||
-                  repeat === 1
-                    ? "active"
-                    : ""
-                }`}
-                onClick={handleRepeat}
-                whileTap={{ scale: 0.88 }}
-                aria-label={repeatLabel(repeat)}
-                aria-pressed={
-                  repeat === "one" ||
-                  repeat === "all" ||
-                  repeat === true ||
-                  repeat === 1
-                }
-              >
-                {renderRepeatIcon()}
-              </motion.button>
-            </div>
-
-            <div className="mobile-secondary-actions" aria-label="Song actions">
-              <motion.button
-                type="button"
-                className={`mobile-pill-action ${liked ? "liked" : ""}`}
-                onClick={handleToggleLike}
-                disabled={!token || likeLoading}
-                whileTap={{ scale: 0.94 }}
-                aria-label={liked ? "Unlike song" : "Like song"}
-                aria-pressed={liked}
-              >
-                {liked ? <FaHeart /> : <FaRegHeart />}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="mobile-pill-action"
-                onClick={handleShare}
-                whileTap={{ scale: 0.94 }}
-                aria-label="Share song"
-              >
-                <FaShareAlt />
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className={`mobile-pill-action visualizer-action ${
-                  visualizerOpening ? "is-loading" : ""
-                }`}
-                onClick={openVisualizer}
-                disabled={visualizerOpening}
-                whileTap={{ scale: 0.94 }}
-                aria-label={
-                  visualizerOpening ? "Opening visualizer" : "Open visualizer"
-                }
-                aria-busy={visualizerOpening}
-              >
-                {visualizerOpening ? (
-                  <span className="song-visualizer-spinner" aria-hidden="true" />
-                ) : (
-                  <FaCompactDisc />
-                )}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className={`mobile-pill-action ${offlineSaved ? "active" : ""}`}
-                onClick={handleOfflineAction}
-                disabled={offlineLoading || !activeSong?.audioUrl}
-                whileTap={{ scale: 0.94 }}
-                aria-label={
-                  offlineSaved
-                    ? "Remove saved offline song"
-                    : "Save song for offline playback"
-                }
-                aria-pressed={offlineSaved}
-                title={
-                  offlineSaved
-                    ? "Remove saved offline song"
-                    : "Save for offline playback"
-                }
-              >
-                {offlineLoading ? (
-                  <FaSpinner className="spin-icon" />
-                ) : offlineSaved ? (
-                  <FaCheck />
-                ) : (
-                  <FaDownload />
-                )}
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="mobile-pill-action"
-                onClick={openPlaylistModal}
-                whileTap={{ scale: 0.94 }}
-                aria-label="Add to playlist"
-              >
-                <FaPlus />
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="mobile-pill-action"
-                onClick={() => setQueueOpen(true)}
-                whileTap={{ scale: 0.94 }}
-                aria-label="Open queue"
-              >
-                <FaListUl />
-              </motion.button>
-            </div>
-
-            {offlineSaved && (
-              <div className="mobile-offline-actions">
-                <button
-                  type="button"
-                  className="offline-file-button danger"
-                  onClick={handleRemoveOfflineSong}
-                  disabled={offlineLoading}
-                >
-                  <FaTrash />
-                  Remove offline
-                </button>
-              </div>
-            )}
-
-            {offlineStatus && (
-              <p className="offline-status mobile" role="status">
-                {offlineStatus}
-              </p>
-            )}
-
-            <div className="mobile-mode-launchers">
-              <motion.button
-                type="button"
-                className={`mobile-mode-launch visualizer-launch ${
-                  visualizerOpening ? "is-loading" : ""
-                }`}
-                onClick={openVisualizer}
-                disabled={visualizerOpening}
-                whileTap={{ scale: 0.96 }}
-                aria-label={
-                  visualizerOpening
-                    ? "Opening music visualizer"
-                    : "Open music visualizer"
-                }
-                aria-busy={visualizerOpening}
-              >
-                <span className="mobile-lyrics-launch-icon">
-                  {visualizerOpening ? (
-                    <span className="song-visualizer-spinner" aria-hidden="true" />
-                  ) : (
-                    <FaCompactDisc />
-                  )}
-                </span>
-                <span>{visualizerOpening ? "Opening..." : "Visualizer"}</span>
-              </motion.button>
-
-              <motion.button
-                type="button"
-                className="mobile-mode-launch"
-                onClick={() => setLyricsModalOpen(true)}
-                whileTap={{ scale: 0.96 }}
-                aria-label="Open full screen lyrics"
-              >
-                <span className="mobile-lyrics-launch-icon">
-                  <FaMusic />
-                </span>
-                <span>Lyrics</span>
-              </motion.button>
-            </div>
-
-            <motion.button
-              type="button"
-              className="mobile-scroll-cue"
-              onClick={scrollToMobileDetails}
-              animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              aria-label="Swipe up for song details"
-            >
-              <span>More details</span>
-              <FaChevronUp />
-            </motion.button>
-          </motion.div>
-        </section>
-
-        <motion.section
-          ref={mobileDetailsRef}
-          className="mobile-details-stage"
-          initial={{ opacity: 0, y: 26 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          aria-label="Song details and recommendations"
-        >
-          <section className="mobile-detail-panel mobile-song-meta-panel">
-            <p className="eyebrow">Song Details</p>
-            <h2>{activeSong.title}</h2>
-
-            <dl className="mobile-premium-detail-list">
-              <div>
-                <dt>Artist</dt>
-                <dd>{getArtistName(activeSong)}</dd>
-              </div>
-
-              <div>
-                <dt>Album</dt>
-                <dd>{getAlbumTitle(activeSong)}</dd>
-              </div>
-
-              <div>
-                <dt>Genre</dt>
-                <dd>{activeSong.genre || "Unknown"}</dd>
-              </div>
-
-              <div>
-                <dt>Release Date</dt>
-                <dd>{formatDate(activeSong.releaseDate)}</dd>
-              </div>
-
-              <div>
-                <dt>Release Year</dt>
-                <dd>{activeSong.releaseYear || "Unknown"}</dd>
-              </div>
-
-              <div>
-                <dt>Duration</dt>
-                <dd>{formatTime(totalDuration)}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="mobile-detail-panel mobile-lyrics-panel">
-            {renderLyricsContent("page")}
-          </section>
-
-          <section className="mobile-detail-panel">
-            <div className="mobile-section-title-row">
-              <div>
-                <p className="eyebrow">Up Next</p>
-                <h2>Recommended Songs</h2>
-              </div>
-
-              <button
-                type="button"
-                className="mobile-mini-button"
-                onClick={() => setQueueOpen(true)}
-                aria-label="Open queue"
-              >
-                <FaListUl />
-              </button>
-            </div>
-
-            <div className="mobile-recommended-list">
-              {recommendedSongs.slice(0, 8).map((song) => (
-                <motion.button
-                  key={song._id}
-                  type="button"
-                  className="mobile-recommended-song"
-                  onClick={() => handlePlayRecommended(song)}
-                  whileTap={{ scale: 0.98 }}
-                  aria-label={`Play ${song.title} by ${getArtistName(song)}`}
-                >
-                  <img src={song.imageUrl} alt="" />
-                  <span>
-                    <strong>{song.title}</strong>
-                    <small>{getArtistName(song)}</small>
-                  </span>
-                  <em>{formatTime(song.duration)}</em>
-                </motion.button>
-              ))}
-            </div>
-          </section>
-
-          <section className="mobile-detail-panel">
-            <div className="mobile-section-title-row">
-              <div>
-                <p className="eyebrow">Queue</p>
-                <h2>Playing Next</h2>
-              </div>
-
-              <button
-                type="button"
-                className="mobile-mini-button"
-                onClick={() => setQueueOpen(true)}
-                aria-label="View full queue"
-              >
-                <FaListUl />
-              </button>
-            </div>
-
-            <div className="mobile-recommended-list">
-              {queueSongs.slice(0, 6).map((song, index) => (
-                <motion.button
-                  key={`${song._id}-${index}`}
-                  type="button"
-                  className={`mobile-recommended-song ${
-                    song?._id === activeSong?._id ? "active" : ""
-                  }`}
-                  onClick={() => handlePlayFromQueue(song)}
-                  whileTap={{ scale: 0.98 }}
-                  aria-label={`Play ${song.title} by ${getArtistName(song)}`}
-                >
-                  <img src={song.imageUrl} alt="" />
-                  <span>
-                    <strong>{song.title}</strong>
-                    <small>{getArtistName(song)}</small>
-                  </span>
-                  <em>{song?._id === activeSong?._id ? "Now" : index + 1}</em>
-                </motion.button>
-              ))}
-            </div>
-          </section>
-
-          <section className="mobile-detail-panel mobile-actions-panel">
-            <p className="eyebrow">Actions</p>
-            <h2>Save, Share & Playlist</h2>
-
-            <div className="mobile-action-grid">
-              <button
-                type="button"
-                className={`mobile-action-btn ${liked ? "liked" : ""}`}
-                onClick={handleToggleLike}
-                disabled={!token || likeLoading}
-                aria-label={liked ? "Unlike song" : "Like song"}
-                aria-pressed={liked}
-              >
-                {liked ? <FaHeart /> : <FaRegHeart />}
-                <span>{likesCount.toLocaleString()} Likes</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={openPlaylistModal}
-                aria-label="Add to playlist"
-              >
-                <FaPlus />
-                <span>Playlist</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={handleShare}
-                aria-label="Share song"
-              >
-                <FaShareAlt />
-                <span>{shareStatus || "Share"}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`mobile-action-btn ${offlineSaved ? "active" : ""}`}
-                onClick={handleOfflineAction}
-                disabled={offlineLoading || !activeSong?.audioUrl}
-                aria-label={
-                  offlineSaved
-                    ? "Remove saved offline song"
-                    : "Save song for offline playback"
-                }
-                aria-pressed={offlineSaved}
-              >
-                {offlineLoading ? (
-                  <FaSpinner className="spin-icon" />
-                ) : offlineSaved ? (
-                  <FaCheck />
-                ) : (
-                  <FaDownload />
-                )}
-                <span>{offlineSaved ? "Offline" : "Save Offline"}</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={() => setLyricsModalOpen(true)}
-                aria-label="Open full screen lyrics"
-              >
-                <FaMusic />
-                <span>Lyrics</span>
-              </button>
-
-              <button
-                type="button"
-                className={`mobile-action-btn visualizer-action ${
-                  visualizerOpening ? "is-loading" : ""
-                }`}
-                onClick={openVisualizer}
-                disabled={visualizerOpening}
-                aria-label={
-                  visualizerOpening ? "Opening visualizer" : "Open visualizer"
-                }
-                aria-busy={visualizerOpening}
-              >
-                {visualizerOpening ? (
-                  <span className="song-visualizer-spinner" aria-hidden="true" />
-                ) : (
-                  <FaCompactDisc />
-                )}
-                <span>{visualizerOpening ? "Opening..." : "Visualizer"}</span>
-              </button>
-
-              <button
-                type="button"
-                className="mobile-action-btn"
-                onClick={() => setQueueOpen(true)}
-                aria-label="Open queue"
-              >
-                <FaListUl />
-                <span>Queue</span>
-              </button>
-            </div>
-          </section>
-        </motion.section>
-      </motion.section>
-    );
-  };
-
-  if (!activeSong) {
-    return (
-      <main className="song-details song-details-empty">
-        <motion.button
-          type="button"
-          className="song-back-button"
-          onClick={handleGoBack}
-          initial={{ opacity: 0, x: -14 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileTap={{ scale: 0.94 }}
-          aria-label="Go back to previous page"
-        >
-          <span className="song-back-icon">
-            <FaChevronLeft />
-          </span>
-          <span className="song-back-text">Back</span>
-        </motion.button>
-
-        <motion.section
-          className="empty-player-card"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-        >
-          <FaMusic className="empty-player-icon" aria-hidden="true" />
-          <h1>
-            {restoreAttempted ? "No song selected" : "Restoring your last song…"}
-          </h1>
-          <p>
-            {restoreAttempted
-              ? "Choose a song to open the now-playing experience."
-              : "Loading the track you were listening to."}
-          </p>
-        </motion.section>
-      </main>
-    );
-  }
+  if (loading && !song) return <div className="song-premium-page"><CatalogSkeleton count={8} /></div>;
+  if (error && !song) return <div className="song-premium-page"><EmptyState title="Song unavailable" message={error} onRetry={fetchSong} /></div>;
+  if (!song) return null;
+
+  const artistId = song.artist?._id;
+  const albumId = song.album?._id;
 
   return (
-    <main className="song-details" aria-label="Song details and player">
-      <div className="song-details-bg" aria-hidden="true">
-        <img src={activeSong.imageUrl} alt="" />
-      </div>
+    <div className="song-premium-page">
+      <button type="button" className="song-page-back" onClick={() => navigate(-1)}><ChevronLeft size={17}/> Back</button>
 
-      <AnimatePresence>
-        {visualizerOpening && (
-          <motion.div
-            className="visualizer-route-loader"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            role="status"
-            aria-live="polite"
-            aria-label="Opening visualizer"
-          >
-            <div className="visualizer-route-loader-bg" aria-hidden="true">
-              <img src={activeSong.imageUrl || "/fallback.jpg"} alt="" />
-            </div>
-
-            <motion.div
-              className="visualizer-route-loader-card"
-              initial={{ y: 18, scale: 0.96, opacity: 0 }}
-              animate={{ y: 0, scale: 1, opacity: 1 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              <span className="visualizer-route-loader-disc" aria-hidden="true">
-                <FaCompactDisc />
-              </span>
-
-              <div>
-                <strong>Opening Visualizer</strong>
-                <small>Keeping your song playing...</small>
-              </div>
-
-              <button
-                type="button"
-                className="visualizer-route-loader-cancel"
-                onClick={cancelVisualizerOpening}
-                aria-label="Cancel opening visualizer"
-              >
-                <FaTimes />
-                <span>Cancel</span>
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <motion.button
-        type="button"
-        className="song-back-button"
-        onClick={handleGoBack}
-        initial={{ opacity: 0, x: -14 }}
-        animate={{ opacity: 1, x: 0 }}
-        whileHover={{ scale: 1.03, x: -2 }}
-        whileTap={{ scale: 0.94 }}
-        aria-label="Go back to previous page"
-      >
-        <span className="song-back-icon">
-          <FaChevronLeft />
-        </span>
-        <span className="song-back-text">Back</span>
-      </motion.button>
-
-      {renderMobileSongDetails()}
-
-      <motion.section
-        className="song-details-layout row g-4 g-xl-4 g-xxl-5 align-items-stretch justify-content-center d-none d-md-flex"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.45 }}
-      >
-        <motion.aside
-          className="col-12 col-md-10 col-lg-4 col-xl-3 col-xxl-3 order-1 song-panel song-panel-left glass-card"
-          initial={{ opacity: 0, x: -24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45 }}
-          aria-label="Current song information"
-        >
-          <motion.div
-            className={`cover-shell ${isPlaying ? "is-playing" : ""}`}
-            animate={{ y: isPlaying ? [0, -7, 0] : 0 }}
-            transition={{
-              duration: 4,
-              repeat: isPlaying ? Infinity : 0,
-              ease: "easeInOut",
-            }}
-          >
-            <img
-              className="song-cover"
-              src={activeSong.imageUrl}
-              alt={`${activeSong.title} album cover`}
-            />
-          </motion.div>
-
-          <div className="song-title-block">
-            <p className="eyebrow">Now Playing</p>
-            <h1>{activeSong.title}</h1>
-            <p>{getArtistName(activeSong)}</p>
+      <section className="song-premium-hero">
+        <div className="song-premium-art-column">
+          <img className="song-premium-art" src={getSongCover(song)} alt={`${song.title} artwork`} />
+          <div className="song-premium-meta-block">
+            <span className="song-premium-kicker">Now Playing</span>
+            <h1>{song.title}</h1>
+            <button className="song-premium-link" type="button" disabled={!artistId} onClick={()=>artistId&&navigate(`/artist/${artistId}`)}>{getArtistName(song)}</button>
+            <button className="song-premium-link muted" type="button" disabled={!albumId} onClick={()=>albumId&&navigate(`/album/${albumId}`)}>{song.album?.title || "Single"}</button>
           </div>
-
-          <button
-            type="button"
-            className="show-lyrics-mobile-btn d-md-none"
-            onClick={() => setLyricsModalOpen(true)}
-            aria-label="Show lyrics"
-          >
-            <FaMusic />
-            Full Screen Lyrics
-          </button>
-
-          <div className="visualizer" aria-hidden="true">
-            {Array.from({ length: 16 }).map((_, index) => (
-              <span
-                key={index}
-                className={isPlaying ? "bar playing" : "bar"}
-                style={{
-                  "--delay": `${index * 0.07}s`,
-                  "--height": `${18 + ((index * 17) % 48)}px`,
-                }}
-              />
-            ))}
+          <div className="song-premium-actions">
+            <button className="song-main-play" type="button" onClick={handlePlay}>{isPlaying?<Pause size={18} fill="currentColor"/>:<Play size={18} fill="currentColor"/>}<span>{isPlaying?"Pause":"Play"}</span></button>
+            <button className={`song-round-action ${liked?"active":""}`} type="button" onClick={toggleLike} disabled={likeBusy} aria-label="Favorite"><Heart size={17} fill={liked?"currentColor":"none"}/></button>
+            <button className="song-round-action" type="button" onClick={()=>{if(!token)navigate("/account");else{fetchPlaylists?.();setPlaylistOpen(true);}}} aria-label="Add to playlist"><ListPlus size={17}/></button>
+            <button className={`song-round-action ${offlineSaved?"active":""}`} type="button" onClick={toggleOffline} disabled={offlineBusy} aria-label="Save offline">{offlineSaved?<Check size={17}/>:<Download size={17}/>}</button>
+            <button className="song-round-action" type="button" onClick={shareSong} aria-label="Share"><Share2 size={17}/></button>
           </div>
-
-          <section className="song-info-panel" aria-label="Song metadata">
-            <h2>Song Info</h2>
-
-            <dl>
-              <div>
-                <dt>Artist</dt>
-                <dd>{getArtistName(activeSong)}</dd>
-              </div>
-
-              <div>
-                <dt>Album</dt>
-                <dd>{getAlbumTitle(activeSong)}</dd>
-              </div>
-
-              <div>
-                <dt>Genre</dt>
-                <dd>{activeSong.genre || "Unknown"}</dd>
-              </div>
-
-              <div>
-                <dt>Release Date</dt>
-                <dd>{formatDate(activeSong.releaseDate)}</dd>
-              </div>
-
-              <div>
-                <dt>Release Year</dt>
-                <dd>{activeSong.releaseYear || "Unknown"}</dd>
-              </div>
-
-              <div>
-                <dt>Plays</dt>
-                <dd>{Number(activeSong.plays || 0).toLocaleString()}</dd>
-              </div>
-
-              <div>
-                <dt>Likes</dt>
-                <dd>{likesCount.toLocaleString()}</dd>
-              </div>
-
-              <div>
-                <dt>Duration</dt>
-                <dd>{formatTime(totalDuration)}</dd>
-              </div>
-
-              <div>
-                <dt>Audio Quality</dt>
-                <dd>High Quality</dd>
-              </div>
-            </dl>
-          </section>
-        </motion.aside>
-
-        <motion.section
-          className="col-12 col-md-10 col-lg-8 col-xl-6 col-xxl-6 order-2 lyrics-panel glass-card d-none d-md-flex"
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          aria-label="Synchronized lyrics"
-        >
-          {renderLyricsContent("page")}
-        </motion.section>
-
-        <motion.aside
-          className="col-12 col-md-10 col-lg-12 col-xl-3 col-xxl-3 order-3 song-panel song-panel-right glass-card"
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45 }}
-          aria-label="Recommended songs"
-        >
-          <div className="recommendations-header">
-            <div>
-              <p className="eyebrow">Up Next</p>
-              <h2>Recommended</h2>
-            </div>
-
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => setQueueOpen(true)}
-              aria-label="Open queue"
-            >
-              <FaListUl />
-            </button>
-          </div>
-
-          <div className="recommended-list">
-            {recommendedSongs.map((song) => (
-              <motion.button
-                key={song._id}
-                type="button"
-                className="recommended-song"
-                onClick={() => handlePlayRecommended(song)}
-                whileHover={{ scale: 1.015, x: 3 }}
-                whileTap={{ scale: 0.985 }}
-                aria-label={`Play ${song.title} by ${getArtistName(song)}`}
-              >
-                <img src={song.imageUrl} alt="" />
-                <span>
-                  <strong>{song.title}</strong>
-                  <small>{getArtistName(song)}</small>
-                </span>
-                <em>{formatTime(song.duration)}</em>
-              </motion.button>
-            ))}
-          </div>
-        </motion.aside>
-      </motion.section>
-
-      <motion.section
-  className="player-dock glass-card d-none d-md-block"
-  initial={{ opacity: 0, y: 36 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.1, duration: 0.42 }}
-  aria-label="Music player controls"
->
-  <div className="container-fluid p-0">
-    <div className="row g-3 g-xl-4 align-items-center justify-content-center">
-      <div className="col-12 col-lg-3 col-xl-3">
-        <div className="dock-song">
-          <img src={activeSong.imageUrl} alt="" />
-
-          <span>
-            <strong>{activeSong.title}</strong>
-            <small>{getArtistName(activeSong)}</small>
-          </span>
+          {status?<p className="song-status" role="status">{status}</p>:null}
+          <dl className="song-facts">
+            <div><dt>Album</dt><dd>{song.album?.title||"Single"}</dd></div>
+            <div><dt>Genre</dt><dd>{song.genre||"Unknown"}</dd></div>
+            <div><dt>Released</dt><dd>{song.releaseYear || (song.releaseDate ? new Date(song.releaseDate).getFullYear() : "—")}</dd></div>
+            <div><dt>Duration</dt><dd>{formatDuration(song.duration || player?.duration)}</dd></div>
+            <div><dt>Plays</dt><dd>{formatCompactNumber(song.plays)}</dd></div>
+            <div><dt>Likes</dt><dd>{formatCompactNumber(likes)}</dd></div>
+          </dl>
         </div>
-      </div>
 
-      <div className="col-12 col-lg-6 col-xl-6">
-        <div className="dock-main">
-          <div className="control-row">
-            <motion.button
-              type="button"
-              className={`icon-button ${shuffle ? "active" : ""}`}
-              onClick={handleShuffle}
-              whileTap={{ scale: 0.9 }}
-              aria-label={shuffle ? "Turn shuffle off" : "Turn shuffle on"}
-              aria-pressed={Boolean(shuffle)}
-            >
-              <FaRandom />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className="icon-button"
-              onClick={prevSong}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Previous song"
-            >
-              <FaStepBackward />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className={`play-button ${
-                isBuffering ? "details-play-loading" : ""
-              }`}
-              onClick={handlePlayPause}
-              whileHover={{ scale: 1.045 }}
-              whileTap={{ scale: 0.94 }}
-              aria-label={songDetailsPlayLabel}
-              title={songDetailsPlayLabel}
-            >
-              {isBuffering ? (
-                <span className="details-player-loader" aria-hidden="true">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </span>
-              ) : isPlaying ? (
-                <FaPause />
-              ) : (
-                <FaPlay />
-              )}
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className="icon-button"
-              onClick={nextSong}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Next song"
-            >
-              <FaStepForward />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className={`icon-button ${
-                repeat === "one" ||
-                repeat === "all" ||
-                repeat === true ||
-                repeat === 1
-                  ? "active"
-                  : ""
-              }`}
-              onClick={handleRepeat}
-              whileTap={{ scale: 0.9 }}
-              aria-label={repeatLabel(repeat)}
-              aria-pressed={
-                repeat === "one" ||
-                repeat === "all" ||
-                repeat === true ||
-                repeat === 1
-              }
-            >
-              {renderRepeatIcon()}
-            </motion.button>
-          </div>
-
-          <div className="progress-row">
-            <time>{formatTime(displayProgress)}</time>
-
-            <input
-              className="progress-slider"
-              type="range"
-              min="0"
-              max={progressMax || 0}
-              step="0.01"
-              value={clamp(Number(displayProgress) || 0, 0, progressMax || 0)}
-              onChange={handleSeek}
-              aria-label="Song progress"
-              style={{
-                "--progress-percent": `${
-                  progressMax ? (displayProgress / progressMax) * 100 : 0
-                }%`,
-              }}
-            />
-
-            <time>{formatTime(totalDuration)}</time>
-          </div>
-
-          <button
-            type="button"
-            className="show-lyrics-dock-btn"
-            onClick={() => setLyricsModalOpen(true)}
-            aria-label="Show lyrics"
-          >
-            <FaMusic />
-            Full Screen Lyrics
-          </button>
+        <div className="song-lyrics-column" ref={lyricsRef}>
+          <div className="song-lyrics-heading"><div><span className="song-premium-kicker">Lyrics</span><h2>{synced ? "Live lyrics" : "Lyrics"}</h2></div><span>{isCurrent ? formatDuration(progress) : ""}</span></div>
+          {lyrics.length ? <div className={`song-lyrics-scroll ${synced?"synced":"static"}`}>{lyrics.map((line,index)=><button ref={(el)=>{lineRefs.current[index]=el;}} key={`${line.text}-${index}`} type="button" className={`song-lyric-line ${index===activeLyricIndex?"active":index<activeLyricIndex?"past":""}`} disabled={!Number.isFinite(line.start)} onClick={()=>Number.isFinite(line.start)&&player?.seekTo?.(line.start)}>{line.text}</button>)}</div> : <EmptyState title="Lyrics aren’t available yet" message="This track can still be played normally." />}
         </div>
-      </div>
+      </section>
 
-      <div className="col-12 col-lg-3 col-xl-3">
-        <div className="dock-actions">
-          <div className="dock-actions-buttons">
-            <motion.button
-              type="button"
-              className={`icon-button favorite-button ${liked ? "liked" : ""}`}
-              onClick={handleToggleLike}
-              disabled={!token || likeLoading}
-              whileTap={{ scale: 0.9 }}
-              aria-label={liked ? "Unlike song" : "Like song"}
-              aria-pressed={liked}
-            >
-              {liked ? <FaHeart /> : <FaRegHeart />}
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className="icon-button"
-              onClick={openPlaylistModal}
-              whileTap={{ scale: 0.9 }}
-              aria-label="Add to playlist"
-            >
-              <FaPlus />
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className={`icon-button visualizer-action ${
-                visualizerOpening ? "is-loading" : ""
-              }`}
-              onClick={openVisualizer}
-              disabled={visualizerOpening}
-              whileTap={{ scale: 0.9 }}
-              aria-label={
-                visualizerOpening ? "Opening visualizer" : "Open visualizer"
-              }
-              aria-busy={visualizerOpening}
-              title={visualizerOpening ? "Opening visualizer" : "Open visualizer"}
-            >
-              {visualizerOpening ? (
-                <span className="song-visualizer-spinner" aria-hidden="true" />
-              ) : (
-                <FaCompactDisc />
-              )}
-            </motion.button>
-
-            <motion.button
-              type="button"
-              className={`icon-button ${offlineSaved ? "active" : ""}`}
-              onClick={handleOfflineAction}
-              disabled={offlineLoading || !activeSong?.audioUrl}
-              whileTap={{ scale: 0.9 }}
-              aria-label={
-                offlineSaved
-                  ? "Remove saved offline song"
-                  : "Save song for offline playback"
-              }
-              aria-pressed={offlineSaved}
-              title={
-                offlineSaved
-                  ? "Remove saved offline song"
-                  : "Save for offline playback"
-              }
-            >
-              {offlineLoading ? (
-                <FaSpinner className="spin-icon" />
-              ) : offlineSaved ? (
-                <FaCheck />
-              ) : (
-                <FaDownload />
-              )}
-            </motion.button>
-
-            <div className="share-wrap">
-              <motion.button
-                type="button"
-                className="icon-button"
-                onClick={handleShare}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Share song"
-              >
-                <FaShareAlt />
-              </motion.button>
-
-              <AnimatePresence>
-                {shareStatus && (
-                  <motion.span
-                    className="mini-status"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                  >
-                    {shareStatus}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {offlineSaved && (
-            <div className="offline-extra-actions">
-              <button
-                type="button"
-                className="offline-file-button danger"
-                onClick={handleRemoveOfflineSong}
-                disabled={offlineLoading}
-              >
-                <FaTrash />
-                Remove
-              </button>
-            </div>
-          )}
-
-          {offlineStatus && (
-            <p className="offline-status" role="status">
-              {offlineStatus}
-            </p>
-          )}
-
-          <div className=" d-flex align-items-center justify-content-center mx-auto">
-            <button
-              type="button"
-              className="icon-button"
-              onClick={handleMute}
-              aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
-            >
-              {muted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
-            </button>
-
-            
-          </div>
+      <section className="song-below-grid">
+        <div className="song-comments-section">
+          <div className="song-section-title"><div><span className="song-premium-kicker">Community</span><h2>Comments</h2></div><span>{commentTotal}</span></div>
+          <form className="song-comment-form" onSubmit={submitComment}><textarea value={commentBody} onChange={(e)=>setCommentBody(e.target.value.slice(0,600))} placeholder={token?"Add a comment…":"Sign in to join the conversation"} disabled={!token||commentBusy}/><div><small>{commentBody.length}/600</small><button className="sw-primary-btn" type="submit" disabled={!token||!commentBody.trim()||commentBusy}>{commentBusy?"Posting…":"Comment"}</button></div></form>
+          {commentsLoading&&!comments.length?<CatalogSkeleton count={4} rows/>:comments.length?<div className="song-comments-list">{comments.map((comment)=><article className="song-comment" key={comment._id}><div className="song-comment-avatar">{String(comment.user?.username||"S").slice(0,1).toUpperCase()}</div><div className="song-comment-body"><div className="song-comment-top"><strong>{comment.user?.username||"SoundWave listener"}</strong><span>{new Date(comment.createdAt).toLocaleDateString()}</span>{comment.editedAt?<em>edited</em>:null}</div>{editingId===comment._id?<div className="song-comment-edit"><textarea value={editBody} onChange={e=>setEditBody(e.target.value.slice(0,600))}/><button type="button" onClick={()=>saveEdit(comment._id)}>Save</button><button type="button" onClick={()=>setEditingId("")}>Cancel</button></div>:<p>{comment.body}</p>}<div className="song-comment-actions"><button type="button" className={comment.liked?"active":""} onClick={()=>likeComment(comment._id)}><Heart size={13} fill={comment.liked?"currentColor":"none"}/> {comment.likes||0}</button>{comment.canEdit?<><button type="button" onClick={()=>startEdit(comment)}>Edit</button><button type="button" onClick={()=>deleteComment(comment._id)}><Trash2 size={13}/> Delete</button></>:null}</div></div></article>)}</div>:<EmptyState title="No comments yet" message="Be the first listener to say something."/>}
+          {commentsMore?<button className="sw-secondary-btn song-comments-more" type="button" disabled={commentsLoading} onClick={()=>loadComments({page:commentPage+1,append:true})}>Load more comments</button>:null}
         </div>
-      </div>
+
+        <aside className="song-recommendations">
+          <div className="song-section-title"><div><span className="song-premium-kicker">Up next</span><h2>More like this</h2></div></div>
+          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><button key={item._id} type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><img src={getSongCover(item)} alt="" loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small>{getArtistName(item)}</small></span><MoreHorizontal size={16}/></button>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
+        </aside>
+      </section>
+
+      {playlistOpen?<div className="song-modal-backdrop" onMouseDown={()=>setPlaylistOpen(false)}><div className="song-playlist-sheet" role="dialog" aria-modal="true" aria-label="Add to playlist" onMouseDown={(e)=>e.stopPropagation()}><div className="song-section-title"><div><span className="song-premium-kicker">Library</span><h2>Add to playlist</h2></div><button className="song-round-action" type="button" onClick={()=>setPlaylistOpen(false)}>×</button></div>{playlists.length?<div className="song-playlist-options">{playlists.map((playlist)=><button type="button" key={playlist._id} onClick={()=>addToPlaylist(playlist._id)}><span><strong>{playlist.name}</strong><small>{playlist.songs?.length||0} songs</small></span><ListPlus size={17}/></button>)}</div>:<EmptyState title="No playlists yet" message="Create a playlist first from the Playlists page."/>}</div></div>:null}
     </div>
-  </div>
-</motion.section>
-
-      <AnimatePresence>
-        {lyricsModalOpen && (
-          <motion.div
-            className="modal-backdrop lyrics-fullscreen-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            role="presentation"
-            onClick={() => setLyricsModalOpen(false)}
-          >
-            <div className="lyrics-fullscreen-bg" aria-hidden="true">
-              <img src={activeSong.imageUrl} alt="" />
-            </div>
-
-            <motion.section
-              className="lyrics-fullscreen-card"
-              initial={{ opacity: 0, y: 36, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 22, scale: 0.96 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Full screen live lyrics"
-              onClick={(event) => event.stopPropagation()}
-            >
-              {renderLyricsContent("modal")}
-            </motion.section>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {playlistModalOpen && (
-          <motion.div
-            className="modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            role="presentation"
-            onClick={() => setPlaylistModalOpen(false)}
-          >
-            <motion.section
-              className="modal-card glass-card"
-              initial={{ opacity: 0, y: 28, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 18, scale: 0.96 }}
-              transition={{ duration: 0.22 }}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Add to playlist"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="modal-header">
-                <div>
-                  <p className="eyebrow">Library</p>
-                  <h2>Add to playlist</h2>
-                </div>
-
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={() => setPlaylistModalOpen(false)}
-                  aria-label="Close playlist modal"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-
-              {playlistLoading ? (
-                <div className="modal-empty">
-                  <p>Loading playlists…</p>
-                </div>
-              ) : playlists.length ? (
-                <div className="playlist-options">
-                  {playlists.map((playlist) => (
-                    <button
-                      key={playlist._id}
-                      type="button"
-                      className={`playlist-option ${
-                        selectedPlaylistId === playlist._id ? "selected" : ""
-                      }`}
-                      onClick={() => handlePlaylistSelect(playlist._id)}
-                    >
-                      <span>
-                        <strong>{playlist.name || playlist.title}</strong>
-                        <small>
-                          {playlist.songs?.length || playlist.tracks?.length || 0} songs
-                        </small>
-                      </span>
-
-                      {selectedPlaylistId === playlist._id && <FaCheck />}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="modal-empty">
-                  <p>No playlists found.</p>
-                </div>
-              )}
-
-              {playlistStatus && <p className="playlist-status">{playlistStatus}</p>}
-            </motion.section>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {queueOpen && (
-          <motion.div
-            className="modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            role="presentation"
-            onClick={() => setQueueOpen(false)}
-          >
-            <motion.section
-              className="modal-card queue-card glass-card"
-              initial={{ opacity: 0, y: 28, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 18, scale: 0.96 }}
-              transition={{ duration: 0.22 }}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Current queue"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="modal-header">
-                <div>
-                  <p className="eyebrow">Playing Queue</p>
-                  <h2>Up Next</h2>
-                </div>
-
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={() => setQueueOpen(false)}
-                  aria-label="Close queue modal"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-
-              <div className="queue-list">
-                {(displayQueue.length ? displayQueue : smartQueue).map((song, index) => (
-                  <button
-                    key={song._id}
-                    type="button"
-                    className={`queue-item ${
-                      song._id === activeSong._id ? "active" : ""
-                    }`}
-                    onClick={() => handlePlayFromQueue(song)}
-                  >
-                    <span className="queue-index">
-                      {song._id === activeSong._id ? <FaMusic /> : index + 1}
-                    </span>
-                    <img src={song.imageUrl} alt="" />
-                    <span>
-                      <strong>{song.title}</strong>
-                      <small>{getArtistName(song)}</small>
-                    </span>
-                    <em>{formatTime(song.duration)}</em>
-                  </button>
-                ))}
-              </div>
-            </motion.section>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </main>
   );
 };
 

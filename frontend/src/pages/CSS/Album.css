@@ -72,7 +72,7 @@
   padding: 0.45rem 0.85rem;
   margin-bottom: 1rem;
   border-radius: 999px;
-  color: #1ed760;
+  color: #ff375f;
   background: rgba(29, 185, 84, 0.12);
   border: 1px solid rgba(29, 185, 84, 0.24);
   font-size: 0.75rem;
@@ -133,7 +133,7 @@
   min-height: 52px;
   padding: 0 1.45rem;
   border-radius: 999px;
-  background: #1db954;
+  background: #fa233b;
   color: #000000;
   font-size: 0.96rem;
   font-weight: 900;
@@ -148,7 +148,7 @@
 }
 
 .album-play-button:hover {
-  background: #1ed760;
+  background: #ff375f;
   transform: scale(1.04);
 }
 
@@ -167,7 +167,7 @@
 }
 
 .album-tracks-header span {
-  color: #1ed760;
+  color: #ff375f;
   font-size: 0.75rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -271,7 +271,7 @@
 
 .album-playing-badge {
   flex-shrink: 0;
-  color: #1ed760;
+  color: #ff375f;
   background: rgba(29, 185, 84, 0.12);
   border-radius: 999px;
   padding: 0.25rem 0.55rem;
@@ -291,7 +291,7 @@
   height: 42px;
   border: none;
   border-radius: 50%;
-  background: #1db954;
+  background: #fa233b;
   color: #000000;
   display: flex;
   align-items: center;
@@ -311,7 +311,7 @@
 }
 
 .album-track-play:hover {
-  background: #1ed760;
+  background: #ff375f;
   transform: scale(1.08);
 }
 
@@ -328,7 +328,7 @@
   width: 3px;
   height: 7px;
   border-radius: 99px;
-  background: #1ed760;
+  background: #ff375f;
   animation: albumEqualizer 0.8s infinite ease-in-out;
 }
 
@@ -369,7 +369,7 @@
 }
 
 .album-empty-state svg {
-  color: #1ed760;
+  color: #ff375f;
   font-size: 2.8rem;
   margin-bottom: 1rem;
 }

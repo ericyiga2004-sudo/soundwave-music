@@ -113,7 +113,7 @@ body,
   width: 4px;
   height: 10px;
   border-radius: 999px;
-  background: #5cf680;
+  background: #fa233b;
   animation: sd2Eq 0.75s ease-in-out infinite;
 }
 
@@ -240,7 +240,7 @@ body,
 }
 
 .sd2-iconBtn.active {
-  color: #5cf680;
+  color: #fa233b;
   background: rgba(92, 246, 128, 0.16);
 }
 
@@ -259,7 +259,7 @@ body,
   justify-content: center;
   gap: 10px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #5cf680, #1db954);
+  background: linear-gradient(135deg, #fa233b, #fa233b);
   color: #061006;
 }
 
@@ -284,7 +284,7 @@ body,
   height: 17px;
   border-radius: 50%;
   border: 3px solid #fff;
-  background: #5cf680;
+  background: #fa233b;
 }
 
 .sd2-time {
@@ -309,7 +309,7 @@ body,
 
 .sd2-lyricPreview small {
   display: block;
-  color: #5cf680;
+  color: #fa233b;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -381,7 +381,7 @@ body,
   height: 44px;
   border-radius: 12px;
   padding: 0 16px;
-  background: #5cf680;
+  background: #fa233b;
   color: #071108;
 }
 
@@ -417,7 +417,7 @@ body,
 }
 
 .sd2-miniCard small {
-  color: #5cf680;
+  color: #fa233b;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -437,7 +437,7 @@ body,
   margin-top: 10px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: #5cf680;
+  background: #fa233b;
   color: #071108;
 }
 
@@ -584,7 +584,7 @@ body,
 
 .sd2-modal input {
   width: 100%;
-  accent-color: #5cf680;
+  accent-color: #fa233b;
 }
 
 .sd2-presets {

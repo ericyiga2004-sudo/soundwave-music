@@ -17,5 +17,11 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Data-loading effects are intentional throughout this app.
+      'react-hooks/set-state-in-effect': 'off',
+      // Context modules intentionally export both a context and provider.
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

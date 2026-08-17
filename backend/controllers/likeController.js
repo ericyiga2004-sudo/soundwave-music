@@ -1,6 +1,6 @@
 import User from "../models/userModel.js";
 import Song from "../models/uploadSongModel.js";
-import { ensurePreferences, increasePreference } from "../utils/preferencesHelper.js";
+import { applySongPreferenceSignal } from "../utils/preferencesHelper.js";
 
 export const toggleLikeSong = async (req, res) => {
   try {
@@ -24,7 +24,7 @@ export const toggleLikeSong = async (req, res) => {
     }
 
     const song = await Song.findById(songId).select(
-      "_id likes genre mood artist country songLanguage releaseYear"
+      "_id likes genre mood artist album country songLanguage releaseYear"
     );
 
     if (!song) {
@@ -33,8 +33,6 @@ export const toggleLikeSong = async (req, res) => {
         message: "Song not found",
       });
     }
-
-    ensurePreferences(user);
 
     const alreadyLiked = user.likedSongs.some(
       (likedSongId) => likedSongId.toString() === songId
@@ -48,6 +46,7 @@ export const toggleLikeSong = async (req, res) => {
         (id) => id.toString() !== songId
       );
 
+      applySongPreferenceSignal(user, song, -4);
       await user.save();
 
       updatedSong = await Song.findByIdAndUpdate(
@@ -80,12 +79,7 @@ export const toggleLikeSong = async (req, res) => {
     } else {
       user.likedSongs.addToSet(song._id);
 
-      increasePreference(user.preferences.countries, "name", song.country, 5);
-      increasePreference(user.preferences.genres, "name", song.genre, 5);
-      increasePreference(user.preferences.moods, "name", song.mood, 5);
-      increasePreference(user.preferences.languages, "name", song.songLanguage, 5);
-      increasePreference(user.preferences.years, "year", song.releaseYear, 5);
-      increasePreference(user.preferences.artists, "artist", song.artist, 5);
+      applySongPreferenceSignal(user, song, 7);
 
       await user.save();
 

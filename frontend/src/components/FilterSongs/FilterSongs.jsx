@@ -5,7 +5,7 @@ import "./FilterSongs.css";
 import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL as backendUrl } from "../../config/api";
 
 const tabs = ["Trending", "New", "Most Liked"];
 
@@ -122,6 +122,7 @@ const FilterSongs = () => {
   const [songs, setSongs] = useState([]);
   const [tab, setTab] = useState("Trending");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const [genre, setGenre] = useState("");
   const [country, setCountry] = useState("");
@@ -146,6 +147,7 @@ const FilterSongs = () => {
   const fetchSongs = async () => {
     try {
       setLoading(true);
+      setLoadError("");
 
       const token = localStorage.getItem("token");
       const hasToken = Boolean(token);
@@ -168,6 +170,7 @@ const FilterSongs = () => {
     } catch (err) {
       console.log("Fetch filter songs error:", err);
       setAllSongs([]);
+      setLoadError("Could not connect to the SoundWave catalog.");
     } finally {
       setLoading(false);
     }
@@ -183,11 +186,13 @@ const FilterSongs = () => {
     window.addEventListener("music-history-updated", fetchSongs);
     window.addEventListener("music-liked-updated", fetchSongs);
     window.addEventListener("artist-follow-updated", fetchSongs);
+    window.addEventListener("soundwave-personalization-updated", fetchSongs);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchSongs);
       window.removeEventListener("music-liked-updated", fetchSongs);
       window.removeEventListener("artist-follow-updated", fetchSongs);
+      window.removeEventListener("soundwave-personalization-updated", fetchSongs);
     };
   }, [tab]);
 
@@ -328,7 +333,7 @@ const FilterSongs = () => {
                   >
                     <div className="filter-release-image">
                       <img
-                        src={song.imageUrl || "/fallback-cover.png"}
+                        src={song.imageUrl || "/fallback-cover.svg"}
                         alt={song.title || "Song cover"}
                         loading="lazy"
                       />
@@ -361,6 +366,13 @@ const FilterSongs = () => {
               ))}
             </div>
           </section>
+        ) : loadError ? (
+          <div className="filter-empty-state catalog-error-state">
+            <span>{loadError}</span>
+            <button type="button" className="catalog-retry-btn" onClick={fetchSongs}>
+              Retry
+            </button>
+          </div>
         ) : (
           <div className="filter-empty-state">No songs found.</div>
         )}

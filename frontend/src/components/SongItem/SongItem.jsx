@@ -57,9 +57,10 @@ const SongItem = ({ song, queue = [] }) => {
       >
         <div className="card-img-container">
           <img
-            src={song.imageUrl || "/fallback-cover.png"}
+            src={song.imageUrl || "/fallback-cover.svg"}
             alt={song.title || "Song cover"}
             loading="lazy"
+            decoding="async"
           />
 
           <button

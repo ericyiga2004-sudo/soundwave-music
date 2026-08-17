@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
-  FaMusic,
   FaPlus,
   FaPlay,
   FaTrash,
@@ -70,7 +69,7 @@ const getSongImage = (song) => {
     song?.coverImage ||
     song?.album?.imageUrl ||
     song?.album?.image ||
-    "/fallback-cover.png"
+    "/fallback-cover.svg"
   );
 };
 
@@ -742,6 +741,47 @@ const PlayList = () => {
     }
   };
 
+  const deleteSelectedPlaylist = async () => {
+    if (!selectedPlaylistId || !selectedPlaylist) return;
+
+    const confirmed = window.confirm(
+      `Delete “${selectedPlaylist.name}”? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/playlist/delete`,
+        { playlistId: selectedPlaylistId },
+        { headers: { token: authToken } }
+      );
+
+      if (!res.data.success) {
+        alert(res.data.message || "Could not delete playlist");
+        return;
+      }
+
+      const deletedId = selectedPlaylistId;
+      setSelectedPlaylistId("");
+      setShareQuery("");
+      setShareUsers([]);
+      setPlaylists?.((prev) =>
+        (Array.isArray(prev) ? prev : []).filter((playlist) => playlist._id !== deletedId)
+      );
+
+      const refreshedPlaylists = await fetchPlaylists?.();
+      if (Array.isArray(refreshedPlaylists) && refreshedPlaylists.length > 0) {
+        selectOwnPlaylist(refreshedPlaylists[0]._id);
+      }
+
+      showNotice("Playlist deleted.");
+    } catch (error) {
+      console.log("Delete playlist error:", error);
+      alert(error.response?.data?.message || "Could not delete playlist");
+    }
+  };
+
   const removeSongFromPlaylist = async (songId) => {
     if (!selectedPlaylistId) return;
 
@@ -1161,14 +1201,24 @@ const PlayList = () => {
                     </div>
 
                     <div className="col-12 col-md-auto">
-                      <button
-                        type="button"
-                        onClick={playOwnPlaylist}
-                        disabled={playlistSongs.length === 0}
-                      >
-                        <FaPlay />
-                        Play All
-                      </button>
+                      <div className="playlist-header-actions">
+                        <button
+                          type="button"
+                          onClick={playOwnPlaylist}
+                          disabled={playlistSongs.length === 0}
+                        >
+                          <FaPlay />
+                          Play All
+                        </button>
+                        <button
+                          type="button"
+                          className="playlist-danger-action"
+                          onClick={deleteSelectedPlaylist}
+                        >
+                          <FaTrash />
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
 

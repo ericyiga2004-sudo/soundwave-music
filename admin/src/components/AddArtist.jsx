@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { ADMIN_API_BASE_URL } from "../config/api";
 import "./CSS/AddArtist.css";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = ADMIN_API_BASE_URL;
 
 const AddArtist = () => {
   const [form, setForm] = useState({

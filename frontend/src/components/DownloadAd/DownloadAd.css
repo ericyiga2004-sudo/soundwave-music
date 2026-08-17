@@ -41,7 +41,7 @@
   }
   
   .download-status-top strong {
-    color: #1ed760;
+    color: #ff375f;
     font-size: 12px;
     font-weight: 900;
   }
@@ -59,7 +59,7 @@
     width: 42%;
     height: 100%;
     border-radius: inherit;
-    background: #1db954;
+    background: #fa233b;
     animation: downloadStatusMove 1.2s infinite ease-in-out;
   }
   
@@ -79,7 +79,7 @@
     padding: 6px 12px;
     border-radius: 999px;
     background: rgba(29, 185, 84, 0.14);
-    color: #1ed760;
+    color: #ff375f;
     font-size: 12px;
     font-weight: 800;
     margin-bottom: 12px;
@@ -108,7 +108,7 @@
     min-height: 46px;
     padding: 0 22px;
     border-radius: 999px;
-    background: #1db954;
+    background: #fa233b;
     color: #07110b;
     font-weight: 900;
     text-decoration: none;
@@ -212,7 +212,7 @@
     width: 42px;
     border-radius: 12px;
     background:
-      linear-gradient(#1db954 0 18px, transparent 18px),
+      linear-gradient(#fa233b 0 18px, transparent 18px),
       rgba(255, 255, 255, 0.08);
   }
   
@@ -233,7 +233,7 @@
     height: 70px;
     border-radius: 16px;
     background:
-      radial-gradient(circle at top left, #1db954, transparent 45%),
+      radial-gradient(circle at top left, #fa233b, transparent 45%),
       linear-gradient(135deg, #2a2a2a, #111);
     margin-bottom: 12px;
   }
@@ -279,7 +279,7 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: linear-gradient(145deg, #1db954, #128c7e);
+    background: linear-gradient(145deg, #fa233b, #d70b2e);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -89,7 +89,7 @@ const DjStudio = () => {
                   <h2>Beat Grid</h2>
                 </div>
 
-                <button type="button">120 BPM</button>
+                <span className="studio-bpm-badge">120 BPM</span>
               </div>
 
               <div className="studio-grid-demo">

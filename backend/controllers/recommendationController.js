@@ -318,6 +318,9 @@ export const getHomeRecommendations = async (req, res) => {
         languages: profile.languages,
         years: profile.years,
         artists: profile.artists,
+        albums: profile.albums,
+        songs: profile.songs,
+        algorithmVersion: 2,
       },
     });
   } catch (error) {
@@ -805,6 +808,9 @@ export const getPreferenceSummary = async (req, res) => {
         languages: profile.languages,
         years: profile.years,
         artists: profile.artists,
+        albums: profile.albums,
+        songs: profile.songs,
+        algorithmVersion: 2,
       },
     });
   } catch (error) {

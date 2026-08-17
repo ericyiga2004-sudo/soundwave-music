@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -37,7 +37,7 @@ import {
 
 import "./CSS/Library.css";
 
-const FALLBACK_COVER = "/fallback-cover.png";
+const FALLBACK_COVER = "/fallback-cover.svg";
 const PLAYLIST_COVER = "/playlist.png";
 
 const formatTime = (seconds = 0) => {
@@ -124,9 +124,7 @@ const libraryPageStyles = `
   min-height: 100vh;
   padding: 18px 14px 120px;
   color: #f8fafc;
-  background:
-    radial-gradient(circle at top left, rgba(20, 184, 166, 0.35), transparent 34%),
-    linear-gradient(180deg, #07110f 0%, #0b1513 42%, #050807 100%);
+  background: #f5f5f7;
 }
 
 .boom-library-shell {
@@ -139,9 +137,7 @@ const libraryPageStyles = `
   overflow: hidden;
   border-radius: 26px;
   padding: 24px;
-  background:
-    linear-gradient(135deg, rgba(10, 199, 129, 0.95), rgba(15, 118, 110, 0.86)),
-    #0f766e;
+  background: #f2f2f4;
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
 }
 
@@ -211,9 +207,7 @@ const libraryPageStyles = `
   height: 92px;
   border-radius: 999px;
   color: #052e24;
-  background:
-    radial-gradient(circle, #ffffff 0 11%, transparent 12%),
-    conic-gradient(from 90deg, #ecfeff, #99f6e4, #134e4a, #ecfeff);
+  background: #ffffff;
   box-shadow: inset 0 0 0 10px rgba(4, 47, 46, 0.16), 0 18px 34px rgba(0, 0, 0, 0.25);
 }
 
@@ -502,7 +496,7 @@ const libraryPageStyles = `
   border-radius: 24px;
   padding: 20px;
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(34, 197, 94, 0.13));
+  background: #f2f2f4;
 }
 
 .boom-dj-banner h2 {
@@ -1234,11 +1228,9 @@ const Library = () => {
             </p>
           </div>
 
-          <Link to="/dj">
-            <button type="button" className="boom-primary-action">
-              Open DJ Studio
-              <FaArrowRight />
-            </button>
+          <Link to="/dj" className="boom-primary-action">
+            Open DJ Studio
+            <FaArrowRight />
           </Link>
         </section>
       </div>

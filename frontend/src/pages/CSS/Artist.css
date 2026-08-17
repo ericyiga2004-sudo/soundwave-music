@@ -71,7 +71,7 @@
     height: 230px;
     border-radius: 50%;
     padding: 8px;
-    background: linear-gradient(135deg, #1ed760, rgba(255, 255, 255, 0.14));
+    background: linear-gradient(135deg, #ff375f, rgba(255, 255, 255, 0.14));
     box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
   }
   
@@ -92,7 +92,7 @@
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: #1ed760;
+    background: #ff375f;
     color: #06130a;
     border: 4px solid #0b0b0b;
   }
@@ -103,7 +103,7 @@
     padding: 6px 12px;
     border-radius: 999px;
     background: rgba(30, 215, 96, 0.13);
-    color: #1ed760;
+    color: #ff375f;
     font-size: 12px;
     font-weight: 900;
     text-transform: uppercase;
@@ -133,7 +133,7 @@
   }
   
   .artist-meta svg {
-    color: #1ed760;
+    color: #ff375f;
   }
   
   .artist-bio {
@@ -167,7 +167,7 @@
   }
   
   .artist-play-btn {
-    background: #1ed760;
+    background: #ff375f;
     color: #06130a;
   }
   
@@ -206,7 +206,7 @@
   }
   
   .artist-section-header span {
-    color: #1ed760;
+    color: #ff375f;
     font-size: 12px;
     font-weight: 900;
     text-transform: uppercase;
@@ -272,7 +272,7 @@
   
   .artist-no-songs svg,
   .artist-empty svg {
-    color: #1ed760;
+    color: #ff375f;
     font-size: 42px;
     margin-bottom: 12px;
   }
@@ -287,7 +287,7 @@
     padding: 11px 18px;
     border: none;
     border-radius: 999px;
-    background: #1ed760;
+    background: #ff375f;
     color: #06130a;
     font-weight: 900;
   }
@@ -296,7 +296,7 @@
     width: 76px;
     height: 76px;
     border-radius: 50%;
-    background: radial-gradient(circle, #1ed760, transparent 65%);
+    background: radial-gradient(circle, #ff375f, transparent 65%);
     animation: artistPulse 1.2s infinite ease-in-out;
   }
   

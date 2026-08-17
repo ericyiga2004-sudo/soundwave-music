@@ -32,7 +32,7 @@
   .library-create-btn {
     border: none;
     outline: none;
-    background: #1db954;
+    background: #fa233b;
     color: #fff;
     font-weight: 700;
     border-radius: 999px;
@@ -46,7 +46,7 @@
   }
   
   .library-create-btn:hover {
-    background: #1ed760;
+    background: #ff375f;
     transform: scale(1.03);
   }
   
@@ -116,7 +116,7 @@
   }
   
   .library-categories button.active {
-    background: #1db954;
+    background: #fa233b;
   }
   
   /* ===========================
@@ -146,7 +146,7 @@
   
   .library-stat-card svg {
     font-size: 2rem;
-    color: #1db954;
+    color: #fa233b;
     margin-bottom: 1rem;
   }
   
@@ -164,7 +164,7 @@
   .dj-card {
     background: linear-gradient(
         135deg,
-        #1db954,
+        #fa233b,
         #169c46
     );
   }
@@ -205,7 +205,7 @@
   }
   
   .section-title svg {
-    color: #1db954;
+    color: #fa233b;
   }
   
   .empty-box {
@@ -240,7 +240,7 @@
   
     background: linear-gradient(
         135deg,
-        #1db954,
+        #fa233b,
         #0b6d2f
     );
   
@@ -400,7 +400,7 @@
   
     margin-bottom: 0.4rem;
   
-    color: #1db954;
+    color: #fa233b;
   
     font-size: 0.72rem;
     font-weight: 900;
@@ -527,7 +527,7 @@
   }
   
   .library-song-meta svg {
-    color: #1db954;
+    color: #fa233b;
     font-size: 0.78rem;
   }
   
@@ -548,7 +548,7 @@
     border: none;
     border-radius: 50%;
   
-    background: #1db954;
+    background: #fa233b;
     color: #000000;
   
     opacity: 0;
@@ -568,7 +568,7 @@
   }
   
   .library-play-btn:hover {
-    background: #1ed760;
+    background: #ff375f;
     transform: scale(1.08);
   }
   

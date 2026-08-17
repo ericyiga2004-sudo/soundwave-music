@@ -1,5 +1,6 @@
 import Notification from "../models/notificationModel.js";
 import User from "../models/userModel.js";
+import NotificationToken from "../models/NotificationToken.js";
 
 const maskEmail = (email = "") => {
   if (!email || !email.includes("@")) return "";
@@ -277,5 +278,56 @@ export const deleteNotification = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+export const registerNotificationToken = async (req, res) => {
+  try {
+    const token = String(req.body?.token || "").trim();
+    const platform = ["android", "ios", "web", "desktop"].includes(req.body?.platform)
+      ? req.body.platform
+      : "android";
+    const appId = String(req.body?.appId || "com.eric.soundwave").trim();
+
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Notification token is required" });
+    }
+
+    const saved = await NotificationToken.findOneAndUpdate(
+      { token },
+      {
+        $set: {
+          token,
+          platform,
+          appId,
+          user: req.userId || null,
+          isActive: true,
+          lastSeenAt: new Date(),
+        },
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return res.json({ success: true, tokenId: saved._id });
+  } catch (error) {
+    console.error("Register notification token error:", error);
+    return res.status(500).json({ success: false, message: "Could not register notification token" });
+  }
+};
+
+export const unregisterNotificationToken = async (req, res) => {
+  try {
+    const token = String(req.body?.token || "").trim();
+    if (!token) return res.status(400).json({ success: false, message: "Notification token is required" });
+
+    await NotificationToken.findOneAndUpdate(
+      { token },
+      { $set: { isActive: false, lastSeenAt: new Date() } }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Unregister notification token error:", error);
+    return res.status(500).json({ success: false, message: "Could not unregister notification token" });
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
   FaMusic,
@@ -7,11 +7,23 @@ import {
   FaLock,
   FaClock,
   FaHeadphones,
+  FaBatteryHalf,
+  FaWifi,
+  FaMagic,
 } from "react-icons/fa";
 
 import "./CSS/Account.css";
 import { MusicContext } from "../context/ShopContext";
 import SongItem from "../components/SongItem/SongItem";
+import {
+  getBatterySaver,
+  getLowData,
+  getPersonalizationEnabled,
+  setBatterySaver,
+  setLowData,
+  setPersonalizationEnabled,
+  UI_PREFERENCES_EVENT,
+} from "../utils/uiPreferences";
 
 const MAX_HISTORY_SONGS = 20;
 
@@ -64,6 +76,38 @@ const Account = () => {
 
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(null);
+  const [batterySaverEnabled, setBatterySaverEnabled] = useState(() => getBatterySaver());
+  const [lowDataEnabled, setLowDataEnabled] = useState(() => getLowData());
+  const [personalizationEnabled, setPersonalizationState] = useState(() => getPersonalizationEnabled());
+
+  useEffect(() => {
+    const syncPreferences = () => {
+      setBatterySaverEnabled(getBatterySaver());
+      setLowDataEnabled(getLowData());
+      setPersonalizationState(getPersonalizationEnabled());
+    };
+
+    window.addEventListener(UI_PREFERENCES_EVENT, syncPreferences);
+    return () => window.removeEventListener(UI_PREFERENCES_EVENT, syncPreferences);
+  }, []);
+
+  const toggleBatterySaver = () => {
+    const next = !batterySaverEnabled;
+    setBatterySaver(next);
+    setBatterySaverEnabled(next);
+  };
+
+  const toggleLowData = () => {
+    const next = !lowDataEnabled;
+    setLowData(next);
+    setLowDataEnabled(next);
+  };
+
+  const togglePersonalization = () => {
+    const next = !personalizationEnabled;
+    setPersonalizationEnabled(next);
+    setPersonalizationState(next);
+  };
 
   useEffect(() => {
     const cleanedToken = cleanStoredToken();
@@ -308,6 +352,58 @@ const Account = () => {
                 onClick={handleLogout}
               >
                 Logout
+              </button>
+            </div>
+          </section>
+
+          <section className="account-performance-section" aria-labelledby="performance-settings-title">
+            <div className="account-performance-copy">
+              <span className="account-performance-eyebrow">Performance</span>
+              <h2 id="performance-settings-title">Playback & data settings</h2>
+              <p>Keep SoundWave fast on phones, save battery, and reduce unnecessary network use.</p>
+            </div>
+
+            <div className="account-performance-options">
+              <button
+                type="button"
+                className={`account-setting-row ${batterySaverEnabled ? "is-on" : ""}`}
+                onClick={toggleBatterySaver}
+                aria-pressed={batterySaverEnabled}
+              >
+                <span className="account-setting-icon"><FaBatteryHalf /></span>
+                <span className="account-setting-text">
+                  <strong>Battery Saver</strong>
+                  <small>Disables decorative motion and expensive visual effects.</small>
+                </span>
+                <span className="account-setting-state">{batterySaverEnabled ? "On" : "Off"}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`account-setting-row ${lowDataEnabled ? "is-on" : ""}`}
+                onClick={toggleLowData}
+                aria-pressed={lowDataEnabled}
+              >
+                <span className="account-setting-icon"><FaWifi /></span>
+                <span className="account-setting-text">
+                  <strong>Low Data Mode</strong>
+                  <small>Defers artwork, loads smaller catalog pages, and stops automatic next-track streaming unless Repeat All is on.</small>
+                </span>
+                <span className="account-setting-state">{lowDataEnabled ? "On" : "Off"}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`account-setting-row ${personalizationEnabled ? "is-on" : ""}`}
+                onClick={togglePersonalization}
+                aria-pressed={personalizationEnabled}
+              >
+                <span className="account-setting-icon"><FaMagic /></span>
+                <span className="account-setting-text">
+                  <strong>Personalized recommendations</strong>
+                  <small>Learns from listening time, likes, saves, searches, artists, albums, genres and languages. SoundWave stores compact preference scores instead of a large raw activity log.</small>
+                </span>
+                <span className="account-setting-state">{personalizationEnabled ? "On" : "Off"}</span>
               </button>
             </div>
           </section>

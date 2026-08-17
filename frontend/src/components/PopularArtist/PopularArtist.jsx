@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,9 +11,9 @@ import {
 } from "react-icons/fa";
 import "./PopularArtist.css";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL as backendUrl } from "../../config/api";
 
-const MAX_ARTIST_STATS_SONGS = 300;
+const MAX_ARTIST_STATS_SONGS = 80;
 
 const formatFollowers = (value = 0) => {
   const number = Number(value || 0);
@@ -49,7 +49,7 @@ const buildPreferenceScoreMap = (items = [], key = "name") => {
       key === "artist" ? getPreferenceArtistId(item) : item?.[key];
 
     if (value !== undefined && value !== null && value !== "") {
-      map.set(value.toString().toLowerCase(), Number(item.score || 0));
+      map.set(value.toString().toLowerCase(), Number(item.effectiveScore ?? item.score ?? 0));
     }
   });
 
@@ -151,12 +151,12 @@ const sortArtistsByUserTaste = ({
 
       const rankingScore =
         followedBoost +
-        userArtistScore * 1200 +
-        countryScore * 200 +
+        userArtistScore * 1500 +
+        countryScore * 180 +
         songStats.moodScore * 80 +
-        songStats.totalLikes * 8 +
-        songStats.totalPlays * 2 +
-        Number(artist.followers || 0) * 0.1 +
+        Math.log1p(songStats.totalLikes) * 25 +
+        Math.log1p(songStats.totalPlays) * 12 +
+        Math.log1p(Number(artist.followers || 0)) * 18 +
         verifiedBoost;
 
       return {
@@ -190,15 +190,17 @@ const PopularArtist = () => {
   const [preferences, setPreferences] = useState({});
   const [followedArtists, setFollowedArtists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [followLoadingId, setFollowLoadingId] = useState("");
 
   const fetchArtists = async () => {
     try {
       setLoading(true);
+      setLoadError("");
 
       const token = localStorage.getItem("token");
 
-      const artistsRequest = axios.get(`${backendUrl}/api/artists`);
+      const artistsRequest = axios.get(`${backendUrl}/api/artists?limit=36&sort=followers`);
 
       const songsRequest = axios.get(
         `${backendUrl}/api/songs?limit=${MAX_ARTIST_STATS_SONGS}&sort=popular`
@@ -271,6 +273,7 @@ const PopularArtist = () => {
       setSongsForStats([]);
       setPreferences({});
       setFollowedArtists([]);
+      setLoadError("Could not connect to the SoundWave catalog.");
     } finally {
       setLoading(false);
     }
@@ -282,11 +285,13 @@ const PopularArtist = () => {
     window.addEventListener("music-history-updated", fetchArtists);
     window.addEventListener("music-liked-updated", fetchArtists);
     window.addEventListener("artist-follow-updated", fetchArtists);
+    window.addEventListener("soundwave-personalization-updated", fetchArtists);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchArtists);
       window.removeEventListener("music-liked-updated", fetchArtists);
       window.removeEventListener("artist-follow-updated", fetchArtists);
+      window.removeEventListener("soundwave-personalization-updated", fetchArtists);
     };
   }, []);
 
@@ -363,7 +368,16 @@ const PopularArtist = () => {
   if (loading) {
     return (
       <section className="popular-artists-section">
-        <div className="popular-artists-loading">Loading artists...</div>
+        <div className="popular-artists-header"><div><span className="popular-artists-tag">Artists</span><h2>Popular Artists</h2></div></div>
+        <div className="popular-artists-grid" aria-label="Loading artists">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div className="popular-artist-skeleton" key={index}>
+              <span className="popular-artist-skeleton-image" />
+              <span className="popular-artist-skeleton-line" />
+              <span className="popular-artist-skeleton-line short" />
+            </div>
+          ))}
+        </div>
       </section>
     );
   }
@@ -372,11 +386,9 @@ const PopularArtist = () => {
     <section className="popular-artists-section">
       <div className="popular-artists-header">
         <div>
-          <span className="popular-artists-tag">Top Creators</span>
+          <span className="popular-artists-tag">Artists</span>
           <h2>Popular Artists</h2>
-          <p>
-            Artists ranked by your plays, likes, favorite moods, and their top songs.
-          </p>
+          <p>Artists you listen to and might like.</p>
         </div>
 
         <button
@@ -391,7 +403,7 @@ const PopularArtist = () => {
 
       {sortedArtists.length > 0 ? (
         <div className="popular-artists-grid">
-          {sortedArtists.map((artist) => {
+          {sortedArtists.slice(0, 6).map((artist) => {
             const following = isFollowingArtist(artist._id);
             const buttonLoading = followLoadingId === artist._id;
 
@@ -404,9 +416,11 @@ const PopularArtist = () => {
                   tabIndex={0}
                 >
                   <img
-                    src={artist.image || "/fallback-cover.png"}
+                    src={artist.image || "/fallback-cover.svg"}
                     alt={artist.name || "Artist"}
                     className="popular-artist-image"
+                    loading="lazy"
+                    decoding="async"
                   />
 
                   {artist.verified && (
@@ -466,6 +480,13 @@ const PopularArtist = () => {
               </article>
             );
           })}
+        </div>
+      ) : loadError ? (
+        <div className="popular-artists-empty">
+          <span>{loadError}</span>
+          <button type="button" className="catalog-retry-btn" onClick={fetchArtists}>
+            Retry
+          </button>
         </div>
       ) : (
         <div className="popular-artists-empty">No popular artists found.</div>

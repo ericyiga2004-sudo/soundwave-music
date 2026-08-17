@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 
 const notificationTokenSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: null,
+      index: true,
+    },
+
     token: {
       type: String,
       required: true,

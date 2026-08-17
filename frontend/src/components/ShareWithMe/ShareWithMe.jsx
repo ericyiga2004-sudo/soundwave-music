@@ -84,7 +84,7 @@ const ShareWithMe = () => {
       song?.coverImage ||
       song?.album?.imageUrl ||
       song?.album?.image ||
-      "/fallback-cover.png"
+      "/fallback-cover.svg"
     );
   };
 
@@ -405,7 +405,7 @@ const ShareWithMe = () => {
                                   src={image}
                                   alt={playlist.name || "Shared playlist"}
                                   key={`${playlist._id}-${index}`}
-                                />
+                                 loading="lazy" decoding="async" />
                               ))
                             ) : (
                               <div className="shared-playlist-empty-cover">
@@ -510,7 +510,7 @@ const ShareWithMe = () => {
                                     <img
                                       src={getSongImage(song)}
                                       alt={song.title}
-                                    />
+                                     loading="lazy" decoding="async" />
 
                                     <div className="playlist-song-info">
                                       <h4>{song.title || "Unknown Song"}</h4>

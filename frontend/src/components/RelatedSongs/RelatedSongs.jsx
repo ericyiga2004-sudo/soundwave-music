@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SongItem from "../SongItem/SongItem";
 import "./RelatedSongs.css";
+import { API_BASE_URL as backendUrl } from "../../config/api";
 
 const RelatedSongs = ({ currentSong }) => {
   const [related, setRelated] = useState([]);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const fetchRelated = async () => {

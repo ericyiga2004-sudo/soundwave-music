@@ -1,135 +1,171 @@
-import React, { useEffect, useMemo, useState } from "react";
-import Navbar from "./components/Navbar/Navbar";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import Explore from "./pages/Explore";
-import Library from "./pages/Library";
-import Liked from "./pages/Liked";
+import Navbar from "./components/Navbar/Navbar";
+import Sidebar from "./components/SideBar/SideBar";
 import Home from "./pages/Home";
-import Account from "./pages/Account";
 import MusicPlay from "./pages/MusicPlay";
+import {
+  getBatterySaver,
+  getLowData,
+  getTheme,
+  UI_PREFERENCES_EVENT,
+} from "./utils/uiPreferences";
 import "./App.css";
-import SongDetails from "./pages/SongDetails";
-import Album from "./pages/Album";
-import Profile from "./pages/Profile";
-import PlayList from "./pages/PlayList";
-import YearsPage from "./pages/YearsPage";
-import Dj from "./pages/Dj";
-import Artist from "./pages/Artist";
-import DjStudio from "./pages/DjStudio";
-import MusicStudio from "./pages/MusicStudio";
-import Visualizer from "./pages/Visualizer";
-import MoodPage from "./pages/MoodPage";
 
-const LAUNCH_SEEN_KEY = "soundwave_launch_intro_seen";
+const Explore = lazy(() => import("./pages/Explore"));
+const Library = lazy(() => import("./pages/Library"));
+const Liked = lazy(() => import("./pages/Liked"));
+const Account = lazy(() => import("./pages/Account"));
+const SongDetails = lazy(() => import("./pages/SongDetails"));
+const Album = lazy(() => import("./pages/Album"));
+const Profile = lazy(() => import("./pages/Profile"));
+const PlayList = lazy(() => import("./pages/PlayList"));
+const YearsPage = lazy(() => import("./pages/YearsPage"));
+const Dj = lazy(() => import("./pages/Dj"));
+const Artist = lazy(() => import("./pages/Artist"));
+const DjStudio = lazy(() => import("./pages/DjStudio"));
+const MusicStudio = lazy(() => import("./pages/MusicStudio"));
+const Visualizer = lazy(() => import("./pages/Visualizer"));
+const MoodPage = lazy(() => import("./pages/MoodPage"));
+const Radio = lazy(() => import("./pages/Radio"));
+const ArtistsPage = lazy(() => import("./pages/ArtistsPage"));
+const AlbumsPage = lazy(() => import("./pages/AlbumsPage"));
+const SongsPage = lazy(() => import("./pages/SongsPage"));
+const PlaylistDetails = lazy(() => import("./pages/PlaylistDetails"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
-const loadingHints = [
-  "Use Explore to discover new songs and artists.",
-  "Call or WhatsApp 0743073520 for support.",
-  "Create playlists to keep your favorite songs together.",
-  "Tap the lyrics button to listen with lyrics.",
-  "Use visualizer mode for a full-screen music experience.",
-  "Visit your Library to find saved music quickly.",
-];
+const LAUNCH_SEEN_KEY = "soundwave_launch_intro_seen_v3";
 
-const LaunchLoadout = () => {
-  const randomHint = useMemo(() => {
-    const randomIndex = Math.floor(Math.random() * loadingHints.length);
-    return loadingHints[randomIndex];
-  }, []);
-
-  return (
-    <div className="launch-whatsapp">
-      <div className="launch-whatsapp-center">
-        <div className="launch-whatsapp-logo">
-          <span>♪</span>
-        </div>
-
-        <h1>SoundWave</h1>
-
-        <p>{randomHint}</p>
-      </div>
-
-      <div className="launch-whatsapp-bottom">
-        <div className="launch-whatsapp-loader" aria-label="Loading">
-          <span></span>
-        </div>
-
-        <small>from</small>
-        <strong>Ericom Co.</strong>
-      </div>
+const LaunchScreen = () => (
+  <div className="sw-launch-screen" role="status" aria-label="Opening SoundWave">
+    <div className="sw-launch-mark" aria-hidden="true">
+      <span>♪</span>
     </div>
-  );
-};
+    <strong>SoundWave</strong>
+    <small>Music, beautifully simple.</small>
+  </div>
+);
+
+const RouteFallback = () => (
+  <div className="sw-route-fallback" role="status" aria-label="Loading page">
+    <span />
+    <span />
+    <span />
+  </div>
+);
 
 const App = () => {
   const location = useLocation();
-
-  const [isLaunching, setIsLaunching] = useState(() => {
-    return sessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true";
-  });
-
+  const [isLaunching, setIsLaunching] = useState(
+    () => sessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true"
+  );
+  const [batterySaver, setBatterySaverState] = useState(getBatterySaver);
+  const [lowData, setLowDataState] = useState(getLowData);
+  const [theme, setThemeState] = useState(getTheme);
 
   useEffect(() => {
-    if (!isLaunching) return;
-
-    const timer = setTimeout(() => {
+    if (!isLaunching) return undefined;
+    const timer = window.setTimeout(() => {
       sessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
       setIsLaunching(false);
-    }, 4500);
-
-    return () => clearTimeout(timer);
+    }, 850);
+    return () => window.clearTimeout(timer);
   }, [isLaunching]);
 
-  const isFullScreenMusicPage =
-    location.pathname.startsWith("/song/") ||
-    location.pathname.startsWith("/visualizer/") ||
-    location.pathname === "/dj";
+  useEffect(() => {
+    const syncPreferences = (event) => {
+      if (typeof event?.detail?.batterySaver === "boolean") {
+        setBatterySaverState(event.detail.batterySaver);
+      } else {
+        setBatterySaverState(getBatterySaver());
+      }
 
-  if (isLaunching) {
-    return <LaunchLoadout />;
-  }
+      if (typeof event?.detail?.lowData === "boolean") {
+        setLowDataState(event.detail.lowData);
+      } else {
+        setLowDataState(getLowData());
+      }
+
+      if (event?.detail?.theme) {
+        setThemeState(event.detail.theme);
+      } else {
+        setThemeState(getTheme());
+      }
+    };
+
+    window.addEventListener(UI_PREFERENCES_EVENT, syncPreferences);
+    return () => window.removeEventListener(UI_PREFERENCES_EVENT, syncPreferences);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.swBatterySaver = batterySaver ? "true" : "false";
+    document.documentElement.dataset.swLowData = lowData ? "true" : "false";
+    document.documentElement.dataset.swTheme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [batterySaver, lowData, theme]);
+
+  const isImmersivePage = useMemo(
+    () =>
+      location.pathname.startsWith("/visualizer/") ||
+      location.pathname === "/dj" ||
+      location.pathname === "/studio" ||
+      location.pathname === "/drumsequence",
+    [location.pathname]
+  );
+
+  if (isLaunching) return <LaunchScreen />;
 
   return (
-    <div className={isFullScreenMusicPage ? "app app-fullscreen-music" : "app"}>
-      {!isFullScreenMusicPage && <Navbar />}
+    <div className={`app ${isImmersivePage ? "app-immersive" : ""}`}>
+      {!isImmersivePage ? (
+        <div className="sw-app-shell">
+          <Sidebar />
 
-      <main
-        className={
-          isFullScreenMusicPage
-            ? "main-content main-content-fullscreen"
-            : "main-content"
-        }
-      >
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/liked" element={<Liked />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/playlist" element={<PlayList />} />
-          <Route path="/song/:songId" element={<SongDetails />} />
-          <Route path="/album/:albumId" element={<Album />} />
-          <Route path="/dj" element={<Dj />} />
-          <Route path="/studio" element={<DjStudio />} />
-          <Route path="/drumsequence" element={<MusicStudio />} />
-          <Route path="/yearly/:yearSlug" element={<YearsPage />} />
-          <Route path="/artist/:artistId" element={<Artist />} />
-          <Route path="/visualizer/:songId" element={<Visualizer />} />
-          <Route path="/mood/:moodSlug" element={<MoodPage />} />
-        </Routes>
-      </main>
+          <div className="sw-workspace">
+            <Navbar />
 
-      <div
-        className={
-          isFullScreenMusicPage
-            ? "music-play-shell music-play-shell-hidden"
-            : "music-play-shell"
-        }
-        aria-hidden={isFullScreenMusicPage}
-      >
-        <MusicPlay />
-      </div>
+            <main className="main-content">
+              <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/radio" element={<Radio />} />
+                <Route path="/library" element={<Library />} />
+                <Route path="/liked" element={<Liked />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/playlist" element={<PlayList />} />
+                <Route path="/playlist/:playlistId" element={<PlaylistDetails />} />
+                <Route path="/artists" element={<ArtistsPage />} />
+                <Route path="/albums" element={<AlbumsPage />} />
+                <Route path="/songs" element={<SongsPage />} />
+                <Route path="/song/:songId" element={<SongDetails />} />
+                <Route path="/album/:albumId" element={<Album />} />
+                <Route path="/yearly/:yearSlug" element={<YearsPage />} />
+                <Route path="/artist/:artistId" element={<Artist />} />
+                <Route path="/mood/:moodSlug" element={<MoodPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              </Suspense>
+            </main>
+          </div>
+
+          <div className="music-play-shell">
+            <MusicPlay />
+          </div>
+        </div>
+      ) : (
+        <main className="main-content main-content-fullscreen">
+          <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/dj" element={<Dj />} />
+            <Route path="/studio" element={<DjStudio />} />
+            <Route path="/drumsequence" element={<MusicStudio />} />
+            <Route path="/visualizer/:songId" element={<Visualizer />} />
+          </Routes>
+          </Suspense>
+        </main>
+      )}
     </div>
   );
 };

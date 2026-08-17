@@ -1,20 +1,27 @@
-import React, { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Hero from "../components/Hero/Hero";
-import Trending from "../components/Trending/Trending";
-import NewRelease from "../components/NewRelease/NewRelease";
-import PopularArtist from "../components/PopularArtist/PopularArtist";
-import Albums from "../components/Albums/Albums";
-import FilterSongs from "../components/FilterSongs/FilterSongs";
-import Yearly from "../components/Nineteen/Yearly";
-import MadeForYou from "../components/MadeForYou/MadeForYou";
-import ContinueListening from "../components/ContinueListening/ContinueListening";
-import YouLiked from "../components/YouLiked/YouLiked";
-import Country from "../components/Country/Country";
-import FollowedArtists from "../components/FollowedArtists/FollowedArtists";
 import "./CSS/Home.css";
-import DownloadAd from "../components/DownloadAd/DownloadAd";
-import ShareWithMe from "../components/ShareWithMe/ShareWithMe";
-import Mood from "../components/Mood/Mood";
+import DeferredSection from "../components/DeferredSection/DeferredSection";
+
+const MadeForYou = lazy(() => import("../components/MadeForYou/MadeForYou"));
+const ContinueListening = lazy(() => import("../components/ContinueListening/ContinueListening"));
+const YouLiked = lazy(() => import("../components/YouLiked/YouLiked"));
+const Mood = lazy(() => import("../components/Mood/Mood"));
+const Country = lazy(() => import("../components/Country/Country"));
+const ShareWithMe = lazy(() => import("../components/ShareWithMe/ShareWithMe"));
+const FollowedArtists = lazy(() => import("../components/FollowedArtists/FollowedArtists"));
+const NewRelease = lazy(() => import("../components/NewRelease/NewRelease"));
+const PopularArtist = lazy(() => import("../components/PopularArtist/PopularArtist"));
+const Albums = lazy(() => import("../components/Albums/Albums"));
+const FilterSongs = lazy(() => import("../components/FilterSongs/FilterSongs"));
+const Yearly = lazy(() => import("../components/Nineteen/Yearly"));
+const DownloadAd = lazy(() => import("../components/DownloadAd/DownloadAd"));
+
+const LazySection = ({ children }) => (
+  <Suspense fallback={<div className="home-section-lazy-fallback" aria-hidden="true" />}>
+    {children}
+  </Suspense>
+);
 
 const Home = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -113,20 +120,19 @@ const Home = () => {
   return (
     <div>
       <Hero />
-      {/* <Trending /> */}
-      <MadeForYou />
-      <ContinueListening />
-      <YouLiked />
-      <Mood/>
-      <Country />
-      <ShareWithMe/>
-      <FollowedArtists />
-      <DownloadAd/>
-      <NewRelease />
-      <PopularArtist />
-      <Albums />
-      <FilterSongs />
-      <Yearly />
+      <DeferredSection minHeight={260}><LazySection><MadeForYou /></LazySection></DeferredSection>
+      <DeferredSection minHeight={250}><LazySection><ContinueListening /></LazySection></DeferredSection>
+      <DeferredSection minHeight={260}><LazySection><YouLiked /></LazySection></DeferredSection>
+      <DeferredSection minHeight={360}><LazySection><Mood /></LazySection></DeferredSection>
+      <DeferredSection minHeight={260}><LazySection><Country /></LazySection></DeferredSection>
+      <DeferredSection minHeight={240}><LazySection><ShareWithMe /></LazySection></DeferredSection>
+      <DeferredSection minHeight={300}><LazySection><FollowedArtists /></LazySection></DeferredSection>
+      <DeferredSection minHeight={260}><LazySection><NewRelease /></LazySection></DeferredSection>
+      <DeferredSection minHeight={300}><LazySection><PopularArtist /></LazySection></DeferredSection>
+      <DeferredSection minHeight={280}><LazySection><Albums /></LazySection></DeferredSection>
+      <DeferredSection minHeight={300}><LazySection><FilterSongs /></LazySection></DeferredSection>
+      <DeferredSection minHeight={420}><LazySection><Yearly /></LazySection></DeferredSection>
+      <DeferredSection minHeight={220}><LazySection><DownloadAd /></LazySection></DeferredSection>
 
     </div>
   );

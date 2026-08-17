@@ -116,7 +116,7 @@ const ContinueListening = () => {
       song?.album?.coverImage ||
       song?.album?.imageUrl ||
       song?.album?.image ||
-      "/fallback-cover.png"
+      "/fallback-cover.svg"
     );
   };
 
@@ -229,7 +229,7 @@ const ContinueListening = () => {
                     if (event.key === "Enter") openSong(song);
                   }}
                 >
-                  <img src={getSongImage(song)} alt={song.title} />
+                  <img src={getSongImage(song)} alt={song.title}  loading="lazy" decoding="async" />
 
                   <button
                     type="button"

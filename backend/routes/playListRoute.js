@@ -14,6 +14,9 @@ import {
   markPlaylistShareRead,
   removeReceivedPlaylistShare,
   revokePlaylistShare,
+  getPlaylistById,
+  updatePlaylist,
+  recordPlaylistPlay,
 } from "../controllers/playlistController.js";
 
 const playlistRouter = express.Router();
@@ -45,5 +48,9 @@ playlistRouter.post(
 );
 
 playlistRouter.post("/share/:shareId/revoke", authUser, revokePlaylistShare);
+
+playlistRouter.get("/:playlistId", authUser, getPlaylistById);
+playlistRouter.patch("/:playlistId", authUser, updatePlaylist);
+playlistRouter.post("/:playlistId/play", authUser, recordPlaylistPlay);
 
 export default playlistRouter;

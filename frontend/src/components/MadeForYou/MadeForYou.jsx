@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SongItem from "../SongItem/SongItem";
 import "./MadeForYou.css";
+import { API_BASE_URL } from "../../config/api";
 
 const MadeForYou = () => {
   const [madeForYouSongs, setMadeForYouSongs] = useState([]);
@@ -20,7 +21,7 @@ const MadeForYou = () => {
       }
 
       const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/recommend/for-you?limit=20`,
+        `${API_BASE_URL}/api/recommend/for-you?limit=20`,
         {
           headers: {
             token,
@@ -64,6 +65,7 @@ const MadeForYou = () => {
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+    window.addEventListener("soundwave-personalization-updated", fetchMadeForYou);
 
     if (navigator.onLine) {
       fetchMadeForYou();
@@ -75,6 +77,7 @@ const MadeForYou = () => {
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("soundwave-personalization-updated", fetchMadeForYou);
     };
   }, []);
 

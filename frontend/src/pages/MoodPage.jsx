@@ -68,7 +68,7 @@ const MoodPage = () => {
       song?.album?.coverImage ||
       song?.album?.imageUrl ||
       song?.album?.image ||
-      "/fallback-cover.png"
+      "/fallback-cover.svg"
     );
   };
 

@@ -5,7 +5,7 @@ import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./NewRelease.css";
 import { Link } from "react-router-dom";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL as backendUrl } from "../../config/api";
 
 const dateFields = [
   "releaseDate",
@@ -193,10 +193,12 @@ const NewRelease = () => {
 
     window.addEventListener("music-history-updated", fetchNewReleases);
     window.addEventListener("music-liked-updated", fetchNewReleases);
+    window.addEventListener("soundwave-personalization-updated", fetchNewReleases);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchNewReleases);
       window.removeEventListener("music-liked-updated", fetchNewReleases);
+      window.removeEventListener("soundwave-personalization-updated", fetchNewReleases);
     };
   }, []);
 
@@ -231,7 +233,7 @@ const NewRelease = () => {
             >
               <div className="release-image">
                 <img
-                  src={song.imageUrl || "/fallback-cover.png"}
+                  src={song.imageUrl || "/fallback-cover.svg"}
                   alt={song.title || "Song cover"}
                   loading="lazy"
                 />

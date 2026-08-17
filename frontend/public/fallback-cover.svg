@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="SoundWave artwork placeholder">
+  <rect width="600" height="600" fill="#f2f2f4"/>
+  <circle cx="300" cy="300" r="120" fill="#ffffff" stroke="#dedee3" stroke-width="8"/>
+  <path d="M350 185v190c0 53-40 84-88 84-42 0-72-24-72-58 0-37 31-63 77-63 17 0 31 3 42 8V225l145-31v51z" fill="#fa233b"/>
+</svg>

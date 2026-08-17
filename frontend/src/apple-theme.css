@@ -1,0 +1,1555 @@
+/* ==============================================================
+   SOUNDWAVE — APPLE-MUSIC-INSPIRED SYSTEM THEME
+   Loaded last on purpose. Existing feature logic remains intact;
+   this file normalizes the visual language across the full app.
+   ============================================================== */
+
+:root {
+  --apple-red: var(--sw-accent);
+}
+
+body,
+#root,
+.app,
+.main-content,
+.home-page,
+.explore-page,
+.boom-library-page,
+.liked-page,
+.playlist-page,
+.shared-page,
+.account-dashboard,
+.auth-page,
+.album-page,
+.artist-page,
+.mood-page,
+.years-page,
+.yearly-page,
+.song-details {
+  background: var(--sw-bg) !important;
+  color: var(--sw-text) !important;
+}
+
+/* Layout rhythm */
+.main-content > :not(.song-details):not(.auth-page):not(.account-dashboard) {
+  max-width: 1660px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  color: var(--sw-text);
+  letter-spacing: -0.035em;
+}
+
+.main-content p,
+.main-content small,
+.main-content .subtitle,
+.main-content .subtext {
+  color: var(--sw-text-secondary);
+}
+
+.main-content a {
+  color: inherit;
+}
+
+/* Common section normalization */
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section,
+.trending-section,
+.related,
+.download-ad,
+.yearly-page {
+  background: transparent !important;
+  color: var(--sw-text) !important;
+}
+
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section,
+.trending-section,
+.related {
+  padding-left: clamp(14px, 3vw, 48px) !important;
+  padding-right: clamp(14px, 3vw, 48px) !important;
+}
+
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section {
+  padding-top: 30px !important;
+  padding-bottom: 8px !important;
+}
+
+.section-header,
+.made-header,
+.continue-header,
+.you-liked-header,
+.mood-header,
+.country-header,
+.followed-header,
+.popular-artists-header,
+.albums-header,
+.filter-header {
+  margin-bottom: 14px !important;
+}
+
+.section-header h2,
+.made-title,
+.continue-header h2,
+.you-liked-title,
+.mood-header h2,
+.country-title,
+.followed-title,
+.popular-artists-header h2,
+.albums-header h2,
+.filter-header h2 {
+  color: var(--sw-text) !important;
+  font-size: clamp(1.25rem, 2vw, 1.65rem) !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.made-subtitle,
+.you-liked-subtitle,
+.country-subtitle,
+.followed-subtitle,
+.popular-artists-subtitle {
+  color: var(--sw-text-secondary) !important;
+}
+
+.made-header > span,
+.you-liked-badge,
+.country-badge,
+.followed-badge,
+.popular-artists-tag,
+.continue-header span,
+.yearly-kicker,
+.explore-kicker,
+.album-label,
+.artist-kicker,
+.playlist-badge,
+.account-history-badge {
+  color: var(--sw-accent) !important;
+}
+
+/* Horizontal catalog cards */
+.release-grid,
+.albums-grid,
+.continue-grid,
+.made-slider,
+.you-liked-slider,
+.country-slider,
+.followed-slider,
+.popular-artists-grid,
+.artist-song-slider,
+.artist-album-slider,
+.account-history-slider {
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.release-grid::-webkit-scrollbar,
+.albums-grid::-webkit-scrollbar,
+.continue-grid::-webkit-scrollbar,
+.made-slider::-webkit-scrollbar,
+.you-liked-slider::-webkit-scrollbar,
+.country-slider::-webkit-scrollbar,
+.followed-slider::-webkit-scrollbar,
+.popular-artists-grid::-webkit-scrollbar,
+.artist-song-slider::-webkit-scrollbar,
+.artist-album-slider::-webkit-scrollbar,
+.account-history-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.release-card,
+.continue-card,
+.featured-album-card,
+.filter-release-card,
+.year-song-card,
+.years-song-card,
+.song-carder,
+.mood-card,
+.popular-artist-card,
+.artist-album-card,
+.account-history-slide,
+.made-slide-item,
+.you-liked-slide-item,
+.country-slide-item,
+.followed-slide-item {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  scroll-snap-align: start;
+}
+
+.release-card:hover,
+.continue-card:hover,
+.featured-album-card:hover,
+.filter-release-card:hover,
+.song-carder:hover,
+.popular-artist-card:hover,
+.artist-album-card:hover {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.release-image,
+.continue-cover,
+.album-cover,
+.song-carder .card-img-container,
+.filter-release-image,
+.year-song-img-wrap,
+.years-song-img-wrap,
+.popular-artist-image-wrap,
+.artist-album-card img,
+.mood-song-card img {
+  overflow: hidden;
+  border-radius: 10px !important;
+  background: var(--sw-surface-2) !important;
+  box-shadow: var(--sw-shadow-sm) !important;
+}
+
+.release-image img,
+.continue-cover img,
+.song-carder img,
+.filter-release-image img,
+.year-song-img,
+.years-song-img,
+.popular-artist-image,
+.artist-album-card img {
+  transform: none !important;
+  filter: none !important;
+  transition: transform 0.18s ease !important;
+}
+
+.release-card:hover img,
+.continue-card:hover img,
+.song-carder:hover img,
+.filter-release-card:hover img,
+.artist-album-card:hover img {
+  transform: scale(1.018) !important;
+}
+
+.release-content h3,
+.release-content .text-white,
+.continue-body h3,
+.album-details h3,
+.filter-release-content h3,
+.song-carder .card-title,
+.year-song-info h3,
+.years-song-info h3,
+.popular-artist-content h3,
+.artist-album-card h3 {
+  color: var(--sw-text) !important;
+}
+
+.release-content p,
+.continue-body p,
+.album-details p,
+.filter-release-content p,
+.song-carder .card-artist,
+.year-song-info p,
+.years-song-info p,
+.popular-artist-content p,
+.artist-album-card p {
+  color: var(--sw-text-secondary) !important;
+}
+
+.play-btn,
+.continue-play-floating,
+.filter-play-btn,
+.year-play-btn,
+.years-play-btn,
+.song-carder .play-overlay,
+.album-play-button,
+.artist-play-btn,
+.liked-play-all-btn,
+.boom-primary-action,
+.play-selected-btn,
+.song-play-btn,
+.liked-row-play,
+.mood-play-btn,
+.hero-play-button {
+  border-color: transparent !important;
+  background: var(--sw-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.release-card .play-btn,
+.continue-card .continue-play-floating {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Soft cards and panes */
+.panel-card,
+.now-exploring-card,
+.recommend-card,
+.explore-main,
+.explore-sticky-stack,
+.boom-hero,
+.boom-section,
+.boom-stat-card,
+.liked-table-card,
+.liked-empty-state,
+.playlist-hero,
+.create-playlist-card,
+.user-playlists-card,
+.selected-playlist-header,
+.available-song-card,
+.shared-playlist-full-card,
+.dashboard-card,
+.account-history-section,
+.album-skeleton-card,
+.album-hero,
+.album-track-list,
+.artist-hero,
+.artist-content,
+.song-panel,
+.glass-card,
+.mobile-detail-panel,
+.player-dock,
+.queue-card,
+.modal-card,
+.mood-page-hero,
+.mood-song-card,
+.years-hero,
+.home-offline-card,
+.made-offline-card,
+.liked-offline-card {
+  border: 1px solid var(--sw-border) !important;
+  background: var(--sw-surface) !important;
+  color: var(--sw-text) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Explore / New */
+.explore-page {
+  padding-top: 24px !important;
+  padding-bottom: 34px !important;
+}
+
+.explore-hero {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.hero-bg-glow,
+.hero-bg-one,
+.hero-bg-two,
+.country-glow,
+.followed-glow,
+.you-liked-glow {
+  display: none !important;
+}
+
+.hero-copy h1,
+.explore-page h1 {
+  color: var(--sw-text) !important;
+  font-weight: 750 !important;
+}
+
+.explore-control-label,
+.hero-copy p,
+.hero-stats,
+.top-song-meta,
+.recommend-card p,
+.now-exploring-card p {
+  color: var(--sw-text-secondary) !important;
+}
+
+.explore-page input,
+.explore-page select,
+.boom-search input,
+.shared-search-wrap input,
+.playlist-page input,
+.playlist-page select,
+.auth-page input,
+.account-dashboard input,
+.filter-section input,
+.filter-section select {
+  min-height: 40px !important;
+  border: 1px solid var(--sw-border) !important;
+  border-radius: 10px !important;
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text) !important;
+  box-shadow: none !important;
+}
+
+.explore-page input:focus,
+.explore-page select:focus,
+.boom-search input:focus,
+.playlist-page input:focus,
+.filter-section input:focus,
+.filter-section select:focus,
+.auth-page input:focus {
+  border-color: color-mix(in srgb, var(--sw-accent) 45%, var(--sw-border)) !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 3px rgba(250, 35, 59, 0.08) !important;
+}
+
+.top-ten-row,
+.boom-song-row,
+.playlist-song-row,
+.shared-playlist-song-preview,
+.liked-row,
+.album-track,
+.artist-liked-row,
+.recommended-song,
+.mobile-recommended-song {
+  border-color: var(--sw-border) !important;
+  background: transparent !important;
+  color: var(--sw-text) !important;
+}
+
+.top-ten-row:hover,
+.boom-song-row:hover,
+.playlist-song-row:hover,
+.liked-row:hover,
+.album-track:hover,
+.artist-liked-row:hover,
+.recommended-song:hover,
+.mobile-recommended-song:hover {
+  background: var(--sw-surface-2) !important;
+}
+
+/* Library */
+.boom-library-shell {
+  max-width: 1500px !important;
+}
+
+.boom-hero {
+  margin-top: 20px !important;
+  border-radius: 22px !important;
+  background: var(--sw-surface-2) !important;
+}
+
+html[data-sw-theme="dark"] .boom-hero {
+  background: var(--sw-surface-2) !important;
+}
+
+.boom-hero-disc {
+  background: var(--sw-accent) !important;
+  box-shadow: none !important;
+}
+
+.boom-secondary-action,
+.boom-delete-btn,
+.clear-filters-btn,
+.shared-secondary-btn,
+.artist-follow-btn,
+.view-albums-btn,
+.mini-status,
+.offline-file-button,
+.liked-row-remove,
+.song-remove-btn {
+  border: 1px solid var(--sw-border) !important;
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.boom-tab,
+.playlist-tab,
+.tabs button,
+.recommend-tags button {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text-secondary) !important;
+}
+
+.boom-tab.active,
+.playlist-tab.active,
+.tabs button.active,
+.recommend-tags button.active {
+  background: var(--sw-surface-3, #ebebed) !important;
+  color: var(--sw-text) !important;
+}
+
+/* Favorites */
+.liked-hero-cover {
+  border-radius: 22px !important;
+  background: var(--sw-accent) !important;
+  box-shadow: none !important;
+}
+
+.liked-table-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.liked-table-head {
+  color: var(--sw-text-tertiary) !important;
+  background: var(--sw-surface-2) !important;
+}
+
+/* Playlists / shared */
+.playlist-page,
+.shared-page {
+  color: var(--sw-text) !important;
+}
+
+.playlist-hero,
+.shared-hero {
+  margin-top: 20px !important;
+  border-radius: 22px !important;
+  background: var(--sw-surface-2) !important;
+}
+
+html[data-sw-theme="dark"] .playlist-hero,
+html[data-sw-theme="dark"] .shared-hero {
+  background: var(--sw-surface-2) !important;
+}
+
+.playlist-sidebar,
+.playlist-main {
+  color: var(--sw-text) !important;
+}
+
+/* Album / Artist */
+.album-page,
+.artist-page {
+  color: var(--sw-text) !important;
+}
+
+.album-hero,
+.artist-hero {
+  border: 0 !important;
+  border-bottom: 1px solid var(--sw-border) !important;
+  border-radius: 0 !important;
+  background: var(--sw-bg) !important;
+}
+
+.album-cover,
+.artist-hero-image {
+  box-shadow: var(--sw-shadow-md) !important;
+}
+
+.album-info h1,
+.artist-hero h1,
+.artist-page h1,
+.album-page h1 {
+  color: var(--sw-text) !important;
+}
+
+.album-description,
+.album-meta,
+.artist-meta,
+.artist-bio,
+.album-track-duration {
+  color: var(--sw-text-secondary) !important;
+}
+
+.artist-verified,
+.album-playing-badge,
+.artist-liked-likes {
+  color: var(--sw-accent) !important;
+}
+
+/* Account / auth */
+.auth-page {
+  min-height: calc(100vh - 64px) !important;
+}
+
+.auth-container {
+  overflow: hidden;
+  border: 1px solid var(--sw-border) !important;
+  border-radius: 24px !important;
+  background: var(--sw-surface) !important;
+  box-shadow: var(--sw-shadow-md) !important;
+}
+
+.auth-left {
+  background: var(--sw-accent) !important;
+  color: #fff !important;
+}
+
+.auth-right {
+  background: var(--sw-surface) !important;
+  color: var(--sw-text) !important;
+}
+
+.logo-circle,
+.submit-btn,
+.logout-btn {
+  border-color: transparent !important;
+  background: var(--sw-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.dashboard-avatar {
+  border-color: var(--sw-border) !important;
+  box-shadow: none !important;
+}
+
+/* Search */
+.sw-search-overlay {
+  background: rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.sw-search-modal {
+  border: 1px solid var(--sw-border) !important;
+  border-radius: 20px !important;
+  background: var(--sw-surface) !important;
+  color: var(--sw-text) !important;
+  box-shadow: var(--sw-shadow-lg) !important;
+}
+
+.sw-search-input {
+  border: 1px solid var(--sw-border) !important;
+  border-radius: 11px !important;
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text) !important;
+}
+
+.sw-search-item {
+  border-color: var(--sw-border) !important;
+  color: var(--sw-text) !important;
+}
+
+.sw-search-item:hover {
+  background: var(--sw-surface-2) !important;
+}
+
+.sw-search-empty {
+  color: var(--sw-text-secondary) !important;
+}
+
+/* Notifications */
+.notification-bell-wrap > button {
+  color: var(--sw-text-secondary) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.notification-badge,
+.notification-dot {
+  background: var(--sw-accent) !important;
+}
+
+.notification-dropdown {
+  border: 1px solid var(--sw-border) !important;
+  background: var(--sw-surface) !important;
+  color: var(--sw-text) !important;
+  box-shadow: var(--sw-shadow-lg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.notification-dropdown-header,
+.notification-main {
+  border-color: var(--sw-border) !important;
+}
+
+.notification-empty,
+.notification-main p,
+.notification-main small {
+  color: var(--sw-text-secondary) !important;
+}
+
+/* Song details: keep the premium player but remove gaming/neon styling */
+.song-details {
+  --song-accent: var(--sw-accent);
+}
+
+.song-details-bg,
+.mobile-hero-bg,
+.visualizer-route-loader-bg {
+  opacity: 0.08 !important;
+  filter: saturate(0.8) !important;
+}
+
+.song-details::before,
+.song-details::after,
+.mobile-hero-shade {
+  background: none !important;
+}
+
+.song-panel,
+.glass-card,
+.mobile-detail-panel,
+.player-dock,
+.queue-card,
+.modal-card {
+  border-radius: 18px !important;
+}
+
+.song-title-block h1,
+.mobile-hero-song-copy h1,
+.lyrics-header h2,
+.recommendations-header h2 {
+  color: var(--sw-text) !important;
+}
+
+.song-title-block p,
+.mobile-hero-song-copy p,
+.lyric-words,
+.no-lyrics,
+.dock-song p,
+.recommended-song p {
+  color: var(--sw-text-secondary) !important;
+}
+
+.icon-button,
+.mobile-icon-control,
+.mobile-pill-action,
+.mobile-action-btn,
+.show-lyrics-dock-btn,
+.favorite-button,
+.song-back-button {
+  border-color: var(--sw-border) !important;
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text) !important;
+  box-shadow: none !important;
+}
+
+.play-button,
+.mobile-main-play {
+  background: var(--sw-text) !important;
+  color: var(--sw-bg) !important;
+  box-shadow: none !important;
+}
+
+/* Mood */
+.mood-card,
+.mood-song-card {
+  color: var(--sw-text) !important;
+}
+
+.mood-card::before,
+.mood-card::after,
+.mood-overlay {
+  opacity: 0.14 !important;
+}
+
+/* Download promo becomes light product card */
+.download-ad-box {
+  overflow: hidden;
+  border: 1px solid var(--sw-border) !important;
+  border-radius: 22px !important;
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text) !important;
+  box-shadow: none !important;
+}
+
+.download-ad-content h2,
+.download-ad-content h3,
+.download-ad-content strong {
+  color: var(--sw-text) !important;
+}
+
+.download-ad-content p,
+.download-ad-meta,
+.download-ad-note {
+  color: var(--sw-text-secondary) !important;
+}
+
+.download-ad-btn {
+  box-shadow: none !important;
+}
+
+.download-ad-btn:not(.download-ad-btn-dark) {
+  background: var(--sw-accent) !important;
+  color: #fff !important;
+}
+
+.download-ad-btn-dark {
+  background: var(--sw-text) !important;
+  color: var(--sw-bg) !important;
+}
+
+/* Offline states: quiet and useful instead of highly animated */
+.home-network-error,
+.liked-network-error {
+  background: var(--sw-bg) !important;
+  color: var(--sw-text) !important;
+}
+
+.home-offline-bg,
+.home-note,
+.made-offline-bg,
+.made-music-note,
+.made-sparkle,
+.liked-offline-bg,
+.liked-note,
+.home-offline-character,
+.made-offline-character,
+.liked-offline-character {
+  display: none !important;
+}
+
+.home-offline-card,
+.made-offline-card,
+.liked-offline-card {
+  max-width: 520px !important;
+  margin-inline: auto !important;
+  padding: 34px !important;
+  border-radius: 22px !important;
+  text-align: center !important;
+}
+
+.home-offline-badge,
+.made-offline-badge,
+.liked-offline-badge {
+  color: var(--sw-accent) !important;
+  background: var(--sw-accent-soft) !important;
+}
+
+.home-retry-btn,
+.made-retry-btn,
+.liked-retry-btn {
+  background: var(--sw-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* Skeletons */
+.nr-skeleton,
+.release-skeleton-card,
+.filter-skeleton,
+.filter-skeleton-card,
+.album-skeleton,
+.explore-skeleton-row,
+.explore-skeleton-card,
+.country-skeleton-cover,
+.followed-skeleton-cover,
+.made-skeleton-cover,
+.you-liked-skeleton-cover,
+.account-history-skeleton,
+.year-song-skeleton {
+  background: var(--sw-surface-2) !important;
+}
+
+.nr-skeleton::after,
+.filter-skeleton::after,
+.album-skeleton::after {
+  background: transparent !important;
+}
+
+/* Generic button cleanup */
+.main-content button {
+  transition: transform 0.14s ease, background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.main-content button:active {
+  transform: scale(0.985);
+}
+
+.main-content button:focus-visible,
+.sw-top-header button:focus-visible,
+.sw-sidebar a:focus-visible,
+.sw-bottom-nav a:focus-visible {
+  outline: 3px solid rgba(250, 35, 59, 0.18) !important;
+  outline-offset: 2px;
+}
+
+/* Pro tools intentionally remain dark and studio-like, but match accent. */
+.dj-page-pro,
+.music-studio,
+.sw-daw,
+.dj-studio-page {
+  --accent: var(--sw-accent);
+}
+
+/* Battery saver removes costly decorative transforms / blur */
+html[data-sw-battery-saver="true"] .sw-top-header,
+html[data-sw-battery-saver="true"] .sw-bottom-nav,
+html[data-sw-battery-saver="true"] .sw-player {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--sw-surface) !important;
+}
+
+html[data-sw-battery-saver="true"] .release-card:hover img,
+html[data-sw-battery-saver="true"] .continue-card:hover img,
+html[data-sw-battery-saver="true"] .song-carder:hover img,
+html[data-sw-battery-saver="true"] .filter-release-card:hover img {
+  transform: none !important;
+}
+
+@media (max-width: 991.98px) {
+  .new-release,
+  .albums-section,
+  .made-section,
+  .continue-section,
+  .you-liked-section,
+  .mood-section,
+  .country-section,
+  .followed-section,
+  .popular-artists-section,
+  .filter-section {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .release-card,
+  .continue-card,
+  .filter-release-card {
+    border-radius: 0 !important;
+  }
+
+  .release-grid,
+  .continue-grid,
+  .filter-results {
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .new-release,
+  .albums-section,
+  .made-section,
+  .continue-section,
+  .you-liked-section,
+  .mood-section,
+  .country-section,
+  .followed-section,
+  .popular-artists-section,
+  .filter-section {
+    padding-top: 22px !important;
+  }
+
+  .release-card,
+  .continue-card,
+  .filter-release-card,
+  .song-carder {
+    width: 146px !important;
+    min-width: 146px !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+
+  .release-image,
+  .continue-cover,
+  .filter-release-image,
+  .song-carder .card-img-container {
+    width: 146px !important;
+    height: 146px !important;
+    min-height: 146px !important;
+    margin-bottom: 9px !important;
+  }
+}
+
+/* ==============================================================
+   V4 PERFORMANCE / LEGIBILITY PASS
+   Flat surfaces, no CSS gradients, no glass blur, less paint work.
+   ============================================================== */
+
+/* Consumer app: remove old decorative backgrounds and expensive filters. */
+.sw-workspace *,
+.music-play-shell * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+
+.sw-workspace .home-page,
+.sw-workspace .explore-page,
+.sw-workspace .boom-library-page,
+.sw-workspace .liked-page,
+.sw-workspace .playlist-page,
+.sw-workspace .shared-page,
+.sw-workspace .account-dashboard,
+.sw-workspace .auth-page,
+.sw-workspace .album-page,
+.sw-workspace .artist-page,
+.sw-workspace .mood-page,
+.sw-workspace .years-page,
+.sw-workspace .yearly-page,
+.sw-workspace .song-details,
+.sw-workspace .hero-feature-card,
+.sw-workspace .boom-hero,
+.sw-workspace .playlist-hero,
+.sw-workspace .shared-hero,
+.sw-workspace .liked-hero-cover,
+.sw-workspace .album-hero,
+.sw-workspace .artist-hero,
+.sw-workspace .auth-left,
+.sw-workspace .dashboard-card,
+.sw-workspace .year-banner,
+.sw-workspace .year-block {
+  background-image: none !important;
+}
+
+/* Disable legacy decorative pseudo-elements that created glow/burn patches. */
+.sw-workspace .dashboard-card::before,
+.sw-workspace .dashboard-card::after,
+.sw-workspace .album-hero::before,
+.sw-workspace .album-hero::after,
+.sw-workspace .artist-hero::before,
+.sw-workspace .artist-hero::after,
+.sw-workspace .liked-hero-cover::before,
+.sw-workspace .liked-hero-cover::after,
+.sw-workspace .boom-hero::before,
+.sw-workspace .boom-hero::after {
+  display: none !important;
+}
+
+/* Red is an action accent, not a body-copy color. */
+.made-header > span,
+.you-liked-badge,
+.country-badge,
+.followed-badge,
+.popular-artists-tag,
+.continue-header span,
+.yearly-kicker,
+.explore-kicker,
+.album-label,
+.artist-kicker,
+.playlist-badge,
+.account-history-badge,
+.year-song-info span,
+.years-song-info span,
+.album-meta,
+.artist-meta {
+  color: var(--sw-text-secondary) !important;
+}
+
+/* Active pills are neutral so red never burns into grey surfaces. */
+.boom-tab.active,
+.playlist-tab.active,
+.tabs button.active,
+.recommend-tags button.active {
+  background: var(--sw-surface-3) !important;
+  color: var(--sw-text) !important;
+}
+
+/* Global media and cards stay crisp, never washed out by filters. */
+.sw-workspace img,
+.music-play-shell img {
+  filter: none !important;
+}
+
+/* Keep text contrast predictable. */
+.sw-workspace h1,
+.sw-workspace h2,
+.sw-workspace h3,
+.sw-workspace h4,
+.sw-workspace strong {
+  color: var(--sw-text) !important;
+}
+
+.sw-workspace p,
+.sw-workspace small,
+.sw-workspace dd,
+.sw-workspace .text-muted,
+.sw-workspace .playlist-empty-text {
+  color: var(--sw-text-secondary) !important;
+}
+
+/* Solid skeletons: no moving gradient. */
+.nr-skeleton::after,
+.filter-skeleton::after,
+.album-skeleton::after {
+  display: none !important;
+}
+
+.nr-skeleton,
+.release-skeleton-card,
+.filter-skeleton,
+.filter-skeleton-card,
+.album-skeleton,
+.explore-skeleton-row,
+.explore-skeleton-card,
+.country-skeleton-cover,
+.followed-skeleton-cover,
+.made-skeleton-cover,
+.you-liked-skeleton-cover,
+.account-history-skeleton,
+.year-song-skeleton {
+  background: var(--sw-surface-2) !important;
+  background-image: none !important;
+}
+
+/* Browser can skip painting below-fold sections until needed. */
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section,
+.yearly-page,
+.download-ad {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 360px;
+}
+
+/* Low-data mode removes non-essential artwork where CSS can do it safely. */
+html[data-sw-low-data="true"] .download-ad,
+html[data-sw-low-data="true"] .hero-mini-stack {
+  display: none !important;
+}
+
+html[data-sw-low-data="true"] .hero .col-xl-8 {
+  width: 100% !important;
+}
+
+html[data-sw-low-data="true"] img[loading="lazy"] {
+  content-visibility: auto;
+}
+
+/* Battery saver is strict: no animated transforms, no smooth scrolling. */
+html[data-sw-battery-saver="true"] *,
+html[data-sw-low-data="true"] .sw-deferred-section * {
+  scroll-behavior: auto !important;
+}
+
+html[data-sw-battery-saver="true"] .visualizer,
+html[data-sw-battery-saver="true"] .mobile-cover-visualizer,
+html[data-sw-battery-saver="true"] .hero-bg-glow,
+html[data-sw-battery-saver="true"] .country-glow,
+html[data-sw-battery-saver="true"] .followed-glow,
+html[data-sw-battery-saver="true"] .you-liked-glow {
+  display: none !important;
+}
+
+/* Solid surface corrections after all gradient removal. */
+.sw-workspace * {
+  background-image: none !important;
+}
+
+.main-content > * {
+  width: 100%;
+}
+
+.main-content .container {
+  max-width: 1660px !important;
+}
+
+.boom-hero,
+.liked-hero-cover,
+.album-hero,
+.artist-hero,
+.dashboard-card,
+.account-history-section,
+.auth-container,
+.auth-right,
+.year-block,
+.playlist-hero,
+.shared-hero {
+  background: var(--sw-surface) !important;
+}
+
+.boom-hero,
+.liked-hero-cover,
+.album-hero,
+.artist-hero,
+.dashboard-card,
+.account-history-section,
+.auth-container {
+  border-color: var(--sw-border) !important;
+  box-shadow: none !important;
+}
+
+/* Account/login stays readable without red/grey burns. */
+.auth-page,
+.account-dashboard {
+  background: var(--sw-bg) !important;
+  color: var(--sw-text) !important;
+}
+
+.auth-left {
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text) !important;
+}
+
+.auth-left h1,
+.auth-left p {
+  color: var(--sw-text) !important;
+}
+
+.auth-left p { color: var(--sw-text-secondary) !important; }
+.auth-left::before { display: none !important; }
+.auth-right { border-color: var(--sw-border) !important; }
+.auth-switch { background: var(--sw-surface-2) !important; }
+.auth-switch button { color: var(--sw-text-secondary) !important; }
+.auth-switch button.active { background: var(--sw-surface) !important; color: var(--sw-text) !important; border: 1px solid var(--sw-border) !important; }
+.input-group svg { color: var(--sw-text-tertiary) !important; }
+.input-group input { background: var(--sw-surface-2) !important; color: var(--sw-text) !important; border-color: var(--sw-border) !important; }
+.input-group input::placeholder { color: var(--sw-text-tertiary) !important; }
+.dashboard-avatar { background: var(--sw-surface-2) !important; color: var(--sw-accent) !important; }
+.dashboard-badge { color: var(--sw-text-secondary) !important; }
+
+/* Favorites/library hero areas use neutral Apple-like surfaces. */
+.liked-hero-cover,
+.boom-hero {
+  background: var(--sw-surface-2) !important;
+  color: var(--sw-text) !important;
+}
+
+/* Avoid giant glow shadows and hover movement. */
+.sw-workspace .release-card:hover img,
+.sw-workspace .continue-card:hover img,
+.sw-workspace .song-carder:hover img,
+.sw-workspace .filter-release-card:hover img,
+.sw-workspace .artist-album-card:hover img,
+.sw-workspace button:hover,
+.sw-workspace a:hover {
+  transform: none !important;
+}
+
+.sw-top-header,
+.sw-bottom-nav,
+.sw-settings-popover,
+.sw-player,
+.notification-dropdown,
+.sw-search-modal {
+  background: var(--sw-surface) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.sw-workspace *::before,
+.sw-workspace *::after,
+.music-play-shell *::before,
+.music-play-shell *::after {
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.music-play-shell * { background-image: none !important; }
+.sw-workspace *,
+.music-play-shell * {
+  box-shadow: none !important;
+}
+
+/* V4 performance budget: the consumer app uses no decorative motion. */
+.sw-workspace *,
+.music-play-shell * {
+  transition-duration: 0s !important;
+}
+
+/* Keep only lightweight loading feedback. */
+.sw-skeleton,
+.sw-skeleton-card,
+.account-history-skeleton,
+.year-song-skeleton,
+.popular-artist-skeleton {
+  transition: none !important;
+}
+
+html[data-sw-battery-saver="true"] .sw-skeleton,
+html[data-sw-battery-saver="true"] .sw-skeleton-card,
+html[data-sw-battery-saver="true"] .account-history-skeleton,
+html[data-sw-battery-saver="true"] .year-song-skeleton,
+html[data-sw-battery-saver="true"] .popular-artist-skeleton,
+html[data-sw-low-data="true"] .sw-skeleton,
+html[data-sw-low-data="true"] .sw-skeleton-card {
+  animation: none !important;
+}
+
+/* Red is reserved for direct actions; informational text remains neutral. */
+.sw-workspace .year-song-info span,
+.sw-workspace .years-song-info span,
+.sw-workspace .album-meta,
+.sw-workspace .artist-meta,
+.sw-workspace .dashboard-badge,
+.sw-workspace .account-history-badge,
+.sw-workspace .playlist-badge,
+.sw-workspace .explore-kicker,
+.sw-workspace .yearly-kicker,
+.sw-workspace .popular-artists-tag,
+.sw-workspace .made-header > span,
+.sw-workspace .continue-header > span,
+.sw-workspace .you-liked-badge,
+.sw-workspace .country-badge,
+.sw-workspace .followed-badge {
+  color: var(--sw-text-secondary) !important;
+}
+
+/* ==============================================================
+   V5 CONTRAST + LOW-POWER SAFETY NET
+   Prevent legacy dark/white styles from leaking into the light shell.
+   ============================================================== */
+.sw-workspace .filter-empty-state,
+.sw-workspace .popular-artists-empty,
+.sw-workspace .year-empty,
+.sw-workspace .year-loading,
+.sw-workspace .year-section-error,
+.sw-workspace .explore-empty,
+.sw-workspace .album-empty,
+.sw-workspace .artist-empty,
+.sw-workspace .playlist-empty,
+.sw-workspace .library-empty,
+.sw-workspace .liked-empty-state,
+.sw-workspace .search-empty,
+.sw-workspace .empty-state {
+  border: 1px solid var(--sw-border) !important;
+  background: var(--sw-surface-2) !important;
+  background-image: none !important;
+  color: var(--sw-text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.sw-workspace .filter-empty-state *,
+.sw-workspace .popular-artists-empty *,
+.sw-workspace .year-empty *,
+.sw-workspace .explore-empty * {
+  color: inherit !important;
+}
+
+/* Old Bootstrap/user classes must not make body text white on white cards. */
+.sw-workspace .text-white:not(.sw-accent-button-text),
+.sw-workspace .text-light:not(.sw-accent-button-text) {
+  color: var(--sw-text) !important;
+}
+
+/* Restore white only where the surface is intentionally the red action color. */
+.sw-workspace .play-btn,
+.sw-workspace .continue-play-floating,
+.sw-workspace .filter-play-btn,
+.sw-workspace .year-play-btn,
+.sw-workspace .years-play-btn,
+.sw-workspace .song-carder .play-overlay,
+.sw-workspace .album-play-button,
+.sw-workspace .artist-play-btn,
+.sw-workspace .liked-play-all-btn,
+.sw-workspace .boom-primary-action,
+.sw-workspace .play-selected-btn,
+.sw-workspace .song-play-btn,
+.sw-workspace .liked-row-play,
+.sw-workspace .mood-play-btn,
+.sw-workspace .hero-play-button,
+.sw-workspace .submit-btn,
+.sw-workspace .logout-btn,
+.sw-workspace .home-retry-btn,
+.sw-workspace .made-retry-btn,
+.sw-workspace .liked-retry-btn {
+  color: #fff !important;
+}
+
+/* Reduce painting and data use on all ordinary catalog artwork. */
+.sw-workspace img[loading="lazy"] {
+  content-visibility: auto;
+}
+
+.sw-workspace .filter-section,
+.sw-workspace .popular-artists-section,
+.sw-workspace .yearly-page,
+.sw-workspace .albums-section,
+.sw-workspace .new-release,
+.sw-workspace .made-section,
+.sw-workspace .continue-section,
+.sw-workspace .you-liked-section,
+.sw-workspace .country-section,
+.sw-workspace .followed-section {
+  background: var(--sw-bg) !important;
+  background-image: none !important;
+}
+
+/* Explicitly remove rendered CSS gradients from the consumer experience. */
+.sw-workspace,
+.sw-workspace *,
+.music-play-shell,
+.music-play-shell * {
+  background-image: none !important;
+}
+
+/* Battery saver is the hard stop for decorative effects. */
+html[data-sw-battery-saver="true"] .sw-workspace *,
+html[data-sw-battery-saver="true"] .music-play-shell *,
+html[data-sw-low-data="true"] .sw-workspace *,
+html[data-sw-low-data="true"] .music-play-shell * {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ==============================================================
+   V7 PERFORMANCE GUARDRAIL
+   Consumer UI stays flat: no CSS gradients, blur/glass, glow, or
+   decorative shadows. Artwork supplies the visual richness.
+   Immersive DJ/Studio/Visualizer pages are outside .sw-app-shell.
+   ============================================================== */
+.sw-app-shell *,
+.sw-app-shell *::before,
+.sw-app-shell *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.sw-app-shell *:not(img):not(video):not(canvas),
+.sw-app-shell *::before,
+.sw-app-shell *::after {
+  background-image: none !important;
+}
+
+.sw-app-shell .main-content > div,
+.sw-app-shell .main-content > section {
+  min-width: 0;
+}
+
+.sw-app-shell .main-content section {
+  contain: layout style;
+}
+
+@supports (content-visibility: auto) {
+  .sw-app-shell .main-content section:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 420px;
+  }
+}
+
+html[data-sw-low-data="true"] .sw-app-shell img[loading="lazy"] {
+  content-visibility: auto;
+}
+
+html[data-sw-low-data="true"] .download-ad,
+html[data-sw-low-data="true"] .home-offline-bg,
+html[data-sw-low-data="true"] .home-note {
+  display: none !important;
+}
+
+/* High-contrast text fallback for older feature styles. */
+.sw-app-shell .main-content :where(
+  .liked-page,
+  .boom-library-page,
+  .playlist-page,
+  .explore-page,
+  .album-page,
+  .artist-page,
+  .mood-page,
+  .years-page,
+  .yearly-page,
+  .account-dashboard,
+  .auth-page
+) :where(h1,h2,h3,h4,h5,h6,strong,label,dt) {
+  color: var(--sw-text) !important;
+}
+
+.sw-app-shell .main-content :where(
+  .liked-page,
+  .boom-library-page,
+  .playlist-page,
+  .explore-page,
+  .album-page,
+  .artist-page,
+  .mood-page,
+  .years-page,
+  .yearly-page,
+  .account-dashboard,
+  .auth-page
+) :where(p,small,dd) {
+  color: var(--sw-text-secondary) !important;
+}
+
+/* V7 responsive type ceiling: legacy pages cannot overwhelm small screens. */
+@media (max-width: 767.98px) {
+  .sw-app-shell .main-content h1 { font-size: clamp(1.7rem, 8.8vw, 2.65rem) !important; line-height: 1.02 !important; }
+  .sw-app-shell .main-content h2 { font-size: clamp(1.3rem, 6vw, 1.85rem) !important; line-height: 1.08 !important; }
+  .sw-app-shell .main-content h3 { font-size: clamp(1rem, 4.6vw, 1.28rem) !important; line-height: 1.15 !important; }
+  .sw-app-shell .main-content :where(p,li,button,input,select,textarea) { font-size: min(1em, .92rem); }
+}
+@media (max-width: 390px) {
+  .sw-app-shell .main-content h1 { font-size: clamp(1.55rem, 8.4vw, 2.05rem) !important; }
+  .sw-app-shell .main-content h2 { font-size: clamp(1.18rem, 5.8vw, 1.48rem) !important; }
+  .sw-app-shell .main-content h3 { font-size: clamp(.96rem, 4.8vw, 1.12rem) !important; }
+  .sw-app-shell .main-content :where(p,li,button,input,select,textarea) { font-size: .86rem; }
+}
+
+/* ==============================================================
+   V7 FINAL RESPONSIVE GUARDRAILS
+   Protect every consumer route from overflow and oversized legacy type.
+   ============================================================== */
+.sw-app-shell .main-content :where(.container,.container-fluid,[class*="container"]) {
+  min-width: 0;
+  max-width: 100%;
+}
+.sw-app-shell .main-content :where(.row,[class*="grid"],[class*="layout"],[class*="content"]) > * {
+  min-width: 0;
+}
+.sw-app-shell .main-content :where(input,select,textarea,button) {
+  max-width: 100%;
+}
+.sw-app-shell .main-content :where(table) {
+  width: 100%;
+  max-width: 100%;
+}
+.sw-app-shell .main-content :where(.table-responsive,[class*="table-wrap"],[class*="table-container"]) {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.sw-app-shell .main-content :where(img,video) {
+  height: auto;
+}
+
+@media (max-width: 991.98px) {
+  .sw-app-shell .main-content {
+    width: 100%;
+  }
+  .sw-app-shell .main-content :where([class*="hero"],[class*="header"],[class*="filters"],[class*="toolbar"]) {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .sw-app-shell .main-content :where(section,article) {
+    max-width: 100%;
+  }
+  .sw-app-shell .main-content :where(button,.btn,a[role="button"]) {
+    min-height: 36px;
+  }
+  .sw-app-shell .main-content :where(input,select,textarea) {
+    font-size: .86rem !important;
+  }
+  .sw-app-shell .main-content :where(.form-control,.form-select) {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .sw-app-shell .main-content :where(p,li,button,input,select,textarea,label,small) {
+    font-size: .8rem !important;
+  }
+  .sw-app-shell .main-content :where(h1) { font-size: 1.48rem !important; }
+  .sw-app-shell .main-content :where(h2) { font-size: 1.16rem !important; }
+  .sw-app-shell .main-content :where(h3) { font-size: .98rem !important; }
+}

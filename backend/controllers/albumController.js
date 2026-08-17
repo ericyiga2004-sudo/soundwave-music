@@ -95,24 +95,40 @@ export const createAlbum = async (req, res) => {
 // ======================================
 export const getAlbums = async (req, res) => {
   try {
-    const albums = await Album.find()
-      .populate(albumPopulate)
-      .sort({
-        createdAt: -1,
-      });
+    const { page = 1, limit, search = "", artist = "", sort = "newest" } = req.query;
+    const query = {};
 
-    return res.status(200).json({
-      success: true,
-      count: albums.length,
-      albums,
-    });
+    if (String(search).trim()) {
+      query.title = { $regex: String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
+    }
+    if (String(artist).trim()) query.artist = artist;
+
+    const sortOptions = {
+      newest: { releaseDate: -1, createdAt: -1 },
+      popular: { totalPlays: -1, createdAt: -1 },
+      name: { title: 1 },
+    };
+    const sortOption = sortOptions[sort] || sortOptions.newest;
+
+    if (limit) {
+      const pageNumber = Math.max(1, Number(page));
+      const limitNumber = Math.max(1, Math.min(100, Number(limit)));
+      const skip = (pageNumber - 1) * limitNumber;
+      const [albums, total] = await Promise.all([
+        Album.find(query).populate(albumPopulate).sort(sortOption).skip(skip).limit(limitNumber),
+        Album.countDocuments(query),
+      ]);
+      return res.status(200).json({
+        success: true, count: albums.length, total, page: pageNumber,
+        pages: Math.ceil(total / limitNumber), albums,
+      });
+    }
+
+    const albums = await Album.find(query).populate(albumPopulate).sort(sortOption);
+    return res.status(200).json({ success: true, count: albums.length, total: albums.length, albums });
   } catch (error) {
     console.error("Get Albums Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch albums",
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch albums" });
   }
 };
 

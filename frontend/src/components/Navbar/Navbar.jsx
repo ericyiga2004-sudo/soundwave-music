@@ -1,90 +1,204 @@
-import React, { useContext, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  House,
-  Compass,
-  Library,
+  BatteryMedium,
+  Settings2,
+  WifiOff,
+  ChevronLeft,
+  ChevronRight,
   Heart,
-  Music2,
-  User,
-  ListMusic,
+  Home,
+  Library,
+  Moon,
+  Radio,
   Search,
+  Sparkles,
+  Sun,
+  User,
 } from "lucide-react";
 import "./Navbar.css";
-
-import SearchModal from "../../components/SearchModel/SearchModel";
+import SearchModal from "../SearchModel/SearchModel";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import NotificationBell from "../../pages/NotificationBell";
+import {
+  getBatterySaver,
+  getLowData,
+  getTheme,
+  setBatterySaver,
+  setLowData,
+  setTheme,
+  UI_PREFERENCES_EVENT,
+} from "../../utils/uiPreferences";
 
-const navLinks = [
-  { path: "/", label: "Home", icon: House },
-  { path: "/explore", label: "Explore", icon: Compass },
+const mobileLinks = [
+  { path: "/", label: "Home", icon: Home },
+  { path: "/explore", label: "New", icon: Sparkles },
+  { path: "/radio", label: "Radio", icon: Radio },
   { path: "/library", label: "Library", icon: Library },
-  { path: "/liked", label: "Liked", icon: Heart },
-  { path: "/playlist", label: "Playlist", icon: ListMusic },
-  { path: "/account", label: "Account", icon: User },
+  { path: "/liked", label: "Favorites", icon: Heart },
 ];
+
+const pageTitles = {
+  "/": "Home",
+  "/explore": "New",
+  "/radio": "Radio",
+  "/library": "Library",
+  "/liked": "Favorites",
+  "/playlist": "Playlists",
+  "/account": "Account",
+  "/artists": "Artists",
+  "/albums": "Albums",
+  "/songs": "Songs",
+};
 
 const Navbar = () => {
   const [openSearch, setOpenSearch] = useState(false);
+  const [batterySaver, setBatterySaverState] = useState(getBatterySaver);
+  const [lowData, setLowDataState] = useState(getLowData);
+  const [theme, setThemeState] = useState(getTheme);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { songs = [], playSong, setCurrentSong } = useContext(MusicPlayerContext);
 
-  const {
-    songs = [],
-    playSong: contextPlaySong,
-    setCurrentSong,
-  } = useContext(MusicPlayerContext);
+  useEffect(() => {
+    const onPreference = () => {
+      setBatterySaverState(getBatterySaver());
+      setLowDataState(getLowData());
+      setThemeState(getTheme());
+    };
+    window.addEventListener(UI_PREFERENCES_EVENT, onPreference);
+    return () => window.removeEventListener(UI_PREFERENCES_EVENT, onPreference);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+      if (event.key === "/") {
+        event.preventDefault();
+        setOpenSearch(true);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const playSongFromSearch = (song, playlist = []) => {
     if (!song?._id) return;
-
-    if (contextPlaySong) {
-      contextPlaySong(song, playlist.length ? playlist : songs);
-    } else if (setCurrentSong) {
-      setCurrentSong(song);
-    }
-
+    if (playSong) playSong(song, playlist.length ? playlist : songs);
+    else setCurrentSong?.(song);
     setOpenSearch(false);
   };
+
+  const title =
+    pageTitles[location.pathname] ||
+    (location.pathname.startsWith("/artist/")
+      ? "Artist"
+      : location.pathname.startsWith("/album/")
+        ? "Album"
+        : location.pathname.startsWith("/song/")
+          ? "Now Playing"
+          : location.pathname.startsWith("/playlist/")
+            ? "Playlist"
+            : "SoundWave");
 
   return (
     <>
       <header className="sw-top-header">
-        <NavLink to="/" className="sw-logo-link">
-          <div className="sw-brand-mark">
-            <div className="sw-brand-inner">
-              <Music2 size={21} strokeWidth={2.6} />
-            </div>
+        <div className="sw-top-left">
+          <div className="sw-history-controls d-none d-lg-flex">
+            <button type="button" onClick={() => navigate(-1)} aria-label="Back">
+              <ChevronLeft size={19} />
+            </button>
+            <button type="button" onClick={() => navigate(1)} aria-label="Forward">
+              <ChevronRight size={19} />
+            </button>
           </div>
 
-          <div className="sw-logo-text">
-            <h1>SoundWave</h1>
-            <p>Feel the music</p>
+          <div className="sw-mobile-brand d-lg-none">
+            <span className="sw-mobile-brand-icon">♪</span>
+            <strong>{title}</strong>
           </div>
-        </NavLink>
+        </div>
 
-        <button
-          type="button"
-          className="sw-search-btn"
-          onClick={() => setOpenSearch(true)}
-        >
-          <Search size={18} />
-          <span>Search music...</span>
+        <button type="button" className="sw-search-btn" onClick={() => setOpenSearch(true)}>
+          <Search size={17} />
+          <span>Search</span>
+          <kbd className="d-none d-xl-inline">/</kbd>
         </button>
-      <NotificationBell/>
-        
+
+        <div className="sw-top-actions">
+          <div className="sw-settings-wrap">
+            <button
+              type="button"
+              className={`sw-icon-btn ${batterySaver || lowData ? "active" : ""}`}
+              onClick={() => setSettingsOpen((open) => !open)}
+              title="Performance settings"
+              aria-label="Open performance settings"
+              aria-expanded={settingsOpen}
+            >
+              <Settings2 size={18} />
+            </button>
+
+            {settingsOpen && (
+              <div className="sw-settings-popover" role="dialog" aria-label="Performance settings">
+                <div className="sw-settings-heading">
+                  <div>
+                    <strong>Performance</strong>
+                    <small>Use less battery and mobile data.</small>
+                  </div>
+                </div>
+
+                <button type="button" className="sw-settings-row" onClick={() => setBatterySaver(!batterySaver)}>
+                  <span className="sw-settings-row-icon"><BatteryMedium size={17} /></span>
+                  <span className="sw-settings-copy">
+                    <strong>Battery Saver</strong>
+                    <small>Stops decorative motion and expensive effects.</small>
+                  </span>
+                  <span className={`sw-switch ${batterySaver ? "on" : ""}`} aria-hidden="true"><i /></span>
+                </button>
+
+                <button type="button" className="sw-settings-row" onClick={() => setLowData(!lowData)}>
+                  <span className="sw-settings-row-icon"><WifiOff size={17} /></span>
+                  <span className="sw-settings-copy">
+                    <strong>Low Data Mode</strong>
+                    <small>Loads lower-priority sections only when you reach them.</small>
+                  </span>
+                  <span className={`sw-switch ${lowData ? "on" : ""}`} aria-hidden="true"><i /></span>
+                </button>
+
+                <button type="button" className="sw-settings-row" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+                  <span className="sw-settings-row-icon">{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</span>
+                  <span className="sw-settings-copy">
+                    <strong>Appearance</strong>
+                    <small>{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}</small>
+                  </span>
+                  <span className="sw-settings-value">{theme === "dark" ? "Dark" : "Light"}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <NotificationBell />
+
+          <NavLink to="/account" className="sw-account-pill" aria-label="Account">
+            <User size={17} />
+            <span className="d-none d-xl-inline">Account</span>
+          </NavLink>
+        </div>
       </header>
+
       <SearchModal
         isOpen={openSearch}
         onClose={() => setOpenSearch(false)}
         songs={songs}
         onPlaySong={playSongFromSearch}
       />
-     
 
-      <nav className="sw-bottom-nav">
-        {navLinks.map((item) => {
+      <nav className="sw-bottom-nav d-lg-none" aria-label="Main navigation">
+        {mobileLinks.map((item) => {
           const Icon = item.icon;
-
           return (
             <NavLink key={item.path} to={item.path} className="sw-bottom-item">
               <Icon size={20} />

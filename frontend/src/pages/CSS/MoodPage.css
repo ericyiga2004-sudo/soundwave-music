@@ -68,7 +68,7 @@
     place-items: center;
     margin: 0 auto 18px;
     border-radius: 30px;
-    background: linear-gradient(135deg, #1db954, #1ed760);
+    background: linear-gradient(135deg, #fa233b, #ff375f);
     color: #000000;
     box-shadow: 0 20px 40px rgba(29, 185, 84, 0.3);
   }
@@ -83,7 +83,7 @@
     font-weight: 900;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #1ed760;
+    color: #ff375f;
   }
   
   .mood-page-hero h1 {
@@ -112,7 +112,7 @@
     gap: 9px;
     border: 0;
     border-radius: 999px;
-    background: #1db954;
+    background: #fa233b;
     color: #000000;
     font-weight: 900;
     transition: 0.22s ease;
@@ -126,7 +126,7 @@
   .mood-play-btn:hover:not(:disabled),
   .mood-song-body button:hover,
   .mood-empty button:hover {
-    background: #1ed760;
+    background: #ff375f;
     transform: translateY(-2px);
     box-shadow: 0 14px 30px rgba(29, 185, 84, 0.25);
   }
@@ -245,7 +245,7 @@
   
   .mood-empty svg {
     font-size: 44px;
-    color: #1db954;
+    color: #fa233b;
     margin-bottom: 16px;
   }
   

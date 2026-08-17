@@ -208,7 +208,7 @@ const Dj = () => {
       song?.thumbnail ||
       song?.album?.image ||
       song?.album?.coverImage ||
-      "/fallback-cover.png"
+      "/fallback-cover.svg"
     );
   };
 
@@ -1827,7 +1827,7 @@ const Dj = () => {
     setHigh,
   }) => {
     const waveStatus = side === "A" ? waveStatusA : waveStatusB;
-    const image = deck ? getSongImage(deck) : "/fallback-cover.png";
+    const image = deck ? getSongImage(deck) : "/fallback-cover.svg";
 
     return (
       <div className={`dj-deck-pro deck-${side.toLowerCase()}`}>
@@ -1871,7 +1871,7 @@ const Dj = () => {
               src={image}
               alt={deck ? getSongTitle(deck) : `Deck ${side}`}
               onError={(event) => {
-                event.currentTarget.src = "/fallback-cover.png";
+                event.currentTarget.src = "/fallback-cover.svg";
               }}
             />
           </div>
@@ -2355,7 +2355,7 @@ const Dj = () => {
                         src={getSongImage(song)}
                         alt={getSongTitle(song)}
                         onError={(event) => {
-                          event.currentTarget.src = "/fallback-cover.png";
+                          event.currentTarget.src = "/fallback-cover.svg";
                         }}
                       />
 

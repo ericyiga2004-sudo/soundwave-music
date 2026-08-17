@@ -1,618 +1,247 @@
-/* =========================
-   POPULAR ARTISTS SECTION
-========================= */
-
 .popular-artists-section {
-  position: relative;
-
-  width: 100%;
-  padding: 2.2rem 0 2.2rem 1.5rem;
-
-  background:
-    radial-gradient(circle at top left, rgba(29, 185, 84, 0.12), transparent 28%),
-    linear-gradient(180deg, #151515 0%, #121212 48%, #101010 100%);
-
-  color: #ffffff;
-  font-family: "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
-
-  overflow: hidden;
+  padding: 30px clamp(14px, 3vw, 48px) 12px;
+  color: var(--sw-text);
 }
-
-.popular-artists-section::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-
-  background:
-    radial-gradient(circle at 92% 8%, rgba(56, 94, 144, 0.14), transparent 30%);
-
-  pointer-events: none;
-}
-
-.popular-artists-section > * {
-  position: relative;
-  z-index: 2;
-}
-
-/* =========================
-   LOADING / EMPTY
-========================= */
-
-.popular-artists-loading,
-.popular-artists-empty {
-  height: 190px;
-  margin-right: 1.5rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 16px;
-
-  background: #181818;
-  color: #a7a7a7;
-
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* =========================
-   HEADER
-========================= */
 
 .popular-artists-header {
+  margin-bottom: 16px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-
-  margin-bottom: 1.5rem;
-  padding-right: 1.5rem;
+  gap: 18px;
 }
 
 .popular-artists-tag {
-  display: inline-flex;
-
-  margin-bottom: 0.35rem;
-
-  color: #1db954;
-
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+  color: var(--sw-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 650;
 }
 
 .popular-artists-header h2 {
   margin: 0;
-
-  color: #ffffff;
-
-  font-size: clamp(1.45rem, 3vw, 2rem);
-  line-height: 1;
-  font-weight: 900;
+  color: var(--sw-text);
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  font-weight: 740;
   letter-spacing: -0.04em;
 }
 
 .popular-artists-header p {
-  max-width: 420px;
-
-  margin: 0.55rem 0 0;
-
-  color: #a7a7a7;
-
-  font-size: 0.88rem;
-  line-height: 1.5;
+  max-width: 540px;
+  margin: 5px 0 0;
+  color: var(--sw-text-secondary);
+  font-size: 0.78rem;
 }
 
 .popular-artists-view-all {
-  margin-bottom: 0.1rem;
-  padding: 0;
-
+  flex: 0 0 auto;
+  border: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-
-  border: none;
-  outline: none;
+  gap: 6px;
   background: transparent;
-
-  color: #a7a7a7;
-
-  font-family: inherit;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-
-  cursor: pointer;
-  white-space: nowrap;
-
-  transition: color 0.2s ease;
+  color: var(--sw-accent);
+  font-size: 0.8rem;
+  font-weight: 650;
 }
-
-.popular-artists-view-all svg {
-  font-size: 0.68rem;
-}
-
-.popular-artists-view-all:hover {
-  color: #ffffff;
-}
-
-/* =========================
-   HORIZONTAL GRID / SCROLLER
-========================= */
 
 .popular-artists-grid {
-  display: flex;
-  gap: 1rem;
-
-  overflow-x: auto;
-  overflow-y: hidden;
-
-  padding-right: 1.5rem;
-  padding-bottom: 0.85rem;
-
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-
-  scroll-behavior: smooth;
-
-  overscroll-behavior-x: contain;
-
-  touch-action: pan-x;
-
-  scroll-snap-type: none;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 24px);
+  min-width: 0;
 }
 
-.popular-artists-grid::-webkit-scrollbar{
-  display:none;
+.popular-artist-card,
+.popular-artist-skeleton {
+  min-width: 0;
+  background: transparent;
+  border: 0;
 }
-
-/* =========================
-   ARTIST CARD
-========================= */
-.popular-artist-card{
-  flex:0 0 158px;
-  width:158px;
-  min-height:248px;
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-
-  text-align:center;
-
-  padding:1.15rem .75rem .9rem;
-
-  border-radius:16px;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.045),
-      transparent 54%
-    ),
-    #181818;
-
-  border:1px solid rgba(255,255,255,.045);
-
-  cursor:pointer;
-
-  transition:
-    background .2s,
-    transform .2s,
-    border-color .2s,
-    box-shadow .2s;
-
- 
-}
-
-.popular-artist-card:hover {
-  transform: translateY(-4px);
-
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.065), transparent 58%),
-    #282828;
-
-  border-color: rgba(255, 255, 255, 0.07);
-
-  box-shadow:
-    0 16px 35px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(29, 185, 84, 0.07);
-}
-
-/* =========================
-   ARTIST IMAGE
-========================= */
 
 .popular-artist-image-wrap {
   position: relative;
-
-  width: 96px;
-  height: 96px;
-  flex-shrink: 0;
-
-  margin-bottom: 0.95rem;
-
-  border-radius: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: visible;
+  cursor: pointer;
 }
 
 .popular-artist-image {
-  width: 96px;
-  height: 96px;
-
+  width: 100%;
+  height: 100%;
   display: block;
-
   object-fit: cover;
   border-radius: 50%;
-
-  background: #242424;
-  border: 2px solid #282828;
-
-  box-shadow:
-    0 10px 22px rgba(0, 0, 0, 0.38),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.32s ease;
-}
-
-.popular-artist-card:hover .popular-artist-image {
-  transform: scale(1.07);
-
-  border-color: #1db954;
-
-  box-shadow:
-    0 12px 26px rgba(0, 0, 0, 0.42),
-    0 0 0 3px rgba(29, 185, 84, 0.18);
+  background: var(--sw-surface-2);
+  border: 1px solid var(--sw-border);
 }
 
 .popular-artist-verified-badge {
   position: absolute;
-  right: 2px;
-  bottom: 4px;
-
-  width: 24px;
-  height: 24px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
+  right: 4%;
+  bottom: 4%;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
-
-  background: #1db954;
-  color: #061006;
-
-  border: 3px solid #181818;
-
-  font-size: 0.75rem;
+  border: 3px solid var(--sw-bg);
+  background: var(--sw-accent);
+  color: #fff;
+  font-size: 0.78rem;
 }
-
-.popular-artist-card:hover .popular-artist-verified-badge {
-  border-color: #282828;
-}
-
-/* =========================
-   ARTIST CONTENT
-========================= */
 
 .popular-artist-content {
-  width: 100%;
+  padding-top: 10px;
   min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.38rem;
-
-  flex: 1;
+  text-align: center;
 }
 
 .popular-artist-content h3 {
-  max-width: 100%;
   margin: 0;
-
-  color: #ffffff;
-
-  font-size: 0.9rem;
-  line-height: 1.2;
-  font-weight: 800;
-  letter-spacing: -0.015em;
-
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--sw-text);
+  font-size: 0.92rem;
+  font-weight: 680;
+  letter-spacing: -0.02em;
 }
 
 .popular-artist-country,
 .popular-artist-stats {
-  max-width: 100%;
-
+  margin: 4px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.32rem;
-
-  margin: 0;
-
-  color: #a7a7a7;
-
-  font-size: 0.72rem;
-  line-height: 1.2;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  gap: 5px;
+  color: var(--sw-text-secondary);
+  font-size: 0.7rem;
 }
 
 .popular-artist-country svg,
 .popular-artist-stats svg {
-  flex-shrink: 0;
-
-  color: #666666;
+  flex: 0 0 auto;
   font-size: 0.68rem;
-}
-
-.popular-artist-country span,
-.popular-artist-stats span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* =========================
-   CARD BUTTON
-========================= */
-
-.popular-artist-button {
-  margin-top: auto;
-  padding: 0.42rem 0.9rem;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.38rem;
-
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  background: transparent;
-  color: #ffffff;
-
-  font-family: inherit;
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-
-  cursor: pointer;
-  white-space: nowrap;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.popular-artist-button svg {
-  font-size: 0.62rem;
-}
-
-.popular-artist-button:hover {
-  transform: scale(1.04);
-
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 768px) {
-  .popular-artists-section {
-    padding: 1.7rem 0 1.7rem 1rem;
-  }
-
-  .popular-artists-header {
-    padding-right: 1rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .popular-artists-header h2 {
-    font-size: 1.35rem;
-  }
-
-  .popular-artists-header p {
-    font-size: 0.82rem;
-  }
-
-  .popular-artists-grid {
-    gap: 0.85rem;
-    padding-right: 1rem;
-  }
-
-  .popular-artist-card {
-    width: 140px;
-    min-height: 226px;
-    flex-basis: 140px;
-
-    padding: 1rem 0.65rem 0.85rem;
-    border-radius: 14px;
-  }
-
-  .popular-artist-image-wrap,
-  .popular-artist-image {
-    width: 78px;
-    height: 78px;
-  }
-
-  .popular-artist-content h3 {
-    font-size: 0.82rem;
-  }
-
-  .popular-artist-country,
-  .popular-artist-stats {
-    font-size: 0.68rem;
-  }
-
-  .popular-artist-button {
-    padding: 0.38rem 0.75rem;
-    font-size: 0.64rem;
-  }
-
-  .popular-artist-verified-badge {
-    width: 22px;
-    height: 22px;
-    font-size: 0.68rem;
-  }
-}
-
-@media (max-width: 520px) {
-  .popular-artists-section {
-    padding: 1.5rem 0 1.55rem 0.9rem;
-  }
-
-  .popular-artists-header {
-    padding-right: 0.9rem;
-    align-items: flex-end;
-  }
-
-  .popular-artists-tag {
-    font-size: 0.58rem;
-  }
-
-  .popular-artists-header h2 {
-    font-size: 1.22rem;
-  }
-
-  .popular-artists-header p {
-    display: none;
-  }
-
-  .popular-artists-view-all {
-    font-size: 0.62rem;
-  }
-
-  .popular-artists-grid {
-    gap: 0.75rem;
-    padding-right: 0.9rem;
-  }
-
-  .popular-artist-card {
-    width: 120px;
-    min-height: 205px;
-    flex-basis: 120px;
-
-    padding: 0.95rem 0.55rem 0.78rem;
-  }
-
-  .popular-artist-image-wrap,
-  .popular-artist-image {
-    width: 66px;
-    height: 66px;
-  }
-
-  .popular-artist-content h3 {
-    font-size: 0.76rem;
-  }
-
-  .popular-artist-country,
-  .popular-artist-stats {
-    font-size: 0.63rem;
-  }
-
-  .popular-artist-button {
-    margin-top: auto;
-    padding: 0.34rem 0.64rem;
-    font-size: 0.58rem;
-  }
-
-  .popular-artist-button svg {
-    display: none;
-  }
-}
-
-@media (max-width: 360px) {
-  .popular-artist-card {
-    width: 110px;
-    min-height: 190px;
-    flex-basis: 110px;
-  }
-
-  .popular-artist-image-wrap,
-  .popular-artist-image {
-    width: 60px;
-    height: 60px;
-  }
-
-  .popular-artist-country {
-    display: none;
-  }
-
-  .popular-artist-button {
-    padding-inline: 0.55rem;
-  }
 }
 
 .popular-artist-actions {
+  margin-top: 9px;
   display: flex;
-  gap: 10px;
   align-items: center;
-  margin-top: 14px;
+  justify-content: center;
+  gap: 6px;
 }
 
-.popular-artist-follow-btn {
+.popular-artist-follow-btn,
+.popular-artist-button {
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 0 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 999px;
-  background: #1ed760;
-  color: #06130a;
-  font-size: 13px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: 0.22s ease;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 650;
 }
 
-.popular-artist-follow-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(30, 215, 96, 0.25);
+.popular-artist-follow-btn {
+  border: 0;
+  background: var(--sw-accent);
+  color: #fff;
 }
 
 .popular-artist-follow-btn.following {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--sw-border);
+  background: var(--sw-surface-2);
+  color: var(--sw-text);
 }
 
-.popular-artist-follow-btn:disabled {
-  opacity: 0.65;
-  cursor: wait;
+.popular-artist-button {
+  border: 1px solid var(--sw-border);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
 }
 
-.popular-artist-image-wrap {
-  cursor: pointer;
+.popular-artists-empty {
+  padding: 28px;
+  border: 1px solid var(--sw-border);
+  border-radius: 14px;
+  color: var(--sw-text-secondary);
+  background: var(--sw-surface-2);
+  text-align: center;
 }
 
-@media (max-width: 520px) {
-  .popular-artist-actions {
-    flex-direction: column;
-    align-items: stretch;
+.popular-artist-skeleton-image,
+.popular-artist-skeleton-line {
+  display: block;
+  background: var(--sw-surface-2);
+  animation: swArtistPulse 1s ease-in-out infinite alternate;
+}
+
+.popular-artist-skeleton-image {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.popular-artist-skeleton-line {
+  width: 78%;
+  height: 11px;
+  margin: 10px auto 0;
+  border-radius: 5px;
+}
+
+.popular-artist-skeleton-line.short { width: 55%; }
+
+@keyframes swArtistPulse { from { opacity: .55; } to { opacity: 1; } }
+
+html[data-sw-battery-saver="true"] .popular-artist-skeleton-image,
+html[data-sw-battery-saver="true"] .popular-artist-skeleton-line,
+html[data-sw-low-data="true"] .popular-artist-skeleton-image,
+html[data-sw-low-data="true"] .popular-artist-skeleton-line { animation: none; }
+
+@media (max-width: 1199.98px) {
+  .popular-artists-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .popular-artist-card:nth-child(n + 5), .popular-artist-skeleton:nth-child(n + 5) { display: none; }
+}
+
+@media (max-width: 767.98px) {
+  .popular-artists-grid {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
   }
-
+  .popular-artists-grid::-webkit-scrollbar { display: none; }
+  .popular-artist-card,
+  .popular-artist-skeleton {
+    flex: 0 0 148px;
+    display: block !important;
+    scroll-snap-align: start;
+  }
+  .popular-artist-actions { flex-direction: column; }
   .popular-artist-follow-btn,
-  .popular-artist-button {
-    width: 100%;
-  }
+  .popular-artist-button { width: 100%; }
+}
+
+.popular-artists-empty {
+  gap: 10px;
+}
+
+.catalog-retry-btn {
+  min-height: 34px;
+  border: 1px solid var(--sw-border);
+  border-radius: 999px;
+  padding: 0 15px;
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 680;
 }

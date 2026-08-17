@@ -1,620 +1,243 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
-  FaPlay,
-  FaPause,
-  FaForward,
-  FaBackward,
-  FaStepForward,
-  FaStepBackward,
-  FaChevronUp,
-  FaChevronDown,
-} from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
+  ListMusic,
+  Pause,
+  Play,
+  Repeat,
+  Repeat1,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  Volume1,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./CSS/MusicPlay.css";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
+import { getLowData, UI_PREFERENCES_EVENT } from "../utils/uiPreferences";
 
 const formatTime = (seconds = 0) => {
-  const safeSeconds = Number(seconds);
-
-  if (
-    !safeSeconds ||
-    Number.isNaN(safeSeconds) ||
-    !Number.isFinite(safeSeconds)
-  ) {
-    return "0:00";
-  }
-
-  const mins = Math.floor(safeSeconds / 60);
-  const secs = Math.floor(safeSeconds % 60);
-
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
+  const value = Number(seconds);
+  if (!Number.isFinite(value) || value < 0) return "0:00";
+  const mins = Math.floor(value / 60);
+  const secs = Math.floor(value % 60);
+  return `${mins}:${String(secs).padStart(2, "0")}`;
 };
 
 const getArtistName = (song) =>
   song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
-const getSongDuration = (song) => {
-  const possibleDuration =
-    song?.durationInSeconds ||
-    song?.durationSeconds ||
-    song?.duration ||
-    song?.length ||
-    song?.audioDuration;
+const getCover = (song) =>
+  song?.imageUrl || song?.image || song?.coverImage || song?.album?.coverImage || "/fallback-cover.svg";
 
-  const numericDuration = Number(possibleDuration);
-
-  if (
-    numericDuration &&
-    !Number.isNaN(numericDuration) &&
-    Number.isFinite(numericDuration)
-  ) {
-    return numericDuration;
-  }
-
-  return 0;
-};
+const VOLUME_KEY = "soundwave_player_volume";
 
 const MusicPlayer = () => {
   const hiddenAudioRef = useRef(null);
-  const bufferOverlayTimerRef = useRef(null);
-  const seekSuppressTimerRef = useRef(null);
-
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-  const [showBufferOverlay, setShowBufferOverlay] = useState(false);
-  const [bufferOverlayDismissed, setBufferOverlayDismissed] = useState(false);
-
-  const [localProgress, setLocalProgress] = useState(0);
-  const [localDuration, setLocalDuration] = useState(0);
-
-  const [isUserSeeking, setIsUserSeeking] = useState(false);
-  const [suppressSeekBuffering, setSuppressSeekBuffering] = useState(false);
-  const [audioIsActuallyPlaying, setAudioIsActuallyPlaying] = useState(false);
-  const [audioIsActuallyWaiting, setAudioIsActuallyWaiting] = useState(false);
-
   const navigate = useNavigate();
+  const [queueOpen, setQueueOpen] = useState(false);
+  const [lowData, setLowData] = useState(getLowData);
+  const [volume, setVolume] = useState(() => {
+    const stored = Number(localStorage.getItem(VOLUME_KEY));
+    return Number.isFinite(stored) && stored >= 0 && stored <= 1 ? stored : 0.82;
+  });
 
   const {
     registerAudioElement,
     currentSong,
-    playlist,
+    playlist = [],
+    currentIndex = -1,
     isPlaying,
     isBuffering,
     bufferMessage,
-    progress,
-    duration,
+    progress = 0,
+    duration = 0,
+    shuffle,
+    repeat,
+    repeatModes,
     togglePlay,
     seekTo,
-    skipForward,
-    skipBackward,
     nextSong,
     prevSong,
-    loading,
+    playSong,
+    setShuffle,
+    cycleRepeat,
   } = useContext(MusicPlayerContext);
 
-  useEffect(() => {
-    if (hiddenAudioRef.current && typeof registerAudioElement === "function") {
-      registerAudioElement(hiddenAudioRef.current);
-    }
-
-    return () => {
-      if (typeof registerAudioElement === "function") {
-        registerAudioElement(null);
-      }
-    };
-  }, [registerAudioElement]);
 
   useEffect(() => {
-    setBufferOverlayDismissed(false);
-    setShowBufferOverlay(false);
-    setLocalProgress(0);
-    setIsUserSeeking(false);
-    setSuppressSeekBuffering(false);
-    setAudioIsActuallyWaiting(false);
-
-    const songDuration = getSongDuration(currentSong);
-    setLocalDuration(songDuration);
-  }, [currentSong?._id, currentSong]);
+    const syncDataMode = () => setLowData(getLowData());
+    window.addEventListener(UI_PREFERENCES_EVENT, syncDataMode);
+    return () => window.removeEventListener(UI_PREFERENCES_EVENT, syncDataMode);
+  }, []);
 
   useEffect(() => {
     const audio = hiddenAudioRef.current;
-    if (!audio) return undefined;
-
-    const updateDuration = () => {
-      const audioDuration = Number(audio.duration);
-
-      if (
-        audioDuration &&
-        !Number.isNaN(audioDuration) &&
-        Number.isFinite(audioDuration)
-      ) {
-        setLocalDuration(audioDuration);
-        return;
-      }
-
-      const songDuration = getSongDuration(currentSong);
-      setLocalDuration(songDuration);
-    };
-
-    const updateProgress = () => {
-      const audioCurrentTime = Number(audio.currentTime);
-
-      if (
-        !Number.isNaN(audioCurrentTime) &&
-        Number.isFinite(audioCurrentTime)
-      ) {
-        setLocalProgress(audioCurrentTime);
-      }
-    };
-
-    const markPlaying = () => {
-      setAudioIsActuallyPlaying(true);
-      setAudioIsActuallyWaiting(false);
-      setShowBufferOverlay(false);
-
-      if (seekSuppressTimerRef.current) {
-        window.clearTimeout(seekSuppressTimerRef.current);
-      }
-
-      seekSuppressTimerRef.current = window.setTimeout(() => {
-        setSuppressSeekBuffering(false);
-      }, 600);
-    };
-
-    const markPaused = () => {
-      setAudioIsActuallyPlaying(false);
-    };
-
-    const markWaiting = () => {
-      setAudioIsActuallyWaiting(true);
-    };
-
-    const markCanPlay = () => {
-      setAudioIsActuallyWaiting(false);
-      updateDuration();
-
-      if (!audio.paused && !audio.ended) {
-        setAudioIsActuallyPlaying(true);
-      }
-    };
-
-    updateDuration();
-    updateProgress();
-
-    if (!audio.paused && !audio.ended) {
-      setAudioIsActuallyPlaying(true);
-    }
-
-    audio.addEventListener("loadedmetadata", updateDuration);
-    audio.addEventListener("durationchange", updateDuration);
-    audio.addEventListener("canplay", markCanPlay);
-    audio.addEventListener("canplaythrough", markCanPlay);
-    audio.addEventListener("playing", markPlaying);
-    audio.addEventListener("play", markPlaying);
-    audio.addEventListener("pause", markPaused);
-    audio.addEventListener("ended", markPaused);
-    audio.addEventListener("waiting", markWaiting);
-    audio.addEventListener("stalled", markWaiting);
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("seeking", updateProgress);
-    audio.addEventListener("seeked", updateProgress);
-
-    return () => {
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("durationchange", updateDuration);
-      audio.removeEventListener("canplay", markCanPlay);
-      audio.removeEventListener("canplaythrough", markCanPlay);
-      audio.removeEventListener("playing", markPlaying);
-      audio.removeEventListener("play", markPlaying);
-      audio.removeEventListener("pause", markPaused);
-      audio.removeEventListener("ended", markPaused);
-      audio.removeEventListener("waiting", markWaiting);
-      audio.removeEventListener("stalled", markWaiting);
-      audio.removeEventListener("timeupdate", updateProgress);
-      audio.removeEventListener("seeking", updateProgress);
-      audio.removeEventListener("seeked", updateProgress);
-    };
-  }, [currentSong]);
-
-  const startSeekBufferSuppress = () => {
-    setSuppressSeekBuffering(true);
-    setShowBufferOverlay(false);
-
-    if (bufferOverlayTimerRef.current) {
-      window.clearTimeout(bufferOverlayTimerRef.current);
-    }
-
-    if (seekSuppressTimerRef.current) {
-      window.clearTimeout(seekSuppressTimerRef.current);
-    }
-
-    seekSuppressTimerRef.current = window.setTimeout(() => {
-      setSuppressSeekBuffering(false);
-    }, 2500);
-  };
+    if (!audio || typeof registerAudioElement !== "function") return undefined;
+    registerAudioElement(audio);
+    return () => registerAudioElement(null);
+  }, [registerAudioElement]);
 
   useEffect(() => {
-    return () => {
-      if (seekSuppressTimerRef.current) {
-        window.clearTimeout(seekSuppressTimerRef.current);
-      }
-    };
-  }, []);
+    if (!hiddenAudioRef.current) return;
+    hiddenAudioRef.current.volume = volume;
+    localStorage.setItem(VOLUME_KEY, String(volume));
+  }, [volume]);
 
-  const effectiveIsPlaying = isPlaying || audioIsActuallyPlaying;
 
-  const effectiveIsBuffering =
-    isBuffering &&
-    audioIsActuallyWaiting &&
-    !audioIsActuallyPlaying &&
-    !isUserSeeking &&
-    !suppressSeekBuffering;
+  const safeDuration = Number.isFinite(Number(duration)) ? Number(duration) : 0;
+  const safeProgress = Number.isFinite(Number(progress)) ? Math.max(0, Number(progress)) : 0;
+  const clampedProgress = safeDuration > 0 ? Math.min(safeProgress, safeDuration) : 0;
+  const progressPercent = safeDuration > 0 ? (clampedProgress / safeDuration) * 100 : 0;
 
-  useEffect(() => {
-    if (effectiveIsBuffering && currentSong && !bufferOverlayDismissed) {
-      bufferOverlayTimerRef.current = window.setTimeout(() => {
-        setShowBufferOverlay(true);
-      }, 1200);
-    } else {
-      if (bufferOverlayTimerRef.current) {
-        window.clearTimeout(bufferOverlayTimerRef.current);
-      }
+  const volumeIcon = useMemo(() => {
+    if (volume === 0) return <VolumeX size={17} />;
+    if (volume < 0.45) return <Volume1 size={17} />;
+    return <Volume2 size={17} />;
+  }, [volume]);
 
-      setShowBufferOverlay(false);
-    }
-
-    return () => {
-      if (bufferOverlayTimerRef.current) {
-        window.clearTimeout(bufferOverlayTimerRef.current);
-      }
-    };
-  }, [effectiveIsBuffering, currentSong, bufferOverlayDismissed]);
-
-  const closeBufferOverlay = () => {
-    if (bufferOverlayTimerRef.current) {
-      window.clearTimeout(bufferOverlayTimerRef.current);
-    }
-
-    setShowBufferOverlay(false);
-    setBufferOverlayDismissed(true);
-  };
-
-  const openCurrentSongDetails = () => {
+  const openSong = () => {
     if (!currentSong?._id) return;
-
-    navigate(`/song/${currentSong._id}`, {
-      state: {
-        playlist,
-      },
-    });
-
-    window.scrollTo(0, 0);
+    navigate(`/song/${currentSong._id}`, { state: { playlist } });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSeekStart = () => {
-    setIsUserSeeking(true);
-    startSeekBufferSuppress();
+  const playQueueSong = (song) => {
+    if (!song?._id) return;
+    playSong?.(song, playlist);
   };
 
-  const handleSeekEnd = () => {
-    setIsUserSeeking(false);
-    startSeekBufferSuppress();
-  };
-
-  const handleSeek = (e) => {
-    const newTime = Number(e.target.value);
-
-    if (Number.isNaN(newTime) || !Number.isFinite(newTime)) return;
-
-    setLocalProgress(newTime);
-    startSeekBufferSuppress();
-
-    if (hiddenAudioRef.current) {
-      hiddenAudioRef.current.currentTime = newTime;
-
-      if (!hiddenAudioRef.current.paused && !hiddenAudioRef.current.ended) {
-        setAudioIsActuallyPlaying(true);
-      }
-    }
-
-    if (typeof seekTo === "function") {
-      seekTo(newTime);
-    }
-  };
-
-  const handleSkipBackward = (seconds) => {
-    startSeekBufferSuppress();
-
-    if (typeof skipBackward === "function") {
-      skipBackward(seconds);
-    }
-  };
-
-  const handleSkipForward = (seconds) => {
-    startSeekBufferSuppress();
-
-    if (typeof skipForward === "function") {
-      skipForward(seconds);
-    }
-  };
-
-  const audioElement = (
-    <audio
-      ref={hiddenAudioRef}
-      preload="metadata"
-      playsInline
-      style={{
-        position: "fixed",
-        width: "1px",
-        height: "1px",
-        opacity: 0,
-        pointerEvents: "none",
-        left: "-9999px",
-        bottom: 0,
-      }}
-    />
-  );
-
-  const bufferingOverlay = showBufferOverlay && currentSong && (
-    <div className="buffer-overlay" role="status" aria-live="polite">
-      <button
-        type="button"
-        className="buffer-close"
-        onClick={closeBufferOverlay}
-        aria-label="Close buffering message"
-        title="Close"
-      >
-        <IoClose />
-      </button>
-
-      <div className="buffer-bg">
-        <img src={currentSong?.imageUrl || "/fallback.jpg"} alt="" />
-      </div>
-
-      <div className="buffer-card">
-        <img
-          src={currentSong?.imageUrl || "/fallback.jpg"}
-          alt={currentSong?.title || "song cover"}
-          className="buffer-cover"
-        />
-
-        <div className="buffer-spinner" aria-hidden="true"></div>
-
-        <h3>{bufferMessage || "Buffering song..."}</h3>
-        <p>{currentSong?.title || "Please wait"}</p>
-        <small>Stabilizing audio for smoother playback</small>
-      </div>
-    </div>
-  );
-
-  if (loading) {
-    return (
-      <>
-        {audioElement}
-        <div className="player-loading">Loading player...</div>
-      </>
-    );
-  }
-
-  if (!currentSong) {
-    return <>{audioElement}</>;
-  }
-
-  const contextProgress = Number(progress);
-  const contextDuration = Number(duration);
-
-  const safeDuration =
-    contextDuration &&
-    !Number.isNaN(contextDuration) &&
-    Number.isFinite(contextDuration)
-      ? contextDuration
-      : localDuration;
-
-  const safeProgress =
-    contextProgress &&
-    !Number.isNaN(contextProgress) &&
-    Number.isFinite(contextProgress)
-      ? contextProgress
-      : localProgress;
-
-  const clampedProgress =
-    safeDuration > 0 ? Math.min(Math.max(safeProgress, 0), safeDuration) : 0;
-
-  const progressPercent =
-    safeDuration > 0 ? (clampedProgress / safeDuration) * 100 : 0;
+  const repeatLabel = repeat === repeatModes?.ONE ? "Repeat one" : repeat === repeatModes?.ALL ? "Repeat all" : "Repeat off";
 
   return (
     <>
-      {audioElement}
-      {bufferingOverlay}
+      <audio
+        ref={hiddenAudioRef}
+        preload={lowData ? "metadata" : "auto"}
+        playsInline
+        style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none", left: -9999 }}
+      />
 
-      <button
-        type="button"
-        className={`player-toggle ${isPlayerOpen ? "active" : ""} ${
-          effectiveIsPlaying ? "is-playing" : ""
-        } ${effectiveIsBuffering ? "is-buffering" : ""}`}
-        onClick={() => setIsPlayerOpen((prev) => !prev)}
-        aria-label={isPlayerOpen ? "Hide music player" : "Show music player"}
-        title={isPlayerOpen ? "Hide player" : "Show player"}
-      >
-        <span className="toggle-arrow">
-          {isPlayerOpen ? <FaChevronDown /> : <FaChevronUp />}
-        </span>
-
-        <span className="toggle-content">
-          <span className="toggle-title">
-            {isPlayerOpen ? "Hide Player" : "Open Player"}
-          </span>
-
-          <span className="toggle-song">
-            {effectiveIsBuffering
-              ? bufferMessage || "Buffering..."
-              : currentSong?.title || "Now Playing"}
-          </span>
-        </span>
-
-        <span className="toggle-equalizer">
-          <i></i>
-          <i></i>
-          <i></i>
-        </span>
-      </button>
-
-      <div className={`player-shell ${isPlayerOpen ? "show" : "hide"}`}>
-        <div
-          className={`player container-fluid ${
-            effectiveIsBuffering ? "player-buffering" : ""
-          }`}
-        >
-          <div className="row g-2 g-md-3 align-items-center">
-            <div className="col-12 col-md-4">
-              <div className="player-info">
-                <button
-                  type="button"
-                  className="cover-button"
-                  onClick={openCurrentSongDetails}
-                  aria-label={`Open ${
-                    currentSong?.title || "current song"
-                  } details`}
-                  title="Open song details"
-                >
-                  <img
-                    src={currentSong?.imageUrl || "/fallback.jpg"}
-                    alt={currentSong?.title || "song cover"}
-                    className={
-                      effectiveIsPlaying ? "cover playing-cover" : "cover"
-                    }
-                  />
-                </button>
-
-                <div className="info-text">
-                  <h4>{currentSong?.title || "Unknown Song"}</h4>
-                  <p>
-                    {effectiveIsBuffering
-                      ? bufferMessage || "Buffering audio..."
-                      : getArtistName(currentSong)}
-                  </p>
-                </div>
+      {currentSong && (
+        <>
+          <div className={`sw-player ${isBuffering ? "is-buffering" : ""}`}>
+            <div className="sw-player-song">
+              <button type="button" className="sw-player-cover" onClick={openSong} aria-label="Open current song">
+                <img src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
+              </button>
+              <div className="sw-player-song-copy">
+                <strong>{currentSong?.title || "Unknown Song"}</strong>
+                <span>{isBuffering ? bufferMessage || "Buffering…" : getArtistName(currentSong)}</span>
               </div>
             </div>
 
-            <div className="col-12 col-md-5">
-              <div className="controls">
+            <div className="sw-player-center">
+              <div className="sw-player-controls">
                 <button
                   type="button"
-                  className="control-btn track-btn"
-                  onClick={prevSong}
-                  aria-label="Previous song"
-                  title="Previous song"
+                  className={`sw-player-icon-control d-none d-md-grid ${shuffle ? "active" : ""}`}
+                  onClick={() => setShuffle?.(!shuffle)}
+                  aria-label="Toggle shuffle"
+                  title="Shuffle"
                 >
-                  <FaStepBackward />
+                  <Shuffle size={17} />
                 </button>
-
-                <button
-                  type="button"
-                  className="control-btn skip-btn"
-                  onClick={() => handleSkipBackward(30)}
-                  aria-label="Skip backward 30 seconds"
-                  title="Back 30 seconds"
-                >
-                  <FaBackward />
-                  <span>30</span>
+                <button type="button" className="sw-player-icon-control" onClick={prevSong} aria-label="Previous song">
+                  <SkipBack size={19} fill="currentColor" />
                 </button>
-
-                <button
-                  type="button"
-                  className="control-btn skip-btn"
-                  onClick={() => handleSkipBackward(15)}
-                  aria-label="Skip backward 15 seconds"
-                  title="Back 15 seconds"
-                >
-                  <FaBackward />
-                  <span>15</span>
+                <button type="button" className="sw-player-main-control" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
+                  {isBuffering ? <span className="sw-player-spinner" /> : isPlaying ? <Pause size={21} fill="currentColor" /> : <Play size={21} fill="currentColor" />}
                 </button>
-
-                <button
-                  type="button"
-                  className={`play ${
-                    effectiveIsBuffering ? "play-loading" : ""
-                  }`}
-                  onClick={togglePlay}
-                  aria-label={effectiveIsPlaying ? "Pause song" : "Play song"}
-                  title={effectiveIsPlaying ? "Pause" : "Play"}
-                >
-                  {effectiveIsBuffering ? (
-                    <span className="play-spinner" aria-hidden="true"></span>
-                  ) : effectiveIsPlaying ? (
-                    <FaPause />
-                  ) : (
-                    <FaPlay />
-                  )}
+                <button type="button" className="sw-player-icon-control" onClick={nextSong} aria-label="Next song">
+                  <SkipForward size={19} fill="currentColor" />
                 </button>
-
                 <button
                   type="button"
-                  className="control-btn skip-btn"
-                  onClick={() => handleSkipForward(15)}
-                  aria-label="Skip forward 15 seconds"
-                  title="Forward 15 seconds"
+                  className={`sw-player-icon-control d-none d-md-grid ${repeat !== repeatModes?.OFF ? "active" : ""}`}
+                  onClick={cycleRepeat}
+                  aria-label={repeatLabel}
+                  title={repeatLabel}
                 >
-                  <FaForward />
-                  <span>15</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="control-btn skip-btn"
-                  onClick={() => handleSkipForward(30)}
-                  aria-label="Skip forward 30 seconds"
-                  title="Forward 30 seconds"
-                >
-                  <FaForward />
-                  <span>30</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="control-btn track-btn"
-                  onClick={nextSong}
-                  aria-label="Next song"
-                  title="Next song"
-                >
-                  <FaStepForward />
+                  {repeat === repeatModes?.ONE ? <Repeat1 size={17} /> : <Repeat size={17} />}
                 </button>
               </div>
-            </div>
 
-            <div className="col-12 col-md-3">
-              <div className="seek">
-                <div className="time-row">
-                  <span>{formatTime(clampedProgress)}</span>
-                  <span>{formatTime(safeDuration)}</span>
-                </div>
-
+              <div className="sw-player-progress-row">
+                <span>{formatTime(clampedProgress)}</span>
                 <input
                   type="range"
                   min="0"
                   max={safeDuration || 0}
-                  step="0.01"
+                  step="0.05"
                   value={clampedProgress}
-                  onMouseDown={handleSeekStart}
-                  onMouseUp={handleSeekEnd}
-                  onTouchStart={handleSeekStart}
-                  onTouchEnd={handleSeekEnd}
-                  onKeyDown={handleSeekStart}
-                  onKeyUp={handleSeekEnd}
-                  onChange={handleSeek}
+                  onChange={(event) => seekTo?.(Number(event.target.value))}
                   disabled={!safeDuration}
-                  style={{
-                    background: `linear-gradient(to right, #5cf680 ${progressPercent}%, #2a2a35 ${progressPercent}%)`,
-                  }}
                   aria-label="Seek song position"
+                  style={{ "--sw-progress": `${progressPercent}%` }}
                 />
+                <span>{formatTime(safeDuration)}</span>
               </div>
             </div>
+
+            <div className="sw-player-actions">
+              <div className="sw-volume-control d-none d-xl-flex">
+                {volumeIcon}
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(event) => setVolume(Number(event.target.value))}
+                  aria-label="Volume"
+                />
+              </div>
+              <button
+                type="button"
+                className={`sw-player-icon-control ${queueOpen ? "active" : ""}`}
+                onClick={() => setQueueOpen((open) => !open)}
+                aria-label="Show queue"
+                title="Queue"
+              >
+                <ListMusic size={18} />
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+
+          <aside className={`sw-queue-drawer ${queueOpen ? "open" : ""}`} aria-hidden={!queueOpen}>
+            <div className="sw-queue-header">
+              <div>
+                <small>Up Next</small>
+                <h3>Playing Queue</h3>
+              </div>
+              <button type="button" onClick={() => setQueueOpen(false)} aria-label="Close queue"><X size={18} /></button>
+            </div>
+            <div className="sw-queue-list">
+              {playlist.length ? (
+                playlist.map((song, index) => (
+                  <button
+                    type="button"
+                    className={`sw-queue-item ${index === currentIndex ? "active" : ""}`}
+                    key={song?._id || index}
+                    onClick={() => playQueueSong(song)}
+                  >
+                    <img src={getCover(song)} alt="" loading="lazy" decoding="async" />
+                    <span>
+                      <strong>{song?.title || "Unknown Song"}</strong>
+                      <small>{getArtistName(song)}</small>
+                    </span>
+                    <em>{index === currentIndex ? "Playing" : index + 1}</em>
+                  </button>
+                ))
+              ) : (
+                <p className="sw-queue-empty">Your queue is empty.</p>
+              )}
+            </div>
+          </aside>
+        </>
+      )}
     </>
   );
 };

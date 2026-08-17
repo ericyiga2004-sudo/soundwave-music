@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaMusic, FaPlay } from "react-icons/fa";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/YearsPage.css";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL } from "../config/api";
 
 const yearCollections = [
   {
@@ -197,13 +197,6 @@ const YearsPage = () => {
         return;
       }
 
-      if (!API_BASE_URL) {
-        console.error("VITE_BACKEND_URL is missing");
-        setError("Backend URL is missing.");
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
         setError("");
@@ -360,31 +353,21 @@ const YearsPage = () => {
 
   return (
     <main className="years-page">
-      <div
-        className="years-hero"
-        style={{
-          backgroundImage: `linear-gradient(90deg, rgba(5, 5, 12, 0.94), rgba(5, 5, 12, 0.45)), url(${collection.banner})`,
-        }}
-      >
+      <div className="years-hero">
         <div className="container">
-          <button
-            type="button"
-            className="years-back-btn"
-            onClick={() => navigate(-1)}
-          >
+          <button type="button" className="years-back-btn" onClick={() => navigate(-1)}>
             <FaArrowLeft />
             Back
           </button>
-
-          <div className="years-hero-content">
-            <span className="years-range">
-              {collection.fromYear === collection.toYear
-                ? collection.fromYear
-                : `${collection.fromYear} - ${collection.toYear}`}
-            </span>
-
-            <h1>{collection.title}</h1>
-            <p>{collection.subtitle}</p>
+          <div className="years-hero-grid">
+            <img className="years-hero-art" src={collection.banner} alt="" />
+            <div className="years-hero-content">
+              <span className="years-range">
+                {collection.fromYear === collection.toYear ? collection.fromYear : `${collection.fromYear} - ${collection.toYear}`}
+              </span>
+              <h1>{collection.title}</h1>
+              <p>{collection.subtitle}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -413,7 +396,7 @@ const YearsPage = () => {
                   >
                     <div className="years-song-img-wrap">
                       <img
-                        src={song.imageUrl || "/fallback-cover.png"}
+                        src={song.imageUrl || "/fallback-cover.svg"}
                         alt={song.title || "Song cover"}
                         className="years-song-img"
                         loading="lazy"

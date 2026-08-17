@@ -1,316 +1,253 @@
 .yearly-page {
-    min-height: 100vh;
-    background:
-      radial-gradient(circle at top left, rgba(255, 54, 116, 0.14), transparent 34%),
-      radial-gradient(circle at top right, rgba(89, 97, 255, 0.18), transparent 32%),
-      #070711;
-    color: #fff;
-  }
-  
-  .yearly-header {
-    max-width: 760px;
-  }
+  min-height: 0;
+  padding: 34px clamp(14px, 3vw, 48px) 24px;
+  background: var(--sw-bg);
+  color: var(--sw-text);
+}
 
-  .year-song-skeleton {
-    cursor: default;
-    pointer-events: none;
-  }
-  
-  .skeleton-img,
-  .skeleton-line {
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.08) 25%,
-      rgba(255, 255, 255, 0.16) 37%,
-      rgba(255, 255, 255, 0.08) 63%
-    );
-    background-size: 400% 100%;
-    animation: skeleton-loading 1.4s ease infinite;
-  }
-  
-  .skeleton-img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 14px;
-  }
-  
-  .skeleton-line {
-    height: 12px;
-    border-radius: 999px;
-    margin-top: 10px;
-  }
-  
-  .skeleton-title {
-    width: 85%;
-    height: 14px;
-  }
-  
-  .skeleton-artist {
-    width: 65%;
-  }
-  
-  .skeleton-year {
-    width: 45%;
-  }
-  
-  @keyframes skeleton-loading {
-    0% {
-      background-position: 100% 50%;
-    }
-  
-    100% {
-      background-position: 0 50%;
-    }
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton-img,
-    .skeleton-line {
-      animation: none;
-    }
-  }
+.yearly-header {
+  max-width: 720px;
+  margin-bottom: 20px !important;
+}
 
-  .year-song-link {
-    display: block;
-    color: inherit;
-  }
-  
-  .year-song-img-wrap {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .year-play-btn {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.45);
-    color: white;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-  
-  .year-song-card:hover .year-play-btn {
-    opacity: 1;
-  }
-  
-  .year-song-card {
-    cursor: pointer;
-  }
-  
-  .yearly-kicker {
-    display: inline-flex;
-    padding: 7px 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.09);
-    color: #ff4f87;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  
-  .yearly-header h1 {
-    font-size: clamp(2rem, 5vw, 4.2rem);
-    font-weight: 900;
-    letter-spacing: -0.06em;
-    margin-bottom: 12px;
-  }
-  
-  .yearly-header p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1.05rem;
-    margin: 0;
-  }
-  
-  .yearly-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 34px;
-  }
-  
-  .year-block {
-    padding: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 28px;
-    background: rgba(255, 255, 255, 0.045);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
-    backdrop-filter: blur(14px);
-  }
-  
+.yearly-kicker {
+  display: block;
+  margin: 0 0 4px;
+  padding: 0;
+  color: var(--sw-text-secondary);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.yearly-header h1 {
+  margin: 0;
+  color: var(--sw-text);
+  font-size: clamp(1.45rem, 2.3vw, 1.9rem);
+  font-weight: 740;
+  letter-spacing: -0.045em;
+}
+
+.yearly-header p {
+  margin: 6px 0 0;
+  color: var(--sw-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.yearly-sections {
+  display: grid;
+  gap: 28px;
+}
+
+.year-block {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.year-banner {
+  min-height: 160px;
+  padding: 14px;
+  border: 1px solid var(--sw-border);
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  background: var(--sw-surface-2);
+}
+
+.year-banner-art {
+  width: 132px;
+  height: 132px;
+  display: block;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--sw-surface-3);
+}
+
+.year-banner-content {
+  min-width: 0;
+}
+
+.year-range {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sw-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.year-banner h2 {
+  margin: 0;
+  color: var(--sw-text);
+  font-size: clamp(1.5rem, 3vw, 2.35rem);
+  font-weight: 760;
+  letter-spacing: -0.05em;
+}
+
+.year-banner p {
+  max-width: 620px;
+  margin: 6px 0 0;
+  color: var(--sw-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.year-view-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--sw-border);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sw-accent);
+  background: var(--sw-surface);
+  text-decoration: none;
+  font-size: 0.77rem;
+  font-weight: 680;
+  white-space: nowrap;
+}
+
+.year-song-link {
+  display: block;
+  color: inherit;
+}
+
+.year-song-card {
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.year-song-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--sw-surface-2);
+  border: 1px solid var(--sw-border);
+}
+
+.year-song-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.year-play-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--sw-accent);
+  color: #fff;
+  opacity: 0;
+}
+
+.year-song-card:hover .year-play-btn,
+.year-song-card:focus-within .year-play-btn { opacity: 1; }
+
+.year-song-info {
+  padding: 9px 1px 1px;
+}
+
+.year-song-info h3,
+.year-song-info p,
+.year-song-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.year-song-info h3 {
+  margin: 0;
+  color: var(--sw-text);
+  font-size: 0.9rem;
+  font-weight: 680;
+  white-space: nowrap;
+}
+
+.year-song-info p {
+  margin: 3px 0 0;
+  color: var(--sw-text-secondary);
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.year-song-info span {
+  display: block;
+  margin-top: 3px;
+  color: var(--sw-text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.year-section-error,
+.year-loading,
+.year-empty {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--sw-border);
+  border-radius: 12px;
+  background: var(--sw-surface-2);
+  color: var(--sw-text-secondary);
+}
+
+.skeleton-img,
+.skeleton-line {
+  background: var(--sw-surface-2);
+  animation: swYearPulse 1.05s ease-in-out infinite alternate;
+}
+
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 5px;
+  margin-top: 9px;
+}
+.skeleton-title { width: 85%; height: 12px; }
+.skeleton-artist { width: 64%; }
+.skeleton-year { width: 46%; }
+
+@keyframes swYearPulse { from { opacity: .55; } to { opacity: 1; } }
+
+html[data-sw-battery-saver="true"] .skeleton-img,
+html[data-sw-battery-saver="true"] .skeleton-line,
+html[data-sw-low-data="true"] .skeleton-img,
+html[data-sw-low-data="true"] .skeleton-line { animation: none; }
+
+@media (max-width: 767.98px) {
+  .yearly-page { padding-top: 26px; }
   .year-banner {
-    min-height: 230px;
-    border-radius: 22px;
-    padding: 28px;
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    overflow: hidden;
-    position: relative;
+    grid-template-columns: 92px minmax(0, 1fr);
+    min-height: 0;
   }
-  
-  .year-banner::after {
-    content: "";
-    position: absolute;
-    inset: auto 0 0;
-    height: 45%;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.45));
-    pointer-events: none;
-  }
-  
-  .year-banner-content {
-    position: relative;
-    z-index: 1;
-    max-width: 640px;
-  }
-  
-  .year-range {
-    display: inline-flex;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.16);
-    color: #fff;
-    font-size: 0.82rem;
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  
-  .year-banner h2 {
-    font-size: clamp(1.75rem, 4vw, 3.4rem);
-    font-weight: 900;
-    letter-spacing: -0.05em;
-    margin: 0 0 8px;
-  }
-  
-  .year-banner p {
-    max-width: 520px;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.78);
-  }
-  
+  .year-banner-art { width: 92px; height: 92px; }
   .year-view-btn {
-    position: relative;
-    z-index: 1;
-    border-radius: 999px;
-    padding: 11px 22px;
-    font-weight: 800;
-    border: none;
-    white-space: nowrap;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .year-view-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(255, 255, 255, 0.16);
-  }
-  
-  .year-song-card {
-    height: 100%;
-    padding: 10px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.075);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: transform 0.22s ease, background 0.22s ease;
-  }
-  
-  .year-song-card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.11);
-  }
-  
-  .year-song-img-wrap {
+    grid-column: 1 / -1;
     width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #15151f;
   }
-  
-  .year-song-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .year-song-info {
-    padding: 10px 2px 2px;
-  }
-  
-  .year-song-info h3 {
-    font-size: 0.95rem;
-    font-weight: 800;
-    margin: 0 0 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .year-song-info p {
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.62);
-    margin: 0 0 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .year-song-info span {
-    font-size: 0.78rem;
-    color: #ff4f87;
-    font-weight: 800;
-  }
-  
-  .year-loading,
-  .year-empty {
-    margin-top: 14px;
-    padding: 18px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.72);
-  }
-  
-  @media (max-width: 768px) {
-    .year-block {
-      padding: 10px;
-      border-radius: 22px;
-    }
-  
-    .year-banner {
-      min-height: 260px;
-      padding: 22px;
-      align-items: flex-start;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
-  
-    .year-view-btn {
-      width: 100%;
-      text-align: center;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .yearly-page .container {
-      padding-left: 14px;
-      padding-right: 14px;
-    }
-  
-    .year-banner {
-      border-radius: 18px;
-    }
-  
-    .year-song-card {
-      border-radius: 16px;
-      padding: 8px;
-    }
-  
-    .year-song-img-wrap {
-      border-radius: 13px;
-    }
-  }
+}

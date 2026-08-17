@@ -1,4 +1,4 @@
-import React, {
+import {
   useContext,
   useEffect,
   useMemo,
@@ -18,9 +18,10 @@ import {
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./SearchModel.css";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL } from "../../config/api";
+import { trackTasteEvent } from "../../utils/personalization";
 
-const MAX_SONG_POOL = 500;
+const MAX_SONG_POOL = 36;
 const MAX_SONG_RESULTS = 15;
 const MAX_ARTIST_RESULTS = 8;
 const MAX_ALBUM_RESULTS = 8;
@@ -614,9 +615,9 @@ const SearchModal = ({
           `${API_BASE_URL}/api/songs?limit=${MAX_SONG_POOL}&sort=popular`
         );
 
-        const artistsRequest = axios.get(`${API_BASE_URL}/api/artists`);
+        const artistsRequest = axios.get(`${API_BASE_URL}/api/artists`, { params: { search: cleanedQuery, limit: 8, sort: "followers" } });
 
-        const albumsRequest = axios.get(`${API_BASE_URL}/api/albums`);
+        const albumsRequest = axios.get(`${API_BASE_URL}/api/albums`, { params: { search: cleanedQuery, limit: 8, sort: "popular" } });
 
         const preferencesRequest = token
           ? axios.get(`${API_BASE_URL}/api/recommend/preferences`, {
@@ -716,6 +717,7 @@ const SearchModal = ({
     if (!song?._id) return;
 
     const playlist = buildPlaylist(song, songs);
+    trackTasteEvent("search_play", { songId: song._id }, { cooldownMs: 30000 });
 
     if (musicPlayer?.playSong) {
       musicPlayer.playSong(song, playlist);
@@ -799,9 +801,9 @@ const SearchModal = ({
                     }
                   >
                     <img
-                      src={artist.image || "/fallback-cover.png"}
+                      src={artist.image || "/fallback-cover.svg"}
                       alt={artist.name || "Artist"}
-                    />
+                     loading="lazy" decoding="async" />
 
                     <div>
                       <h4>{artist.name || "Unknown Artist"}</h4>
@@ -830,9 +832,9 @@ const SearchModal = ({
                     }
                   >
                     <img
-                      src={album.coverImage || "/fallback-cover.png"}
+                      src={album.coverImage || "/fallback-cover.svg"}
                       alt={album.title || "Album"}
-                    />
+                     loading="lazy" decoding="async" />
 
                     <div>
                       <h4>{album.title || "Untitled Album"}</h4>
@@ -861,9 +863,9 @@ const SearchModal = ({
                     }
                   >
                     <img
-                      src={song.imageUrl || "/fallback-cover.png"}
+                      src={song.imageUrl || "/fallback-cover.svg"}
                       alt={song.title || "Song"}
-                    />
+                     loading="lazy" decoding="async" />
 
                     <div>
                       <h4>{song.title || "Unknown Song"}</h4>

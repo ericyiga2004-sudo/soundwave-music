@@ -1,7 +1,8 @@
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
+import { API_BASE_URL } from "../config/api";
 
-const API_URL = "https://soundwave-music.onrender.com";
+const API_URL = API_BASE_URL;
 
 export const initPushNotifications = async () => {
   if (!Capacitor.isNativePlatform()) {
@@ -30,6 +31,9 @@ export const initPushNotifications = async () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(localStorage.getItem("token")
+            ? { token: localStorage.getItem("token") }
+            : {}),
         },
         body: JSON.stringify({
           token: token.value,

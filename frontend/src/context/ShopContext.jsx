@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
+import { getLowData } from "../utils/uiPreferences";
 
 export const MusicContext = React.createContext(null);
 
@@ -30,8 +32,7 @@ const getStoredToken = () => {
 };
 
 const MusicContextProvider = ({ children }) => {
-  const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "https://soundwave-music.onrender.com";
+  const backendUrl = API_BASE_URL;
 
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,7 +57,9 @@ const MusicContextProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      const res = await axios.get(`${backendUrl}/api/songs`);
+      const res = await axios.get(`${backendUrl}/api/songs`, {
+        params: { limit: getLowData() ? 60 : 120, sort: "popular" },
+      });
 
       if (res.data?.success) {
         setSongs(res.data.songs || []);
@@ -89,8 +92,6 @@ const MusicContextProvider = ({ children }) => {
           token: authToken,
         },
       });
-  
-      console.log("FETCH PLAYLISTS RESPONSE:", res.data);
   
       if (res.data?.success) {
         const fetchedPlaylists = res.data.playlists || [];

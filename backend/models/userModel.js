@@ -1,398 +1,100 @@
-/* import mongoose from "mongoose";
-
-const userSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-    },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    likedSongs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Song",
-      },
-    ],
-
-    history: [
-      {
-        song: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Song",
-        },
-
-        playedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const User =
-  mongoose.models.user ||
-  mongoose.model("user", userSchema);
-
-export default User; */
-
-
-/* import mongoose from "mongoose";
-
-const userSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-    },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    // Songs the user has liked
-    likedSongs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Song",
-      },
-    ],
-
-    // Learned favorite genres
-    favoriteGenres: {
-      type: [String],
-      default: [],
-    },
-
-    // Learned favorite moods
-    favoriteMoods: {
-      type: [String],
-      default: [],
-    },
-
-    // Learned favorite artists
-    favoriteArtists: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Artist",
-      },
-    ],
-
-    // Listening history
-    history: [
-      {
-        song: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Song",
-        },
-
-        playedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const User =
-  mongoose.models.user ||
-  mongoose.model("user", userSchema);
-
-export default User; */
-
-
-/* import mongoose from "mongoose";
-
-const userSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-    },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    likedSongs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Song",
-      },
-    ],
-
-    favoriteGenres: {
-      type: [String],
-      default: [],
-    },
-
-    favoriteMoods: {
-      type: [String],
-      default: [],
-    },
-
-    favoriteArtists: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Artist",
-      },
-    ],
-
-    location: {
-      latitude: {
-        type: Number,
-        default: null,
-      },
-
-      longitude: {
-        type: Number,
-        default: null,
-      },
-
-      accuracy: {
-        type: Number,
-        default: null,
-      },
-
-      updatedAt: {
-        type: Date,
-        default: null,
-      },
-    },
-
-    history: [
-      {
-        song: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Song",
-        },
-
-        playedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const User =
-  mongoose.models.user ||
-  mongoose.model("user", userSchema);
-
-export default User; */
-
-
 import mongoose from "mongoose";
 
+const scoredNameSchema = new mongoose.Schema(
+  {
+    name: { type: String, trim: true },
+    score: { type: Number, default: 0 },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const scoredYearSchema = new mongoose.Schema(
+  {
+    year: Number,
+    score: { type: Number, default: 0 },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const scoredArtistSchema = new mongoose.Schema(
+  {
+    artist: { type: mongoose.Schema.Types.ObjectId, ref: "Artist" },
+    score: { type: Number, default: 0 },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const scoredAlbumSchema = new mongoose.Schema(
+  {
+    album: { type: mongoose.Schema.Types.ObjectId, ref: "Album" },
+    score: { type: Number, default: 0 },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const scoredSongSchema = new mongoose.Schema(
+  {
+    song: { type: mongoose.Schema.Types.ObjectId, ref: "Song" },
+    score: { type: Number, default: 0 },
+    updatedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
-    username: {
-      type: String,
-      required: true,
-    },
+    username: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
 
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    // Kept for compatibility with older SoundWave accounts/controllers.
+    name: { type: String, default: "" },
+    image: { type: String, default: "" },
+    favoriteGenres: { type: [String], default: [] },
+    favoriteMoods: { type: [String], default: [] },
+    favoriteArtists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist" }],
 
-    /* favoriteCountries: {
-      type: [String],
-      default: [],
-    },
-    
-    favoriteLanguages: {
-      type: [String],
-      default: [],
-    },
-    
-    favoriteYears: {
-      type: [Number],
-      default: [],
-    }, */
+    likedSongs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Song" }],
+    followedArtists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist" }],
 
-    password: {
-      type: String,
-      required: true,
-    },
-
-    likedSongs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Song",
-      },
-    ],
-
-    /* favoriteGenres: {
-      type: [String],
-      default: [],
-    },
-
-    favoriteMoods: {
-      type: [String],
-      default: [],
-    },
-
-    favoriteArtists: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Artist",
-      },
-    ], */
-
-    followedArtists: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Artist",
-      },
-    ],
-
+    // Compact preference vectors. We intentionally store aggregates rather than
+    // a large raw event log, keeping MongoDB documents, RAM and mobile data small.
     preferences: {
-      countries: [
-        {
-          name: String,
-          score: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
-    
-      genres: [
-        {
-          name: String,
-          score: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
-    
-      moods: [
-        {
-          name: String,
-          score: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
-    
-      languages: [
-        {
-          name: String,
-          score: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
-    
-      years: [
-        {
-          year: Number,
-          score: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
-    
-      artists: [
-        {
-          artist: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Artist",
-          },
-    
-          score: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
+      countries: { type: [scoredNameSchema], default: [] },
+      genres: { type: [scoredNameSchema], default: [] },
+      moods: { type: [scoredNameSchema], default: [] },
+      languages: { type: [scoredNameSchema], default: [] },
+      years: { type: [scoredYearSchema], default: [] },
+      artists: { type: [scoredArtistSchema], default: [] },
+      albums: { type: [scoredAlbumSchema], default: [] },
+      songs: { type: [scoredSongSchema], default: [] },
+      algorithmVersion: { type: Number, default: 2 },
+      lastPersonalizedAt: { type: Date, default: null },
     },
 
     location: {
-      latitude: {
-        type: Number,
-        default: null,
-      },
-
-      longitude: {
-        type: Number,
-        default: null,
-      },
-
-      accuracy: {
-        type: Number,
-        default: null,
-      },
-
-      updatedAt: {
-        type: Date,
-        default: null,
-      },
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+      accuracy: { type: Number, default: null },
+      updatedAt: { type: Date, default: null },
     },
 
     history: [
       {
-        song: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Song",
-        },
-
-        playedAt: {
-          type: Date,
-          default: Date.now,
-        },
+        song: { type: mongoose.Schema.Types.ObjectId, ref: "Song" },
+        playedAt: { type: Date, default: Date.now },
       },
     ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const User =
-  mongoose.models.user ||
-  mongoose.model("user", userSchema);
+userSchema.index({ followedArtists: 1 });
+userSchema.index({ likedSongs: 1 });
 
+const User = mongoose.models.user || mongoose.model("user", userSchema);
 export default User;

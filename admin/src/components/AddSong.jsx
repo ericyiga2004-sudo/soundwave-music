@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { ADMIN_API_BASE_URL } from "../config/api";
 import "./CSS/AddSong.css";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = ADMIN_API_BASE_URL;
 
 const MAX_AUDIO_SIZE = 30 * 1024 * 1024; // 30MB
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB

@@ -97,6 +97,30 @@ const normalizeSyncedLyrics = (value) => {
     .sort((a, b) => a.start - b.start);
 };
 
+const extendSearchWithRelatedMatches = async (query, searchValue) => {
+  const value = String(searchValue || "").trim();
+  if (!value) return query;
+
+  const safe = escapeRegex(value);
+  const [artists, albums] = await Promise.all([
+    Artist.find({ name: { $regex: safe, $options: "i" } }).select("_id").limit(40),
+    Album.find({ title: { $regex: safe, $options: "i" } }).select("_id").limit(40),
+  ]);
+
+  const artistIds = artists.map((item) => item._id);
+  const albumIds = albums.map((item) => item._id);
+  const additions = [];
+
+  if (artistIds.length) {
+    additions.push({ artist: { $in: artistIds } });
+    additions.push({ featuredArtists: { $in: artistIds } });
+  }
+  if (albumIds.length) additions.push({ album: { $in: albumIds } });
+
+  if (additions.length) query.$or = [...(query.$or || []), ...additions];
+  return query;
+};
+
 const getCurrentMonthKey = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -519,7 +543,8 @@ export const getSongs = async (req, res) => {
       ].includes(key)
     );
 
-    const query = hasFilters ? buildSongFilterQuery(req.query) : {};
+    let query = hasFilters ? buildSongFilterQuery(req.query) : { status: "published" };
+    query = await extendSearchWithRelatedMatches(query, req.query.search || req.query.q);
 
     let songQuery = populateSong(Song.find(query)).sort(getSortOption(sort));
 
@@ -567,7 +592,8 @@ export const filterSongs = async (req, res) => {
   try {
     const { page = 1, limit = 30, sort = "newest" } = req.query;
 
-    const query = buildSongFilterQuery(req.query);
+    let query = buildSongFilterQuery(req.query);
+    query = await extendSearchWithRelatedMatches(query, req.query.search || req.query.q);
 
     const pageNumber = Math.max(1, Number(page));
     const limitNumber = Math.max(1, Math.min(100, Number(limit)));
@@ -639,7 +665,7 @@ export const getFilterOptions = async (req, res) => {
 // =========================
 export const getSongById = async (req, res) => {
   try {
-    const song = await populateSong(Song.findById(req.params.id));
+    const song = await populateSong(Song.findOne({ _id: req.params.id, status: "published" }));
 
     if (!song) {
       return res.status(404).json({

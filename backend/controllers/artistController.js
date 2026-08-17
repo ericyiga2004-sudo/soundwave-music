@@ -188,7 +188,7 @@ export const deleteArtist = async (req, res) => {
 
 import Artist from "../models/artistModel.js";
 import User from "../models/userModel.js";
-import { ensurePreferences, increasePreference } from "../utils/preferencesHelper.js";
+import { applyArtistPreferenceSignal } from "../utils/preferencesHelper.js";
 
 // ======================================
 // Create Artist
@@ -253,22 +253,48 @@ export const createArtist = async (req, res) => {
 // ======================================
 export const getArtists = async (req, res) => {
   try {
-    const artists = await Artist.find().sort({
-      createdAt: -1,
-    });
+    const { page = 1, limit, search = "", country = "", sort = "followers" } = req.query;
+    const query = {};
 
-    return res.status(200).json({
-      success: true,
-      count: artists.length,
-      artists,
-    });
+    if (String(search).trim()) {
+      query.name = { $regex: String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
+    }
+
+    if (String(country).trim()) {
+      query.country = { $regex: `^${String(country).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" };
+    }
+
+    const sortOptions = {
+      followers: { followers: -1, name: 1 },
+      newest: { createdAt: -1 },
+      name: { name: 1 },
+    };
+    const sortOption = sortOptions[sort] || sortOptions.followers;
+
+    if (limit) {
+      const pageNumber = Math.max(1, Number(page));
+      const limitNumber = Math.max(1, Math.min(100, Number(limit)));
+      const skip = (pageNumber - 1) * limitNumber;
+      const [artists, total] = await Promise.all([
+        Artist.find(query).sort(sortOption).skip(skip).limit(limitNumber),
+        Artist.countDocuments(query),
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        count: artists.length,
+        total,
+        page: pageNumber,
+        pages: Math.ceil(total / limitNumber),
+        artists,
+      });
+    }
+
+    const artists = await Artist.find(query).sort(sortOption);
+    return res.status(200).json({ success: true, count: artists.length, total: artists.length, artists });
   } catch (error) {
     console.error("Get Artists Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch artists",
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch artists" });
   }
 };
 
@@ -402,8 +428,6 @@ export const toggleFollowArtist = async (req, res) => {
       });
     }
 
-    ensurePreferences(user);
-
     const alreadyFollowing = user.followedArtists.some(
       (id) => id.toString() === artistId
     );
@@ -415,6 +439,7 @@ export const toggleFollowArtist = async (req, res) => {
         (id) => id.toString() !== artistId
       );
 
+      applyArtistPreferenceSignal(user, artist, -6);
       await user.save();
 
       await Artist.findByIdAndUpdate(artistId, {
@@ -427,11 +452,8 @@ export const toggleFollowArtist = async (req, res) => {
     } else {
       user.followedArtists.addToSet(artist._id);
 
-      // Follow is the strongest signal.
-      increasePreference(user.preferences.artists, "artist", artist._id, 10);
-
-      // Artist country also matters, but less than the artist itself.
-      increasePreference(user.preferences.countries, "name", artist.country, 3);
+      // Follow is one of the strongest explicit taste signals.
+      applyArtistPreferenceSignal(user, artist, 12);
 
       await user.save();
 

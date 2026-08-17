@@ -9,4 +9,22 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-
+# ==========================================
+# SoundWave private/environment files
+.env.*
+!.env.example
+# Dependencies
+# Builds
+.vite/
+.cache/
+coverage/
+# Local files
+*.log
+# Runtime/user content
+uploads/
+tmp/
+temp/
+# Environment / private credentials
+**/.env
+**/.env.*
+!**/.env.example

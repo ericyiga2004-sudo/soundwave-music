@@ -1,4 +1,4 @@
-import { ensurePreferences, increasePreference } from "../utils/preferencesHelper.js";
+import { applySongPreferenceSignal } from "../utils/preferencesHelper.js";
 import User from "../models/userModel.js";
 import Song from "../models/uploadSongModel.js";
 
@@ -24,7 +24,7 @@ export const addToHistory = async (req, res) => {
     }
 
     const song = await Song.findById(songId).select(
-      "genre mood artist country songLanguage releaseYear"
+      "genre mood artist album country songLanguage releaseYear"
     );
 
     if (!song) {
@@ -33,8 +33,6 @@ export const addToHistory = async (req, res) => {
         message: "Song not found",
       });
     }
-
-    ensurePreferences(user);
 
     user.history = user.history.filter(
       (item) => item.song.toString() !== songId
@@ -47,12 +45,9 @@ export const addToHistory = async (req, res) => {
 
     user.history = user.history.slice(0, 50);
 
-    increasePreference(user.preferences.countries, "name", song.country, 1);
-    increasePreference(user.preferences.genres, "name", song.genre, 1);
-    increasePreference(user.preferences.moods, "name", song.mood, 1);
-    increasePreference(user.preferences.languages, "name", song.songLanguage, 1);
-    increasePreference(user.preferences.years, "year", song.releaseYear, 1);
-    increasePreference(user.preferences.artists, "artist", song.artist, 1);
+    // Starting a track is intentionally a weak signal. Stronger personalization
+    // comes from actual listen duration, completion, repeats, likes and saves.
+    applySongPreferenceSignal(user, song, 0.25);
 
     await user.save();
 

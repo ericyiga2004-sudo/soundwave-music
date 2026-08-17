@@ -346,3 +346,14 @@
       grid-template-columns: 1fr;
     }
   }
+.studio-bpm-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: inherit;
+  background: rgba(255,255,255,.08);
+  font-size: .78rem;
+  font-weight: 700;
+}

@@ -164,7 +164,7 @@
     position: absolute;
     width: 4px;
     height: 32px;
-    background: #1db954;
+    background: #fa233b;
     border-radius: 20px;
     top: 6px;
   }
@@ -194,7 +194,7 @@
   .made-offline-head {
     width: 118px;
     height: 108px;
-    background: linear-gradient(145deg, #27e36d, #1db954 55%, #10933d);
+    background: linear-gradient(145deg, #27e36d, #fa233b 55%, #10933d);
     border-radius: 44% 44% 48% 48%;
     position: absolute;
     left: 24px;
@@ -207,7 +207,7 @@
   .made-offline-ear {
     width: 28px;
     height: 28px;
-    background: #1db954;
+    background: #fa233b;
     border-radius: 50%;
     position: absolute;
     top: 38px;
@@ -279,7 +279,7 @@
   .made-offline-arm {
     width: 20px;
     height: 64px;
-    background: linear-gradient(180deg, #27e36d, #1db954);
+    background: linear-gradient(180deg, #27e36d, #fa233b);
     border-radius: 22px;
     position: absolute;
     top: 8px;
@@ -363,7 +363,7 @@
   .made-offline-feet span {
     width: 32px;
     height: 14px;
-    background: #1db954;
+    background: #fa233b;
     border-radius: 20px;
     animation: madeFeetDance 1.1s ease-in-out infinite;
   }
@@ -423,7 +423,7 @@
     outline: none;
     border-radius: 999px;
     padding: 13px 20px;
-    background: linear-gradient(135deg, #1db954, #27e36d);
+    background: linear-gradient(135deg, #fa233b, #27e36d);
     color: #08100b;
     font-weight: 900;
     cursor: pointer;

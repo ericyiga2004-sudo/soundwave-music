@@ -11,7 +11,8 @@ import {
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/Album.css";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL as backendUrl } from "../config/api";
+import { trackTasteEvent } from "../utils/personalization";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
@@ -129,6 +130,10 @@ const Album = () => {
     };
   }, [albumId]);
 
+  useEffect(() => {
+    if (album?._id) trackTasteEvent("album_view", { albumId: album._id }, { cooldownMs: 90000 });
+  }, [album?._id]);
+
   const albumQueue = useMemo(() => {
     if (!album?.songs?.length) return [];
 
@@ -139,7 +144,7 @@ const Album = () => {
     album?.coverImage ||
     album?.imageUrl ||
     album?.image ||
-    "/fallback-cover.png";
+    "/fallback-cover.svg";
 
   const albumArtist =
     album?.artist?.name ||

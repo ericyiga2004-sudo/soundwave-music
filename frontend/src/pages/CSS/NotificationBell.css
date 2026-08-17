@@ -156,7 +156,7 @@
   }
   
   .notification-item.unread .notification-dot {
-    background: #1db954;
+    background: #fa233b;
     box-shadow: 0 0 12px rgba(29, 185, 84, 0.7);
   }
   
@@ -210,7 +210,7 @@
   .notification-empty svg {
     font-size: 2rem;
     margin-bottom: 10px;
-    color: #1db954;
+    color: #fa233b;
   }
   
   .notification-empty p {

@@ -1,6 +1,8 @@
 import Playlist from "../models/playlistModel.js";
 import PlaylistShare from "../models/playlistShareModel.js";
 import User from "../models/userModel.js";
+import Song from "../models/uploadSongModel.js";
+import { applySongPreferenceSignal } from "../utils/preferencesHelper.js";
 import { createNotificationForUser } from "./notificationController.js";
 
 const MAX_PLAYLIST_SONGS = 50;
@@ -191,6 +193,15 @@ export const addSongToPlaylist = async (req, res) => {
 
       playlist.songs.push(songId);
       await playlist.save();
+
+      const [user, song] = await Promise.all([
+        User.findById(userId),
+        Song.findById(songId).select("_id artist album genre mood country songLanguage releaseYear"),
+      ]);
+      if (user && song) {
+        applySongPreferenceSignal(user, song, 4.5);
+        await user.save();
+      }
     }
 
     const updatedPlaylist = await populatePlaylist(
@@ -231,11 +242,24 @@ export const removeSongFromPlaylist = async (req, res) => {
       });
     }
 
+    const containedSong = playlist.songs.some((song) => song.toString() === songId);
+
     playlist.songs = playlist.songs.filter(
       (song) => song.toString() !== songId
     );
 
     await playlist.save();
+
+    if (containedSong) {
+      const [user, song] = await Promise.all([
+        User.findById(userId),
+        Song.findById(songId).select("_id artist album genre mood country songLanguage releaseYear"),
+      ]);
+      if (user && song) {
+        applySongPreferenceSignal(user, song, -2);
+        await user.save();
+      }
+    }
 
     const updatedPlaylist = await populatePlaylist(
       Playlist.findById(playlist._id)
@@ -645,5 +669,67 @@ export const revokePlaylistShare = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+export const getPlaylistById = async (req, res) => {
+  try {
+    const playlist = await populatePlaylist(
+      Playlist.findOne({ _id: req.params.playlistId, user: req.userId })
+    );
+
+    if (!playlist) {
+      return res.status(404).json({ success: false, message: "Playlist not found" });
+    }
+
+    return res.json({ success: true, playlist });
+  } catch (error) {
+    console.log("Get playlist by id error:", error);
+    return res.status(500).json({ success: false, message: "Could not load playlist" });
+  }
+};
+
+export const updatePlaylist = async (req, res) => {
+  try {
+    const name = String(req.body?.name || "").trim();
+    const description = String(req.body?.description || "").trim();
+
+    if (!name) {
+      return res.status(400).json({ success: false, message: "Playlist name is required" });
+    }
+
+    const playlist = await Playlist.findOneAndUpdate(
+      { _id: req.params.playlistId, user: req.userId },
+      { $set: { name: name.slice(0, 80), description: description.slice(0, 500) } },
+      { new: true, runValidators: true }
+    );
+
+    if (!playlist) {
+      return res.status(404).json({ success: false, message: "Playlist not found" });
+    }
+
+    const populated = await populatePlaylist(Playlist.findById(playlist._id));
+    return res.json({ success: true, playlist: populated, message: "Playlist updated" });
+  } catch (error) {
+    console.log("Update playlist error:", error);
+    return res.status(500).json({ success: false, message: "Could not update playlist" });
+  }
+};
+
+export const recordPlaylistPlay = async (req, res) => {
+  try {
+    const playlist = await Playlist.findOneAndUpdate(
+      { _id: req.params.playlistId, user: req.userId },
+      { $inc: { plays: 1 } },
+      { new: true }
+    );
+
+    if (!playlist) {
+      return res.status(404).json({ success: false, message: "Playlist not found" });
+    }
+
+    return res.json({ success: true, plays: playlist.plays });
+  } catch (error) {
+    console.log("Record playlist play error:", error);
+    return res.status(500).json({ success: false, message: "Could not record playlist play" });
   }
 };

@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./Yearly.css";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { API_BASE_URL } from "../../config/api";
 
 const yearSections = [
   {
@@ -221,20 +221,6 @@ const Yearly = () => {
   const [preferences, setPreferences] = useState({});
 
   const fetchSections = async () => {
-    if (!API_BASE_URL) {
-      console.error("VITE_BACKEND_URL is missing");
-
-      setSections((prev) =>
-        prev.map((section) => ({
-          ...section,
-          loading: false,
-          error: "Backend URL is missing.",
-        }))
-      );
-
-      return;
-    }
-
     try {
       const token = localStorage.getItem("token");
 
@@ -272,13 +258,13 @@ const Yearly = () => {
 
             url.searchParams.set("fromYear", String(section.fromYear));
             url.searchParams.set("toYear", String(section.toYear));
-            url.searchParams.set("limit", "20");
+            url.searchParams.set("limit", "8");
           } else {
             url = new URL("/api/songs/filter", API_BASE_URL);
 
             url.searchParams.set("fromYear", String(section.fromYear));
             url.searchParams.set("toYear", String(section.toYear));
-            url.searchParams.set("limit", "20");
+            url.searchParams.set("limit", "8");
             url.searchParams.set("sort", "popular");
           }
 
@@ -365,11 +351,13 @@ const Yearly = () => {
     window.addEventListener("music-history-updated", fetchSections);
     window.addEventListener("music-liked-updated", fetchSections);
     window.addEventListener("artist-follow-updated", fetchSections);
+    window.addEventListener("soundwave-personalization-updated", fetchSections);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchSections);
       window.removeEventListener("music-liked-updated", fetchSections);
       window.removeEventListener("artist-follow-updated", fetchSections);
+      window.removeEventListener("soundwave-personalization-updated", fetchSections);
     };
   }, []);
 
@@ -384,7 +372,7 @@ const Yearly = () => {
 
   return (
     <main className="yearly-page">
-      <div className="container py-4 py-lg-5">
+      <div className="container-fluid px-0">
         <div className="yearly-header mb-4">
           <span className="yearly-kicker">Browse by year</span>
 
@@ -402,30 +390,21 @@ const Yearly = () => {
 
             return (
               <section className="year-block" key={section.slug}>
-                <div
-                  className="year-banner"
-                  style={{
-                    backgroundImage: `linear-gradient(90deg, rgba(5, 5, 12, 0.92), rgba(5, 5, 12, 0.38)), url(${section.banner})`,
-                  }}
-                >
+                <div className="year-banner">
+                  <img className="year-banner-art" src={section.banner} alt="" loading="lazy" decoding="async" />
                   <div className="year-banner-content">
                     <span className="year-range">
-                      {section.fromYear === section.toYear
-                        ? section.fromYear
-                        : `${section.fromYear} - ${section.toYear}`}
+                      {section.fromYear === section.toYear ? section.fromYear : `${section.fromYear} - ${section.toYear}`}
                     </span>
-
                     <h2>{section.title}</h2>
-
                     <p>{section.subtitle}</p>
                   </div>
-
                   <Link
                     onClick={() => window.scrollTo(0, 0)}
                     to={`/yearly/${section.slug}`}
-                    className="btn btn-light year-view-btn"
+                    className="year-view-btn"
                   >
-                    View All
+                    See All
                   </Link>
                 </div>
 
@@ -454,7 +433,7 @@ const Yearly = () => {
                           >
                             <div className="year-song-img-wrap">
                               <img
-                                src={song.imageUrl || "/fallback-cover.png"}
+                                src={song.imageUrl || "/fallback-cover.svg"}
                                 alt={song.title || "Song cover"}
                                 className="year-song-img"
                                 loading="lazy"
