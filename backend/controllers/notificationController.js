@@ -27,6 +27,7 @@ const cleanNotification = (notification) => {
       username: data.fromUser.username || data.fromUser.name || "SoundWave User",
       name: data.fromUser.name || data.fromUser.username || "SoundWave User",
       maskedEmail: maskEmail(data.fromUser.email || ""),
+      image: data.fromUser.image || "",
     };
   }
 
@@ -38,7 +39,7 @@ const populateNotification = (query) => {
     .populate({
       path: "fromUser",
       model: User,
-      select: "username name email",
+      select: "username name email image",
     })
     .populate({
       path: "relatedPlaylist",

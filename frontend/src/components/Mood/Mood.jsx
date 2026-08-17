@@ -35,33 +35,33 @@ const Mood = () => {
         <button type="button" onClick={() => navigate("/explore")}>See All</button>
       </div>
 
-      <div className="mood-grid" role="list">
+      <div className="mood-grid row row-cols-2 row-cols-md-4 g-3 g-lg-4" role="list">
         {moods.map((mood) => {
           const Icon = mood.icon;
           return (
-            <button
-              type="button"
-              className="mood-card"
-              key={mood.slug}
-              onClick={() => {
-                navigate(`/mood/${mood.slug}`);
-                window.scrollTo(0, 0);
-              }}
-              role="listitem"
-              aria-label={`Open ${mood.name} mood`}
-            >
-              <span className="mood-artwork">
-                {lowData ? (
-                  <span className="mood-low-data-art"><Icon /></span>
-                ) : (
-                  <img src={mood.image} alt="" loading="lazy" decoding="async" />
-                )}
-              </span>
-              <span className="mood-copy">
-                <strong>{mood.name}</strong>
-                <small>{mood.subtitle}</small>
-              </span>
-            </button>
+            <div className="col" key={mood.slug} role="listitem">
+              <button
+                type="button"
+                className="mood-card h-100"
+                onClick={() => {
+                  navigate(`/mood/${mood.slug}`);
+                  window.scrollTo(0, 0);
+                }}
+                aria-label={`Open ${mood.name} mood`}
+              >
+                <span className="mood-artwork">
+                  {lowData ? (
+                    <span className="mood-low-data-art"><Icon /></span>
+                  ) : (
+                    <img src={mood.image} alt="" loading="lazy" decoding="async" />
+                  )}
+                </span>
+                <span className="mood-copy">
+                  <strong>{mood.name}</strong>
+                  <small>{mood.subtitle}</small>
+                </span>
+              </button>
+            </div>
           );
         })}
       </div>

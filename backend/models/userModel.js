@@ -58,6 +58,15 @@ const userSchema = new mongoose.Schema(
     favoriteMoods: { type: [String], default: [] },
     favoriteArtists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist" }],
 
+    bio: { type: String, default: "", trim: true, maxlength: 180 },
+    followingUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    socialSettings: {
+      publicProfile: { type: Boolean, default: true },
+      listeningActivity: { type: Boolean, default: false },
+      allowTasteMatch: { type: Boolean, default: true },
+    },
+
     likedSongs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Song" }],
     followedArtists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist" }],
 
@@ -95,6 +104,8 @@ const userSchema = new mongoose.Schema(
 
 userSchema.index({ followedArtists: 1 });
 userSchema.index({ likedSongs: 1 });
+userSchema.index({ followingUsers: 1 });
+userSchema.index({ followers: 1 });
 
 const User = mongoose.models.user || mongoose.model("user", userSchema);
 export default User;

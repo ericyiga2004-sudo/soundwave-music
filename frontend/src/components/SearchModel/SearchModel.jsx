@@ -619,32 +619,28 @@ const SearchModal = ({
 
         const albumsRequest = axios.get(`${API_BASE_URL}/api/albums`, { params: { search: cleanedQuery, limit: 8, sort: "popular" } });
 
-        const preferencesRequest = token
-          ? axios.get(`${API_BASE_URL}/api/recommend/preferences`, {
-              headers: {
-                token,
-              },
-            })
-          : Promise.resolve({
-              data: {
-                success: true,
-                preferences: {},
-              },
-            });
+        const [backendSearchRes, songPoolRes, artistsRes, albumsRes] =
+          await Promise.all([
+            backendSearchRequest,
+            songPoolRequest,
+            artistsRequest,
+            albumsRequest,
+          ]);
 
-        const [
-          backendSearchRes,
-          songPoolRes,
-          artistsRes,
-          albumsRes,
-          preferencesRes,
-        ] = await Promise.all([
-          backendSearchRequest,
-          songPoolRequest,
-          artistsRequest,
-          albumsRequest,
-          preferencesRequest,
-        ]);
+        let preferences = {};
+        if (token) {
+          try {
+            const preferencesRes = await axios.get(
+              `${API_BASE_URL}/api/recommend/preferences`,
+              { headers: { token } }
+            );
+            if (preferencesRes.data?.success) {
+              preferences = preferencesRes.data.preferences || {};
+            }
+          } catch (error) {
+            console.log("Search preferences unavailable:", error);
+          }
+        }
 
         const backendSongs = backendSearchRes.data?.success
           ? backendSearchRes.data.songs || []
@@ -661,8 +657,6 @@ const SearchModal = ({
         const fetchedAlbums = albumsRes.data?.success
           ? albumsRes.data.albums || []
           : [];
-
-        const preferences = preferencesRes.data?.preferences || {};
 
         setSongs(rankSongs([...backendSongs, ...songPool], query, preferences));
         setArtists(rankArtists(fetchedArtists, query, preferences));

@@ -1,374 +1,189 @@
-/* ── Loading ── */
-.albums-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: #a7a7a7;
-  font-size: 0.9rem;
-  font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  letter-spacing: 0.05em;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-/* ── Responsive Album Action Buttons Fix ── */
-
-.album-actions {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.3rem;
-  min-width: 0;
-}
-
-.album-actions button {
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-  justify-content: center;
-  white-space: nowrap;
-}
-
-/* Medium screens */
-@media (max-width: 768px) {
-  .album-actions {
-    gap: 0.35rem;
-  }
-
-  .album-actions button {
-    flex: 1 1 0;
-    padding: 0.38rem 0.45rem;
-    font-size: 0.62rem;
-  }
-
-  .album-actions button svg {
-    font-size: 0.72rem;
-    flex-shrink: 0;
-  }
-}
-
-/* Small phones */
-@media (max-width: 480px) {
-  .featured-overlay {
-    padding: 0.65rem;
-  }
-
-  .album-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.35rem;
-    margin-top: 0.35rem;
-  }
-
-  .album-actions button {
-    width: 100%;
-    flex: none;
-    padding: 0.42rem 0.5rem;
-    font-size: 0.62rem;
-  }
-}
-
-/* Very small phones */
-@media (max-width: 360px) {
-  .featured-album-card {
-    width: 132px;
-  }
-
-  .featured-overlay {
-    padding: 0.55rem;
-  }
-
-  .album-actions button {
-    padding: 0.36rem 0.45rem;
-    font-size: 0.58rem;
-  }
-
-  .album-label {
-    font-size: 0.48rem;
-    padding: 0.12rem 0.32rem;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
-}
-
-/* ── Section ── */
 .albums-section {
-  padding: 2rem 0 2rem 1.5rem;
-  background-color: #121212;
-  font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: #fff;
-  /* left padding only — right side bleeds into scroll */
-}
-
-/* ── Header ── */
-.albums-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-  padding-right: 1.5rem;
-}
-
-.albums-header > div span {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #fa233b;
-}
-
-.albums-header > div h2 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0.2rem 0 0;
-  color: #fff;
-  letter-spacing: -0.02em;
-}
-
-.view-albums-btn {
-  background: transparent;
-  border: none;
-  color: #a7a7a7;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 0.15rem;
-  transition: color 0.2s ease;
-  white-space: nowrap;
-}
-
-.view-albums-btn:hover {
-  color: #fff;
-}
-
-/* ── Scroll Wrapper ── */
-.albums-scroll-wrapper {
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-  padding-bottom: 0.5rem;
-}
-
-.albums-scroll-wrapper::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-/* ── Grid (horizontal row) ── */
-.albums-grid {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  width: max-content;
-  padding-right: 1.5rem; /* right breathing room at end of scroll */
-}
-
-/* ── Card ── */
-.featured-album-card {
-  position: relative;
-  width: 200px;
-  aspect-ratio: 3 / 4;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  background: #1e1e1e;
-  flex-shrink: 0;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.featured-album-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65);
-}
-
-/* ── Cover Image ── */
-.featured-bg {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  padding-top: 28px;
+  padding-bottom: 12px;
+  color: var(--sw-text);
+  background: var(--sw-bg);
+}
+
+.albums-header {
+  margin-bottom: 16px;
+}
+
+.albums-header > div > span {
   display: block;
-  transition: transform 0.35s ease;
-}
-
-.featured-album-card:hover .featured-bg {
-  transform: scale(1.06);
-}
-
-/* ── Overlay ── */
-.featured-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.95) 0%,
-    rgba(0, 0, 0, 0.45) 55%,
-    rgba(0, 0, 0, 0.05) 100%
-  );
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 0.9rem;
-  gap: 0.3rem;
-  transition: background 0.25s ease;
-}
-
-.featured-album-card:hover .featured-overlay {
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.98) 0%,
-    rgba(0, 0, 0, 0.6) 55%,
-    rgba(0, 0, 0, 0.15) 100%
-  );
-}
-
-/* ── Label ── */
-.album-label {
-  font-size: 0.55rem;
+  margin-bottom: 3px;
+  color: var(--sw-text-secondary);
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #fa233b;
-  background: rgba(29, 185, 84, 0.1);
-  border: 1px solid rgba(29, 185, 84, 0.3);
-  border-radius: 4px;
-  padding: 0.15rem 0.4rem;
-  align-self: flex-start;
-}
-
-/* ── Title & Artist ── */
-.featured-overlay h3 {
-  font-size: 0.9rem;
-  font-weight: 800;
-  margin: 0;
-  color: #fff;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.featured-overlay p {
-  font-size: 0.75rem;
-  margin: 0;
-  color: #b3b3b3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── Details ── */
-.album-details {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.68rem;
-  color: #a7a7a7;
-}
-
-.album-details span {
-  position: relative;
-}
-
-.album-details span:not(:last-child)::after {
-  content: '·';
-  position: absolute;
-  right: -0.38rem;
-  color: #535353;
-}
-
-/* ── Action Buttons ── */
-.album-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.3rem;
-}
-
-.album-actions button {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: none;
-  border-radius: 500px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 0.45rem 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  text-transform: none;
   letter-spacing: 0.02em;
 }
 
-.album-actions button:first-child {
-  background: #fa233b;
-  color: #000;
+.albums-header h2,
+.albums-header > div > h2 {
+  margin: 0;
+  color: var(--sw-text);
+  font-size: clamp(1.35rem, 1.5vw + 0.85rem, 1.75rem);
+  line-height: 1.08;
+  font-weight: 750;
+  letter-spacing: -0.04em;
 }
 
-.album-actions button:first-child:hover {
-  background: #ff375f;
-  transform: scale(1.05);
+.albums-header p {
+  margin: 5px 0 0;
+  color: var(--sw-text-secondary);
+  font-size: 0.78rem;
 }
 
-.album-actions button.secondary {
-  background: rgba(255, 255, 255, 0.1);
+.view-albums-btn {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 6px 0;
+  background: transparent;
+  color: var(--sw-accent);
+  font-size: 0.8rem;
+  font-weight: 680;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.featured-album-card {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  color: var(--sw-text);
+}
+
+.album-home-cover-button,
+.album-home-copy {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  display: block;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.album-home-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: 13px;
+  background: var(--sw-surface-2);
+}
+
+.album-home-cover .featured-bg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.album-home-play {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sw-accent);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
+  font-size: 0.78rem;
 }
 
-.album-actions button.secondary:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.35);
+.album-home-copy {
+  padding-top: 9px;
+  min-height: 69px;
 }
 
-/* ── Responsive card sizing ── */
-@media (max-width: 768px) {
-  .albums-section {
-    padding: 1.5rem 0 1.5rem 1rem;
-  }
+.album-home-copy h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--sw-text);
+  font-size: clamp(0.78rem, 0.35vw + 0.7rem, 0.93rem);
+  line-height: 1.25;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .albums-header {
-    padding-right: 1rem;
-  }
+.album-home-copy p {
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--sw-text-secondary);
+  font-size: clamp(0.68rem, 0.24vw + 0.63rem, 0.78rem);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .albums-header > div h2 {
-    font-size: 1.25rem;
-  }
+.album-home-copy small {
+  display: block;
+  margin-top: 4px;
+  color: var(--sw-text-tertiary);
+  font-size: 0.67rem;
+}
 
-  .featured-album-card {
-    width: 160px;
-  }
+.album-home-skeleton-cover,
+.album-home-skeleton-line {
+  display: block;
+  background: var(--sw-surface-2);
+  animation: swAlbumPulse 1s ease-in-out infinite alternate;
+}
 
-  .featured-overlay {
-    padding: 0.7rem;
-  }
+.album-home-skeleton-cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 13px;
+}
 
-  .featured-overlay h3 {
-    font-size: 0.8rem;
-  }
+.album-home-skeleton-line {
+  width: 80%;
+  height: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+}
 
-  .featured-overlay p {
+.album-home-skeleton-line.short {
+  width: 56%;
+  margin-top: 7px;
+}
+
+@keyframes swAlbumPulse {
+  from { opacity: 0.58; }
+  to { opacity: 1; }
+}
+
+html[data-sw-battery-saver="true"] .album-home-skeleton-cover,
+html[data-sw-battery-saver="true"] .album-home-skeleton-line,
+html[data-sw-low-data="true"] .album-home-skeleton-cover,
+html[data-sw-low-data="true"] .album-home-skeleton-line {
+  animation: none;
+}
+
+@media (max-width: 575.98px) {
+  .albums-section { padding-top: 22px; }
+  .albums-header p { display: none; }
+  .view-albums-btn { font-size: 0.73rem; }
+  .album-home-play {
+    width: 32px;
+    height: 32px;
+    right: 7px;
+    bottom: 7px;
     font-size: 0.68rem;
-  }
-
-  .album-actions button {
-    font-size: 0.65rem;
-    padding: 0.38rem 0.65rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .featured-album-card {
-    width: 140px;
-  }
-
-  .albums-grid {
-    gap: 0.75rem;
   }
 }

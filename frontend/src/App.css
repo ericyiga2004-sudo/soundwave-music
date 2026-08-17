@@ -255,3 +255,20 @@ html[data-sw-battery-saver="true"] *::after {
 .sw-route-fallback span:first-child { width: 42%; height: 38px; }
 .sw-route-fallback span:nth-child(2) { width: 72%; }
 .sw-route-fallback span:nth-child(3) { width: 58%; }
+
+/* V14 mobile Song Details is an immersive player surface. The hidden global
+   <audio> element stays mounted; only duplicate navigation/player chrome hides. */
+@media (max-width: 767.98px) {
+  .app-song-detail .sw-top-header,
+  .app-song-detail .sw-bottom-nav,
+  .app-song-detail .music-play-shell .sw-player,
+  .app-song-detail .music-play-shell .sw-queue-drawer {
+    display: none !important;
+  }
+  .app-song-detail .main-content {
+    padding-bottom: 0 !important;
+  }
+  .app-song-detail .sw-workspace {
+    min-height: 100svh;
+  }
+}

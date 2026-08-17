@@ -201,92 +201,55 @@ const YearsPage = () => {
         setLoading(true);
         setError("");
 
-        const token = localStorage.getItem("token");
+        const token = String(localStorage.getItem("token") || "").trim();
+        let fetchedPreferences = {};
 
         if (token) {
-          const [songsRes, preferencesRes] = await Promise.all([
-            fetch(
-              `${API_BASE_URL}/api/recommend/years?fromYear=${collection.fromYear}&toYear=${collection.toYear}&limit=100`,
-              {
-                headers: {
-                  token,
-                },
+          try {
+            const preferencesRes = await fetch(
+              `${API_BASE_URL}/api/recommend/preferences`,
+              { headers: { token } }
+            );
+            if (preferencesRes.ok) {
+              const preferencesData = await preferencesRes.json();
+              if (preferencesData.success) {
+                fetchedPreferences = preferencesData.preferences || {};
               }
-            ),
-
-            fetch(`${API_BASE_URL}/api/recommend/preferences`, {
-              headers: {
-                token,
-              },
-            }),
-          ]);
-
-          if (!songsRes.ok) {
-            throw new Error(`Request failed with status ${songsRes.status}`);
+            }
+          } catch (error) {
+            console.log("Year collection preferences unavailable:", error);
           }
-
-          const songsData = await songsRes.json();
-
-          const preferencesData = preferencesRes.ok
-            ? await preferencesRes.json()
-            : {
-                success: false,
-                preferences: {},
-              };
-
-          const fetchedSongs = songsData.success ? songsData.songs || [] : [];
-          const fetchedPreferences = preferencesData.success
-            ? preferencesData.preferences || {}
-            : {};
-
-          setPreferences(fetchedPreferences);
-          setSongs(
-            sortYearSongsByCountryAndPlays(fetchedSongs, fetchedPreferences)
-          );
-
-          setError(
-            songsData.success ? "" : songsData.message || "Failed to load songs"
-          );
-
-          return;
         }
 
         const url = new URL("/api/songs/filter", API_BASE_URL);
-
         url.searchParams.set("fromYear", String(collection.fromYear));
         url.searchParams.set("toYear", String(collection.toYear));
         url.searchParams.set("limit", "100");
         url.searchParams.set("sort", "popular");
 
         const res = await fetch(url.toString());
-
         if (!res.ok) {
           throw new Error(`Request failed with status ${res.status}`);
         }
 
         const data = await res.json();
-
         const fetchedSongs = data.success ? data.songs || [] : [];
 
-        setPreferences({});
+        setPreferences(fetchedPreferences);
         setSongs(
-          normalizeSongs(fetchedSongs).sort((a, b) => {
-            const playsA = Number(a.plays || 0);
-            const playsB = Number(b.plays || 0);
+          token
+            ? sortYearSongsByCountryAndPlays(fetchedSongs, fetchedPreferences)
+            : normalizeSongs(fetchedSongs).sort((a, b) => {
+                const playsA = Number(a.plays || 0);
+                const playsB = Number(b.plays || 0);
+                if (playsB !== playsA) return playsB - playsA;
 
-            if (playsB !== playsA) {
-              return playsB - playsA;
-            }
+                const likesA = Number(a.likes || 0);
+                const likesB = Number(b.likes || 0);
+                if (likesB !== likesA) return likesB - likesA;
 
-            const likesA = Number(a.likes || 0);
-            const likesB = Number(b.likes || 0);
-
-            if (likesB !== likesA) {
-              return likesB - likesA;
-            }
-
-            return getDateValue(b) - getDateValue(a);
-          })
+                return getDateValue(b) - getDateValue(a);
+              })
         );
 
         setError(data.success ? "" : data.message || "Failed to load songs");
@@ -384,7 +347,7 @@ const YearsPage = () => {
         ) : playlist.length > 0 ? (
           <div className="row g-3 g-md-4">
             {playlist.map((song) => (
-              <div className="col-6 col-md-4 col-lg-3 col-xl-2" key={song._id}>
+              <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={song._id}>
                 <div className="years-song-card">
                   <Link
                     to={`/song/${song._id}`}

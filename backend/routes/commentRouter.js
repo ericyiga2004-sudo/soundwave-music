@@ -5,6 +5,7 @@ import {
   createComment,
   deleteComment,
   getSongComments,
+  getCommentReplies,
   toggleCommentLike,
   updateComment,
 } from "../controllers/commentController.js";
@@ -12,6 +13,7 @@ import {
 const commentRouter = express.Router();
 
 commentRouter.get("/song/:songId", optionalAuthUser, getSongComments);
+commentRouter.get("/:commentId/replies", optionalAuthUser, getCommentReplies);
 commentRouter.post("/song/:songId", authUser, createComment);
 commentRouter.patch("/:commentId", authUser, updateComment);
 commentRouter.delete("/:commentId", authUser, deleteComment);

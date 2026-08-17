@@ -192,7 +192,7 @@ const sortSongsByUserTaste = (songs = [], preferences = {}) => {
 
 const YearSongSkeleton = () => {
   return (
-    <div className="col-6 col-md-4 col-lg-2">
+    <div className="col-6 col-sm-4 col-md-3 col-lg-2">
       <div className="year-song-card year-song-skeleton" aria-hidden="true">
         <div className="year-song-img-wrap skeleton-img"></div>
 
@@ -222,28 +222,23 @@ const Yearly = () => {
 
   const fetchSections = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = String(localStorage.getItem("token") || "").trim();
 
       let fetchedPreferences = {};
-
       if (token) {
         try {
           const preferencesRes = await fetch(
             `${API_BASE_URL}/api/recommend/preferences`,
-            {
-              headers: {
-                token,
-              },
-            }
+            { headers: { token } }
           );
-
-          const preferencesData = await preferencesRes.json();
-
-          if (preferencesData.success) {
-            fetchedPreferences = preferencesData.preferences || {};
+          if (preferencesRes.ok) {
+            const preferencesData = await preferencesRes.json();
+            if (preferencesData.success) {
+              fetchedPreferences = preferencesData.preferences || {};
+            }
           }
         } catch (error) {
-          console.log("Yearly preferences error:", error);
+          console.log("Yearly preferences unavailable:", error);
         }
       }
 
@@ -251,37 +246,18 @@ const Yearly = () => {
 
       const results = await Promise.allSettled(
         yearSections.map(async (section) => {
-          let url;
+          const url = new URL("/api/songs/filter", API_BASE_URL);
+          url.searchParams.set("fromYear", String(section.fromYear));
+          url.searchParams.set("toYear", String(section.toYear));
+          url.searchParams.set("limit", "8");
+          url.searchParams.set("sort", "popular");
 
-          if (token) {
-            url = new URL("/api/recommend/years", API_BASE_URL);
-
-            url.searchParams.set("fromYear", String(section.fromYear));
-            url.searchParams.set("toYear", String(section.toYear));
-            url.searchParams.set("limit", "8");
-          } else {
-            url = new URL("/api/songs/filter", API_BASE_URL);
-
-            url.searchParams.set("fromYear", String(section.fromYear));
-            url.searchParams.set("toYear", String(section.toYear));
-            url.searchParams.set("limit", "8");
-            url.searchParams.set("sort", "popular");
-          }
-
-          const res = await fetch(url.toString(), {
-            headers: token
-              ? {
-                  token,
-                }
-              : {},
-          });
-
+          const res = await fetch(url.toString());
           if (!res.ok) {
             throw new Error(`Request failed with status ${res.status}`);
           }
 
           const data = await res.json();
-
           const fetchedSongs = data.success ? data.songs || [] : [];
 
           const sortedSongs = token
@@ -289,17 +265,11 @@ const Yearly = () => {
             : normalizeSongs(fetchedSongs).sort((a, b) => {
                 const playsA = Number(a.plays || 0);
                 const playsB = Number(b.plays || 0);
-
-                if (playsB !== playsA) {
-                  return playsB - playsA;
-                }
+                if (playsB !== playsA) return playsB - playsA;
 
                 const likesA = Number(a.likes || 0);
                 const likesB = Number(b.likes || 0);
-
-                if (likesB !== likesA) {
-                  return likesB - likesA;
-                }
+                if (likesB !== likesA) return likesB - likesA;
 
                 return getDateValue(b) - getDateValue(a);
               });
@@ -308,38 +278,30 @@ const Yearly = () => {
             ...section,
             songs: sortedSongs.slice(0, 6),
             loading: false,
-            error: data.success ? "" : data.message || "Failed to load songs",
+            error: "",
           };
         })
       );
 
-      const updatedSections = results.map((result, index) => {
-        if (result.status === "fulfilled") {
-          return result.value;
-        }
-
-        console.error(
-          `Failed to fetch songs for ${yearSections[index].title}:`,
-          result.reason
-        );
-
-        return {
-          ...yearSections[index],
+      setSections(
+        results.map((result, index) => {
+          if (result.status === "fulfilled") return result.value;
+          return {
+            ...yearSections[index],
+            songs: [],
+            loading: false,
+            error: "Could not load this collection.",
+          };
+        })
+      );
+    } catch (error) {
+      console.log("Yearly sections error:", error);
+      setSections(
+        yearSections.map((section) => ({
+          ...section,
           songs: [],
           loading: false,
-          error: "Could not load songs for this collection.",
-        };
-      });
-
-      setSections(updatedSections);
-    } catch (error) {
-      console.error("Failed to fetch yearly songs:", error);
-
-      setSections((prev) =>
-        prev.map((section) => ({
-          ...section,
-          loading: false,
-          error: "Could not load songs.",
+          error: "Could not load this collection.",
         }))
       );
     }
@@ -421,7 +383,7 @@ const Yearly = () => {
                 ) : playlist.length > 0 ? (
                   <div className="row g-3 mt-2">
                     {playlist.map((song) => (
-                      <div className="col-6 col-md-4 col-lg-2" key={song._id}>
+                      <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={song._id}>
                         <div className="year-song-card">
                           <Link
                             to={`/song/${song._id}`}

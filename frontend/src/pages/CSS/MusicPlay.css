@@ -69,6 +69,11 @@
   font-size: 0.71rem;
 }
 
+.sw-player-song-copy .sw-player-error-text {
+  color: var(--sw-accent);
+  font-weight: 650;
+}
+
 .sw-player-center {
   min-width: 0;
 }
@@ -379,10 +384,14 @@
 
 @media (max-width: 575.98px) {
   .sw-player {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   .sw-player-actions {
+    display: flex;
+  }
+
+  .sw-player-actions .sw-queue-toggle {
     display: none;
   }
 

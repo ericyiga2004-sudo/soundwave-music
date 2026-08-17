@@ -12,6 +12,7 @@ import {
   Radio,
   Sparkles,
   User,
+  UsersRound,
 } from "lucide-react";
 import { MusicContext } from "../../context/ShopContext";
 import "./SideBar.css";
@@ -20,6 +21,7 @@ const primaryLinks = [
   { path: "/", label: "Home", icon: Home },
   { path: "/explore", label: "New", icon: Sparkles },
   { path: "/radio", label: "Radio", icon: Radio },
+  { path: "/social", label: "Social", icon: UsersRound },
 ];
 
 const libraryLinks = [

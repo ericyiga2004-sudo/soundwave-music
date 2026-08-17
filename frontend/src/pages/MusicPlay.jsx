@@ -13,7 +13,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./CSS/MusicPlay.css";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { getLowData, UI_PREFERENCES_EVENT } from "../utils/uiPreferences";
@@ -37,6 +37,8 @@ const VOLUME_KEY = "soundwave_player_volume";
 const MusicPlayer = () => {
   const hiddenAudioRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const lastAudibleVolumeRef = useRef(0.82);
   const [queueOpen, setQueueOpen] = useState(false);
   const [lowData, setLowData] = useState(getLowData);
   const [volume, setVolume] = useState(() => {
@@ -52,6 +54,7 @@ const MusicPlayer = () => {
     isPlaying,
     isBuffering,
     bufferMessage,
+    playbackError,
     progress = 0,
     duration = 0,
     shuffle,
@@ -83,8 +86,26 @@ const MusicPlayer = () => {
   useEffect(() => {
     if (!hiddenAudioRef.current) return;
     hiddenAudioRef.current.volume = volume;
+    hiddenAudioRef.current.muted = volume <= 0.001;
     localStorage.setItem(VOLUME_KEY, String(volume));
+    if (volume > 0.001) lastAudibleVolumeRef.current = volume;
   }, [volume]);
+
+  // When Next / Previous / Up Next changes the playing track while the user
+  // is already on a song page, keep the URL and the detail page synchronized
+  // with the real current track.
+  useEffect(() => {
+    if (!currentSong?._id || !location.pathname.startsWith("/song/")) return;
+
+    const routeSongId = location.pathname.split("/")[2] || "";
+    if (String(routeSongId) === String(currentSong._id)) return;
+
+    navigate(`/song/${currentSong._id}`, {
+      replace: true,
+      state: { song: currentSong, playlist },
+    });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [currentSong, location.pathname, navigate, playlist]);
 
 
   const safeDuration = Number.isFinite(Number(duration)) ? Number(duration) : 0;
@@ -109,6 +130,16 @@ const MusicPlayer = () => {
     playSong?.(song, playlist);
   };
 
+  const toggleMute = () => {
+    if (volume > 0.001) {
+      lastAudibleVolumeRef.current = volume;
+      setVolume(0);
+      return;
+    }
+
+    setVolume(Math.max(0.25, lastAudibleVolumeRef.current || 0.82));
+  };
+
   const repeatLabel = repeat === repeatModes?.ONE ? "Repeat one" : repeat === repeatModes?.ALL ? "Repeat all" : "Repeat off";
 
   return (
@@ -129,7 +160,7 @@ const MusicPlayer = () => {
               </button>
               <div className="sw-player-song-copy">
                 <strong>{currentSong?.title || "Unknown Song"}</strong>
-                <span>{isBuffering ? bufferMessage || "Buffering…" : getArtistName(currentSong)}</span>
+                <span className={playbackError ? "sw-player-error-text" : ""}>{playbackError || (isBuffering ? bufferMessage || "Buffering…" : getArtistName(currentSong))}</span>
               </div>
             </div>
 
@@ -196,7 +227,16 @@ const MusicPlayer = () => {
               </div>
               <button
                 type="button"
-                className={`sw-player-icon-control ${queueOpen ? "active" : ""}`}
+                className={`sw-player-icon-control d-xl-none ${volume <= 0.001 ? "active" : ""}`}
+                onClick={toggleMute}
+                aria-label={volume <= 0.001 ? "Unmute" : "Mute"}
+                title={volume <= 0.001 ? "Unmute" : "Mute"}
+              >
+                {volume <= 0.001 ? <VolumeX size={18} /> : volume < 0.45 ? <Volume1 size={18} /> : <Volume2 size={18} />}
+              </button>
+              <button
+                type="button"
+                className={`sw-player-icon-control sw-queue-toggle ${queueOpen ? "active" : ""}`}
                 onClick={() => setQueueOpen((open) => !open)}
                 aria-label="Show queue"
                 title="Queue"

@@ -1,0 +1,423 @@
+/* ==============================================================
+   SoundWave V10 — ordered responsive catalog layout
+   Bootstrap controls the major responsive columns; this file owns
+   the lightweight Apple-inspired visual treatment and media sizing.
+   ============================================================== */
+
+.sw-workspace .hero,
+.sw-workspace .new-release,
+.sw-workspace .popular-artists-section,
+.sw-workspace .albums-section,
+.sw-workspace .mood-section,
+.sw-workspace .made-section,
+.sw-workspace .continue-section,
+.sw-workspace .you-liked-section,
+.sw-workspace .country-section,
+.sw-workspace .followed-section,
+.sw-workspace .filter-section,
+.sw-workspace .yearly-page,
+.sw-workspace .download-ad {
+  width: 100%;
+  max-width: 1660px;
+  margin-inline: auto;
+}
+
+/* ---------- Calm responsive type scale ---------- */
+.sw-workspace .hero-heading-row h1 {
+  font-size: clamp(1.85rem, 2.1vw + 0.8rem, 2.75rem) !important;
+  line-height: 1.02 !important;
+}
+
+.sw-workspace .hero-feature-card h2 {
+  font-size: clamp(1.8rem, 2.35vw + 0.75rem, 3rem) !important;
+  line-height: 1 !important;
+}
+
+.sw-workspace :is(
+  .section-header h2,
+  .new-release-heading h2,
+  .popular-artists-header h2,
+  .albums-header h2,
+  .mood-header h2,
+  .made-title,
+  .continue-header h2,
+  .you-liked-title,
+  .country-title,
+  .followed-title,
+  .filter-header h2
+) {
+  font-size: clamp(1.28rem, 1.15vw + 0.86rem, 1.7rem) !important;
+  line-height: 1.08 !important;
+}
+
+/* ---------- Every rectangular catalog artwork is a true square ---------- */
+.sw-workspace :is(
+  .release-image,
+  .album-home-cover,
+  .card-img-container,
+  .continue-cover,
+  .filter-release-image,
+  .year-song-img-wrap,
+  .years-song-img-wrap,
+  .artist-album-card .artist-album-image-wrap,
+  .account-history-cover
+) {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border-radius: 13px !important;
+  background: var(--sw-surface-2) !important;
+}
+
+.sw-workspace :is(
+  .release-image img,
+  .album-home-cover img,
+  .card-img-container img,
+  .continue-cover img,
+  .filter-release-image img,
+  .year-song-img,
+  .years-song-img,
+  .artist-album-card img,
+  .account-history-cover img
+) {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+/* ---------- Artists are always perfect circles ---------- */
+.sw-workspace .popular-artist-image-wrap {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+}
+
+.sw-workspace .popular-artist-image {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--sw-border) !important;
+  background: var(--sw-surface-2) !important;
+}
+
+.sw-workspace .popular-artist-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+.sw-workspace .popular-artists-grid {
+  align-items: start;
+}
+
+/* Never allow portrait source images to expand a card. */
+.sw-workspace img {
+  max-width: 100%;
+}
+
+/* ---------- Hero artwork must fill its square; no grey half-card ---------- */
+.sw-workspace .hero-artwork-wrap {
+  width: min(100%, 280px) !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  background: var(--sw-surface-3) !important;
+}
+
+.sw-workspace .hero-artwork-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.sw-workspace .hero-mini-card {
+  min-height: 132px !important;
+  height: 100%;
+}
+
+.sw-workspace .hero-mini-card img,
+.sw-workspace .hero-mini-placeholder {
+  width: 82px !important;
+  height: 82px !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+  border-radius: 11px !important;
+}
+
+/* ---------- Song cards: remove the old artificial empty height ---------- */
+.sw-workspace .song-carder {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.sw-workspace .song-linker {
+  height: auto !important;
+}
+
+.sw-workspace .card-content {
+  min-height: 0 !important;
+  padding-top: 9px !important;
+}
+
+.sw-workspace .card-title {
+  font-size: clamp(0.78rem, 0.35vw + 0.7rem, 0.93rem) !important;
+}
+
+.sw-workspace .card-artist {
+  margin-top: 4px !important;
+  font-size: clamp(0.68rem, 0.24vw + 0.63rem, 0.78rem) !important;
+}
+
+/* ---------- Mood artwork gets one shared ratio ---------- */
+.sw-workspace .mood-artwork {
+  width: 100% !important;
+  aspect-ratio: 16 / 10 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border-radius: 13px !important;
+}
+
+.sw-workspace .mood-artwork img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+/* ---------- Cards stay ordered rather than stretching across huge monitors ---------- */
+.sw-workspace :is(.new-release, .albums-section) .row,
+.sw-workspace .popular-artists-grid {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: 1rem;
+}
+
+.sw-workspace .release-card,
+.sw-workspace .featured-album-card {
+  max-width: 100%;
+}
+
+/* ---------- View all buttons are consistent ---------- */
+.sw-workspace :is(
+  .new-release-view-all,
+  .view-albums-btn,
+  .popular-artists-view-all,
+  .mood-header button,
+  .hero-heading-row > button
+) {
+  color: var(--sw-accent) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1199.98px) {
+  .sw-workspace .hero-feature-card {
+    min-height: 320px !important;
+  }
+
+  .sw-workspace .popular-artists-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .sw-workspace .hero-feature-card {
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 32%) !important;
+    padding: 24px !important;
+  }
+
+  .sw-workspace .hero-mini-card {
+    min-height: 112px !important;
+  }
+
+  .sw-workspace .popular-artists-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sw-workspace .hero-heading-row h1 {
+    font-size: clamp(1.65rem, 6.7vw, 2.15rem) !important;
+  }
+
+  .sw-workspace .hero-feature-card h2 {
+    font-size: clamp(1.6rem, 7.4vw, 2.2rem) !important;
+  }
+
+  .sw-workspace .popular-artists-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    overflow: visible !important;
+  }
+
+  .sw-workspace .popular-artist-card,
+  .sw-workspace .popular-artist-skeleton {
+    width: auto !important;
+    flex: initial !important;
+  }
+
+  .sw-workspace .popular-artist-actions {
+    flex-direction: row !important;
+  }
+
+  .sw-workspace .popular-artist-follow-btn,
+  .sw-workspace .popular-artist-button {
+    width: auto !important;
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 7px !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .sw-workspace .hero {
+    padding-top: 18px !important;
+  }
+
+  .sw-workspace .hero-heading-row {
+    margin-bottom: 12px !important;
+  }
+
+  .sw-workspace .hero-feature-card {
+    grid-template-columns: 1fr !important;
+    min-height: 0 !important;
+    padding: 17px !important;
+    border-radius: 16px !important;
+  }
+
+  .sw-workspace .hero-artwork-wrap {
+    grid-row: 1;
+    width: 126px !important;
+    justify-self: start !important;
+    border-radius: 13px !important;
+  }
+
+  .sw-workspace .hero-feature-card p {
+    font-size: 0.78rem !important;
+  }
+
+  .sw-workspace .hero-buttons {
+    margin-top: 15px !important;
+  }
+
+  .sw-workspace .hero-play-button,
+  .sw-workspace .hero-secondary-button {
+    min-height: 36px !important;
+    padding-inline: 13px !important;
+    font-size: 0.74rem !important;
+  }
+
+  .sw-workspace .hero-mini-card {
+    grid-template-columns: 64px minmax(0, 1fr) 32px !important;
+    min-height: 92px !important;
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+
+  .sw-workspace .hero-mini-card img,
+  .sw-workspace .hero-mini-placeholder {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .sw-workspace .hero-mini-card h3 {
+    font-size: 0.86rem !important;
+  }
+
+  .sw-workspace .hero-mini-card p,
+  .sw-workspace .hero-mini-card span {
+    font-size: 0.67rem !important;
+  }
+
+  .sw-workspace .popular-artist-content h3 {
+    font-size: 0.82rem !important;
+  }
+
+  .sw-workspace .popular-artist-country,
+  .sw-workspace .popular-artist-stats {
+    font-size: 0.64rem !important;
+  }
+
+  .sw-workspace .popular-artist-follow-btn,
+  .sw-workspace .popular-artist-button {
+    min-height: 30px !important;
+    font-size: 0.64rem !important;
+  }
+
+  .sw-workspace .mood-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    overflow: visible !important;
+    gap: 12px !important;
+  }
+
+  .sw-workspace .mood-card {
+    width: auto !important;
+    max-width: none !important;
+    flex: initial !important;
+  }
+
+  .sw-workspace .mood-copy strong {
+    font-size: 0.82rem !important;
+  }
+
+  .sw-workspace .mood-copy small {
+    font-size: 0.66rem !important;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .sw-workspace .popular-artist-actions {
+    flex-direction: column !important;
+  }
+
+  .sw-workspace .popular-artist-follow-btn,
+  .sw-workspace .popular-artist-button {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .sw-workspace .popular-artist-card:nth-child(n + 5),
+  .sw-workspace .popular-artist-skeleton:nth-child(n + 5) {
+    display: block !important;
+  }
+}
+
+/* Bootstrap owns Popular Artists column widths. */
+.sw-workspace .popular-artists-grid.row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  overflow: visible !important;
+  grid-template-columns: none !important;
+}
+
+.sw-workspace .popular-artists-grid.row > .col {
+  min-width: 0;
+}

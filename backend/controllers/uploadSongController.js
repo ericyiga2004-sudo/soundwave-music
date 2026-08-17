@@ -1006,8 +1006,15 @@ export const getNewReleases = async (req, res) => {
   try {
     const { limit = 10, country, genre } = req.query;
 
+    // Support both current published songs and legacy catalog rows created
+    // before the status field existed. This keeps New Releases populated after
+    // deployments/migrations without exposing explicit drafts.
     const query = {
-      status: "published",
+      $or: [
+        { status: "published" },
+        { status: { $exists: false } },
+        { status: null },
+      ],
     };
 
     if (country) {
@@ -1018,12 +1025,16 @@ export const getNewReleases = async (req, res) => {
       query.genre = new RegExp(`^${escapeRegex(genre)}$`, "i");
     }
 
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 10, 100));
+
     const songs = await populateSong(Song.find(query))
       .sort({
         releaseDate: -1,
+        releaseYear: -1,
         createdAt: -1,
+        _id: -1,
       })
-      .limit(Math.min(Number(limit), 100));
+      .limit(safeLimit);
 
     return res.json({
       success: true,

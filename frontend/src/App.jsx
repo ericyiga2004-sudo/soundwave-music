@@ -28,6 +28,10 @@ const MusicStudio = lazy(() => import("./pages/MusicStudio"));
 const Visualizer = lazy(() => import("./pages/Visualizer"));
 const MoodPage = lazy(() => import("./pages/MoodPage"));
 const Radio = lazy(() => import("./pages/Radio"));
+const Social = lazy(() => import("./pages/Social"));
+const SocialProfile = lazy(() => import("./pages/SocialProfile"));
+const Circle = lazy(() => import("./pages/Circle"));
+const LiveRoom = lazy(() => import("./pages/LiveRoom"));
 const ArtistsPage = lazy(() => import("./pages/ArtistsPage"));
 const AlbumsPage = lazy(() => import("./pages/AlbumsPage"));
 const SongsPage = lazy(() => import("./pages/SongsPage"));
@@ -104,6 +108,11 @@ const App = () => {
     document.documentElement.style.colorScheme = theme;
   }, [batterySaver, lowData, theme]);
 
+  const isSongDetailPage = useMemo(
+    () => location.pathname.startsWith("/song/"),
+    [location.pathname]
+  );
+
   const isImmersivePage = useMemo(
     () =>
       location.pathname.startsWith("/visualizer/") ||
@@ -116,7 +125,7 @@ const App = () => {
   if (isLaunching) return <LaunchScreen />;
 
   return (
-    <div className={`app ${isImmersivePage ? "app-immersive" : ""}`}>
+    <div className={`app ${isImmersivePage ? "app-immersive" : ""} ${isSongDetailPage ? "app-song-detail" : ""}`}>
       {!isImmersivePage ? (
         <div className="sw-app-shell">
           <Sidebar />
@@ -130,6 +139,10 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/radio" element={<Radio />} />
+                <Route path="/social" element={<Social />} />
+                <Route path="/social/circles/:circleId" element={<Circle />} />
+                <Route path="/social/rooms/:code" element={<LiveRoom />} />
+                <Route path="/u/:userId" element={<SocialProfile />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/liked" element={<Liked />} />
                 <Route path="/profile" element={<Profile />} />

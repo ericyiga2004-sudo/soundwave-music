@@ -4,6 +4,8 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./index.css";
 import App from "./App.jsx";
 import "./apple-theme.css";
+import "./v10-layout.css";
+import "./v12-compact-media.css";
 import { BrowserRouter } from "react-router-dom";
 import MusicContextProvider from "./context/ShopContext";
 import { MusicPlayerProvider } from "./context/MainPlayerContext.jsx";

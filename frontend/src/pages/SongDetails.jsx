@@ -2,14 +2,25 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Check,
+  ChevronDown,
   ChevronLeft,
+  ChevronRight,
+  ChevronUp,
   Download,
   Heart,
+  ListMusic,
   ListPlus,
-  MoreHorizontal,
+  FastForward,
+  MessageCircle,
+  Reply,
+  Clock3,
+  Sparkles,
   Pause,
   Play,
+  Rewind,
   Share2,
+  SkipBack,
+  SkipForward,
   Trash2,
 } from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
@@ -75,6 +86,10 @@ const SongDetails = () => {
   const [offlineBusy, setOfflineBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [playlistOpen, setPlaylistOpen] = useState(false);
+  const [lyricsExpanded, setLyricsExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !window.matchMedia("(max-width: 767.98px)").matches;
+  });
 
   const [comments, setComments] = useState([]);
   const [commentPage, setCommentPage] = useState(1);
@@ -85,9 +100,68 @@ const SongDetails = () => {
   const [commentBusy, setCommentBusy] = useState(false);
   const [editingId, setEditingId] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [commentSort, setCommentSort] = useState("recent");
+  const [commentAtTime, setCommentAtTime] = useState(false);
+  const [repliesByComment, setRepliesByComment] = useState({});
+  const [replyOpen, setReplyOpen] = useState("");
+  const [replyBody, setReplyBody] = useState("");
+  const [replyBusy, setReplyBusy] = useState("");
+
+  const [moments, setMoments] = useState([]);
+  const [momentsLoading, setMomentsLoading] = useState(false);
+  const [momentBody, setMomentBody] = useState("");
+  const [momentEmoji, setMomentEmoji] = useState("🔥");
+  const [momentReplyOpen, setMomentReplyOpen] = useState("");
+  const [momentReplyBody, setMomentReplyBody] = useState("");
+  const [trail, setTrail] = useState([]);
 
   const lyricsRef = useRef(null);
+  const lyricsScrollRef = useRef(null);
   const lineRefs = useRef([]);
+  const mobileSwipeRef = useRef({ active: false, x: 0, y: 0 });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const mobileQuery = window.matchMedia("(max-width: 767.98px)");
+    const syncLyricsMode = (event) => setLyricsExpanded(!event.matches);
+    syncLyricsMode(mobileQuery);
+    if (mobileQuery.addEventListener) mobileQuery.addEventListener("change", syncLyricsMode);
+    else mobileQuery.addListener?.(syncLyricsMode);
+    return () => {
+      if (mobileQuery.removeEventListener) mobileQuery.removeEventListener("change", syncLyricsMode);
+      else mobileQuery.removeListener?.(syncLyricsMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches) {
+      setLyricsExpanded(false);
+    }
+  }, [songId]);
+
+  // React Router keeps this page mounted when only :songId changes. Sync the
+  // visible song immediately from the player/navigation state so Next,
+  // Previous and Up Next never leave the old song artwork/title on screen.
+  useEffect(() => {
+    const activeSong = player?.currentSong;
+    const routedSong = location.state?.song;
+    const immediateSong =
+      String(activeSong?._id || "") === String(songId)
+        ? activeSong
+        : String(routedSong?._id || "") === String(songId)
+          ? routedSong
+          : null;
+
+    if (!immediateSong) return;
+    if (String(song?._id || "") === String(immediateSong._id)) return;
+
+    setSong(immediateSong);
+    setLikes(Number(immediateSong.likes || 0));
+    setError("");
+    setLoading(false);
+    setStatus("");
+    setPlaylistOpen(false);
+  }, [location.state, player?.currentSong, song?._id, songId]);
 
   const routePlaylist = location.state?.playlist;
   const playlistFromRoute = useMemo(
@@ -106,6 +180,19 @@ const SongDetails = () => {
     lyrics.forEach((line, index) => { if (Number.isFinite(line.start) && progress >= line.start) active = index; });
     return active;
   }, [lyrics, progress, synced, isCurrent]);
+
+  const detailDuration = useMemo(() => {
+    const liveDuration = Number(player?.duration || 0);
+    if (isCurrent && Number.isFinite(liveDuration) && liveDuration > 0) return liveDuration;
+    const raw = Number(song?.duration || 0);
+    if (!Number.isFinite(raw) || raw <= 0) return 0;
+    return raw > 10000 ? raw / 1000 : raw;
+  }, [isCurrent, player?.duration, song?.duration]);
+
+  const detailProgress = isCurrent ? Math.min(Math.max(0, Number(progress || 0)), detailDuration || Number(progress || 0)) : 0;
+  const compactLyricIndex = activeLyricIndex >= 0 ? activeLyricIndex : 0;
+  const compactLyric = lyrics[compactLyricIndex]?.text || lyrics[0]?.text || "Lyrics";
+  const compactNextLyric = lyrics[compactLyricIndex + 1]?.text || "";
 
   const fetchSong = useCallback(async () => {
     setLoading(true); setError("");
@@ -150,25 +237,154 @@ const SongDetails = () => {
     if (!songId) return;
     setCommentsLoading(true);
     try {
-      const { data } = await apiClient.get(`/api/comments/song/${songId}`, { params: { page, limit: 12 }, headers: authHeaders(token) });
+      const { data } = await apiClient.get(`/api/comments/song/${songId}`, { params: { page, limit: 12, sort: commentSort }, headers: authHeaders(token) });
       if (data?.success) {
         setComments((current) => append ? [...current, ...(data.comments || [])] : (data.comments || []));
         setCommentPage(page); setCommentTotal(Number(data.total || 0)); setCommentsMore(Boolean(data.hasMore));
       }
     } catch { if (!append) setComments([]); }
     finally { setCommentsLoading(false); }
+  }, [songId, token, commentSort]);
+  useEffect(() => {
+    setComments([]);
+    setCommentPage(1);
+    setCommentTotal(0);
+    setCommentsMore(false);
+    setRepliesByComment({});
+    setReplyOpen("");
+    loadComments({ page: 1 });
+  }, [loadComments]);
+
+  const loadMoments = useCallback(async () => {
+    if (!songId) return;
+    setMomentsLoading(true);
+    try {
+      const { data } = await apiClient.get(`/api/social/moments/song/${songId}`, { headers: authHeaders(token) });
+      if (data?.success) setMoments(data.moments || []);
+    } catch { setMoments([]); }
+    finally { setMomentsLoading(false); }
   }, [songId, token]);
-  useEffect(() => { loadComments({page:1}); }, [loadComments]);
+
+  useEffect(() => { loadMoments(); }, [loadMoments]);
 
   useEffect(() => {
-    if (activeLyricIndex < 0 || !lineRefs.current[activeLyricIndex]) return;
+    if (!token || !songId) { setTrail([]); return; }
+    apiClient.get(`/api/social/trail/${songId}`, { headers: authHeaders(token) })
+      .then(({data}) => { if (data?.success) setTrail(data.trail || []); })
+      .catch(() => setTrail([]));
+  }, [songId, token]);
+
+  useEffect(() => {
+    if (!lyricsExpanded || activeLyricIndex < 0) return;
+
+    const container = lyricsScrollRef.current;
+    const activeLine = lineRefs.current[activeLyricIndex];
+    if (!container || !activeLine) return;
+
+    // Never use scrollIntoView here: browsers are allowed to scroll every
+    // ancestor, including the document. Lyrics must move inside their own
+    // viewport without pulling the whole Song Details page up or down.
+    const containerRect = container.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const visibleHeight = Math.max(
+      0,
+      Math.min(containerRect.bottom, viewportHeight) - Math.max(containerRect.top, 0)
+    );
+
+    // Only follow lyrics when the listener is actually looking at the lyrics
+    // section. Playback can continue elsewhere on the page without hijacking
+    // the page scroll position.
+    if (visibleHeight < Math.min(120, containerRect.height * 0.18)) return;
+
+    const lineRect = activeLine.getBoundingClientRect();
+    const targetTop =
+      container.scrollTop +
+      (lineRect.top - containerRect.top) -
+      (container.clientHeight - lineRect.height) / 2;
+
+    const maxTop = Math.max(0, container.scrollHeight - container.clientHeight);
+    const nextTop = Math.max(0, Math.min(maxTop, targetTop));
     const behavior = getBatterySaver() ? "auto" : "smooth";
-    lineRefs.current[activeLyricIndex]?.scrollIntoView({ behavior, block: "center" });
-  }, [activeLyricIndex]);
+
+    container.scrollTo({ top: nextTop, behavior });
+  }, [activeLyricIndex, lyricsExpanded]);
 
   const handlePlay = () => {
     if (!song) return;
     if (isCurrent) player?.togglePlay?.(); else player?.playSong?.(song, queue.length ? queue : [song]);
+  };
+
+  const handleDetailSeek = (event) => {
+    if (!isCurrent) return;
+    player?.seekTo?.(Number(event.target.value));
+  };
+
+  const skipDetailBackward = () => {
+    if (!isCurrent) return;
+    player?.skipBackward?.(30);
+  };
+
+  const skipDetailForward = () => {
+    if (!isCurrent) return;
+    player?.skipForward?.(30);
+  };
+
+  const goBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) navigate(-1);
+    else navigate("/");
+  }, [navigate]);
+
+  const handleMobileTouchStart = (event) => {
+    const touch = event.touches?.[0];
+    if (!touch || touch.clientY > 135) return;
+    mobileSwipeRef.current = { active: true, x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleMobileTouchEnd = (event) => {
+    const start = mobileSwipeRef.current;
+    mobileSwipeRef.current = { active: false, x: 0, y: 0 };
+    if (!start.active) return;
+    const touch = event.changedTouches?.[0];
+    if (!touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (dy > 78 && Math.abs(dy) > Math.abs(dx) * 1.2) goBack();
+  };
+
+  const goToPreviousTrack = async () => {
+    if (!isCurrent) { handlePlay(); return; }
+    const previous = await player?.prevSong?.();
+    if (previous?._id && String(previous._id) !== String(songId)) {
+      navigate(`/song/${previous._id}`, { state: { song: previous, playlist: player?.playlist || queue }, replace: true });
+    }
+  };
+
+  const goToNextTrack = async () => {
+    if (!isCurrent) { handlePlay(); return; }
+    const next = await player?.nextSong?.();
+    if (next?._id) {
+      navigate(`/song/${next._id}`, { state: { song: next, playlist: player?.playlist || queue }, replace: true });
+    }
+  };
+
+  const addCurrentToQueue = () => {
+    if (!song?._id) return;
+    const added = player?.addToQueue?.(song);
+    setStatus(added ? "Added to Up Next." : "Already in Up Next.");
+  };
+
+  const addRecommendationToQueue = (event, item) => {
+    event.stopPropagation();
+    const added = player?.addToQueue?.(item);
+    setStatus(added ? `${item.title} added to Up Next.` : `${item.title} is already in Up Next.`);
+  };
+
+  const openLyrics = () => {
+    if (!lyrics.length) return;
+    setLyricsExpanded(true);
+    window.requestAnimationFrame(() => {
+      lyricsRef.current?.scrollIntoView?.({ behavior: getBatterySaver() ? "auto" : "smooth", block: "start" });
+    });
   };
 
   const toggleLike = async () => {
@@ -217,8 +433,8 @@ const SongDetails = () => {
     const body = commentBody.trim(); if (!body || commentBusy) return;
     setCommentBusy(true);
     try {
-      const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body }, { headers: authHeaders(token) });
-      if (data?.success && data.comment) { setComments((current) => [data.comment, ...current]); setCommentTotal((n)=>n+1); setCommentBody(""); }
+      const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body, momentAt: commentAtTime && isCurrent ? progress : null }, { headers: authHeaders(token) });
+      if (data?.success && data.comment) { setComments((current) => [data.comment, ...current]); setCommentTotal((n)=>n+1); setCommentBody(""); setCommentAtTime(false); window.dispatchEvent(new CustomEvent("notification-updated")); }
     } catch (err) { setStatus(err?.response?.data?.message || "Could not post comment."); }
     finally { setCommentBusy(false); }
   };
@@ -233,7 +449,65 @@ const SongDetails = () => {
   };
   const likeComment = async (commentId) => {
     if(!token){navigate("/account");return;}
-    try { const {data}=await apiClient.post(`/api/comments/${commentId}/like`,{}, {headers:authHeaders(token)}); if(data?.success)setComments(c=>c.map(item=>item._id===commentId?{...item,liked:data.liked,likes:data.likes}:item)); } catch { setStatus("Could not update comment."); }
+    try { const {data}=await apiClient.post(`/api/comments/${commentId}/like`,{}, {headers:authHeaders(token)}); if(data?.success){setComments(c=>c.map(item=>item._id===commentId?{...item,liked:data.liked,likes:data.likes}:item));window.dispatchEvent(new CustomEvent("notification-updated"));} } catch { setStatus("Could not update comment."); }
+  };
+
+  const likeReply = async (parentId, replyId) => {
+    if (!token) { navigate("/account"); return; }
+    try {
+      const { data } = await apiClient.post(`/api/comments/${replyId}/like`, {}, { headers: authHeaders(token) });
+      if (data?.success) setRepliesByComment((current) => ({ ...current, [parentId]: (current[parentId] || []).map((item) => item._id === replyId ? { ...item, liked: data.liked, likes: data.likes } : item) }));
+    } catch { setStatus("Could not update reply."); }
+  };
+
+  const loadReplies = async (commentId) => {
+    if (repliesByComment[commentId]) { setReplyOpen((value) => value === commentId ? "" : commentId); return; }
+    try {
+      const { data } = await apiClient.get(`/api/comments/${commentId}/replies`, { headers: authHeaders(token) });
+      if (data?.success) { setRepliesByComment((current) => ({ ...current, [commentId]: data.replies || [] })); setReplyOpen(commentId); }
+    } catch { setStatus("Could not load replies."); }
+  };
+
+  const submitReply = async (commentId) => {
+    if (!token) { navigate("/account"); return; }
+    const body = replyBody.trim(); if (!body || replyBusy) return;
+    setReplyBusy(commentId);
+    try {
+      const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body, parentComment: commentId }, { headers: authHeaders(token) });
+      if (data?.success && data.comment) {
+        setRepliesByComment((current) => ({ ...current, [commentId]: [...(current[commentId] || []), data.comment] }));
+        setComments((current) => current.map((item) => item._id === commentId ? { ...item, repliesCount: Number(item.repliesCount || 0) + 1 } : item));
+        setReplyBody(""); window.dispatchEvent(new CustomEvent("notification-updated"));
+      }
+    } catch (err) { setStatus(err?.response?.data?.message || "Could not reply."); }
+    finally { setReplyBusy(""); }
+  };
+
+  const postMoment = async (event) => {
+    event.preventDefault();
+    if (!token) { navigate("/account"); return; }
+    if (!song?._id) return;
+    try {
+      const { data } = await apiClient.post(`/api/social/moments/song/${songId}`, { momentAt: isCurrent ? progress : 0, body: momentBody.trim(), emoji: momentEmoji }, { headers: authHeaders(token) });
+      if (data?.success) { setMomentBody(""); setMoments((current) => [...current, data.moment].sort((a,b)=>Number(a.momentAt||0)-Number(b.momentAt||0))); }
+    } catch (err) { setStatus(err?.response?.data?.message || "Could not post this song moment."); }
+  };
+
+  const likeMoment = async (momentId) => {
+    if (!token) { navigate("/account"); return; }
+    try { const {data}=await apiClient.post(`/api/social/moments/${momentId}/like`,{}, {headers:authHeaders(token)}); if(data?.success){setMoments((current)=>current.map((item)=>item._id===momentId?{...item,liked:data.liked,likes:data.likes}:item));window.dispatchEvent(new CustomEvent("notification-updated"));} } catch { setStatus("Could not react to that moment."); }
+  };
+
+  const replyMoment = async (momentId) => {
+    if (!token) { navigate("/account"); return; }
+    const body = momentReplyBody.trim(); if (!body) return;
+    try { const {data}=await apiClient.post(`/api/social/moments/${momentId}/replies`,{body},{headers:authHeaders(token)}); if(data?.success){setMomentReplyBody("");setMomentReplyOpen("");loadMoments();window.dispatchEvent(new CustomEvent("notification-updated"));} } catch { setStatus("Could not reply to that moment."); }
+  };
+
+  const playNextRecommendation = (event, item) => {
+    event.stopPropagation();
+    const added = player?.addNextToQueue?.(item);
+    setStatus(added ? `${item.title} will play next.` : `${item.title} is already queued.`);
   };
 
   if (loading && !song) return <div className="song-premium-page"><CatalogSkeleton count={8} /></div>;
@@ -244,26 +518,74 @@ const SongDetails = () => {
   const albumId = song.album?._id;
 
   return (
-    <div className="song-premium-page">
-      <button type="button" className="song-page-back" onClick={() => navigate(-1)}><ChevronLeft size={17}/> Back</button>
+    <div className="song-premium-page" onTouchStart={handleMobileTouchStart} onTouchEnd={handleMobileTouchEnd}>
+      <div className="song-mobile-topbar d-md-none">
+        <button type="button" className="song-mobile-top-action" onClick={goBack} aria-label="Close now playing">
+          <ChevronDown size={25} />
+        </button>
+        <span>Now Playing</span>
+        <button type="button" className="song-mobile-top-action" onClick={shareSong} aria-label="Share song">
+          <Share2 size={21} />
+        </button>
+      </div>
+
+      <button type="button" className="song-page-back d-none d-md-inline-flex" onClick={goBack}><ChevronLeft size={17}/> Back</button>
 
       <section className="song-premium-hero">
         <div className="song-premium-art-column">
-          <img className="song-premium-art" src={getSongCover(song)} alt={`${song.title} artwork`} />
-          <div className="song-premium-meta-block">
-            <span className="song-premium-kicker">Now Playing</span>
-            <h1>{song.title}</h1>
-            <button className="song-premium-link" type="button" disabled={!artistId} onClick={()=>artistId&&navigate(`/artist/${artistId}`)}>{getArtistName(song)}</button>
-            <button className="song-premium-link muted" type="button" disabled={!albumId} onClick={()=>albumId&&navigate(`/album/${albumId}`)}>{song.album?.title || "Single"}</button>
+          <div className="song-now-playing-stage">
+            <img className="song-premium-art" src={getSongCover(song)} alt={`${song.title} artwork`} />
+
+            <div className="song-premium-meta-block">
+              <span className="song-premium-kicker">Now Playing</span>
+              <h1>{song.title}</h1>
+              <button className="song-premium-link" type="button" disabled={!artistId} onClick={()=>artistId&&navigate(`/artist/${artistId}`)}>{getArtistName(song)}</button>
+              <button className="song-premium-link muted" type="button" disabled={!albumId} onClick={()=>albumId&&navigate(`/album/${albumId}`)}>{song.album?.title || "Single"}</button>
+              {lyrics.length ? (
+                <button type="button" className="song-mobile-lyrics-link d-md-none" onClick={openLyrics}>
+                  <span>Lyrics</span><strong>View lyrics</strong><ChevronRight size={16}/>
+                </button>
+              ) : null}
+            </div>
+
+            <div className="song-premium-actions">
+              <button className="song-main-play d-none d-md-inline-flex" type="button" onClick={handlePlay}>{isPlaying?<Pause size={18} fill="currentColor"/>:<Play size={18} fill="currentColor"/>}<span>{isPlaying?"Pause":"Play"}</span></button>
+              <button className={`song-round-action ${liked?"active":""}`} type="button" onClick={toggleLike} disabled={likeBusy} aria-label="Favorite"><Heart size={18} fill={liked?"currentColor":"none"}/></button>
+              <button className="song-round-action" type="button" onClick={addCurrentToQueue} aria-label="Add to queue" title="Add to Up Next"><ListMusic size={18}/></button>
+              <button className="song-round-action" type="button" onClick={()=>{if(!token)navigate("/account");else{fetchPlaylists?.();setPlaylistOpen(true);}}} aria-label="Add to playlist"><ListPlus size={18}/></button>
+              <button className={`song-round-action ${offlineSaved?"active":""}`} type="button" onClick={toggleOffline} disabled={offlineBusy} aria-label="Save offline">{offlineSaved?<Check size={18}/>:<Download size={18}/>}</button>
+              <button className="song-round-action song-action-share d-none d-md-grid" type="button" onClick={shareSong} aria-label="Share"><Share2 size={18}/></button>
+            </div>
+
+            <div className="song-detail-transport" aria-label="Song position controls">
+              <div className="song-detail-seek-row">
+                <time>{formatDuration(detailProgress)}</time>
+                <input
+                  type="range"
+                  min="0"
+                  max={detailDuration || 0}
+                  step="0.01"
+                  value={detailProgress}
+                  onChange={handleDetailSeek}
+                  disabled={!isCurrent || !detailDuration}
+                  aria-label="Precise song position"
+                  style={{ "--song-progress": `${detailDuration ? (detailProgress / detailDuration) * 100 : 0}%` }}
+                />
+                <time>{formatDuration(detailDuration)}</time>
+              </div>
+              <div className="song-detail-transport-controls">
+                <button type="button" className="song-detail-track-control" onClick={goToPreviousTrack} aria-label="Previous song" title="Previous song"><SkipBack size={19} fill="currentColor" /></button>
+                <button type="button" className="song-detail-skip-control" onClick={skipDetailBackward} disabled={!isCurrent} aria-label="Go back 30 seconds" title="Back 30 seconds"><Rewind size={17}/><span>30</span></button>
+                <button type="button" className="song-detail-mini-play" onClick={handlePlay} aria-label={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={23} fill="currentColor" /> : <Play size={23} fill="currentColor" />}</button>
+                <button type="button" className="song-detail-skip-control" onClick={skipDetailForward} disabled={!isCurrent} aria-label="Go forward 30 seconds" title="Forward 30 seconds"><FastForward size={17}/><span>30</span></button>
+                <button type="button" className="song-detail-track-control" onClick={goToNextTrack} aria-label="Next song" title="Next song"><SkipForward size={19} fill="currentColor" /></button>
+              </div>
+              {!isCurrent ? <small className="song-detail-seek-hint">Tap play to start this song.</small> : null}
+            </div>
+
+            {status?<p className="song-status" role="status">{status}</p>:null}
           </div>
-          <div className="song-premium-actions">
-            <button className="song-main-play" type="button" onClick={handlePlay}>{isPlaying?<Pause size={18} fill="currentColor"/>:<Play size={18} fill="currentColor"/>}<span>{isPlaying?"Pause":"Play"}</span></button>
-            <button className={`song-round-action ${liked?"active":""}`} type="button" onClick={toggleLike} disabled={likeBusy} aria-label="Favorite"><Heart size={17} fill={liked?"currentColor":"none"}/></button>
-            <button className="song-round-action" type="button" onClick={()=>{if(!token)navigate("/account");else{fetchPlaylists?.();setPlaylistOpen(true);}}} aria-label="Add to playlist"><ListPlus size={17}/></button>
-            <button className={`song-round-action ${offlineSaved?"active":""}`} type="button" onClick={toggleOffline} disabled={offlineBusy} aria-label="Save offline">{offlineSaved?<Check size={17}/>:<Download size={17}/>}</button>
-            <button className="song-round-action" type="button" onClick={shareSong} aria-label="Share"><Share2 size={17}/></button>
-          </div>
-          {status?<p className="song-status" role="status">{status}</p>:null}
+
           <dl className="song-facts">
             <div><dt>Album</dt><dd>{song.album?.title||"Single"}</dd></div>
             <div><dt>Genre</dt><dd>{song.genre||"Unknown"}</dd></div>
@@ -272,25 +594,108 @@ const SongDetails = () => {
             <div><dt>Plays</dt><dd>{formatCompactNumber(song.plays)}</dd></div>
             <div><dt>Likes</dt><dd>{formatCompactNumber(likes)}</dd></div>
           </dl>
+
+          <div className="song-mobile-relations d-md-none">
+            {albumId ? (
+              <button type="button" className="song-relation-card" onClick={() => navigate(`/album/${albumId}`)}>
+                <img src={song.album?.image || song.album?.coverImage || song.album?.imageUrl || getSongCover(song)} alt="" loading="lazy" decoding="async"/>
+                <span><small>Album</small><strong>{song.album?.title || "Album"}</strong><em>{getArtistName(song)}</em></span>
+                <ChevronRight size={20}/>
+              </button>
+            ) : null}
+            {artistId ? (
+              <button type="button" className="song-relation-card" onClick={() => navigate(`/artist/${artistId}`)}>
+                <img className="artist" src={song.artist?.image || song.artist?.avatar || getSongCover(song)} alt="" loading="lazy" decoding="async"/>
+                <span><small>Artist</small><strong>{getArtistName(song)}</strong><em>View artist</em></span>
+                <ChevronRight size={20}/>
+              </button>
+            ) : null}
+          </div>
         </div>
 
-        <div className="song-lyrics-column" ref={lyricsRef}>
-          <div className="song-lyrics-heading"><div><span className="song-premium-kicker">Lyrics</span><h2>{synced ? "Live lyrics" : "Lyrics"}</h2></div><span>{isCurrent ? formatDuration(progress) : ""}</span></div>
-          {lyrics.length ? <div className={`song-lyrics-scroll ${synced?"synced":"static"}`}>{lyrics.map((line,index)=><button ref={(el)=>{lineRefs.current[index]=el;}} key={`${line.text}-${index}`} type="button" className={`song-lyric-line ${index===activeLyricIndex?"active":index<activeLyricIndex?"past":""}`} disabled={!Number.isFinite(line.start)} onClick={()=>Number.isFinite(line.start)&&player?.seekTo?.(line.start)}>{line.text}</button>)}</div> : <EmptyState title="Lyrics aren’t available yet" message="This track can still be played normally." />}
+        <div className={`song-lyrics-column ${lyricsExpanded ? "lyrics-expanded" : "lyrics-collapsed"}`} ref={lyricsRef}>
+          <div className="song-lyrics-heading">
+            <div><span className="song-premium-kicker">Lyrics</span><h2>{synced ? "Live lyrics" : "Lyrics"}</h2></div>
+            <div className="song-lyrics-heading-actions">
+              <span>{isCurrent ? formatDuration(progress) : ""}</span>
+              {lyrics.length ? (
+                <button type="button" className="song-lyrics-collapse d-md-none" onClick={() => setLyricsExpanded((expanded) => !expanded)} aria-expanded={lyricsExpanded} aria-label={lyricsExpanded ? "Collapse lyrics" : "Expand lyrics"} title={lyricsExpanded ? "Collapse lyrics" : "Expand lyrics"}>
+                  {lyricsExpanded ? <ChevronUp size={19} /> : <ChevronDown size={19} />}
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          {lyrics.length ? (
+            lyricsExpanded ? (
+              <div ref={lyricsScrollRef} className={`song-lyrics-scroll ${synced ? "synced" : "static"}`}>
+                {lyrics.map((line,index)=><button ref={(el)=>{lineRefs.current[index]=el;}} key={`${line.text}-${index}`} type="button" className={`song-lyric-line ${index===activeLyricIndex?"active":index<activeLyricIndex?"past":""}`} disabled={!Number.isFinite(line.start)} onClick={()=>Number.isFinite(line.start)&&player?.seekTo?.(line.start)}>{line.text}</button>)}
+              </div>
+            ) : (
+              <button type="button" className="song-lyrics-preview" onClick={() => setLyricsExpanded(true)} aria-label="Expand lyrics">
+                <strong>{compactLyric}</strong>
+                {compactNextLyric ? <span>{compactNextLyric}</span> : null}
+                <small>Tap to expand lyrics</small>
+              </button>
+            )
+          ) : <EmptyState title="Lyrics aren’t available yet" message="This track can still be played normally." />}
         </div>
+      </section>
+
+      <section className="song-moments-section" aria-label="Song moments">
+        <div className="song-section-title">
+          <div><span className="song-premium-kicker">At this moment</span><h2>Song moments</h2></div>
+          <span>{moments.length}</span>
+        </div>
+        <p className="song-muted-copy">Reactions are attached to an exact point in the track. Tap a timestamp to jump there.</p>
+        <form className="song-moment-form" onSubmit={postMoment}>
+          <select value={momentEmoji} onChange={(event) => setMomentEmoji(event.target.value)} aria-label="Reaction"><option>🔥</option><option>❤️</option><option>😭</option><option>✨</option><option>🎧</option><option>🤯</option></select>
+          <input value={momentBody} onChange={(event) => setMomentBody(event.target.value.slice(0,320))} placeholder={token ? `React at ${formatDuration(isCurrent ? progress : 0)}…` : "Sign in to leave a song moment"} disabled={!token}/>
+          <button type="submit" className="sw-primary-btn" disabled={!token}>{token ? "Post moment" : "Sign in"}</button>
+        </form>
+        {momentsLoading && !moments.length ? <CatalogSkeleton count={3} rows/> : moments.length ? <div className="song-moment-list">
+          {moments.slice(0,24).map((moment) => <article className="song-moment" key={moment._id}>
+            <button type="button" className="song-moment-time" onClick={() => { if (!isCurrent) handlePlay(); window.setTimeout(() => player?.seekTo?.(Number(moment.momentAt || 0)), 80); }}><Clock3 size={13}/>{formatDuration(moment.momentAt)}</button>
+            <span className="song-moment-emoji">{moment.emoji || "🎵"}</span>
+            <div className="song-moment-copy"><strong>{moment.user?.username || moment.user?.name || "Listener"}</strong>{moment.body ? <p>{moment.body}</p> : null}
+              <div className="song-moment-actions"><button type="button" className={moment.liked ? "active" : ""} onClick={() => likeMoment(moment._id)}><Heart size={13} fill={moment.liked ? "currentColor" : "none"}/> {moment.likes || 0}</button><button type="button" onClick={() => { if (!token) navigate("/account"); else setMomentReplyOpen((value) => value === moment._id ? "" : moment._id); }}><Reply size={13}/> Reply</button></div>
+              {(moment.replies || []).length ? <div className="song-moment-replies">{moment.replies.slice(-3).map((reply) => <p key={reply._id}><strong>{reply.user?.username || reply.user?.name || "Listener"}</strong> {reply.body}</p>)}</div> : null}
+              {momentReplyOpen === moment._id ? <div className="song-inline-reply"><input value={momentReplyBody} onChange={(event)=>setMomentReplyBody(event.target.value.slice(0,300))} placeholder="Reply to this moment…"/><button type="button" onClick={()=>replyMoment(moment._id)}>Reply</button></div> : null}
+            </div>
+          </article>)}
+        </div> : <p className="song-muted-copy">No moments yet. Play the song and leave the first reaction.</p>}
       </section>
 
       <section className="song-below-grid">
         <div className="song-comments-section">
-          <div className="song-section-title"><div><span className="song-premium-kicker">Community</span><h2>Comments</h2></div><span>{commentTotal}</span></div>
-          <form className="song-comment-form" onSubmit={submitComment}><textarea value={commentBody} onChange={(e)=>setCommentBody(e.target.value.slice(0,600))} placeholder={token?"Add a comment…":"Sign in to join the conversation"} disabled={!token||commentBusy}/><div><small>{commentBody.length}/600</small><button className="sw-primary-btn" type="submit" disabled={!token||!commentBody.trim()||commentBusy}>{commentBusy?"Posting…":"Comment"}</button></div></form>
-          {commentsLoading&&!comments.length?<CatalogSkeleton count={4} rows/>:comments.length?<div className="song-comments-list">{comments.map((comment)=><article className="song-comment" key={comment._id}><div className="song-comment-avatar">{String(comment.user?.username||"S").slice(0,1).toUpperCase()}</div><div className="song-comment-body"><div className="song-comment-top"><strong>{comment.user?.username||"SoundWave listener"}</strong><span>{new Date(comment.createdAt).toLocaleDateString()}</span>{comment.editedAt?<em>edited</em>:null}</div>{editingId===comment._id?<div className="song-comment-edit"><textarea value={editBody} onChange={e=>setEditBody(e.target.value.slice(0,600))}/><button type="button" onClick={()=>saveEdit(comment._id)}>Save</button><button type="button" onClick={()=>setEditingId("")}>Cancel</button></div>:<p>{comment.body}</p>}<div className="song-comment-actions"><button type="button" className={comment.liked?"active":""} onClick={()=>likeComment(comment._id)}><Heart size={13} fill={comment.liked?"currentColor":"none"}/> {comment.likes||0}</button>{comment.canEdit?<><button type="button" onClick={()=>startEdit(comment)}>Edit</button><button type="button" onClick={()=>deleteComment(comment._id)}><Trash2 size={13}/> Delete</button></>:null}</div></div></article>)}</div>:<EmptyState title="No comments yet" message="Be the first listener to say something."/>}
+          <div className="song-section-title"><div><span className="song-premium-kicker">Community</span><h2>Comments</h2></div><div className="song-comment-heading-actions"><span>{commentTotal}</span><select value={commentSort} onChange={(event)=>setCommentSort(event.target.value)} aria-label="Sort comments"><option value="recent">Recent</option><option value="top">Top</option></select></div></div>
+          <form className="song-comment-form" onSubmit={submitComment}>
+            <textarea value={commentBody} onChange={(e)=>setCommentBody(e.target.value.slice(0,600))} placeholder={token?"Add a comment… use @username to mention someone":"Sign in to join the conversation"} disabled={!token||commentBusy}/>
+            <div className="song-comment-form-footer"><label className={isCurrent ? "song-time-toggle" : "song-time-toggle disabled"}><input type="checkbox" checked={commentAtTime} onChange={(e)=>setCommentAtTime(e.target.checked)} disabled={!isCurrent||!token}/><Clock3 size={13}/> Attach {isCurrent ? formatDuration(progress) : "playback time"}</label><span className="song-comment-count">{commentBody.length}/600</span><button className="sw-primary-btn" type="submit" disabled={!token||!commentBody.trim()||commentBusy}>{commentBusy?"Posting…":"Comment"}</button></div>
+          </form>
+          {commentsLoading&&!comments.length?<CatalogSkeleton count={4} rows/>:comments.length?<div className="song-comments-list">{comments.map((comment)=><article id={`comment-${comment._id}`} className="song-comment" key={comment._id}>
+            <div className="song-comment-avatar">{comment.user?.image?<img src={comment.user.image} alt=""/>:String(comment.user?.username||"S").slice(0,1).toUpperCase()}</div>
+            <div className="song-comment-body"><div className="song-comment-top"><strong>{comment.user?.username||"SoundWave listener"}</strong><span>{new Date(comment.createdAt).toLocaleDateString()}</span>{comment.editedAt?<em>edited</em>:null}</div>
+              {Number.isFinite(Number(comment.momentAt)) ? <button type="button" className="song-comment-time" onClick={()=>{if(!isCurrent)handlePlay();window.setTimeout(()=>player?.seekTo?.(Number(comment.momentAt)),80);}}><Clock3 size={12}/>{formatDuration(comment.momentAt)}</button> : null}
+              {editingId===comment._id?<div className="song-comment-edit"><textarea value={editBody} onChange={e=>setEditBody(e.target.value.slice(0,600))}/><button type="button" onClick={()=>saveEdit(comment._id)}>Save</button><button type="button" onClick={()=>setEditingId("")}>Cancel</button></div>:<p>{comment.body}</p>}
+              <div className="song-comment-actions"><button type="button" className={comment.liked?"active":""} onClick={()=>likeComment(comment._id)}><Heart size={13} fill={comment.liked?"currentColor":"none"}/> {comment.likes||0}</button><button type="button" onClick={()=>loadReplies(comment._id)}><MessageCircle size={13}/> {comment.repliesCount||0} {comment.repliesCount===1?"reply":"replies"}</button><button type="button" onClick={()=>{if(!token)navigate("/account");else{setReplyOpen(comment._id);setReplyBody(`@${comment.user?.username || "listener"} `);}}}><Reply size={13}/> Reply</button>{comment.canEdit?<><button type="button" onClick={()=>startEdit(comment)}>Edit</button><button type="button" onClick={()=>deleteComment(comment._id)}><Trash2 size={13}/> Delete</button></>:null}</div>
+              {replyOpen===comment._id?<div className="song-replies-wrap">
+                {(repliesByComment[comment._id]||[]).map((reply)=><div className="song-comment-reply" key={reply._id}><div className="song-comment-avatar small">{reply.user?.image?<img src={reply.user.image} alt=""/>:String(reply.user?.username||"S").slice(0,1).toUpperCase()}</div><div><strong>{reply.user?.username||"Listener"}</strong><p>{reply.body}</p><button type="button" className={reply.liked?"active":""} onClick={()=>likeReply(comment._id,reply._id)}><Heart size={12} fill={reply.liked?"currentColor":"none"}/> {reply.likes||0}</button></div></div>)}
+                <div className="song-inline-reply"><input value={replyBody} onChange={(event)=>setReplyBody(event.target.value.slice(0,600))} placeholder={token?"Write a reply…":"Sign in to reply"} disabled={!token}/><button type="button" disabled={!token||!replyBody.trim()||replyBusy===comment._id} onClick={()=>submitReply(comment._id)}>{replyBusy===comment._id?"Posting…":"Reply"}</button></div>
+              </div>:null}
+            </div>
+          </article>)}</div>:<EmptyState title="No comments yet" message="Be the first listener to say something."/>}
           {commentsMore?<button className="sw-secondary-btn song-comments-more" type="button" disabled={commentsLoading} onClick={()=>loadComments({page:commentPage+1,append:true})}>Load more comments</button>:null}
         </div>
 
         <aside className="song-recommendations">
           <div className="song-section-title"><div><span className="song-premium-kicker">Up next</span><h2>More like this</h2></div></div>
-          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><button key={item._id} type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><img src={getSongCover(item)} alt="" loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small>{getArtistName(item)}</small></span><MoreHorizontal size={16}/></button>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
+          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><div className="song-recommendation-row" key={item._id}><button className="song-recommendation-main" type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><img src={getSongCover(item)} alt="" loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small>{getArtistName(item)}</small></span></button><div className="song-recommendation-actions"><button className="song-recommendation-queue" type="button" onClick={(event)=>playNextRecommendation(event,item)} aria-label={`Play ${item.title} next`} title="Play next"><Sparkles size={15}/><span>Next</span></button><button className="song-recommendation-queue" type="button" onClick={(event)=>addRecommendationToQueue(event,item)} aria-label={`Add ${item.title} to queue`} title="Add later"><ListMusic size={15}/><span>+</span></button></div></div>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
+
+          <div className="song-discovery-trail">
+            <div className="song-section-title compact"><div><span className="song-premium-kicker">Friends</span><h2>Discovery trail</h2></div></div>
+            {!token?<button className="song-signin-social" type="button" onClick={()=>navigate("/account")}>Sign in to see how friends discovered this song</button>:trail.length?<div className="song-trail-list">{trail.map((item)=><div key={item._id}><span className="song-trail-dot"/><span><strong>{item.actor?.username||item.actor?.name||"A friend"}</strong><small>{item.type==="daily_pick"?"picked this today":item.type==="song_moment"?`reacted at ${formatDuration(item.momentAt)}`:item.type==="circle_song"?`shared it in ${item.circle?.name||"a Circle"}`:"shared this song"}</small></span></div>)}</div>:<p className="song-muted-copy">No friend trail yet. Share it and start one.</p>}
+          </div>
         </aside>
       </section>
 

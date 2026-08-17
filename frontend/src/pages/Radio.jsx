@@ -109,7 +109,7 @@ const Radio = () => {
           const image = station.queue?.find((song) => song?.imageUrl)?.imageUrl;
           const preview = station.queue?.slice(0, 2) || [];
           return (
-            <div className="col-12 col-md-6 col-xl-4" key={station.id}>
+            <div className="col-12 col-sm-6 col-xl-4" key={station.id}>
               <article className="radio-station-card h-100">
                 <div className={`radio-station-art radio-station-art-${(index % 4) + 1}`}>
                   {image ? <img src={image} alt="" loading="lazy" /> : <Icon size={42} />}

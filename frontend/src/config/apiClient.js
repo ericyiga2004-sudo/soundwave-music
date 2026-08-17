@@ -6,6 +6,34 @@ export const apiClient = axios.create({
   timeout: 20000,
 });
 
+
+const BAD_TOKEN_VALUES = new Set(["", "false", "null", "undefined", "none", "nan"]);
+
+export const getStoredAuthToken = () => {
+  const raw = String(localStorage.getItem("token") || "").trim();
+  if (BAD_TOKEN_VALUES.has(raw.toLowerCase())) {
+    localStorage.removeItem("token");
+    return "";
+  }
+  return raw;
+};
+
+export const clearStoredAuthToken = () => {
+  localStorage.removeItem("token");
+  window.dispatchEvent(new CustomEvent("soundwave-auth-invalid"));
+};
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401 && getStoredAuthToken()) {
+      clearStoredAuthToken();
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authHeaders = (token = "") => {
   const clean = String(token || "").trim();
   return clean ? { token: clean } : {};

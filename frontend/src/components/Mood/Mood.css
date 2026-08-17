@@ -1,6 +1,7 @@
 .mood-section {
-  padding: 30px clamp(14px, 3vw, 48px) 8px;
+  padding: 28px clamp(14px, 3vw, 48px) 12px;
   color: var(--sw-text);
+  background: var(--sw-bg);
 }
 
 .mood-header {
@@ -16,35 +17,37 @@
   margin-bottom: 3px;
   color: var(--sw-text-secondary);
   font-size: 0.72rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .mood-header h2 {
   margin: 0;
   color: var(--sw-text);
-  font-size: clamp(1.35rem, 2vw, 1.7rem);
-  font-weight: 740;
+  font-size: clamp(1.35rem, 1.5vw + 0.85rem, 1.75rem);
+  line-height: 1.08;
+  font-weight: 750;
   letter-spacing: -0.04em;
 }
 
 .mood-header button {
   border: 0;
+  padding: 6px 0;
   background: transparent;
   color: var(--sw-accent);
   font-size: 0.8rem;
-  font-weight: 650;
+  font-weight: 680;
 }
 
 .mood-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  margin-top: 0;
 }
 
 .mood-card {
+  width: 100%;
   min-width: 0;
   padding: 0;
   border: 0;
+  display: block;
   background: transparent;
   color: var(--sw-text);
   text-align: left;
@@ -52,12 +55,12 @@
 
 .mood-artwork {
   width: 100%;
-  aspect-ratio: 1.38 / 1;
+  aspect-ratio: 16 / 10;
   display: block;
   overflow: hidden;
-  border-radius: 14px;
-  background: var(--sw-surface-2);
   border: 1px solid var(--sw-border);
+  border-radius: 13px;
+  background: var(--sw-surface-2);
 }
 
 .mood-artwork img,
@@ -69,6 +72,7 @@
 .mood-artwork img {
   display: block;
   object-fit: cover;
+  object-position: center;
 }
 
 .mood-low-data-art {
@@ -76,7 +80,7 @@
   place-items: center;
   color: var(--sw-text-secondary);
   background: var(--sw-surface-2);
-  font-size: 2rem;
+  font-size: 1.8rem;
 }
 
 .mood-copy {
@@ -89,43 +93,23 @@
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mood-copy strong {
   color: var(--sw-text);
-  font-size: 0.93rem;
-  font-weight: 680;
-  white-space: nowrap;
+  font-size: clamp(0.78rem, 0.35vw + 0.7rem, 0.93rem);
+  font-weight: 700;
 }
 
 .mood-copy small {
   margin-top: 3px;
   color: var(--sw-text-secondary);
-  font-size: 0.75rem;
+  font-size: clamp(0.65rem, 0.24vw + 0.61rem, 0.75rem);
   line-height: 1.25;
-  white-space: nowrap;
-}
-
-@media (max-width: 991.98px) {
-  .mood-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 575.98px) {
   .mood-section { padding-top: 22px; }
-  .mood-grid {
-    display: flex;
-    gap: 13px;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    padding-bottom: 3px;
-  }
-  .mood-grid::-webkit-scrollbar { display: none; }
-  .mood-card {
-    flex: 0 0 72vw;
-    max-width: 280px;
-    scroll-snap-align: start;
-  }
+  .mood-header button { font-size: 0.73rem; }
 }

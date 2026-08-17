@@ -11,6 +11,7 @@ import axios from "axios";
 import { MusicContext } from "./ShopContext";
 import { getLowData } from "../utils/uiPreferences";
 import { trackTasteEvent } from "../utils/personalization";
+import { getSongAudioUrl } from "../utils/audioSource";
 
 export const MusicPlayerContext = createContext(null);
 
@@ -26,7 +27,7 @@ const DEFAULT_AUDIO_EFFECTS = {
   presence: 0,
 };
 
-const MIN_BUFFER_SECONDS = 3;
+const MIN_BUFFER_SECONDS = 0.75;
 const OFFLINE_CACHE_NAME = "music-app-offline-songs-v1";
 
 const normalizePlaylist = (songs = []) => {
@@ -85,8 +86,9 @@ const hasEnoughBuffer = (audio, minSeconds = MIN_BUFFER_SECONDS) => {
 };
 
 const getOfflineAudioObjectUrl = async (song) => {
+  const audioUrl = getSongAudioUrl(song);
   if (
-    !song?.audioUrl ||
+    !audioUrl ||
     typeof window === "undefined" ||
     !("caches" in window)
   ) {
@@ -94,7 +96,7 @@ const getOfflineAudioObjectUrl = async (song) => {
   }
 
   const cache = await caches.open(OFFLINE_CACHE_NAME);
-  const cachedAudio = await cache.match(song.audioUrl);
+  const cachedAudio = await cache.match(audioUrl);
 
   if (!cachedAudio) return "";
 
@@ -115,6 +117,8 @@ export const MusicPlayerProvider = ({ children }) => {
   const recoveryTimerRef = useRef(null);
   const offlineAudioObjectUrlRef = useRef("");
   const tasteSignalsRef = useRef({ songId: "", sent20: false, sent60: false, completed: false });
+  const playbackRequestRef = useRef(0);
+  const audioRetryRef = useRef({ songId: "", count: 0 });
 
   const musicContext = useContext(MusicContext);
 
@@ -128,6 +132,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [bufferMessage, setBufferMessage] = useState("");
+  const [playbackError, setPlaybackError] = useState("");
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [shuffle, setShuffleState] = useState(false);
@@ -156,14 +161,15 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const resolvePlayableAudioUrl = useCallback(
     async (song) => {
-      if (!song?.audioUrl) return "";
+      const directAudioUrl = getSongAudioUrl(song);
+      if (!directAudioUrl) return "";
 
       const shouldUseOfflineCache =
         typeof navigator !== "undefined" && !navigator.onLine;
 
       if (!shouldUseOfflineCache) {
         releaseOfflineAudioObjectUrl();
-        return song.audioUrl;
+        return directAudioUrl;
       }
 
       try {
@@ -179,7 +185,7 @@ export const MusicPlayerProvider = ({ children }) => {
       }
 
       releaseOfflineAudioObjectUrl();
-      return song.audioUrl;
+      return directAudioUrl;
     },
     [releaseOfflineAudioObjectUrl]
   );
@@ -187,7 +193,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const tryResumeAfterBuffer = useCallback(async () => {
     const audio = audioRef.current;
 
-    if (!audio || !currentSongRef.current?.audioUrl) return;
+    if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
     if (!userWantedPlayRef.current) return;
     if (!audio.paused) {
       setBufferingState(false);
@@ -219,8 +225,8 @@ export const MusicPlayerProvider = ({ children }) => {
 
     audioRef.current = node;
 
-    node.preload = "auto";
-    node.crossOrigin = "anonymous";
+    node.preload = getLowData() ? "metadata" : "auto";
+    node.removeAttribute("crossorigin");
     node.setAttribute("playsinline", "true");
     node.setAttribute("webkit-playsinline", "true");
     node.setAttribute("x-webkit-airplay", "allow");
@@ -322,14 +328,31 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const playSong = useCallback(
     async (song, queue = []) => {
-      if (!song?.audioUrl) return;
+      if (!song?._id) return false;
 
       const audio = audioRef.current;
+      const directAudioUrl = getSongAudioUrl(song);
+
+      // Keep the UI and route in sync even when a catalog entry is missing
+      // audio. The player can then show an actionable error instead of
+      // silently doing nothing.
+      if (!directAudioUrl) {
+        syncTrackState(song, queue);
+        userWantedPlayRef.current = false;
+        setIsPlaying(false);
+        setBufferingState(false);
+        setPlaybackError("Audio is unavailable for this song.");
+        return false;
+      }
 
       if (!audio) {
+        setPlaybackError("The audio player is still starting. Tap Play again.");
         console.error("Audio element is not mounted yet.");
-        return;
+        return false;
       }
+
+      const requestId = playbackRequestRef.current + 1;
+      playbackRequestRef.current = requestId;
 
       const previousSong = currentSongRef.current;
       const isSameSong = previousSong?._id === song._id;
@@ -340,30 +363,39 @@ export const MusicPlayerProvider = ({ children }) => {
 
       if (!isSameSong) {
         tasteSignalsRef.current = { songId: song._id, sent20: false, sent60: false, completed: false };
+        audioRetryRef.current = { songId: song._id, count: 0 };
       }
 
       userWantedPlayRef.current = true;
       syncTrackState(song, queue);
       clearRecoveryTimer();
+      setPlaybackError("");
 
       try {
         setBufferingState(true, "Loading song...");
 
         const audioSource = await resolvePlayableAudioUrl(song);
+        if (requestId !== playbackRequestRef.current) return false;
 
         if (!audioSource) {
           throw new Error("Song audio URL is missing.");
         }
 
-        if (!isSameSong || audio.src !== audioSource) {
+        const currentSource = String(audio.currentSrc || audio.src || "");
+        const sourceChanged = !isSameSong || !currentSource || currentSource !== audioSource;
+
+        if (sourceChanged) {
           isChangingTrackRef.current = true;
 
+          // A normal <audio> element does not need CORS permission merely to
+          // play a remote file. Requiring anonymous CORS here made otherwise
+          // playable files fail on providers that do not return CORS headers.
+          audio.pause();
+          audio.removeAttribute("crossorigin");
           audio.preload = "auto";
-          audio.crossOrigin = "anonymous";
           audio.setAttribute("playsinline", "true");
           audio.setAttribute("webkit-playsinline", "true");
           audio.setAttribute("x-webkit-airplay", "allow");
-
           audio.src = audioSource;
           audio.load();
 
@@ -371,36 +403,49 @@ export const MusicPlayerProvider = ({ children }) => {
           setDuration(0);
         }
 
+        if (requestId !== playbackRequestRef.current) return false;
+
         await audio.play();
+        if (requestId !== playbackRequestRef.current) return false;
 
         setIsPlaying(true);
         setBufferingState(false);
+        setPlaybackError("");
 
-        await addSongToHistory(song);
+        addSongToHistory(song).catch(() => {});
+        return true;
       } catch (error) {
-        setIsPlaying(false);
-        setBufferingState(true, "Preparing audio...");
-        console.error("Unable to play song:", error);
+        if (requestId !== playbackRequestRef.current) return false;
 
-        recoveryTimerRef.current = window.setTimeout(() => {
-          tryResumeAfterBuffer();
-        }, 1200);
+        setIsPlaying(false);
+        setBufferingState(false);
+
+        const message =
+          error?.name === "NotAllowedError"
+            ? "Playback was blocked by the browser. Tap Play to start audio."
+            : "Could not start this audio. Tap Play to retry.";
+
+        setPlaybackError(message);
+        console.error("Unable to play song:", error);
+        return false;
       } finally {
-        isChangingTrackRef.current = false;
+        if (requestId === playbackRequestRef.current) {
+          isChangingTrackRef.current = false;
+        }
       }
     },
     [
       addSongToHistory,
       clearRecoveryTimer,
+      resolvePlayableAudioUrl,
       setBufferingState,
       syncTrackState,
-      resolvePlayableAudioUrl,
-      tryResumeAfterBuffer,
     ]
   );
 
   const pauseSong = useCallback(() => {
     const audio = audioRef.current;
+    playbackRequestRef.current += 1;
     if (!audio) return;
 
     userWantedPlayRef.current = false;
@@ -415,15 +460,19 @@ export const MusicPlayerProvider = ({ children }) => {
     const audio = audioRef.current;
     const activeSong = currentSongRef.current;
 
-    if (!audio || !activeSong?.audioUrl) return;
+    if (!audio || !getSongAudioUrl(activeSong)) return;
 
+    const requestId = playbackRequestRef.current + 1;
+    playbackRequestRef.current = requestId;
     userWantedPlayRef.current = true;
     clearRecoveryTimer();
+    setPlaybackError("");
 
     try {
       setBufferingState(true, "Preparing audio...");
 
       audio.preload = "auto";
+      audio.removeAttribute("crossorigin");
       audio.setAttribute("playsinline", "true");
       audio.setAttribute("webkit-playsinline", "true");
       audio.setAttribute("x-webkit-airplay", "allow");
@@ -442,17 +491,17 @@ export const MusicPlayerProvider = ({ children }) => {
       }
 
       await audio.play();
+      if (requestId !== playbackRequestRef.current) return;
 
       setIsPlaying(true);
       setBufferingState(false);
+      setPlaybackError("");
     } catch (error) {
+      if (requestId !== playbackRequestRef.current) return;
       setIsPlaying(false);
-      setBufferingState(true, "Waiting for stable audio...");
+      setBufferingState(false);
+      setPlaybackError(error?.name === "NotAllowedError" ? "Tap Play to start audio." : "Could not resume this audio. Tap Play to retry.");
       console.error("Unable to resume song:", error);
-
-      recoveryTimerRef.current = window.setTimeout(() => {
-        tryResumeAfterBuffer();
-      }, 1200);
     }
   }, [
     clearRecoveryTimer,
@@ -463,7 +512,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const togglePlay = useCallback(async () => {
     const audio = audioRef.current;
-    if (!audio || !currentSongRef.current?.audioUrl) return;
+    if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
 
     if (audio.paused) {
       await resumeSong();
@@ -540,6 +589,66 @@ export const MusicPlayerProvider = ({ children }) => {
     },
     [setBufferingState]
   );
+
+  const addToQueue = useCallback((song) => {
+    if (!song?._id) return false;
+
+    const currentQueue = playlistRef.current.length
+      ? playlistRef.current
+      : currentSongRef.current
+        ? [currentSongRef.current]
+        : [];
+
+    if (currentQueue.some((item) => item?._id === song._id)) {
+      return false;
+    }
+
+    const nextQueue = normalizePlaylist([...currentQueue, song]);
+    playlistRef.current = nextQueue;
+    setPlaylist(nextQueue);
+
+    if (currentSongRef.current?._id) {
+      const nextIndex = nextQueue.findIndex((item) => item?._id === currentSongRef.current?._id);
+      currentIndexRef.current = nextIndex;
+      setCurrentIndex(nextIndex);
+    }
+
+    return true;
+  }, []);
+
+  const addNextToQueue = useCallback((song) => {
+    if (!song?._id) return false;
+    const currentQueue = playlistRef.current.length
+      ? [...playlistRef.current]
+      : currentSongRef.current
+        ? [currentSongRef.current]
+        : [];
+    const existingIndex = currentQueue.findIndex((item) => item?._id === song._id);
+    if (existingIndex >= 0) currentQueue.splice(existingIndex, 1);
+    const currentId = currentSongRef.current?._id;
+    const activeIndex = Math.max(0, currentQueue.findIndex((item) => item?._id === currentId));
+    currentQueue.splice(activeIndex + 1, 0, song);
+    const nextQueue = normalizePlaylist(currentQueue);
+    playlistRef.current = nextQueue;
+    setPlaylist(nextQueue);
+    const nextIndex = nextQueue.findIndex((item) => item?._id === currentId);
+    currentIndexRef.current = nextIndex;
+    setCurrentIndex(nextIndex);
+    return true;
+  }, []);
+
+  const removeFromQueue = useCallback((songId) => {
+    const currentId = currentSongRef.current?._id;
+    if (!songId || songId === currentId) return false;
+    const nextQueue = playlistRef.current.filter((item) => item?._id !== songId);
+    if (nextQueue.length === playlistRef.current.length) return false;
+    playlistRef.current = nextQueue;
+    setPlaylist(nextQueue);
+    const nextIndex = nextQueue.findIndex((item) => item?._id === currentId);
+    currentIndexRef.current = nextIndex;
+    setCurrentIndex(nextIndex);
+    return true;
+  }, []);
 
   const playByIndex = useCallback(
     async (index) => {
@@ -653,38 +762,14 @@ export const MusicPlayerProvider = ({ children }) => {
 
     const handleWaiting = () => {
       if (!userWantedPlayRef.current) return;
-
+      // Let the browser continue buffering naturally. Pausing here used to
+      // deadlock some remote streams on slow/mobile connections.
       setBufferingState(true, "Buffering song...");
-
-      try {
-        audio.pause();
-      } catch {
-        // Ignore pause errors.
-      }
-
-      clearRecoveryTimer();
-
-      recoveryTimerRef.current = window.setTimeout(() => {
-        tryResumeAfterBuffer();
-      }, 900);
     };
 
     const handleStalled = () => {
       if (!userWantedPlayRef.current) return;
-
       setBufferingState(true, "Connection is unstable...");
-
-      try {
-        audio.pause();
-      } catch {
-        // Ignore pause errors.
-      }
-
-      clearRecoveryTimer();
-
-      recoveryTimerRef.current = window.setTimeout(() => {
-        tryResumeAfterBuffer();
-      }, 1400);
     };
 
     const handleCanPlay = () => {
@@ -750,28 +835,36 @@ export const MusicPlayerProvider = ({ children }) => {
     };
 
     const handleError = () => {
+      const activeSong = currentSongRef.current;
+      if (!activeSong?._id) return;
+
       setIsPlaying(false);
-      setBufferingState(true, "Audio network error. Trying again...");
+      setBufferingState(false);
 
-      clearRecoveryTimer();
+      const sameSong = audioRetryRef.current.songId === activeSong._id;
+      const retryCount = sameSong ? audioRetryRef.current.count : 0;
 
-      recoveryTimerRef.current = window.setTimeout(() => {
-        const activeSong = currentSongRef.current;
+      if (userWantedPlayRef.current && retryCount < 1 && getSongAudioUrl(activeSong)) {
+        audioRetryRef.current = { songId: activeSong._id, count: retryCount + 1 };
+        setBufferingState(true, "Retrying audio...");
 
-        if (!activeSong?.audioUrl || !userWantedPlayRef.current) return;
-
-        resolvePlayableAudioUrl(activeSong)
-          .then((audioSource) => {
-            if (!audioSource) return;
-
-            audio.src = audioSource;
+        clearRecoveryTimer();
+        recoveryTimerRef.current = window.setTimeout(() => {
+          if (!userWantedPlayRef.current || currentSongRef.current?._id !== activeSong._id) return;
+          try {
+            audio.pause();
+            audio.removeAttribute("src");
             audio.load();
-            tryResumeAfterBuffer();
-          })
-          .catch((error) => {
-            console.error("Audio reload failed:", error);
-          });
-      }, 1800);
+          } catch {
+            // The explicit playSong retry below will rebuild the source.
+          }
+          playSong(activeSong, playlistRef.current);
+        }, 700);
+        return;
+      }
+
+      userWantedPlayRef.current = false;
+      setPlaybackError("This audio source could not be played. Tap Play to retry.");
     };
 
     const handleEnded = async () => {
@@ -854,6 +947,7 @@ export const MusicPlayerProvider = ({ children }) => {
     audioReady,
     clearRecoveryTimer,
     nextSong,
+    playSong,
     releaseOfflineAudioObjectUrl,
     resolvePlayableAudioUrl,
     setBufferingState,
@@ -999,7 +1093,7 @@ export const MusicPlayerProvider = ({ children }) => {
       if (audio) {
         const activeSong = currentSongRef.current;
 
-        if (activeSong?.audioUrl && userWantedPlayRef.current) {
+        if (getSongAudioUrl(activeSong) && userWantedPlayRef.current) {
           try {
             const currentTime = Number.isFinite(audio.currentTime)
               ? audio.currentTime
@@ -1071,6 +1165,7 @@ export const MusicPlayerProvider = ({ children }) => {
       isPlaying,
       isBuffering,
       bufferMessage,
+      playbackError,
       progress,
       duration,
       shuffle,
@@ -1093,6 +1188,9 @@ export const MusicPlayerProvider = ({ children }) => {
       setShuffle,
       setRepeat,
       cycleRepeat,
+      addToQueue,
+      addNextToQueue,
+      removeFromQueue,
     }),
     [
       registerAudioElement,
@@ -1103,6 +1201,7 @@ export const MusicPlayerProvider = ({ children }) => {
       isPlaying,
       isBuffering,
       bufferMessage,
+      playbackError,
       progress,
       duration,
       shuffle,
@@ -1122,6 +1221,9 @@ export const MusicPlayerProvider = ({ children }) => {
       setShuffle,
       setRepeat,
       cycleRepeat,
+      addToQueue,
+      addNextToQueue,
+      removeFromQueue,
     ]
   );
 

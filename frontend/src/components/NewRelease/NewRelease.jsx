@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { FaPlay } from "react-icons/fa";
+import { FaArrowRight, FaPlay } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
-import "./NewRelease.css";
-import { Link } from "react-router-dom";
-
 import { API_BASE_URL as backendUrl } from "../../config/api";
+import "./NewRelease.css";
 
 const dateFields = [
   "releaseDate",
@@ -18,177 +17,179 @@ const dateFields = [
 
 const getSongDateValue = (song = {}) => {
   for (const field of dateFields) {
-    const value = song[field];
-
+    const value = song?.[field];
     if (!value) continue;
 
-    const dateValue =
-      typeof value === "number" ? value : new Date(value).getTime();
-
-    if (!Number.isNaN(dateValue)) {
-      return dateValue;
-    }
+    const result = typeof value === "number" ? value : new Date(value).getTime();
+    if (!Number.isNaN(result)) return result;
   }
 
   return 0;
 };
 
-const buildRankMap = (items = [], key = "name") => {
+const normalizeSongs = (items = []) => {
+  const seen = new Set();
+
+  return items.filter((song) => {
+    const id = String(song?._id || "");
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+};
+
+const buildPreferenceScoreMap = (items = [], key = "name") => {
   const map = new Map();
 
-  items.forEach((item, index) => {
+  items.forEach((item) => {
     const value = item?.[key];
-
-    if (value !== undefined && value !== null && value !== "") {
-      map.set(value.toString().toLowerCase(), index);
-    }
+    if (value === undefined || value === null || value === "") return;
+    map.set(
+      String(value).toLowerCase(),
+      Number(item?.effectiveScore ?? item?.score ?? 0)
+    );
   });
 
   return map;
 };
 
 const sortNewReleasesByTaste = (songs = [], preferences = {}) => {
-  const countryRank = buildRankMap(preferences.countries || [], "name");
-  const genreRank = buildRankMap(preferences.genres || [], "name");
+  const countries = buildPreferenceScoreMap(preferences.countries || []);
+  const genres = buildPreferenceScoreMap(preferences.genres || []);
+  const languages = buildPreferenceScoreMap(preferences.languages || []);
 
   return [...songs].sort((a, b) => {
-    const countryA = a.country?.toString().toLowerCase();
-    const countryB = b.country?.toString().toLowerCase();
+    const score = (song) => {
+      const countryScore = Number(
+        countries.get(String(song?.country || "").toLowerCase()) || 0
+      );
+      const genreScore = Number(
+        genres.get(String(song?.genre || "").toLowerCase()) || 0
+      );
+      const languageScore = Number(
+        languages.get(String(song?.songLanguage || "").toLowerCase()) || 0
+      );
 
-    const genreA = a.genre?.toString().toLowerCase();
-    const genreB = b.genre?.toString().toLowerCase();
+      return (
+        countryScore * 120 +
+        genreScore * 170 +
+        languageScore * 130 +
+        Number(song?.recommendationScore || 0) * 30 +
+        Math.log1p(Number(song?.plays || 0)) * 5
+      );
+    };
 
-    const countryRankA = countryRank.has(countryA)
-      ? countryRank.get(countryA)
-      : 999;
-
-    const countryRankB = countryRank.has(countryB)
-      ? countryRank.get(countryB)
-      : 999;
-
-    if (countryRankA !== countryRankB) {
-      return countryRankA - countryRankB;
-    }
-
-    const genreRankA = genreRank.has(genreA) ? genreRank.get(genreA) : 999;
-    const genreRankB = genreRank.has(genreB) ? genreRank.get(genreB) : 999;
-
-    if (genreRankA !== genreRankB) {
-      return genreRankA - genreRankB;
-    }
-
-    const playsA = Number(a.plays || 0);
-    const playsB = Number(b.plays || 0);
-
-    if (playsB !== playsA) {
-      return playsB - playsA;
-    }
-
-    const scoreA = Number(a.recommendationScore || 0);
-    const scoreB = Number(b.recommendationScore || 0);
-
-    if (scoreB !== scoreA) {
-      return scoreB - scoreA;
-    }
+    const scoreDifference = score(b) - score(a);
+    if (scoreDifference !== 0) return scoreDifference;
 
     return getSongDateValue(b) - getSongDateValue(a);
   });
 };
 
-const NewReleaseSkeleton = () => {
-  return (
-    <section className="new-release">
-      <div className="section-header">
-        <div className="nr-skeleton nr-skeleton-title"></div>
+const fetchPublicNewReleases = async () => {
+  const candidates = [
+    `${backendUrl}/api/songs/new-releases/all?limit=36`,
+    `${backendUrl}/api/songs?limit=36&sort=newest`,
+    `${backendUrl}/api/songs/filter?limit=36&sort=newest`,
+  ];
+
+  let lastError = null;
+
+  for (const url of candidates) {
+    try {
+      const response = await axios.get(url, { timeout: 15000 });
+      const songs = normalizeSongs(response.data?.songs || []);
+
+      if (response.data?.success && songs.length > 0) {
+        return songs;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  return [];
+};
+
+const NewReleaseSkeleton = () => (
+  <section className="new-release container-fluid px-3 px-sm-4 px-xl-5">
+    <div className="new-release-heading d-flex align-items-end justify-content-between gap-3">
+      <div>
+        <span className="new-release-eyebrow">Fresh music</span>
+        <div className="nr-skeleton nr-skeleton-title" />
       </div>
+    </div>
 
-      <div className="release-grid">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <div className="release-card release-skeleton-card" key={index}>
-            <div className="nr-skeleton nr-skeleton-image"></div>
-
+    <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3 g-lg-4">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div className="col" key={index}>
+          <div className="release-card release-skeleton-card h-100">
+            <div className="nr-skeleton nr-skeleton-image" />
             <div className="release-content">
-              <div className="nr-skeleton nr-skeleton-line big"></div>
-              <div className="nr-skeleton nr-skeleton-line small"></div>
+              <div className="nr-skeleton nr-skeleton-line big" />
+              <div className="nr-skeleton nr-skeleton-line small" />
             </div>
           </div>
-        ))}
-      </div>
-    </section>
-  );
-};
+        </div>
+      ))}
+    </div>
+  </section>
+);
 
 const NewRelease = () => {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const { playSong } = useContext(MusicPlayerContext);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchNewReleases = async () => {
-      try {
-        setLoading(true);
+  const fetchNewReleases = async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
 
-        const token = localStorage.getItem("token");
+      const publicSongs = await fetchPublicNewReleases();
+      const token = String(localStorage.getItem("token") || "").trim();
 
-        if (token) {
-          const [songsRes, preferencesRes] = await Promise.all([
-            axios.get(`${backendUrl}/api/recommend/new-releases?limit=30`, {
-              headers: {
-                token,
-              },
-            }),
-
-            axios.get(`${backendUrl}/api/recommend/preferences`, {
-              headers: {
-                token,
-              },
-            }),
-          ]);
-
-          if (songsRes.data.success) {
-            const fetchedSongs = songsRes.data.songs || [];
-            const preferences = preferencesRes.data?.preferences || {};
-
-            const sortedSongs = sortNewReleasesByTaste(
-              fetchedSongs,
-              preferences
-            );
-
-            setSongs(sortedSongs);
-          } else {
-            setSongs([]);
-          }
-
-          return;
-        }
-
-        // Fallback for users who are not logged in
-        const res = await axios.get(`${backendUrl}/api/songs/new-releases/all`);
-
-        if (res.data.success) {
-          const sortedSongs = [...(res.data.songs || [])].sort((a, b) => {
-            const playsA = Number(a.plays || 0);
-            const playsB = Number(b.plays || 0);
-
-            if (playsB !== playsA) {
-              return playsB - playsA;
+      let preferences = {};
+      if (token) {
+        try {
+          const response = await axios.get(
+            `${backendUrl}/api/recommend/preferences`,
+            {
+              headers: { token },
+              timeout: 10000,
             }
+          );
 
-            return getSongDateValue(b) - getSongDateValue(a);
+          if (response.data?.success) {
+            preferences = response.data.preferences || {};
+          }
+        } catch (error) {
+          console.log("New release personalization unavailable:", error);
+        }
+      }
+
+      const sorted = token
+        ? sortNewReleasesByTaste(publicSongs, preferences)
+        : [...publicSongs].sort((a, b) => {
+            const dateDifference = getSongDateValue(b) - getSongDateValue(a);
+            if (dateDifference !== 0) return dateDifference;
+            return Number(b?.plays || 0) - Number(a?.plays || 0);
           });
 
-          setSongs(sortedSongs);
-        } else {
-          setSongs([]);
-        }
-      } catch (error) {
-        console.error("New releases error:", error);
-        setSongs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setSongs(sorted);
+    } catch (error) {
+      console.error("New releases error:", error);
+      setSongs([]);
+      setErrorMessage("New releases could not be loaded right now.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchNewReleases();
 
     window.addEventListener("music-history-updated", fetchNewReleases);
@@ -202,55 +203,75 @@ const NewRelease = () => {
     };
   }, []);
 
-  if (loading) {
-    return <NewReleaseSkeleton />;
-  }
+  const visibleSongs = useMemo(() => songs.slice(0, 6), [songs]);
 
-  if (!loading && songs.length === 0) {
-    return null;
-  }
+  if (loading) return <NewReleaseSkeleton />;
 
   return (
-    <section className="new-release">
-      <div className="section-header">
-        <h2>New Releases</h2>
+    <section className="new-release container-fluid px-3 px-sm-4 px-xl-5">
+      <div className="new-release-heading d-flex align-items-end justify-content-between gap-3">
+        <div>
+          <span className="new-release-eyebrow">Fresh music</span>
+          <h2>New Releases</h2>
+          <p>Recently added songs from the SoundWave catalog.</p>
+        </div>
+
+        <button
+          type="button"
+          className="new-release-view-all"
+          onClick={() => navigate("/songs?sort=newest")}
+        >
+          View All <FaArrowRight />
+        </button>
       </div>
 
-      <div className="release-grid">
-        {songs.map((song) => (
-          <div
-            className="release-card"
-            key={song._id}
-            onClick={() => {
-              playSong(song, songs);
-              window.scrollTo(0, 0);
-            }}
-          >
-            <Link
-              className="release-link text-decoration-none"
-              to={`/song/${song._id}`}
-              state={{ playlist: songs }}
-            >
-              <div className="release-image">
-                <img
-                  src={song.imageUrl || "/fallback-cover.svg"}
-                  alt={song.title || "Song cover"}
-                  loading="lazy"
-                />
+      {visibleSongs.length > 0 ? (
+        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3 g-lg-4">
+          {visibleSongs.map((song) => (
+            <div className="col" key={song._id}>
+              <article className="release-card h-100">
+                <button
+                  type="button"
+                  className="release-image-button"
+                  onClick={() => {
+                    playSong(song, songs);
+                  }}
+                  aria-label={`Play ${song.title || "song"}`}
+                >
+                  <span className="release-image">
+                    <img
+                      src={song.imageUrl || "/fallback-cover.svg"}
+                      alt={song.title || "Song cover"}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span className="play-btn" aria-hidden="true">
+                      <FaPlay />
+                    </span>
+                  </span>
+                </button>
 
-                <div className="play-btn">
-                  <FaPlay />
-                </div>
-              </div>
-
-              <div className="release-content">
-                <h3 className="text-white">{song.title || "Unknown Song"}</h3>
-                <p>{song.artist?.name || "Unknown Artist"}</p>
-              </div>
-            </Link>
-          </div>
-        ))}
-      </div>
+                <button
+                  type="button"
+                  className="release-content"
+                  onClick={() => {
+                    navigate(`/song/${song._id}`, { state: { playlist: songs } });
+                    window.scrollTo(0, 0);
+                  }}
+                >
+                  <h3>{song.title || "Unknown Song"}</h3>
+                  <p>{song.artist?.name || "Unknown Artist"}</p>
+                </button>
+              </article>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="new-release-empty">
+          <span>{errorMessage || "No new releases are available yet."}</span>
+          <button type="button" onClick={fetchNewReleases}>Retry</button>
+        </div>
+      )}
     </section>
   );
 };

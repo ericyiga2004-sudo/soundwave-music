@@ -304,47 +304,39 @@ const Albums = () => {
     try {
       setLoading(true);
 
-      const token = localStorage.getItem("token");
+      const token = String(localStorage.getItem("token") || "").trim();
 
-      const albumsRequest = axios.get(`${backendUrl}/api/albums?limit=36&sort=popular`);
-
-      const songsRequest = axios.get(
-        `${backendUrl}/api/songs?limit=${MAX_ALBUM_STATS_SONGS}&sort=popular`
-      );
-
-      const preferencesRequest = token
-        ? axios.get(`${backendUrl}/api/recommend/preferences`, {
-            headers: {
-              token,
-            },
-          })
-        : Promise.resolve({
-            data: {
-              success: true,
-              preferences: {},
-            },
-          });
-
-      const [albumsRes, songsRes, preferencesRes] = await Promise.all([
-        albumsRequest,
-        songsRequest,
-        preferencesRequest,
+      // Albums and song statistics are public catalog data and always load first.
+      const [albumsRes, songsRes] = await Promise.all([
+        axios.get(`${backendUrl}/api/albums?limit=36&sort=popular`),
+        axios.get(`${backendUrl}/api/songs?limit=${MAX_ALBUM_STATS_SONGS}&sort=popular`),
       ]);
 
-      if (albumsRes.data.success) {
-        setAlbums(Array.isArray(albumsRes.data.albums) ? albumsRes.data.albums : []);
-      } else {
-        setAlbums([]);
-      }
+      setAlbums(
+        albumsRes.data?.success && Array.isArray(albumsRes.data.albums)
+          ? albumsRes.data.albums
+          : []
+      );
+      setSongsForStats(
+        songsRes.data?.success && Array.isArray(songsRes.data.songs)
+          ? songsRes.data.songs
+          : []
+      );
 
-      if (songsRes.data.success) {
-        setSongsForStats(Array.isArray(songsRes.data.songs) ? songsRes.data.songs : []);
-      } else {
-        setSongsForStats([]);
-      }
-
-      if (preferencesRes.data.success) {
-        setPreferences(preferencesRes.data.preferences || {});
+      // Preferences improve ranking only; they can never block the album catalog.
+      if (token) {
+        try {
+          const preferencesRes = await axios.get(
+            `${backendUrl}/api/recommend/preferences`,
+            { headers: { token } }
+          );
+          setPreferences(
+            preferencesRes.data?.success ? preferencesRes.data.preferences || {} : {}
+          );
+        } catch (error) {
+          console.log("Album preferences unavailable:", error);
+          setPreferences({});
+        }
       } else {
         setPreferences({});
       }
@@ -383,22 +375,46 @@ const Albums = () => {
   }, [albums, songsForStats, preferences]);
 
   if (loading) {
-    return <div className="albums-loading">Loading albums...</div>;
+    return (
+      <section className="albums-section container-fluid px-3 px-sm-4 px-xl-5">
+        <div className="albums-header d-flex align-items-end justify-content-between gap-3">
+          <div>
+            <span>Full collections</span>
+            <h2>Albums</h2>
+          </div>
+        </div>
+        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3 g-lg-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div className="col" key={index}>
+              <div className="album-home-skeleton">
+                <span className="album-home-skeleton-cover" />
+                <span className="album-home-skeleton-line" />
+                <span className="album-home-skeleton-line short" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   if (!loading && sortedAlbums.length === 0) {
     return null;
   }
 
+  const visibleAlbums = sortedAlbums.slice(0, 6);
+
   return (
-    <section className="albums-section">
-      <div className="albums-header">
+    <section className="albums-section container-fluid px-3 px-sm-4 px-xl-5">
+      <div className="albums-header d-flex align-items-end justify-content-between gap-3">
         <div>
-          <span>FULL COLLECTIONS</span>
-          <h2>Albums 💿</h2>
+          <span>Full collections</span>
+          <h2>Albums</h2>
+          <p>Complete releases from artists in your catalog.</p>
         </div>
 
         <button
+          type="button"
           className="view-albums-btn"
           onClick={() => navigate("/albums")}
         >
@@ -406,103 +422,63 @@ const Albums = () => {
         </button>
       </div>
 
-      <div className="albums-scroll-wrapper">
-        <div className="albums-grid">
-          {sortedAlbums.map((album) => {
-            const albumImage =
-              album.coverImage ||
-              album.imageUrl ||
-              album.image ||
-              "/fallback-cover.svg";
+      <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3 g-lg-4">
+        {visibleAlbums.map((album) => {
+          const albumImage =
+            album.coverImage ||
+            album.imageUrl ||
+            album.image ||
+            "/fallback-cover.svg";
 
-            const artistName =
-              album.artist?.name ||
-              album.artistName ||
-              "Unknown Artist";
+          const artistName =
+            album.artist?.name ||
+            album.artistName ||
+            "Unknown Artist";
 
-            const songCount =
-              album.albumStats?.songCount ||
-              album.songs?.length ||
-              0;
+          const songCount =
+            album.albumStats?.songCount ||
+            album.songs?.length ||
+            0;
 
-            const displayGenre =
-              album.albumStats?.topGenre ||
-              album.genre ||
-              album.albumStats?.topMood ||
-              "Mixed";
+          const openAlbum = () => {
+            navigate(`/album/${album._id}`, { state: { album } });
+            window.scrollTo(0, 0);
+          };
 
-            return (
-              <div key={album._id} className="featured-album-card">
-                <img
-                  src={albumImage}
-                  alt={album.title || "Album cover"}
-                  className="featured-bg"
-                  onClick={() => {
-                    navigate(`/album/${album._id}`, {
-                      state: {
-                        album,
-                      },
-                    });
-
-                    window.scrollTo(0, 0);
-                  }}
-                  style={{ cursor: "pointer" }}
-                />
-
-                <div className="featured-overlay">
-                  <span className="album-label">
-                    FEATURED ALBUM
+          return (
+            <div className="col" key={album._id}>
+              <article className="featured-album-card h-100">
+                <button
+                  type="button"
+                  className="album-home-cover-button"
+                  onClick={openAlbum}
+                  aria-label={`Open ${album.title || "album"}`}
+                >
+                  <span className="album-home-cover">
+                    <img
+                      src={albumImage}
+                      alt={album.title || "Album cover"}
+                      className="featured-bg"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span className="album-home-play" aria-hidden="true">
+                      <FaPlay />
+                    </span>
                   </span>
+                </button>
 
+                <button type="button" className="album-home-copy" onClick={openAlbum}>
                   <h3>{album.title || "Untitled Album"}</h3>
                   <p>{artistName}</p>
-
-                  <div className="album-details">
-                    <span>
-                      {songCount} {songCount === 1 ? "Song" : "Songs"}
-                    </span>
-
-                    <span>{displayGenre}</span>
-                  </div>
-
-                  <div className="album-actions">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigate(`/album/${album._id}`, {
-                          state: {
-                            album,
-                          },
-                        });
-
-                        window.scrollTo(0, 0);
-                      }}
-                    >
-                      <FaPlay />
-                      Play
-                    </button>
-
-                    <button
-                      type="button"
-                      className="secondary"
-                      onClick={() => {
-                        navigate(`/album/${album._id}`, {
-                          state: {
-                            album,
-                          },
-                        });
-
-                        window.scrollTo(0, 0);
-                      }}
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  <small>
+                    {songCount} {songCount === 1 ? "song" : "songs"}
+                  </small>
+                </button>
+              </article>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

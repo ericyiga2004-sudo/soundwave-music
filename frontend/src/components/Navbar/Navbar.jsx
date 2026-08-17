@@ -6,7 +6,6 @@ import {
   WifiOff,
   ChevronLeft,
   ChevronRight,
-  Heart,
   Home,
   Library,
   Moon,
@@ -15,6 +14,7 @@ import {
   Sparkles,
   Sun,
   User,
+  UsersRound,
 } from "lucide-react";
 import "./Navbar.css";
 import SearchModal from "../SearchModel/SearchModel";
@@ -33,15 +33,16 @@ import {
 const mobileLinks = [
   { path: "/", label: "Home", icon: Home },
   { path: "/explore", label: "New", icon: Sparkles },
+  { path: "/social", label: "Social", icon: UsersRound },
   { path: "/radio", label: "Radio", icon: Radio },
   { path: "/library", label: "Library", icon: Library },
-  { path: "/liked", label: "Favorites", icon: Heart },
 ];
 
 const pageTitles = {
   "/": "Home",
   "/explore": "New",
   "/radio": "Radio",
+  "/social": "Social",
   "/library": "Library",
   "/liked": "Favorites",
   "/playlist": "Playlists",
@@ -99,9 +100,13 @@ const Navbar = () => {
         ? "Album"
         : location.pathname.startsWith("/song/")
           ? "Now Playing"
-          : location.pathname.startsWith("/playlist/")
-            ? "Playlist"
-            : "SoundWave");
+          : location.pathname.startsWith("/social")
+            ? "Social"
+            : location.pathname.startsWith("/u/")
+              ? "Music Profile"
+              : location.pathname.startsWith("/playlist/")
+                ? "Playlist"
+                : "SoundWave");
 
   return (
     <>

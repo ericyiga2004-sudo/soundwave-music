@@ -14,6 +14,7 @@ import notificationRouter from "./routes/notificationRouter.js";
 import orbitIntegrationRouter from "./routes/orbitIntegrationRouter.js";
 import commentRouter from "./routes/commentRouter.js";
 import personalizationRouter from "./routes/personalizationRouter.js";
+import socialRouter from "./routes/socialRouter.js";
 
 const port  = process.env.PORT || 4000;
  
@@ -58,6 +59,7 @@ app.use("/api/playlist", playlistRouter);
 app.use("/api/integrations/orbit", orbitIntegrationRouter);
 app.use("/api/comments", commentRouter);
 app.use("/api/personalization", personalizationRouter);
+app.use("/api/social", socialRouter);
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, service: "soundwave-api", status: "ok" });
 });

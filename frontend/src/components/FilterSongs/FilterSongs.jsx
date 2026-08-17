@@ -9,17 +9,10 @@ import { API_BASE_URL as backendUrl } from "../../config/api";
 
 const tabs = ["Trending", "New", "Most Liked"];
 
-const getTabUrl = (tab, hasToken) => {
-  if (hasToken) {
-    if (tab === "Trending") return "/api/recommend/trending?limit=100";
-    if (tab === "New") return "/api/recommend/new-releases?limit=100";
-    if (tab === "Most Liked") return "/api/recommend/most-liked?limit=100";
-  }
-
+const getTabUrl = (tab) => {
   if (tab === "Trending") return "/api/songs/trending/all?limit=100";
   if (tab === "New") return "/api/songs/new-releases/all?limit=100";
   if (tab === "Most Liked") return "/api/songs/most-liked/all?limit=100";
-
   return "/api/songs/trending/all?limit=100";
 };
 
@@ -149,18 +142,8 @@ const FilterSongs = () => {
       setLoading(true);
       setLoadError("");
 
-      const token = localStorage.getItem("token");
-      const hasToken = Boolean(token);
-
-      const url = getTabUrl(tab, hasToken);
-
-      const res = await axios.get(`${backendUrl}${url}`, {
-        headers: hasToken
-          ? {
-              token,
-            }
-          : {},
-      });
+      const url = getTabUrl(tab);
+      const res = await axios.get(`${backendUrl}${url}`);
 
       if (res.data.success) {
         setAllSongs(res.data.songs || []);

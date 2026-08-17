@@ -21,6 +21,18 @@ const commentSchema = new mongoose.Schema(
       minlength: 1,
       maxlength: 600,
     },
+    parentComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
+      index: true,
+    },
+    momentAt: {
+      type: Number,
+      default: null,
+      min: 0,
+      index: true,
+    },
     likedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -38,5 +50,6 @@ const commentSchema = new mongoose.Schema(
 commentSchema.index({ song: 1, createdAt: -1 });
 commentSchema.index({ song: 1, user: 1, createdAt: -1 });
 commentSchema.index({ user: 1, createdAt: -1 });
+commentSchema.index({ parentComment: 1, createdAt: 1 });
 
 export default mongoose.models.Comment || mongoose.model("Comment", commentSchema);

@@ -198,73 +198,47 @@ const PopularArtist = () => {
       setLoading(true);
       setLoadError("");
 
-      const token = localStorage.getItem("token");
+      const token = String(localStorage.getItem("token") || "").trim();
 
-      const artistsRequest = axios.get(`${backendUrl}/api/artists?limit=36&sort=followers`);
+      // Public catalog requests must never depend on authentication.
+      const [artistsRes, songsRes] = await Promise.all([
+        axios.get(`${backendUrl}/api/artists?limit=36&sort=followers`),
+        axios.get(`${backendUrl}/api/songs?limit=${MAX_ARTIST_STATS_SONGS}&sort=popular`),
+      ]);
 
-      const songsRequest = axios.get(
-        `${backendUrl}/api/songs?limit=${MAX_ARTIST_STATS_SONGS}&sort=popular`
+      setArtists(
+        artistsRes.data?.success && Array.isArray(artistsRes.data.artists)
+          ? artistsRes.data.artists
+          : []
+      );
+      setSongsForStats(
+        songsRes.data?.success && Array.isArray(songsRes.data.songs)
+          ? songsRes.data.songs
+          : []
       );
 
-      const followedRequest = token
-        ? axios.get(`${backendUrl}/api/artists/following`, {
-            headers: {
-              token,
-            },
-          })
-        : Promise.resolve({
-            data: {
-              success: true,
-              artists: [],
-            },
-          });
-
-      const preferencesRequest = token
-        ? axios.get(`${backendUrl}/api/recommend/preferences`, {
-            headers: {
-              token,
-            },
-          })
-        : Promise.resolve({
-            data: {
-              success: true,
-              preferences: {},
-            },
-          });
-
-      const [artistsRes, songsRes, followedRes, preferencesRes] =
-        await Promise.all([
-          artistsRequest,
-          songsRequest,
-          followedRequest,
-          preferencesRequest,
+      // Personalization is optional. A stale/expired token must not hide artists.
+      if (token) {
+        const [followedResult, preferencesResult] = await Promise.allSettled([
+          axios.get(`${backendUrl}/api/artists/following`, { headers: { token } }),
+          axios.get(`${backendUrl}/api/recommend/preferences`, { headers: { token } }),
         ]);
 
-      if (artistsRes.data.success) {
-        setArtists(Array.isArray(artistsRes.data.artists) ? artistsRes.data.artists : []);
-      } else {
-        setArtists([]);
-      }
+        if (followedResult.status === "fulfilled" && followedResult.value.data?.success) {
+          setFollowedArtists(
+            (followedResult.value.data.artists || []).map((artist) => artist._id)
+          );
+        } else {
+          setFollowedArtists([]);
+        }
 
-      if (songsRes.data.success) {
-        setSongsForStats(Array.isArray(songsRes.data.songs) ? songsRes.data.songs : []);
-      } else {
-        setSongsForStats([]);
-      }
-
-      if (followedRes.data.success) {
-        const followedIds = (followedRes.data.artists || []).map(
-          (artist) => artist._id
-        );
-
-        setFollowedArtists(followedIds);
+        if (preferencesResult.status === "fulfilled" && preferencesResult.value.data?.success) {
+          setPreferences(preferencesResult.value.data.preferences || {});
+        } else {
+          setPreferences({});
+        }
       } else {
         setFollowedArtists([]);
-      }
-
-      if (preferencesRes.data.success) {
-        setPreferences(preferencesRes.data.preferences || {});
-      } else {
         setPreferences({});
       }
     } catch (error) {
@@ -369,12 +343,14 @@ const PopularArtist = () => {
     return (
       <section className="popular-artists-section">
         <div className="popular-artists-header"><div><span className="popular-artists-tag">Artists</span><h2>Popular Artists</h2></div></div>
-        <div className="popular-artists-grid" aria-label="Loading artists">
+        <div className="popular-artists-grid row row-cols-2 row-cols-sm-3 row-cols-lg-4 row-cols-xl-6 g-3 g-lg-4" aria-label="Loading artists">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div className="popular-artist-skeleton" key={index}>
-              <span className="popular-artist-skeleton-image" />
-              <span className="popular-artist-skeleton-line" />
-              <span className="popular-artist-skeleton-line short" />
+            <div className="col" key={index}>
+              <div className="popular-artist-skeleton h-100">
+                <span className="popular-artist-skeleton-image" />
+                <span className="popular-artist-skeleton-line" />
+                <span className="popular-artist-skeleton-line short" />
+              </div>
             </div>
           ))}
         </div>
@@ -402,13 +378,14 @@ const PopularArtist = () => {
       </div>
 
       {sortedArtists.length > 0 ? (
-        <div className="popular-artists-grid">
+        <div className="popular-artists-grid row row-cols-2 row-cols-sm-3 row-cols-lg-4 row-cols-xl-6 g-3 g-lg-4">
           {sortedArtists.slice(0, 6).map((artist) => {
             const following = isFollowingArtist(artist._id);
             const buttonLoading = followLoadingId === artist._id;
 
             return (
-              <article className="popular-artist-card" key={artist._id}>
+              <div className="col" key={artist._id}>
+              <article className="popular-artist-card h-100">
                 <div
                   className="popular-artist-image-wrap"
                   onClick={() => handleViewArtist(artist._id)}
@@ -478,6 +455,7 @@ const PopularArtist = () => {
                   </div>
                 </div>
               </article>
+              </div>
             );
           })}
         </div>
