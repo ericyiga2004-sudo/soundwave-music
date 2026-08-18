@@ -105,6 +105,15 @@ export const createNotificationForUser = async ({
     saved = await Notification.create(payload);
   }
 
+  // Send a lightweight wake-up packet immediately after persistence. The
+  // recipient can reconcile from /api/notifications even if enriching the
+  // full notification payload fails for any reason.
+  emitToUser(user, "notification:poke", {
+    notificationId: String(saved._id),
+    type,
+    eventAt: now.toISOString(),
+  });
+
   try {
     const populated = await populateNotification(Notification.findById(saved._id));
     const clean = cleanNotification(populated);
@@ -113,6 +122,7 @@ export const createNotificationForUser = async ({
       status: "active",
       isRead: false,
     });
+    if (!clean) return saved;
     clean.unreadCount = unreadCount;
     emitToUser(user, "notification:new", clean);
     emitToUser(user, "social:refresh", {
@@ -128,6 +138,7 @@ export const createNotificationForUser = async ({
 
 export const getNotifications = async (req, res) => {
   try {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     const page = Math.max(1, Number(req.query.page || 1));
     const limit = Math.min(50, Math.max(1, Number(req.query.limit || 20)));
     const skip = (page - 1) * limit;
@@ -168,6 +179,7 @@ export const getNotifications = async (req, res) => {
 
 export const getUnreadNotificationCount = async (req, res) => {
   try {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     const unreadCount = await Notification.countDocuments({
       user: req.userId,
       status: "active",

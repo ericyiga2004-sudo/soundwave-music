@@ -36,6 +36,7 @@ const NotificationBell = () => {
   const initializedRef = useRef(false);
   const toastTimersRef = useRef(new Map());
   const pendingUnreadRef = useRef(new Set());
+  const reconcileBusyRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -85,9 +86,14 @@ const NotificationBell = () => {
       setUnreadCount(0);
       return;
     }
+    if (quiet && reconcileBusyRef.current) return;
+    if (quiet) reconcileBusyRef.current = true;
     try {
       if (!quiet) setLoading(true);
-      const { data } = await apiClient.get("/api/notifications", { headers, params: { limit: 25 } });
+      const { data } = await apiClient.get("/api/notifications", {
+        headers: { ...headers, "Cache-Control": "no-cache" },
+        params: { limit: 25, _sw: Date.now() },
+      });
       if (data?.success) {
         const list = sortNotifications(data.notifications || []);
         if (showPopups) announceList(list);
@@ -102,6 +108,7 @@ const NotificationBell = () => {
       console.log("Fetch notifications error:", error);
     } finally {
       if (!quiet) setLoading(false);
+      if (quiet) reconcileBusyRef.current = false;
     }
   };
 
@@ -122,13 +129,15 @@ const NotificationBell = () => {
   useEffect(() => {
     if (!authToken) return undefined;
 
-    // Quiet fallback remains live-feeling without requiring the bell to open.
+    // SSE is the instant path, but keep a quiet reconciliation running even
+    // while connected. This recovers a notification if a stream packet is
+    // dropped, buffered by a proxy, or arrives during a brief reconnect.
     const refresh = () => fetchNotifications({ quiet: true, showPopups: true });
     const interval = setInterval(() => {
-      if (document.visibilityState === "visible" && !connected) refresh();
-    }, 3500);
-    const onVisibility = () => { if (document.visibilityState === "visible" && !connected) refresh(); };
-    const onFocus = () => { if (!connected) refresh(); };
+      if (document.visibilityState === "visible") refresh();
+    }, 3200);
+    const onVisibility = () => { if (document.visibilityState === "visible") refresh(); };
+    const onFocus = () => refresh();
 
     window.addEventListener("notification-updated", refresh);
     window.addEventListener("playlist-shared", refresh);
@@ -141,7 +150,7 @@ const NotificationBell = () => {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("focus", onFocus);
     };
-  }, [authToken, connected]);
+  }, [authToken]);
 
   useEffect(() => {
     if (!socket || !authToken) return undefined;
@@ -165,10 +174,13 @@ const NotificationBell = () => {
     };
 
     const onNotificationUpdate = () => fetchNotifications({ quiet: true, showPopups: false });
+    const onNotificationPoke = () => fetchNotifications({ quiet: true, showPopups: true });
     socket.on("notification:new", onNotification);
+    socket.on("notification:poke", onNotificationPoke);
     socket.on("notification:update", onNotificationUpdate);
     return () => {
       socket.off("notification:new", onNotification);
+      socket.off("notification:poke", onNotificationPoke);
       socket.off("notification:update", onNotificationUpdate);
     };
   }, [socket, authToken]);

@@ -16,6 +16,10 @@ import "./CSS/Social.css";
 import "./CSS/SocialV20.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
+const formatClock = (seconds = 0) => {
+  const safe = Math.max(0, Math.floor(Number(seconds) || 0));
+  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
+};
 
 const chatTime = (value) => {
   if (!value) return "now";
@@ -40,6 +44,7 @@ const LiveRoom = () => {
   const [chatBody, setChatBody] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const [listenerPaused, setListenerPaused] = useState(false);
+  const [roomClock, setRoomClock] = useState(0);
   const chatEndRef = useRef(null);
   const roomRef = useRef(null);
   const playerRef = useRef(player);
@@ -240,6 +245,12 @@ const LiveRoom = () => {
       // room first instead of briefly forcing the listener back to the old song.
       const eventSongId = String(event?.songId || "");
       const localSongId = String(roomRef.current?.currentSong?._id || "");
+      if (!eventSongId && localSongId) {
+        // Queue finished: refresh the populated room so every client clears
+        // the old current song instead of trying to resync into it again.
+        load({ quiet: true });
+        return;
+      }
       if (eventSongId && localSongId && eventSongId !== localSongId) {
         load({ quiet: true });
         return;
@@ -340,6 +351,14 @@ const LiveRoom = () => {
     }, 1500);
     return () => window.clearInterval(interval);
   }, [room?.currentSong?._id, syncFromRoom]);
+
+  useEffect(() => {
+    const updateClock = () => setRoomClock(expectedPosition(roomRef.current));
+    updateClock();
+    if (!room?.currentSong?._id) return undefined;
+    const interval = window.setInterval(updateClock, 500);
+    return () => window.clearInterval(interval);
+  }, [expectedPosition, room?.currentSong?._id, room?.playbackState, room?.playbackVersion]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView?.({ block: "nearest" });
@@ -464,7 +483,10 @@ const LiveRoom = () => {
   };
 
   const toggleRoomPlayback = async () => {
-    if (!room?.currentSong?._id) return;
+    if (!room?.currentSong?._id) {
+      if (room?._isHost && queue.length) await advanceRoom();
+      return;
+    }
     if (room._isHost) {
       if (room.playbackState === "playing") playerRef.current?.pauseSong?.();
       else {
@@ -495,6 +517,9 @@ const LiveRoom = () => {
   const roomPlaying = room.playbackState === "playing";
   const localLive = room._isHost || !listenerPaused;
   const hostName = nameOf(room.host);
+  const roomDuration = Math.max(0, Number(room.currentSong?.duration || player?.duration || 0));
+  const displayPosition = roomDuration ? Math.min(roomClock, roomDuration) : roomClock;
+  const roomProgress = roomDuration > 0 ? Math.min(100, (displayPosition / roomDuration) * 100) : 0;
 
   return (
     <div className="sw-social-page sw20-page sw23-live-room-page">
@@ -543,6 +568,21 @@ const LiveRoom = () => {
                   <strong>{room.currentSong.title}</strong>
                   <span>{getArtistName(room.currentSong)}</span>
                   <p>{room._isHost ? "Your player controls the room for everyone." : listenerPaused ? "The room keeps moving while your device is paused. Resume to jump back to the host’s current position." : "Your player follows the host’s song, position and host pause state."}</p>
+                  <div className="sw23-room-progress-wrap">
+                    <div className="sw23-room-progress-time"><span>{formatClock(displayPosition)}</span><span>{roomDuration ? formatClock(roomDuration) : "Live"}</span></div>
+                    <input
+                      className="sw23-room-progress"
+                      type="range"
+                      min="0"
+                      max={roomDuration || Math.max(1, displayPosition)}
+                      step="0.25"
+                      value={roomDuration ? Math.min(displayPosition, roomDuration) : 0}
+                      style={{ "--sw-room-progress": `${roomProgress}%` }}
+                      disabled={!room._isHost || !roomDuration}
+                      onChange={(event) => room._isHost && playerRef.current?.seekTo?.(Number(event.target.value))}
+                      aria-label={room._isHost ? "Seek room playback" : "Host playback position"}
+                    />
+                  </div>
                 </div>
                 <div className="sw23-room-player-actions">
                   <button type="button" className="sw23-room-play-btn" onClick={toggleRoomPlayback} aria-label={roomPlaying && !listenerPaused ? "Pause" : "Play"}>
@@ -558,7 +598,11 @@ const LiveRoom = () => {
                 </div>
               </div>
             ) : (
-              <div className="sw23-room-empty-playing"><Play size={22} /><div><strong>No song playing yet</strong><span>Add songs below. The host starts the highest-voted choice.</span></div></div>
+              <div className="sw23-room-empty-playing">
+                <Play size={22} />
+                <div><strong>No song playing yet</strong><span>{queue.length ? "The highest-voted song is ready for the host." : "Add songs below, then vote for what everyone should hear."}</span></div>
+                {room._isHost && queue.length ? <button type="button" className="sw23-room-start-btn" onClick={advanceRoom}><Play size={15} fill="currentColor" /> Start top voted</button> : null}
+              </div>
             )}
           </section>
 

@@ -865,7 +865,24 @@ export const advanceLiveRoom = async (req, res) => {
       .filter((entry) => !entry.played && id(entry.song) !== currentSongId)
       .sort((a, b) => b.votes.length - a.votes.length || new Date(a.createdAt) - new Date(b.createdAt));
     const next = candidates[0];
-    if (!next) return res.json({ success: true, currentSong: null });
+    if (!next) {
+      const now = new Date();
+      room.currentSong = null;
+      room.currentStartedAt = null;
+      room.playbackState = "paused";
+      room.playbackPosition = 0;
+      room.playbackStartedAt = null;
+      room.playbackVersion = Number(room.playbackVersion || 0) + 1;
+      room.lastActiveAt = now;
+      await room.save();
+      const memberIds = [room.host, ...(room.members || []).map((member) => member.user)];
+      emitToUsers(memberIds, "room:update", { code: room.code, reason: "queue_finished", songId: "", at: now.toISOString() });
+      emitToUsers(memberIds, "room:playback", {
+        ...roomPlaybackPacket(room, now),
+        songId: "",
+      });
+      return res.json({ success: true, currentSong: null, queueFinished: true });
+    }
     next.played = true;
     // Clean up legacy duplicate queue entries so the same song cannot be
     // selected again on the next host advance.
