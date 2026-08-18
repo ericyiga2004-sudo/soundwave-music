@@ -11,28 +11,13 @@ backend/.env
 backend/.env.*
 **/backend/.env
 **/backend/.env.*
+
 # Local Vite overrides stay private.
 frontend/.env.local
 frontend/.env.*.local
 admin/.env.local
 admin/.env.*.local
+
 # These two contain only the public API origin and are intentionally versioned.
 !frontend/.env
 !admin/.env
-# Environment secrets
-.env
-.env.*
-**/.env
-**/.env.*
-!.env.example
-!**/.env.example
-# Dependencies
-# Generated files
-.vite/
-.cache/
-coverage/
-# Runtime/local files
-*.log
-uploads/
-tmp/
-temp/

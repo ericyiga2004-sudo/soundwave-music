@@ -4,6 +4,8 @@ const replySchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
     body: { type: String, required: true, trim: true, maxlength: 300 },
+    parentReplyId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     createdAt: { type: Date, default: Date.now },
   },
   { _id: true }

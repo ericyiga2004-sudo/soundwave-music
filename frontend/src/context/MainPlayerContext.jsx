@@ -119,6 +119,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const tasteSignalsRef = useRef({ songId: "", sent20: false, sent60: false, completed: false });
   const playbackRequestRef = useRef(0);
   const audioRetryRef = useRef({ songId: "", count: 0 });
+  const roomControlRef = useRef({ active: false });
 
   const musicContext = useContext(MusicContext);
 
@@ -139,6 +140,15 @@ export const MusicPlayerProvider = ({ children }) => {
   const [repeat, setRepeatState] = useState(REPEAT_MODES.OFF);
   const [audioEffects, setAudioEffectsState] = useState(DEFAULT_AUDIO_EFFECTS);
   const [loading] = useState(false);
+
+  useEffect(() => {
+    const onRoomControl = (event) => {
+      const detail = event?.detail || {};
+      roomControlRef.current = detail.active ? detail : { active: false };
+    };
+    window.addEventListener("soundwave-room-control", onRoomControl);
+    return () => window.removeEventListener("soundwave-room-control", onRoomControl);
+  }, []);
 
   const clearRecoveryTimer = useCallback(() => {
     if (recoveryTimerRef.current) {
@@ -327,8 +337,18 @@ export const MusicPlayerProvider = ({ children }) => {
   );
 
   const playSong = useCallback(
-    async (song, queue = []) => {
+    async (song, queue = [], options = {}) => {
       if (!song?._id) return false;
+
+      const roomControl = roomControlRef.current;
+      if (!options?.roomSync && roomControl?.active) {
+        const roomSongId = String(roomControl.currentSongId || "");
+        const requestedSongId = String(song._id || "");
+        if (!roomControl.isHost || (roomSongId && requestedSongId !== roomSongId)) {
+          roomControl.onBlocked?.("play-song");
+          return false;
+        }
+      }
 
       const audio = audioRef.current;
       const directAudioUrl = getSongAudioUrl(song);
@@ -413,6 +433,13 @@ export const MusicPlayerProvider = ({ children }) => {
         setPlaybackError("");
 
         addSongToHistory(song).catch(() => {});
+        if (!options?.roomSync && roomControl?.active && roomControl.isHost) {
+          Promise.resolve(roomControl.onPlaybackChange?.({
+            playbackState: "playing",
+            position: Number(audio.currentTime || 0),
+            reason: "play-song",
+          })).catch(() => {});
+        }
         return true;
       } catch (error) {
         if (requestId !== playbackRequestRef.current) return false;
@@ -443,22 +470,52 @@ export const MusicPlayerProvider = ({ children }) => {
     ]
   );
 
-  const pauseSong = useCallback(() => {
+  const pauseSong = useCallback((options = {}) => {
     const audio = audioRef.current;
+    const roomControl = roomControlRef.current;
     playbackRequestRef.current += 1;
     if (!audio) return;
 
     userWantedPlayRef.current = false;
     clearRecoveryTimer();
 
+    // In a live room, a listener may locally pause their own device without
+    // changing the room clock. The host remains authoritative for everybody
+    // else; when this listener resumes, LiveRoom resynchronizes them to the
+    // host's current position before audio continues.
+    if (!options?.roomSync && roomControl?.active && !roomControl.isHost) {
+      audio.pause();
+      setIsPlaying(false);
+      setBufferingState(false);
+      roomControl.onLocalPause?.();
+      return true;
+    }
+
     audio.pause();
     setIsPlaying(false);
     setBufferingState(false);
+    if (!options?.roomSync && roomControl?.active && roomControl.isHost) {
+      Promise.resolve(roomControl.onPlaybackChange?.({
+        playbackState: "paused",
+        position: Number(audio.currentTime || 0),
+        reason: "pause",
+      })).catch(() => {});
+    }
+    return true;
   }, [clearRecoveryTimer, setBufferingState]);
 
-  const resumeSong = useCallback(async () => {
+  const resumeSong = useCallback(async (options = {}) => {
     const audio = audioRef.current;
     const activeSong = currentSongRef.current;
+    const roomControl = roomControlRef.current;
+
+    if (!options?.roomSync && roomControl?.active && !roomControl.isHost) {
+      if (typeof roomControl.onListenerResume === "function") {
+        return roomControl.onListenerResume();
+      }
+      roomControl.onBlocked?.("play");
+      return false;
+    }
 
     if (!audio || !getSongAudioUrl(activeSong)) return;
 
@@ -496,12 +553,21 @@ export const MusicPlayerProvider = ({ children }) => {
       setIsPlaying(true);
       setBufferingState(false);
       setPlaybackError("");
+      if (!options?.roomSync && roomControl?.active && roomControl.isHost) {
+        Promise.resolve(roomControl.onPlaybackChange?.({
+          playbackState: "playing",
+          position: Number(audio.currentTime || 0),
+          reason: "play",
+        })).catch(() => {});
+      }
+      return true;
     } catch (error) {
       if (requestId !== playbackRequestRef.current) return;
       setIsPlaying(false);
       setBufferingState(false);
       setPlaybackError(error?.name === "NotAllowedError" ? "Tap Play to start audio." : "Could not resume this audio. Tap Play to retry.");
       console.error("Unable to resume song:", error);
+      return false;
     }
   }, [
     clearRecoveryTimer,
@@ -510,21 +576,27 @@ export const MusicPlayerProvider = ({ children }) => {
     tryResumeAfterBuffer,
   ]);
 
-  const togglePlay = useCallback(async () => {
+  const togglePlay = useCallback(async (options = {}) => {
     const audio = audioRef.current;
     if (!audio || !getSongAudioUrl(currentSongRef.current)) return;
 
     if (audio.paused) {
-      await resumeSong();
+      await resumeSong(options);
     } else {
-      pauseSong();
+      pauseSong(options);
     }
   }, [pauseSong, resumeSong]);
 
   const seekTo = useCallback(
-    (time) => {
+    (time, options = {}) => {
       const audio = audioRef.current;
       if (!audio) return;
+
+      const roomControl = roomControlRef.current;
+      if (!options?.roomSync && roomControl?.active && !roomControl.isHost) {
+        roomControl.onBlocked?.("seek");
+        return false;
+      }
 
       const safeDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
 
@@ -538,12 +610,21 @@ export const MusicPlayerProvider = ({ children }) => {
       if (userWantedPlayRef.current && !hasEnoughBuffer(audio, 1.5)) {
         setBufferingState(true, "Buffering after seek...");
       }
+
+      if (!options?.roomSync && roomControl?.active && roomControl.isHost) {
+        Promise.resolve(roomControl.onPlaybackChange?.({
+          playbackState: audio.paused ? "paused" : "playing",
+          position: safeTime,
+          reason: "seek",
+        })).catch(() => {});
+      }
+      return true;
     },
     [setBufferingState]
   );
 
   const skipForward = useCallback(
-    (seconds = 15) => {
+    (seconds = 15, options = {}) => {
       const audio = audioRef.current;
       if (!audio) return;
 
@@ -557,19 +638,13 @@ export const MusicPlayerProvider = ({ children }) => {
       const nextTime = audioDuration
         ? Math.min(currentTime + safeSeconds, audioDuration)
         : currentTime + safeSeconds;
-
-      audio.currentTime = nextTime;
-      setProgress(nextTime);
-
-      if (userWantedPlayRef.current && !hasEnoughBuffer(audio, 1.5)) {
-        setBufferingState(true, "Buffering audio...");
-      }
+      return seekTo(nextTime, options);
     },
-    [setBufferingState]
+    [seekTo]
   );
 
   const skipBackward = useCallback(
-    (seconds = 15) => {
+    (seconds = 15, options = {}) => {
       const audio = audioRef.current;
       if (!audio) return;
 
@@ -579,15 +654,9 @@ export const MusicPlayerProvider = ({ children }) => {
 
       const safeSeconds = Number(seconds) || 15;
       const nextTime = Math.max(currentTime - safeSeconds, 0);
-
-      audio.currentTime = nextTime;
-      setProgress(nextTime);
-
-      if (userWantedPlayRef.current && !hasEnoughBuffer(audio, 1.5)) {
-        setBufferingState(true, "Buffering audio...");
-      }
+      return seekTo(nextTime, options);
     },
-    [setBufferingState]
+    [seekTo]
   );
 
   const addToQueue = useCallback((song) => {
@@ -663,7 +732,16 @@ export const MusicPlayerProvider = ({ children }) => {
     [playSong]
   );
 
-  const nextSong = useCallback(async () => {
+  const nextSong = useCallback(async (options = {}) => {
+    const roomControl = roomControlRef.current;
+    if (!options?.roomSync && roomControl?.active) {
+      if (roomControl.isHost && typeof roomControl.onNext === "function") {
+        return roomControl.onNext();
+      }
+      roomControl.onBlocked?.("next");
+      return currentSongRef.current;
+    }
+
     const audio = audioRef.current;
     const queue = playlistRef.current;
     const activeIndex = currentIndexRef.current;
@@ -696,7 +774,17 @@ export const MusicPlayerProvider = ({ children }) => {
     return playlistRef.current[nextIndex] || null;
   }, [playByIndex, setBufferingState]);
 
-  const prevSong = useCallback(async () => {
+  const prevSong = useCallback(async (options = {}) => {
+    const roomControl = roomControlRef.current;
+    if (!options?.roomSync && roomControl?.active) {
+      if (roomControl.isHost) {
+        seekTo(0);
+        return currentSongRef.current;
+      }
+      roomControl.onBlocked?.("previous");
+      return currentSongRef.current;
+    }
+
     const audio = audioRef.current;
     const queue = playlistRef.current;
     const activeIndex = currentIndexRef.current;
@@ -858,7 +946,7 @@ export const MusicPlayerProvider = ({ children }) => {
           } catch {
             // The explicit playSong retry below will rebuild the source.
           }
-          playSong(activeSong, playlistRef.current);
+          playSong(activeSong, playlistRef.current, { roomSync: true });
         }, 700);
         return;
       }
@@ -875,6 +963,11 @@ export const MusicPlayerProvider = ({ children }) => {
       if (activeSong?._id && !tasteSignalsRef.current.completed) {
         tasteSignalsRef.current.completed = true;
         trackTasteEvent("complete", { songId: activeSong._id }, { cooldownMs: 0 });
+      }
+
+      if (roomControlRef.current?.active) {
+        await nextSong();
+        return;
       }
 
       if (repeatMode === REPEAT_MODES.ONE) {

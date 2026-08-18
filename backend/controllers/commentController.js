@@ -3,6 +3,7 @@ import Comment from "../models/commentModel.js";
 import Song from "../models/uploadSongModel.js";
 import User from "../models/userModel.js";
 import { createNotificationForUser } from "./notificationController.js";
+import { emitAll } from "../utils/realtimeHub.js";
 
 const serializeComment = (comment, viewerId = "", repliesCount = 0) => {
   const data = typeof comment?.toObject === "function" ? comment.toObject() : comment;
@@ -14,6 +15,7 @@ const serializeComment = (comment, viewerId = "", repliesCount = 0) => {
     song: data.song,
     body: data.body,
     parentComment: data.parentComment || null,
+    rootComment: data.rootComment || null,
     momentAt: Number.isFinite(Number(data.momentAt)) ? Number(data.momentAt) : null,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
@@ -65,8 +67,8 @@ export const getSongComments = async (req, res) => {
     ]);
     const ids = comments.map((c) => c._id);
     const counts = ids.length ? await Comment.aggregate([
-      { $match: { parentComment: { $in: ids } } },
-      { $group: { _id: "$parentComment", count: { $sum: 1 } } },
+      { $match: { $or: [{ parentComment: { $in: ids } }, { rootComment: { $in: ids } }] } },
+      { $group: { _id: { $ifNull: ["$rootComment", "$parentComment"] }, count: { $sum: 1 } } },
     ]) : [];
     const countMap = new Map(counts.map((row) => [String(row._id), row.count]));
     const output = comments.map((comment) => serializeComment(comment, req.userId, countMap.get(String(comment._id)) || 0));
@@ -80,7 +82,14 @@ export const getSongComments = async (req, res) => {
 
 export const getCommentReplies = async (req, res) => {
   try {
-    const replies = await populateComment(Comment.find({ parentComment: req.params.commentId }).sort({ createdAt: 1 }).limit(40));
+    const rootId = req.params.commentId;
+    if (!mongoose.isValidObjectId(rootId)) return res.status(400).json({ success: false, message: "Invalid comment" });
+    const replies = await populateComment(Comment.find({
+      $or: [
+        { parentComment: rootId },
+        { rootComment: rootId },
+      ],
+    }).sort({ createdAt: 1 }).limit(80));
     return res.json({ success: true, replies: replies.map((comment) => serializeComment(comment, req.userId, 0)) });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Could not load replies" });
@@ -109,7 +118,11 @@ export const createComment = async (req, res) => {
     const recentlyCommented = await Comment.exists({ user: req.userId, createdAt: { $gte: new Date(Date.now() - 2500) } });
     if (recentlyCommented) return res.status(429).json({ success: false, message: "Please wait a moment before posting another comment" });
 
-    const comment = await Comment.create({ song: songId, user: req.userId, body, parentComment: parent?._id || null, momentAt: Number.isFinite(momentAt) ? momentAt : null });
+    const rootComment = parent ? (parent.rootComment || parent.parentComment || parent._id) : null;
+    const comment = await Comment.create({
+      song: songId, user: req.userId, body, parentComment: parent?._id || null, rootComment,
+      momentAt: Number.isFinite(momentAt) ? momentAt : null,
+    });
     const populated = await populateComment(Comment.findById(comment._id));
 
     if (parent && String(parent.user) !== String(req.userId)) {
@@ -119,16 +132,22 @@ export const createComment = async (req, res) => {
         user: parent.user,
         fromUser: req.userId,
         type: "comment_reply",
-        title: `${actorName} replied to your comment`,
+        title: parent.parentComment ? `${actorName} replied to your reply` : `${actorName} replied to your comment`,
         message: body.slice(0, 120),
-        link: `/song/${songId}#comment-${parent._id}`,
+        link: `/song/${songId}#comment-${rootComment || parent._id}`,
         relatedSong: songId,
         dedupeKey: `comment-reply:${comment._id}:${parent.user}`,
       }).catch(() => null);
     }
     notifyMentions({ body, fromUser: req.userId, songId, commentId: comment._id }).catch(() => null);
+    const serialized = serializeComment(populated, req.userId, 0);
+    emitAll("song:comment:update", {
+      songId: String(songId), reason: parent ? "reply_created" : "comment_created",
+      commentId: String(comment._id), rootCommentId: String(rootComment || comment._id),
+      comment: { ...serialized, liked: false }, at: new Date().toISOString(),
+    });
 
-    return res.status(201).json({ success: true, comment: serializeComment(populated, req.userId, 0) });
+    return res.status(201).json({ success: true, comment: serialized });
   } catch (error) {
     console.error("Create comment error:", error);
     return res.status(500).json({ success: false, message: "Could not post comment" });
@@ -144,7 +163,13 @@ export const updateComment = async (req, res) => {
     if (!comment) return res.status(404).json({ success: false, message: "Comment not found" });
     const populated = await populateComment(Comment.findById(comment._id));
     notifyMentions({ body, fromUser: req.userId, songId: comment.song, commentId: comment._id }).catch(() => null);
-    return res.json({ success: true, comment: serializeComment(populated, req.userId) });
+    const serialized = serializeComment(populated, req.userId);
+    emitAll("song:comment:update", {
+      songId: String(comment.song), reason: "comment_updated", commentId: String(comment._id),
+      rootCommentId: String(comment.rootComment || comment.parentComment || comment._id),
+      comment: { ...serialized, liked: false }, at: new Date().toISOString(),
+    });
+    return res.json({ success: true, comment: serialized });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Could not update comment" });
   }
@@ -154,7 +179,16 @@ export const deleteComment = async (req, res) => {
   try {
     const deleted = await Comment.findOneAndDelete({ _id: req.params.commentId, user: req.userId });
     if (!deleted) return res.status(404).json({ success: false, message: "Comment not found" });
-    await Comment.deleteMany({ parentComment: deleted._id });
+    if (!deleted.parentComment) {
+      await Comment.deleteMany({ $or: [{ parentComment: deleted._id }, { rootComment: deleted._id }] });
+    } else {
+      await Comment.deleteMany({ parentComment: deleted._id });
+    }
+    emitAll("song:comment:update", {
+      songId: String(deleted.song), reason: "comment_deleted", commentId: String(deleted._id),
+      rootCommentId: String(deleted.rootComment || deleted.parentComment || deleted._id),
+      parentComment: deleted.parentComment ? String(deleted.parentComment) : null, at: new Date().toISOString(),
+    });
     return res.json({ success: true, message: "Comment deleted" });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Could not delete comment" });
@@ -178,14 +212,20 @@ export const toggleCommentLike = async (req, res) => {
         user: comment.user,
         fromUser: req.userId,
         type: "comment_like",
-        title: `${actorName} liked your comment`,
+        title: comment.parentComment ? `${actorName} liked your reply` : `${actorName} liked your comment`,
         message: String(comment.body || "").slice(0, 110),
-        link: `/song/${comment.song}#comment-${comment._id}`,
+        link: `/song/${comment.song}#comment-${comment.rootComment || comment.parentComment || comment._id}`,
         relatedSong: comment.song,
         dedupeKey: `comment-like:${comment._id}:${req.userId}`,
       }).catch(() => null);
     }
 
+    emitAll("song:comment:update", {
+      songId: String(comment.song), reason: "comment_liked", commentId: String(comment._id),
+      rootCommentId: String(comment.rootComment || comment.parentComment || comment._id),
+      parentComment: comment.parentComment ? String(comment.parentComment) : null,
+      likes: comment.likedBy.length, actorId: viewer, liked, at: new Date().toISOString(),
+    });
     return res.json({ success: true, liked, likes: comment.likedBy.length });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Could not update comment like" });

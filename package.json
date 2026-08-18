@@ -1,0 +1,12 @@
+{
+  "name": "soundwave-music",
+  "private": true,
+  "version": "22.0.0",
+  "scripts": {
+    "install:all": "bash scripts/install-local.sh",
+    "dev": "bash scripts/dev-all.sh",
+    "dev:hosted": "bash scripts/dev-all.sh",
+    "dev:local": "bash scripts/dev-local.sh",
+    "check": "bash scripts/check-app.sh"
+  }
+}

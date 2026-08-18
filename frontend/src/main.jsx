@@ -9,13 +9,16 @@ import "./v12-compact-media.css";
 import { BrowserRouter } from "react-router-dom";
 import MusicContextProvider from "./context/ShopContext";
 import { MusicPlayerProvider } from "./context/MainPlayerContext.jsx";
+import { RealtimeProvider } from "./context/RealtimeContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <MusicContextProvider>
-      <MusicPlayerProvider>
-        <App />
-      </MusicPlayerProvider>
+      <RealtimeProvider>
+        <MusicPlayerProvider>
+          <App />
+        </MusicPlayerProvider>
+      </RealtimeProvider>
     </MusicContextProvider>
   </BrowserRouter>
 );

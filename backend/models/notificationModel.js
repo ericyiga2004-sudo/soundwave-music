@@ -19,6 +19,7 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       enum: [
         "playlist_shared",
+        "song_shared",
         "new_song_for_you",
         "artist_new_song",
         "liked_playlist",
@@ -33,6 +34,9 @@ const notificationSchema = new mongoose.Schema(
         "circle_activity",
         "daily_pick",
         "room_invite",
+        "live_started",
+        "live_chat",
+        "replay_for_you",
       ],
       required: true,
     },
@@ -90,6 +94,15 @@ const notificationSchema = new mongoose.Schema(
       default: null,
     },
 
+    // The moment this notification most recently became relevant to the user.
+    // Unlike createdAt, this moves forward when a deduped notification is
+    // reused, so a genuinely new event never gets stranded at the bottom.
+    eventAt: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
+
     status: {
       type: String,
       enum: ["active", "deleted"],
@@ -106,6 +119,7 @@ notificationSchema.index({
   user: 1,
   status: 1,
   isRead: 1,
+  eventAt: -1,
   createdAt: -1,
 });
 

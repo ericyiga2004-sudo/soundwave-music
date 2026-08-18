@@ -258,13 +258,11 @@ const PopularArtist = () => {
 
     window.addEventListener("music-history-updated", fetchArtists);
     window.addEventListener("music-liked-updated", fetchArtists);
-    window.addEventListener("artist-follow-updated", fetchArtists);
     window.addEventListener("soundwave-personalization-updated", fetchArtists);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchArtists);
       window.removeEventListener("music-liked-updated", fetchArtists);
-      window.removeEventListener("artist-follow-updated", fetchArtists);
       window.removeEventListener("soundwave-personalization-updated", fetchArtists);
     };
   }, []);
@@ -311,6 +309,11 @@ const PopularArtist = () => {
       );
 
       if (res.data.success) {
+        const sourceArtist = artists.find((artist) => String(artist?._id) === String(artistId));
+        const updatedArtist = sourceArtist
+          ? { ...sourceArtist, followers: res.data.followers }
+          : { _id: artistId, followers: res.data.followers };
+
         setFollowedArtists((current) => {
           if (res.data.following) {
             return current.includes(artistId) ? current : [...current, artistId];
@@ -330,7 +333,16 @@ const PopularArtist = () => {
           )
         );
 
-        window.dispatchEvent(new Event("artist-follow-updated"));
+        // Keep the interaction local and instant. Other follow-aware UI can
+        // update from this payload without refetching entire catalog sections.
+        window.dispatchEvent(new CustomEvent("artist-follow-state-updated", {
+          detail: {
+            artistId: String(artistId),
+            following: Boolean(res.data.following),
+            followers: Number(res.data.followers || 0),
+            artist: updatedArtist,
+          },
+        }));
       }
     } catch (error) {
       console.log("Follow artist error:", error);

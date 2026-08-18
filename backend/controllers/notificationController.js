@@ -1,6 +1,7 @@
 import Notification from "../models/notificationModel.js";
 import User from "../models/userModel.js";
 import NotificationToken from "../models/NotificationToken.js";
+import { emitToUser } from "../utils/realtimeHub.js";
 
 const maskEmail = (email = "") => {
   if (!email || !email.includes("@")) return "";
@@ -51,7 +52,12 @@ const populateNotification = (query) => {
     })
     .populate({
       path: "relatedSong",
-      select: "title image imageUrl coverImage",
+      select: "title audioUrl image imageUrl coverImage genre mood songLanguage releaseYear duration artist album featuredArtists",
+      populate: [
+        { path: "artist", select: "name image" },
+        { path: "album", select: "title image imageUrl coverImage" },
+        { path: "featuredArtists", select: "name image" },
+      ],
     });
 };
 
@@ -69,6 +75,8 @@ export const createNotificationForUser = async ({
 }) => {
   if (!user || !type || !title) return null;
 
+  const now = new Date();
+
   const payload = {
     user,
     fromUser,
@@ -83,25 +91,39 @@ export const createNotificationForUser = async ({
     status: "active",
     isRead: false,
     readAt: null,
+    eventAt: now,
   };
 
+  let saved;
   if (dedupeKey) {
-    return Notification.findOneAndUpdate(
-      {
-        user,
-        dedupeKey,
-      },
-      {
-        $set: payload,
-      },
-      {
-        new: true,
-        upsert: true,
-      }
+    saved = await Notification.findOneAndUpdate(
+      { user, dedupeKey },
+      { $set: payload },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+  } else {
+    saved = await Notification.create(payload);
   }
 
-  return Notification.create(payload);
+  try {
+    const populated = await populateNotification(Notification.findById(saved._id));
+    const clean = cleanNotification(populated);
+    const unreadCount = await Notification.countDocuments({
+      user,
+      status: "active",
+      isRead: false,
+    });
+    clean.unreadCount = unreadCount;
+    emitToUser(user, "notification:new", clean);
+    emitToUser(user, "social:refresh", {
+      reason: type,
+      at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.warn("Realtime notification emit skipped:", error?.message || error);
+  }
+
+  return saved;
 };
 
 export const getNotifications = async (req, res) => {
@@ -115,7 +137,7 @@ export const getNotifications = async (req, res) => {
         user: req.userId,
         status: "active",
       })
-        .sort({ createdAt: -1 })
+        .sort({ eventAt: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)
     );
@@ -194,6 +216,7 @@ export const markNotificationRead = async (req, res) => {
       });
     }
 
+    emitToUser(req.userId, "notification:update", { reason: "read", notificationId: String(notification._id), at: new Date().toISOString() });
     return res.json({
       success: true,
       message: "Notification marked as read",
@@ -225,6 +248,7 @@ export const markAllNotificationsRead = async (req, res) => {
       }
     );
 
+    emitToUser(req.userId, "notification:update", { reason: "read_all", at: new Date().toISOString() });
     return res.json({
       success: true,
       message: "All notifications marked as read",
@@ -268,6 +292,7 @@ export const deleteNotification = async (req, res) => {
       });
     }
 
+    emitToUser(req.userId, "notification:update", { reason: "deleted", notificationId: String(notification._id), at: new Date().toISOString() });
     return res.json({
       success: true,
       message: "Notification removed",

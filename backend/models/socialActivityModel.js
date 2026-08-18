@@ -13,6 +13,7 @@ const socialActivitySchema = new mongoose.Schema(
         "circle_created",
         "room_created",
         "playlist_share",
+        "song_shared",
       ],
       required: true,
       index: true,

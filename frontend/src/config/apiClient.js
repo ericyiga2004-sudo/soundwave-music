@@ -1,9 +1,11 @@
 import axios from "axios";
-import { API_BASE_URL } from "./api";
+import { API_BASE_URL, API_HOSTED_URL, API_MODE } from "./api";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 20000,
+  // Render free instances can need ~50 seconds to wake. A 20 second timeout
+  // made a healthy production API look offline during cold starts.
+  timeout: 70000,
 });
 
 
@@ -23,13 +25,42 @@ export const clearStoredAuthToken = () => {
   window.dispatchEvent(new CustomEvent("soundwave-auth-invalid"));
 };
 
+const sleep = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error?.response?.status;
+    const config = error?.config || {};
+
     if (status === 401 && getStoredAuthToken()) {
       clearStoredAuthToken();
     }
+
+    // If local development was explicitly enabled but the local API is down,
+    // retry once against the hosted API so the whole site does not collapse.
+    const networkFailure = !error?.response;
+    if (
+      networkFailure &&
+      API_MODE === "local" &&
+      !config.__soundwaveHostedFallback &&
+      API_HOSTED_URL
+    ) {
+      config.__soundwaveHostedFallback = true;
+      config.baseURL = API_HOSTED_URL;
+      return apiClient.request(config);
+    }
+
+    // Render can briefly answer 502/503/504 while a free instance is waking.
+    // Retry GETs once rather than turning every catalog section into an error.
+    const retryableStatus = [502, 503, 504].includes(Number(status));
+    const isGet = String(config.method || "get").toLowerCase() === "get";
+    if ((networkFailure || retryableStatus) && isGet && !config.__soundwaveWakeRetry) {
+      config.__soundwaveWakeRetry = true;
+      await sleep(1200);
+      return apiClient.request(config);
+    }
+
     return Promise.reject(error);
   }
 );

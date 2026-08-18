@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
+import { useRealtime } from "../context/RealtimeContext";
 import { apiClient, authHeaders, cachedGet } from "../config/apiClient";
 import { formatCompactNumber, formatDuration, getArtistName, getSongCover } from "../utils/catalog";
 import { getBatterySaver } from "../utils/uiPreferences";
@@ -67,12 +68,32 @@ const normalizeLyrics = (song) => {
   return [];
 };
 
+const commentListSignature = (items = []) => JSON.stringify((items || []).map((item) => [
+  item?._id,
+  item?.updatedAt || item?.createdAt,
+  item?.likes || 0,
+  item?.repliesCount || 0,
+]));
+
+const momentListSignature = (items = []) => JSON.stringify((items || []).map((item) => [
+  item?._id,
+  item?.updatedAt || item?.createdAt,
+  item?.likes || 0,
+  (item?.replies || []).length,
+]));
+
+const trailSignature = (items = []) => JSON.stringify((items || []).map((item) => [
+  item?._id,
+  item?.updatedAt || item?.createdAt,
+]));
+
 const SongDetails = () => {
   const { songId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { songs: globalSongs = [], getAuthToken, playlists = [], fetchPlaylists } = useContext(MusicContext);
   const player = useContext(MusicPlayerContext);
+  const { socket: realtimeSocket, connected: realtimeConnected, mode: realtimeMode } = useRealtime();
   const token = getAuthToken?.() || "";
 
   const [song, setSong] = useState(location.state?.song || null);
@@ -106,6 +127,7 @@ const SongDetails = () => {
   const [replyOpen, setReplyOpen] = useState("");
   const [replyBody, setReplyBody] = useState("");
   const [replyBusy, setReplyBusy] = useState("");
+  const [replyTarget, setReplyTarget] = useState(null);
 
   const [moments, setMoments] = useState([]);
   const [momentsLoading, setMomentsLoading] = useState(false);
@@ -113,7 +135,12 @@ const SongDetails = () => {
   const [momentEmoji, setMomentEmoji] = useState("🔥");
   const [momentReplyOpen, setMomentReplyOpen] = useState("");
   const [momentReplyBody, setMomentReplyBody] = useState("");
+  const [momentReplyTarget, setMomentReplyTarget] = useState("");
   const [trail, setTrail] = useState([]);
+  const commentsRef = useRef([]);
+  const repliesRef = useRef({});
+  commentsRef.current = comments;
+  repliesRef.current = repliesByComment;
 
   const lyricsRef = useRef(null);
   const lyricsScrollRef = useRef(null);
@@ -233,17 +260,35 @@ const SongDetails = () => {
       .catch(() => {});
   }, [song?._id, token]);
 
-  const loadComments = useCallback(async ({ page = 1, append = false } = {}) => {
+  const loadComments = useCallback(async ({ page = 1, append = false, quiet = false } = {}) => {
     if (!songId) return;
-    setCommentsLoading(true);
+    if (!quiet) setCommentsLoading(true);
     try {
       const { data } = await apiClient.get(`/api/comments/song/${songId}`, { params: { page, limit: 12, sort: commentSort }, headers: authHeaders(token) });
       if (data?.success) {
-        setComments((current) => append ? [...current, ...(data.comments || [])] : (data.comments || []));
-        setCommentPage(page); setCommentTotal(Number(data.total || 0)); setCommentsMore(Boolean(data.hasMore));
+        const incoming = data.comments || [];
+        setComments((current) => {
+          if (append) {
+            const known = new Set(current.map((item) => String(item?._id)));
+            const merged = [...current, ...incoming.filter((item) => !known.has(String(item?._id)))];
+            return commentListSignature(merged) === commentListSignature(current) ? current : merged;
+          }
+
+          if (quiet && current.length > 12) {
+            const incomingIds = new Set(incoming.map((item) => String(item?._id)));
+            const loadedTail = current.slice(12).filter((item) => !incomingIds.has(String(item?._id)));
+            const merged = [...incoming, ...loadedTail];
+            return commentListSignature(merged) === commentListSignature(current) ? current : merged;
+          }
+
+          return commentListSignature(incoming) === commentListSignature(current) ? current : incoming;
+        });
+        if (!quiet || append) setCommentPage(page);
+        setCommentTotal(Number(data.total || 0));
+        setCommentsMore(Boolean(data.hasMore));
       }
-    } catch { if (!append) setComments([]); }
-    finally { setCommentsLoading(false); }
+    } catch { if (!append && !quiet) setComments([]); }
+    finally { if (!quiet) setCommentsLoading(false); }
   }, [songId, token, commentSort]);
   useEffect(() => {
     setComments([]);
@@ -255,24 +300,180 @@ const SongDetails = () => {
     loadComments({ page: 1 });
   }, [loadComments]);
 
-  const loadMoments = useCallback(async () => {
+  const loadMoments = useCallback(async ({ quiet = false } = {}) => {
     if (!songId) return;
-    setMomentsLoading(true);
+    if (!quiet) setMomentsLoading(true);
     try {
       const { data } = await apiClient.get(`/api/social/moments/song/${songId}`, { headers: authHeaders(token) });
-      if (data?.success) setMoments(data.moments || []);
-    } catch { setMoments([]); }
-    finally { setMomentsLoading(false); }
+      if (data?.success) {
+        const incoming = data.moments || [];
+        setMoments((current) => momentListSignature(incoming) === momentListSignature(current) ? current : incoming);
+      }
+    } catch { if (!quiet) setMoments([]); }
+    finally { if (!quiet) setMomentsLoading(false); }
   }, [songId, token]);
 
   useEffect(() => { loadMoments(); }, [loadMoments]);
 
-  useEffect(() => {
-    if (!token || !songId) { setTrail([]); return; }
-    apiClient.get(`/api/social/trail/${songId}`, { headers: authHeaders(token) })
-      .then(({data}) => { if (data?.success) setTrail(data.trail || []); })
-      .catch(() => setTrail([]));
+  const loadTrail = useCallback(async ({ quiet = false } = {}) => {
+    if (!token || !songId) {
+      setTrail([]);
+      return;
+    }
+    try {
+      const { data } = await apiClient.get(`/api/social/trail/${songId}`, { headers: authHeaders(token) });
+      if (data?.success) {
+        const incoming = data.trail || [];
+        setTrail((current) => trailSignature(incoming) === trailSignature(current) ? current : incoming);
+      }
+    } catch {
+      if (!quiet) setTrail([]);
+    }
   }, [songId, token]);
+
+  useEffect(() => { loadTrail(); }, [loadTrail]);
+
+  useEffect(() => {
+    if (!realtimeSocket || !token || !songId) return undefined;
+    let timer = null;
+    const refreshTrail = () => {
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (document.visibilityState === "visible") loadTrail({ quiet: true });
+      }, 140);
+    };
+    ["social:refresh", "daily:update", "share:update", "circle:update"].forEach((event) => realtimeSocket.on(event, refreshTrail));
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      ["social:refresh", "daily:update", "share:update", "circle:update"].forEach((event) => realtimeSocket.off(event, refreshTrail));
+    };
+  }, [realtimeSocket, token, songId, loadTrail]);
+
+  useEffect(() => {
+    if (!realtimeSocket || !songId) return undefined;
+
+    const onMoment = (event) => {
+      if (String(event?.songId || "") !== String(songId)) return;
+      if (event?.reason === "created" && event?.moment?._id) {
+        setMoments((current) => [...current.filter((item) => String(item?._id) !== String(event.moment._id)), event.moment]
+          .sort((a, b) => Number(a.momentAt || 0) - Number(b.momentAt || 0)));
+        return;
+      }
+      if (event?.reason === "liked" && event?.momentId) {
+        setMoments((current) => current.map((item) => String(item?._id) === String(event.momentId)
+          ? { ...item, likes: Number(event.likes || 0) } : item));
+        return;
+      }
+      if (event?.reason === "reply_created" && event?.momentId && event?.reply?._id) {
+        setMoments((current) => current.map((item) => {
+          if (String(item?._id) !== String(event.momentId)) return item;
+          const replies = [...(item.replies || []).filter((reply) => String(reply?._id) !== String(event.reply._id)), event.reply];
+          return { ...item, replies };
+        }));
+        return;
+      }
+      if (event?.reason === "reply_liked" && event?.momentId && event?.replyId) {
+        setMoments((current) => current.map((item) => String(item?._id) === String(event.momentId)
+          ? { ...item, replies: (item.replies || []).map((reply) => String(reply?._id) === String(event.replyId) ? { ...reply, likes: Number(event.likes || 0) } : reply) }
+          : item));
+        return;
+      }
+      loadMoments({ quiet: true });
+    };
+
+    const onComment = (event) => {
+      if (String(event?.songId || "") !== String(songId)) return;
+      const commentId = String(event?.commentId || "");
+      const rootId = String(event?.rootCommentId || event?.comment?.rootComment || event?.comment?.parentComment || commentId || "");
+
+      if (event?.reason === "comment_created" && event?.comment?._id) {
+        const known = commentsRef.current.some((item) => String(item?._id) === String(event.comment._id));
+        const next = [event.comment, ...commentsRef.current.filter((item) => String(item?._id) !== String(event.comment._id))];
+        commentsRef.current = next;
+        setComments(next);
+        if (!known) setCommentTotal((current) => current + 1);
+        return;
+      }
+      if (event?.reason === "reply_created" && event?.comment?._id && rootId) {
+        const currentReplies = repliesRef.current[rootId] || [];
+        const known = currentReplies.some((item) => String(item?._id) === String(event.comment._id));
+        if (repliesRef.current[rootId]) {
+          const nextReplies = [...currentReplies.filter((item) => String(item?._id) !== String(event.comment._id)), event.comment];
+          repliesRef.current = { ...repliesRef.current, [rootId]: nextReplies };
+          setRepliesByComment(repliesRef.current);
+        }
+        if (!known) setComments((current) => current.map((item) => String(item?._id) === rootId ? { ...item, repliesCount: Number(item.repliesCount || 0) + 1 } : item));
+        return;
+      }
+      if (event?.reason === "comment_liked" && commentId) {
+        if (event.parentComment || (rootId && rootId !== commentId)) {
+          setRepliesByComment((current) => ({
+            ...current,
+            [rootId]: (current[rootId] || []).map((item) => String(item?._id) === commentId ? { ...item, likes: Number(event.likes || 0) } : item),
+          }));
+        } else {
+          setComments((current) => current.map((item) => String(item?._id) === commentId ? { ...item, likes: Number(event.likes || 0) } : item));
+        }
+        return;
+      }
+      if (event?.reason === "comment_updated" && event?.comment?._id) {
+        if (event.comment.parentComment) {
+          setRepliesByComment((current) => ({
+            ...current,
+            [rootId]: (current[rootId] || []).map((item) => String(item?._id) === commentId ? { ...item, ...event.comment } : item),
+          }));
+        } else {
+          setComments((current) => current.map((item) => String(item?._id) === commentId ? { ...item, ...event.comment } : item));
+        }
+        return;
+      }
+      if (event?.reason === "comment_deleted" && commentId) {
+        if (event.parentComment || (rootId && rootId !== commentId)) {
+          setRepliesByComment((current) => ({
+            ...current,
+            [rootId]: (current[rootId] || []).filter((item) => String(item?._id) !== commentId && String(item?.parentComment || "") !== commentId),
+          }));
+          setComments((current) => current.map((item) => String(item?._id) === rootId ? { ...item, repliesCount: Math.max(0, Number(item.repliesCount || 0) - 1) } : item));
+        } else {
+          setComments((current) => current.filter((item) => String(item?._id) !== commentId));
+          setCommentTotal((current) => Math.max(0, current - 1));
+          setRepliesByComment((current) => { const next = { ...current }; delete next[commentId]; return next; });
+        }
+        return;
+      }
+      loadComments({ page: 1, quiet: true });
+    };
+
+    realtimeSocket.on("song:moment:update", onMoment);
+    realtimeSocket.on("song:comment:update", onComment);
+    return () => {
+      realtimeSocket.off("song:moment:update", onMoment);
+      realtimeSocket.off("song:comment:update", onComment);
+    };
+  }, [realtimeSocket, songId, loadMoments, loadComments]);
+
+  useEffect(() => {
+    if (!songId || realtimeConnected || realtimeMode !== "polling") return undefined;
+
+    const refreshSocialSongData = () => {
+      if (document.visibilityState !== "visible") return;
+      loadMoments({ quiet: true });
+      loadComments({ page: 1, quiet: true });
+      loadTrail({ quiet: true });
+    };
+
+    // Realtime remains immediate. Polling is only a quiet reconciliation path
+    // for deployments where SSE is unavailable, so it must never make the
+    // empty comments/moments sections visibly reload every few seconds.
+    const interval = window.setInterval(refreshSocialSongData, 30000);
+    window.addEventListener("focus", refreshSocialSongData);
+    document.addEventListener("visibilitychange", refreshSocialSongData);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshSocialSongData);
+      document.removeEventListener("visibilitychange", refreshSocialSongData);
+    };
+  }, [songId, realtimeConnected, realtimeMode, loadMoments, loadComments, loadTrail]);
 
   useEffect(() => {
     if (!lyricsExpanded || activeLyricIndex < 0) return;
@@ -434,7 +635,13 @@ const SongDetails = () => {
     setCommentBusy(true);
     try {
       const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body, momentAt: commentAtTime && isCurrent ? progress : null }, { headers: authHeaders(token) });
-      if (data?.success && data.comment) { setComments((current) => [data.comment, ...current]); setCommentTotal((n)=>n+1); setCommentBody(""); setCommentAtTime(false); window.dispatchEvent(new CustomEvent("notification-updated")); }
+      if (data?.success && data.comment) {
+        const known = commentsRef.current.some((item) => String(item?._id) === String(data.comment._id));
+        commentsRef.current = [data.comment, ...commentsRef.current.filter((item) => String(item?._id) !== String(data.comment._id))];
+        setComments(commentsRef.current);
+        if (!known) setCommentTotal((n)=>n+1);
+        setCommentBody(""); setCommentAtTime(false); window.dispatchEvent(new CustomEvent("notification-updated"));
+      }
     } catch (err) { setStatus(err?.response?.data?.message || "Could not post comment."); }
     finally { setCommentBusy(false); }
   };
@@ -461,6 +668,7 @@ const SongDetails = () => {
   };
 
   const loadReplies = async (commentId) => {
+    setReplyTarget({ rootId: commentId, parentId: commentId, username: "" });
     if (repliesByComment[commentId]) { setReplyOpen((value) => value === commentId ? "" : commentId); return; }
     try {
       const { data } = await apiClient.get(`/api/comments/${commentId}/replies`, { headers: authHeaders(token) });
@@ -471,13 +679,20 @@ const SongDetails = () => {
   const submitReply = async (commentId) => {
     if (!token) { navigate("/account"); return; }
     const body = replyBody.trim(); if (!body || replyBusy) return;
-    setReplyBusy(commentId);
+    const rootId = String(replyTarget?.rootId || commentId);
+    const parentId = String(replyTarget?.parentId || commentId);
+    setReplyBusy(rootId);
     try {
-      const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body, parentComment: commentId }, { headers: authHeaders(token) });
+      const { data } = await apiClient.post(`/api/comments/song/${songId}`, { body, parentComment: parentId }, { headers: authHeaders(token) });
       if (data?.success && data.comment) {
-        setRepliesByComment((current) => ({ ...current, [commentId]: [...(current[commentId] || []), data.comment] }));
-        setComments((current) => current.map((item) => item._id === commentId ? { ...item, repliesCount: Number(item.repliesCount || 0) + 1 } : item));
-        setReplyBody(""); window.dispatchEvent(new CustomEvent("notification-updated"));
+        const currentReplies = repliesRef.current[rootId] || [];
+        const known = currentReplies.some((item) => String(item?._id) === String(data.comment._id));
+        repliesRef.current = { ...repliesRef.current, [rootId]: [...currentReplies.filter((item) => String(item?._id) !== String(data.comment._id)), data.comment] };
+        setRepliesByComment(repliesRef.current);
+        if (!known) setComments((current) => current.map((item) => String(item._id) === rootId ? { ...item, repliesCount: Number(item.repliesCount || 0) + 1 } : item));
+        setReplyBody("");
+        setReplyTarget({ rootId, parentId: rootId, username: "" });
+        window.dispatchEvent(new CustomEvent("notification-updated"));
       }
     } catch (err) { setStatus(err?.response?.data?.message || "Could not reply."); }
     finally { setReplyBusy(""); }
@@ -501,7 +716,30 @@ const SongDetails = () => {
   const replyMoment = async (momentId) => {
     if (!token) { navigate("/account"); return; }
     const body = momentReplyBody.trim(); if (!body) return;
-    try { const {data}=await apiClient.post(`/api/social/moments/${momentId}/replies`,{body},{headers:authHeaders(token)}); if(data?.success){setMomentReplyBody("");setMomentReplyOpen("");loadMoments();window.dispatchEvent(new CustomEvent("notification-updated"));} } catch { setStatus("Could not reply to that moment."); }
+    try {
+      const { data } = await apiClient.post(`/api/social/moments/${momentId}/replies`, { body, parentReplyId: momentReplyTarget || null }, { headers: authHeaders(token) });
+      if (data?.success && data.reply) {
+        setMoments((current) => current.map((item) => String(item?._id) === String(momentId)
+          ? { ...item, replies: [...(item.replies || []).filter((reply) => String(reply?._id) !== String(data.reply._id)), data.reply] }
+          : item));
+        setMomentReplyBody("");
+        setMomentReplyTarget("");
+        window.dispatchEvent(new CustomEvent("notification-updated"));
+      }
+    } catch { setStatus("Could not reply to that moment."); }
+  };
+
+  const likeMomentReply = async (momentId, replyId) => {
+    if (!token) { navigate("/account"); return; }
+    try {
+      const { data } = await apiClient.post(`/api/social/moments/${momentId}/replies/${replyId}/like`, {}, { headers: authHeaders(token) });
+      if (data?.success) {
+        setMoments((current) => current.map((item) => String(item?._id) === String(momentId)
+          ? { ...item, replies: (item.replies || []).map((reply) => String(reply?._id) === String(replyId) ? { ...reply, liked: data.liked, likes: data.likes } : reply) }
+          : item));
+        window.dispatchEvent(new CustomEvent("notification-updated"));
+      }
+    } catch { setStatus("Could not react to that reply."); }
   };
 
   const playNextRecommendation = (event, item) => {
@@ -658,9 +896,9 @@ const SongDetails = () => {
             <button type="button" className="song-moment-time" onClick={() => { if (!isCurrent) handlePlay(); window.setTimeout(() => player?.seekTo?.(Number(moment.momentAt || 0)), 80); }}><Clock3 size={13}/>{formatDuration(moment.momentAt)}</button>
             <span className="song-moment-emoji">{moment.emoji || "🎵"}</span>
             <div className="song-moment-copy"><strong>{moment.user?.username || moment.user?.name || "Listener"}</strong>{moment.body ? <p>{moment.body}</p> : null}
-              <div className="song-moment-actions"><button type="button" className={moment.liked ? "active" : ""} onClick={() => likeMoment(moment._id)}><Heart size={13} fill={moment.liked ? "currentColor" : "none"}/> {moment.likes || 0}</button><button type="button" onClick={() => { if (!token) navigate("/account"); else setMomentReplyOpen((value) => value === moment._id ? "" : moment._id); }}><Reply size={13}/> Reply</button></div>
-              {(moment.replies || []).length ? <div className="song-moment-replies">{moment.replies.slice(-3).map((reply) => <p key={reply._id}><strong>{reply.user?.username || reply.user?.name || "Listener"}</strong> {reply.body}</p>)}</div> : null}
-              {momentReplyOpen === moment._id ? <div className="song-inline-reply"><input value={momentReplyBody} onChange={(event)=>setMomentReplyBody(event.target.value.slice(0,300))} placeholder="Reply to this moment…"/><button type="button" onClick={()=>replyMoment(moment._id)}>Reply</button></div> : null}
+              <div className="song-moment-actions"><button type="button" className={moment.liked ? "active" : ""} onClick={() => likeMoment(moment._id)}><Heart size={13} fill={moment.liked ? "currentColor" : "none"}/> {moment.likes || 0}</button><button type="button" onClick={() => { if (!token) navigate("/account"); else setMomentReplyOpen((value) => value === moment._id ? "" : moment._id); setMomentReplyTarget(""); }}><Reply size={13}/> Reply</button></div>
+              {(moment.replies || []).length ? <div className="song-moment-replies">{moment.replies.slice(-6).map((reply) => <div className={reply.parentReplyId?"song-moment-reply nested":"song-moment-reply"} key={reply._id}><p><strong>{reply.user?.username || reply.user?.name || "Listener"}</strong> {reply.body}</p><div><button type="button" className={reply.liked?"active":""} onClick={()=>likeMomentReply(moment._id,reply._id)}><Heart size={11} fill={reply.liked?"currentColor":"none"}/> {reply.likes||0}</button><button type="button" onClick={()=>{setMomentReplyOpen(moment._id);setMomentReplyTarget(reply._id);setMomentReplyBody(`@${reply.user?.username||"listener"} `);}}><Reply size={11}/> Reply</button></div></div>)}</div> : null}
+              {momentReplyOpen === moment._id ? <div className="song-inline-reply"><input value={momentReplyBody} onChange={(event)=>setMomentReplyBody(event.target.value.slice(0,300))} placeholder={momentReplyTarget?"Reply to this reply…":"Reply to this moment…"}/><button type="button" onClick={()=>replyMoment(moment._id)}>Reply</button></div> : null}
             </div>
           </article>)}
         </div> : <p className="song-muted-copy">No moments yet. Play the song and leave the first reaction.</p>}
@@ -678,10 +916,10 @@ const SongDetails = () => {
             <div className="song-comment-body"><div className="song-comment-top"><strong>{comment.user?.username||"SoundWave listener"}</strong><span>{new Date(comment.createdAt).toLocaleDateString()}</span>{comment.editedAt?<em>edited</em>:null}</div>
               {Number.isFinite(Number(comment.momentAt)) ? <button type="button" className="song-comment-time" onClick={()=>{if(!isCurrent)handlePlay();window.setTimeout(()=>player?.seekTo?.(Number(comment.momentAt)),80);}}><Clock3 size={12}/>{formatDuration(comment.momentAt)}</button> : null}
               {editingId===comment._id?<div className="song-comment-edit"><textarea value={editBody} onChange={e=>setEditBody(e.target.value.slice(0,600))}/><button type="button" onClick={()=>saveEdit(comment._id)}>Save</button><button type="button" onClick={()=>setEditingId("")}>Cancel</button></div>:<p>{comment.body}</p>}
-              <div className="song-comment-actions"><button type="button" className={comment.liked?"active":""} onClick={()=>likeComment(comment._id)}><Heart size={13} fill={comment.liked?"currentColor":"none"}/> {comment.likes||0}</button><button type="button" onClick={()=>loadReplies(comment._id)}><MessageCircle size={13}/> {comment.repliesCount||0} {comment.repliesCount===1?"reply":"replies"}</button><button type="button" onClick={()=>{if(!token)navigate("/account");else{setReplyOpen(comment._id);setReplyBody(`@${comment.user?.username || "listener"} `);}}}><Reply size={13}/> Reply</button>{comment.canEdit?<><button type="button" onClick={()=>startEdit(comment)}>Edit</button><button type="button" onClick={()=>deleteComment(comment._id)}><Trash2 size={13}/> Delete</button></>:null}</div>
+              <div className="song-comment-actions"><button type="button" className={comment.liked?"active":""} onClick={()=>likeComment(comment._id)}><Heart size={13} fill={comment.liked?"currentColor":"none"}/> {comment.likes||0}</button><button type="button" onClick={()=>loadReplies(comment._id)}><MessageCircle size={13}/> {comment.repliesCount||0} {comment.repliesCount===1?"reply":"replies"}</button><button type="button" onClick={()=>{if(!token)navigate("/account");else{setReplyOpen(comment._id);setReplyTarget({rootId:comment._id,parentId:comment._id,username:comment.user?.username||"listener"});setReplyBody(`@${comment.user?.username || "listener"} `);}}}><Reply size={13}/> Reply</button>{comment.canEdit?<><button type="button" onClick={()=>startEdit(comment)}>Edit</button><button type="button" onClick={()=>deleteComment(comment._id)}><Trash2 size={13}/> Delete</button></>:null}</div>
               {replyOpen===comment._id?<div className="song-replies-wrap">
-                {(repliesByComment[comment._id]||[]).map((reply)=><div className="song-comment-reply" key={reply._id}><div className="song-comment-avatar small">{reply.user?.image?<img src={reply.user.image} alt=""/>:String(reply.user?.username||"S").slice(0,1).toUpperCase()}</div><div><strong>{reply.user?.username||"Listener"}</strong><p>{reply.body}</p><button type="button" className={reply.liked?"active":""} onClick={()=>likeReply(comment._id,reply._id)}><Heart size={12} fill={reply.liked?"currentColor":"none"}/> {reply.likes||0}</button></div></div>)}
-                <div className="song-inline-reply"><input value={replyBody} onChange={(event)=>setReplyBody(event.target.value.slice(0,600))} placeholder={token?"Write a reply…":"Sign in to reply"} disabled={!token}/><button type="button" disabled={!token||!replyBody.trim()||replyBusy===comment._id} onClick={()=>submitReply(comment._id)}>{replyBusy===comment._id?"Posting…":"Reply"}</button></div>
+                {(repliesByComment[comment._id]||[]).map((reply)=><div className={reply.parentComment && String(reply.parentComment)!==String(comment._id)?"song-comment-reply nested":"song-comment-reply"} key={reply._id}><div className="song-comment-avatar small">{reply.user?.image?<img src={reply.user.image} alt=""/>:String(reply.user?.username||"S").slice(0,1).toUpperCase()}</div><div><strong>{reply.user?.username||"Listener"}</strong><p>{reply.body}</p><div className="song-reply-actions"><button type="button" className={reply.liked?"active":""} onClick={()=>likeReply(comment._id,reply._id)}><Heart size={12} fill={reply.liked?"currentColor":"none"}/> {reply.likes||0}</button><button type="button" onClick={()=>{setReplyOpen(comment._id);setReplyTarget({rootId:comment._id,parentId:reply._id,username:reply.user?.username||"listener"});setReplyBody(`@${reply.user?.username||"listener"} `);}}><Reply size={12}/> Reply</button></div></div></div>)}
+                <div className="song-inline-reply"><input value={replyBody} onChange={(event)=>setReplyBody(event.target.value.slice(0,600))} placeholder={token?(replyTarget?.parentId&&String(replyTarget.parentId)!==String(comment._id)?`Reply to @${replyTarget.username || "listener"}…`:"Write a reply…"):"Sign in to reply"} disabled={!token}/><button type="button" disabled={!token||!replyBody.trim()||replyBusy===comment._id} onClick={()=>submitReply(comment._id)}>{replyBusy===comment._id?"Posting…":"Reply"}</button></div>
               </div>:null}
             </div>
           </article>)}</div>:<EmptyState title="No comments yet" message="Be the first listener to say something."/>}

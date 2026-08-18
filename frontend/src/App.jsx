@@ -1,9 +1,15 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Sidebar from "./components/SideBar/SideBar";
 import Home from "./pages/Home";
 import Social from "./pages/Social";
+import SocialShare from "./pages/SocialShare";
+import SocialToday from "./pages/SocialToday";
+import SocialCircles from "./pages/SocialCircles";
+import SocialRooms from "./pages/SocialRooms";
+import SocialMix from "./pages/SocialMix";
+import SocialPeople from "./pages/SocialPeople";
 import SocialProfile from "./pages/SocialProfile";
 import Circle from "./pages/Circle";
 import LiveRoom from "./pages/LiveRoom";
@@ -138,11 +144,22 @@ const App = () => {
               <RouteErrorBoundary resetKey={location.pathname}><Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Navigate to="/" replace />} />
+                <Route path="/new" element={<Navigate to="/explore" replace />} />
+                <Route path="/favorites" element={<Navigate to="/liked" replace />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/radio" element={<Radio />} />
                 <Route path="/social" element={<Social />} />
+                <Route path="/social/share" element={<SocialShare />} />
+                <Route path="/social/today" element={<SocialToday />} />
+                <Route path="/social/circles" element={<SocialCircles />} />
+                <Route path="/social/rooms" element={<SocialRooms />} />
+                <Route path="/social/mix" element={<SocialMix />} />
+                <Route path="/social/friend-mix" element={<Navigate to="/social/mix" replace />} />
+                <Route path="/social/people" element={<SocialPeople />} />
                 <Route path="/social/circles/:circleId" element={<Circle />} />
                 <Route path="/social/rooms/:code" element={<LiveRoom />} />
+                <Route path="/social/room/:code" element={<LiveRoom />} />
                 <Route path="/u/:userId" element={<SocialProfile />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/liked" element={<Liked />} />
@@ -158,6 +175,7 @@ const App = () => {
                 <Route path="/yearly/:yearSlug" element={<YearsPage />} />
                 <Route path="/artist/:artistId" element={<Artist />} />
                 <Route path="/mood/:moodSlug" element={<MoodPage />} />
+                <Route path="/social/*" element={<Navigate to="/social" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </Suspense></RouteErrorBoundary>

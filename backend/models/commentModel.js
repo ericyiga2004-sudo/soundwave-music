@@ -27,6 +27,14 @@ const commentSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    // Keeps reply-of-reply threads attached to the original top-level comment.
+    // Old replies without this field still work through parentComment fallback.
+    rootComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
+      index: true,
+    },
     momentAt: {
       type: Number,
       default: null,
@@ -51,5 +59,6 @@ commentSchema.index({ song: 1, createdAt: -1 });
 commentSchema.index({ song: 1, user: 1, createdAt: -1 });
 commentSchema.index({ user: 1, createdAt: -1 });
 commentSchema.index({ parentComment: 1, createdAt: 1 });
+commentSchema.index({ rootComment: 1, createdAt: 1 });
 
 export default mongoose.models.Comment || mongoose.model("Comment", commentSchema);

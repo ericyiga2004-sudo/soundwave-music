@@ -4,23 +4,15 @@ const cleanUrl = (value) =>
     .trim()
     .replace(/\/+$/, "");
 
-const mode = String(import.meta.env.VITE_API_MODE || "hosted")
-  .trim()
-  .toLowerCase();
-
-const hostedUrl = cleanUrl(
-  import.meta.env.VITE_HOSTED_BACKEND_URL || import.meta.env.VITE_BACKEND_URL
-);
+const FALLBACK_HOSTED_URL = "https://soundwave-music.onrender.com";
+const requestedMode = String(import.meta.env.VITE_API_MODE || "hosted").trim().toLowerCase();
+const hostedUrl =
+  cleanUrl(import.meta.env.VITE_HOSTED_BACKEND_URL || import.meta.env.VITE_BACKEND_URL) ||
+  FALLBACK_HOSTED_URL;
 const localUrl = cleanUrl(import.meta.env.VITE_LOCAL_BACKEND_URL);
-const selectedUrl = mode === "local" ? localUrl : hostedUrl;
+const allowLocalApi =
+  String(import.meta.env.VITE_ALLOW_LOCAL_API || "false").trim().toLowerCase() === "true";
+const useLocalApi = requestedMode === "local" && allowLocalApi && Boolean(localUrl);
 
-if (!selectedUrl) {
-  throw new Error(
-    mode === "local"
-      ? "Local API mode is enabled but VITE_LOCAL_BACKEND_URL is missing."
-      : "Hosted API URL is missing. Set VITE_HOSTED_BACKEND_URL in admin/.env."
-  );
-}
-
-export const ADMIN_API_BASE_URL = selectedUrl;
-export const ADMIN_API_MODE = mode;
+export const ADMIN_API_BASE_URL = useLocalApi ? localUrl : hostedUrl;
+export const ADMIN_API_MODE = useLocalApi ? "local" : "hosted";

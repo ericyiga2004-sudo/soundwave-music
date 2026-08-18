@@ -673,3 +673,36 @@ html[data-sw-battery-saver="true"] .song-lyrics-scroll { scroll-behavior: auto; 
 .song-moment-list{display:grid;gap:6px}.song-moment{display:grid;grid-template-columns:auto 34px minmax(0,1fr);align-items:start;gap:8px;padding:9px 4px;border-bottom:1px solid var(--sw-border)}.song-moment-time{display:inline-flex;align-items:center;gap:4px;border:0;background:var(--sw-accent-soft);color:var(--sw-accent);border-radius:999px;padding:6px 8px;font-size:.66rem;font-weight:800}.song-moment-emoji{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--sw-surface-2);font-size:1rem}.song-moment-copy{min-width:0}.song-moment-copy>strong{font-size:.76rem}.song-moment-copy>p{margin:2px 0 6px;font-size:.8rem;line-height:1.45}.song-moment-actions,.song-comment-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.song-moment-actions button,.song-comment-actions button,.song-comment-reply button{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--sw-text-secondary);padding:3px 0;font-size:.67rem;font-weight:750}.song-moment-actions button.active,.song-comment-actions button.active,.song-comment-reply button.active{color:var(--sw-accent)}.song-moment-replies{margin-top:7px;padding-left:9px;border-left:2px solid var(--sw-border)}.song-moment-replies p{margin:3px 0;font-size:.7rem;color:var(--sw-text-secondary)}.song-moment-replies strong{color:var(--sw-text)}.song-inline-reply{display:flex;gap:7px;margin-top:8px}.song-inline-reply input{flex:1;min-width:0;height:36px}.song-inline-reply button{border:0;border-radius:9px;background:var(--sw-accent);color:#fff;padding:0 10px;font-size:.7rem;font-weight:800}.song-comment-heading-actions{display:flex;align-items:center;gap:8px}.song-comment-heading-actions>span{font-size:.72rem;color:var(--sw-text-secondary)}.song-comment-heading-actions select{height:32px;padding:0 8px;font-size:.68rem}.song-comment-form-footer{display:flex;align-items:center;gap:8px;justify-content:flex-end}.song-time-toggle{margin-right:auto;display:flex;align-items:center;gap:5px;color:var(--sw-text-secondary);font-size:.67rem;cursor:pointer}.song-time-toggle input{accent-color:var(--sw-accent)}.song-time-toggle.disabled{opacity:.5}.song-comment-count{font-size:.64rem;color:var(--sw-text-tertiary)}.song-comment-avatar{overflow:hidden}.song-comment-avatar img{width:100%;height:100%;object-fit:cover}.song-comment-avatar.small{width:28px;height:28px;font-size:.65rem;flex:0 0 auto}.song-comment-time{display:inline-flex;align-items:center;gap:4px;border:0;background:var(--sw-accent-soft);color:var(--sw-accent);border-radius:999px;padding:4px 7px;font-size:.62rem;font-weight:800;margin:4px 0 2px}.song-replies-wrap{margin-top:9px;border-left:2px solid var(--sw-border);padding-left:10px}.song-comment-reply{display:grid;grid-template-columns:28px minmax(0,1fr);gap:7px;padding:7px 0}.song-comment-reply strong{font-size:.7rem}.song-comment-reply p{font-size:.72rem;margin:2px 0 3px;line-height:1.4}.song-recommendation-actions{display:flex;align-items:center;gap:4px;flex:0 0 auto}.song-recommendation-queue{width:auto!important;min-width:34px;padding:0 7px!important;gap:3px}.song-recommendation-queue span{font-size:.58rem;font-weight:800}.song-discovery-trail{margin-top:22px;padding-top:16px;border-top:1px solid var(--sw-border)}.song-section-title.compact{margin-bottom:8px}.song-section-title.compact h2{font-size:.95rem}.song-trail-list{display:grid;gap:7px}.song-trail-list>div{display:grid;grid-template-columns:8px minmax(0,1fr);gap:7px;align-items:start}.song-trail-dot{width:7px;height:7px;border-radius:50%;background:var(--sw-accent);margin-top:5px}.song-trail-list span:last-child{display:grid}.song-trail-list strong{font-size:.7rem}.song-trail-list small{font-size:.65rem;color:var(--sw-text-secondary)}.song-signin-social{width:100%;border:1px solid var(--sw-border);background:var(--sw-surface-2);color:var(--sw-text);border-radius:10px;padding:9px;font-size:.7rem;font-weight:750;text-align:left}
 @media(max-width:767.98px){.song-moments-section{width:min(100%,620px);margin:24px auto 0}.song-moment-form{grid-template-columns:54px minmax(0,1fr)}.song-moment-form .sw-primary-btn{grid-column:1/-1}.song-moment{grid-template-columns:auto 30px minmax(0,1fr)}.song-moment-emoji{width:30px;height:30px}.song-comment-form-footer{flex-wrap:wrap}.song-time-toggle{width:100%;margin-right:0}.song-recommendation-actions{gap:2px}.song-recommendation-queue span{display:none}}
 @media(max-width:430px){.song-moments-section{padding-top:18px}.song-moment-form input{font-size:.72rem}.song-moment-copy>p{font-size:.74rem}.song-comment-heading-actions select{max-width:86px}.song-inline-reply{align-items:stretch}.song-inline-reply button{min-width:58px}}
+
+/* V23.2 live nested replies */
+.song-comment-reply.nested {
+  margin-left: 26px;
+  padding-left: 10px;
+  border-left: 2px solid rgba(128,128,128,.16);
+}
+.song-reply-actions,
+.song-moment-reply > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.song-reply-actions button,
+.song-moment-reply button {
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .72rem;
+}
+.song-moment-reply {
+  padding: 5px 0;
+}
+.song-moment-reply.nested {
+  margin-left: 18px;
+  padding-left: 9px;
+  border-left: 2px solid rgba(128,128,128,.16);
+}
+.song-moment-reply p { margin: 0; }

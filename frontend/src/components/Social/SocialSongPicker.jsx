@@ -71,8 +71,8 @@ const SocialSongPicker = ({
           <img src={getSongCover(selected)} alt="" loading="lazy" decoding="async" />
           <span>
             <small>Selected</small>
-            <strong>{selected.title}</strong>
-            <em>{getArtistName(selected)}</em>
+            <strong title={selected.title}>{selected.title}</strong>
+            <em title={getArtistName(selected)}>{getArtistName(selected)}</em>
           </span>
           <button type="button" onClick={(event) => preview(event, selected)} aria-label={`Preview ${selected.title}`}>
             {currentId === String(selected._id) && isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
@@ -97,8 +97,8 @@ const SocialSongPicker = ({
                   {active ? <i><Check size={13} /></i> : null}
                 </span>
                 <span className="sw-social-picker-copy">
-                  <strong>{song.title}</strong>
-                  <small>{getArtistName(song)}</small>
+                  <strong title={song.title}>{song.title}</strong>
+                  <small title={getArtistName(song)}>{getArtistName(song)}</small>
                 </span>
               </button>
               <button

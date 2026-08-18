@@ -1,22 +1,48 @@
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Play, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
+import { apiClient, authHeaders } from "../../config/apiClient";
 import "./Hero.css";
 
 const getArtist = (song) => song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
 const Hero = () => {
   const navigate = useNavigate();
-  const { songs = [] } = useContext(MusicContext);
+  const { songs = [], token, getAuthToken } = useContext(MusicContext);
   const { playSong } = useContext(MusicPlayerContext);
+  const [personalized, setPersonalized] = useState([]);
+  const authToken = getAuthToken?.() || token || "";
+
+  useEffect(() => {
+    if (!authToken) {
+      setPersonalized([]);
+      return undefined;
+    }
+    const controller = new AbortController();
+    apiClient.get("/api/recommend/home", {
+      headers: authHeaders(authToken),
+      params: { limit: 12 },
+      signal: controller.signal,
+    }).then(({ data }) => {
+      if (!data?.success) return;
+      const ranked = data.sections?.forYou || [];
+      setPersonalized(ranked.slice(0, 8));
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [authToken]);
 
   const featured = useMemo(() => {
+    if (personalized.length) return personalized.slice(0, 3);
     return [...songs]
-      .sort((a, b) => Number(b?.plays || 0) - Number(a?.plays || 0))
+      .sort((a, b) => {
+        const scoreA = Number(a?.plays || 0) + Number(a?.likes || 0) * 2;
+        const scoreB = Number(b?.plays || 0) + Number(b?.likes || 0) * 2;
+        return scoreB - scoreA;
+      })
       .slice(0, 3);
-  }, [songs]);
+  }, [personalized, songs]);
 
   const mainSong = featured[0];
 
@@ -34,11 +60,11 @@ const Hero = () => {
         <div className="col-12 col-xl-8">
           <article className="hero-feature-card">
             <div className="hero-feature-copy">
-              <span className="hero-kicker"><Sparkles size={14} /> FEATURED</span>
+              <span className="hero-kicker"><Sparkles size={14} /> {personalized.length ? "FOR YOU" : "FEATURED"}</span>
               <h2>{mainSong?.title || "Your music, all in one beautiful place."}</h2>
               <p>
                 {mainSong
-                  ? `${getArtist(mainSong)} · A standout from your SoundWave catalog.`
+                  ? `${getArtist(mainSong)} · ${personalized.length ? "Picked from your listening taste, country signals and plays." : "A standout from your SoundWave catalog."}`
                   : "Discover songs, albums, artists, radio and playlists with a cleaner listening experience."}
               </p>
               <div className="hero-buttons">

@@ -4,30 +4,27 @@ const cleanUrl = (value) =>
     .trim()
     .replace(/\/+$/, "");
 
-const mode = String(import.meta.env.VITE_API_MODE || "hosted")
+const FALLBACK_HOSTED_URL = "https://soundwave-music.onrender.com";
+
+const requestedMode = String(import.meta.env.VITE_API_MODE || "hosted")
   .trim()
   .toLowerCase();
 
-// The normal SoundWave app always uses the hosted Render API. A local API is
-// opt-in, so an old/stale VITE_BACKEND_URL=http://localhost:4000 override can
-// no longer silently break the catalog.
-const hostedUrl = cleanUrl(
-  import.meta.env.VITE_HOSTED_BACKEND_URL || import.meta.env.VITE_BACKEND_URL
-);
+const hostedUrl =
+  cleanUrl(import.meta.env.VITE_HOSTED_BACKEND_URL || import.meta.env.VITE_BACKEND_URL) ||
+  FALLBACK_HOSTED_URL;
 const localUrl = cleanUrl(import.meta.env.VITE_LOCAL_BACKEND_URL);
 
-const selectedUrl = mode === "local" ? localUrl : hostedUrl;
+// Local API use now requires TWO explicit switches. This prevents an old
+// .env.local from silently sending the whole app to a dead local API.
+const allowLocalApi =
+  String(import.meta.env.VITE_ALLOW_LOCAL_API || "false").trim().toLowerCase() === "true";
+const useLocalApi = requestedMode === "local" && allowLocalApi && Boolean(localUrl);
 
-if (!selectedUrl) {
-  throw new Error(
-    mode === "local"
-      ? "Local API mode is enabled but VITE_LOCAL_BACKEND_URL is missing."
-      : "Hosted API URL is missing. Set VITE_HOSTED_BACKEND_URL in frontend/.env."
-  );
-}
-
-export const API_BASE_URL = selectedUrl;
-export const API_MODE = mode;
+export const API_HOSTED_URL = hostedUrl;
+export const API_LOCAL_URL = localUrl;
+export const API_BASE_URL = useLocalApi ? localUrl : hostedUrl;
+export const API_MODE = useLocalApi ? "local" : "hosted";
 
 export const apiUrl = (path = "") => {
   const value = String(path || "");

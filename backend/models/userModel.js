@@ -98,6 +98,15 @@ const userSchema = new mongoose.Schema(
         playedAt: { type: Date, default: Date.now },
       },
     ],
+
+    // Lightweight cadence state for occasional "play this again" reminders.
+    // This is deliberately sparse and event-driven; no background cron is
+    // required and existing accounts need no migration.
+    notificationCadence: {
+      replayNextAt: { type: Date, default: null },
+      replayLastAt: { type: Date, default: null },
+      replayLastSong: { type: mongoose.Schema.Types.ObjectId, ref: "Song", default: null },
+    },
   },
   { timestamps: true }
 );

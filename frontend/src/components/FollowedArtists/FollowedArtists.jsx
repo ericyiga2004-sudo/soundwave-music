@@ -59,10 +59,30 @@ const FollowedArtists = () => {
   useEffect(() => {
     fetchFollowedArtists();
 
-    window.addEventListener("artist-follow-updated", fetchFollowedArtists);
+    const onFollowStateUpdated = (event) => {
+      const detail = event?.detail || {};
+      const artistId = String(detail.artistId || detail.artist?._id || "");
+      if (!artistId) return;
+
+      setFollowedArtists((current) => {
+        if (!detail.following) {
+          return current.filter((artist) => String(artist?._id) !== artistId);
+        }
+
+        if (current.some((artist) => String(artist?._id) === artistId)) {
+          return current.map((artist) => String(artist?._id) === artistId
+            ? { ...artist, ...(detail.artist || {}), followers: detail.followers ?? artist.followers }
+            : artist);
+        }
+
+        return detail.artist?._id ? [...current, detail.artist] : current;
+      });
+    };
+
+    window.addEventListener("artist-follow-state-updated", onFollowStateUpdated);
 
     return () => {
-      window.removeEventListener("artist-follow-updated", fetchFollowedArtists);
+      window.removeEventListener("artist-follow-state-updated", onFollowStateUpdated);
     };
   }, []);
 

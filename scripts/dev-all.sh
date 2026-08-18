@@ -2,20 +2,21 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-if [ ! -f "$ROOT/backend/.env" ]; then
-  echo "⚠️  backend/.env is missing. The frontend can still use the hosted API, but the local backend needs its private environment values."
-fi
+# V20 default development mode intentionally uses the hosted Render API.
+# That means one Terminal window, no suspended nodemon job, and no dead
+# localhost:4000 dependency.
+rm -f "$ROOT/frontend/.env.local" \
+      "$ROOT/frontend/.env.development.local" \
+      "$ROOT/frontend/.env.production.local"
 
-cleanup() {
-  trap - INT TERM EXIT
-  [ -n "${BACK_PID:-}" ] && kill "$BACK_PID" 2>/dev/null || true
-  [ -n "${FRONT_PID:-}" ] && kill "$FRONT_PID" 2>/dev/null || true
-}
-trap cleanup INT TERM EXIT
+export VITE_API_MODE=hosted
+export VITE_HOSTED_BACKEND_URL="https://soundwave-music.onrender.com"
+unset VITE_ALLOW_LOCAL_API || true
+unset VITE_LOCAL_BACKEND_URL || true
 
-(cd "$ROOT/backend" && npm run dev) &
-BACK_PID=$!
-(cd "$ROOT/frontend" && npm run dev) &
-FRONT_PID=$!
-
-wait "$BACK_PID" "$FRONT_PID"
+cd "$ROOT/frontend"
+echo "SoundWave V20 — hosted API development"
+echo "Frontend: http://localhost:5173"
+echo "API:      https://soundwave-music.onrender.com"
+echo
+exec npm run dev -- --host

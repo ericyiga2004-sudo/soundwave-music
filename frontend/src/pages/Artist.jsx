@@ -182,6 +182,10 @@ const Artist = () => {
       if (res.data.success) {
         setFollowing(Boolean(res.data.following));
 
+        const updatedArtist = artist
+          ? { ...artist, followers: res.data.followers }
+          : { _id: artistId, followers: res.data.followers };
+
         setArtist((prev) =>
           prev
             ? {
@@ -190,6 +194,15 @@ const Artist = () => {
               }
             : prev
         );
+
+        window.dispatchEvent(new CustomEvent("artist-follow-state-updated", {
+          detail: {
+            artistId: String(artistId),
+            following: Boolean(res.data.following),
+            followers: Number(res.data.followers || 0),
+            artist: updatedArtist,
+          },
+        }));
       }
     } catch (error) {
       console.log("Follow artist error:", error);

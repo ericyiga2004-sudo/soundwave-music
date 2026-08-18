@@ -22,10 +22,15 @@ import {
   leaveCircle,
   listCircles,
   replySongMoment,
+  toggleSongMomentReplyLike,
+  postLiveRoomChat,
+  reactLiveRoomChat,
   searchUsers,
+  shareSongDirect,
   setDailyPick,
   toggleFollowUser,
   toggleSongMomentLike,
+  updateLiveRoomPlayback,
   updateSocialProfile,
   voteLiveRoomSong,
 } from "../controllers/socialController.js";
@@ -42,6 +47,7 @@ router.get("/users/:userId/match", authUser, getTasteMatch);
 router.get("/daily", authUser, getDailyPicks);
 router.post("/daily", authUser, setDailyPick);
 router.post("/friend-mix", authUser, buildFriendMix);
+router.post(["/share-song", "/share", "/songs/share"], authUser, shareSongDirect);
 
 router.get("/circles", authUser, listCircles);
 router.post("/circles", authUser, createCircle);
@@ -54,6 +60,7 @@ router.get("/moments/song/:songId", optionalAuthUser, getSongMoments);
 router.post("/moments/song/:songId", authUser, createSongMoment);
 router.post("/moments/:momentId/like", authUser, toggleSongMomentLike);
 router.post("/moments/:momentId/replies", authUser, replySongMoment);
+router.post("/moments/:momentId/replies/:replyId/like", authUser, toggleSongMomentReplyLike);
 router.get("/trail/:songId", authUser, getDiscoveryTrail);
 
 router.post("/rooms", authUser, createLiveRoom);
@@ -62,5 +69,8 @@ router.get("/rooms/:code", authUser, getLiveRoom);
 router.post("/rooms/:code/queue", authUser, addLiveRoomSong);
 router.post("/rooms/:code/queue/:entryId/vote", authUser, voteLiveRoomSong);
 router.post("/rooms/:code/advance", authUser, advanceLiveRoom);
+router.post("/rooms/:code/playback", authUser, updateLiveRoomPlayback);
+router.post("/rooms/:code/chat", authUser, postLiveRoomChat);
+router.post("/rooms/:code/chat/:messageId/react", authUser, reactLiveRoomChat);
 
 export default router;

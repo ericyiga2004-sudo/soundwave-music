@@ -9,6 +9,7 @@ import {
   applySongPreferenceSignal,
   compactPreferences,
 } from "../utils/preferencesHelper.js";
+import { emitSocialRefresh, emitToUsers } from "../utils/realtimeHub.js";
 
 const MAX_EVENTS = 30;
 
@@ -89,7 +90,17 @@ export const recordPersonalizationEvents = async (req, res) => {
     compactPreferences(user);
     await user.save();
 
-    return res.json({ success: true, accepted, algorithmVersion: 2 });
+    if (accepted > 0) {
+      const audience = [user._id, ...(user.followers || [])];
+      emitToUsers(audience, "taste:update", {
+        userId: String(user._id),
+        accepted,
+        at: new Date().toISOString(),
+      });
+      emitSocialRefresh(audience, "taste_updated");
+    }
+
+    return res.json({ success: true, accepted, algorithmVersion: 3 });
   } catch (error) {
     console.error("Personalization events error:", error);
     return res.status(500).json({ success: false, message: "Could not update personalization" });
