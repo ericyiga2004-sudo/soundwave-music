@@ -681,6 +681,77 @@ export const joinLiveRoom = async (req, res) => {
   } catch (error) { return res.status(500).json({ success: false, message: "Could not join room" }); }
 };
 
+
+export const leaveLiveRoom = async (req, res) => {
+  try {
+    const code = String(req.params.code || "").trim().toUpperCase();
+    const room = await LiveRoom.findOne({ code, status: "active" });
+    if (!room) return res.status(404).json({ success: false, message: "Room not found" });
+
+    if (id(room.host) === id(req.userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "The host owns this room. Exit the room view or delete the room instead.",
+      });
+    }
+
+    const wasMember = (room.members || []).some((member) => id(member.user) === id(req.userId));
+    if (!wasMember) return res.json({ success: true, code: room.code, left: false });
+
+    const previousAudience = [room.host, ...(room.members || []).map((member) => member.user), req.userId];
+    room.members = (room.members || []).filter((member) => id(member.user) !== id(req.userId));
+    room.lastActiveAt = new Date();
+    await room.save();
+
+    const audience = [...new Set(previousAudience.map(id).filter(Boolean))];
+    emitToUsers(audience, "room:update", {
+      code: room.code,
+      reason: "member_left",
+      userId: id(req.userId),
+      at: new Date().toISOString(),
+    });
+    emitSocialRefresh(audience, "room_left");
+
+    return res.json({ success: true, code: room.code, left: true });
+  } catch (error) {
+    console.error("Leave live room error:", error);
+    return res.status(500).json({ success: false, message: "Could not leave room" });
+  }
+};
+
+export const deleteLiveRoom = async (req, res) => {
+  try {
+    const code = String(req.params.code || "").trim().toUpperCase();
+    const room = await LiveRoom.findOne({ code });
+    if (!room) return res.status(404).json({ success: false, message: "Room not found" });
+
+    if (id(room.host) !== id(req.userId)) {
+      return res.status(403).json({ success: false, message: "Only the host can delete this room" });
+    }
+
+    const audience = [...new Set([
+      id(room.host),
+      ...(room.members || []).map((member) => id(member.user)),
+    ].filter(Boolean))];
+
+    await SocialActivity.deleteMany({ room: room._id }).catch(() => null);
+    await LiveRoom.deleteOne({ _id: room._id });
+
+    emitToUsers(audience, "room:update", {
+      code: room.code,
+      reason: "room_deleted",
+      deleted: true,
+      at: new Date().toISOString(),
+    });
+    emitSocialRefresh(audience, "room_deleted");
+
+    return res.json({ success: true, code: room.code, deleted: true });
+  } catch (error) {
+    console.error("Delete live room error:", error);
+    return res.status(500).json({ success: false, message: "Could not delete room" });
+  }
+};
+
 export const getLiveRoom = async (req, res) => {
   try {
     const room = await LiveRoom.findOne({ code: String(req.params.code || "").toUpperCase(), status: "active" })

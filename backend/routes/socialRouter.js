@@ -9,6 +9,7 @@ import {
   buildFriendMix,
   createCircle,
   createLiveRoom,
+  deleteLiveRoom,
   createSongMoment,
   getCircle,
   getDailyPicks,
@@ -20,6 +21,7 @@ import {
   getTasteMatch,
   joinCircle,
   joinLiveRoom,
+  leaveLiveRoom,
   leaveCircle,
   listCircles,
   replySongMoment,
@@ -68,6 +70,8 @@ router.get("/trail/:songId", authUser, getDiscoveryTrail);
 
 router.post("/rooms", authUser, createLiveRoom);
 router.post("/rooms/join", authUser, joinLiveRoom);
+router.post("/rooms/:code/leave", authUser, leaveLiveRoom);
+router.delete("/rooms/:code", authUser, deleteLiveRoom);
 router.get("/rooms/:code", authUser, getLiveRoom);
 router.post("/rooms/:code/queue", authUser, addLiveRoomSong);
 router.post("/rooms/:code/queue/:entryId/vote", authUser, voteLiveRoomSong);

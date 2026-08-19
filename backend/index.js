@@ -26,7 +26,7 @@ app.use(cors({ exposedHeaders: ["X-SoundWave-Realtime", "X-SoundWave-Version"] }
 app.disable("x-powered-by");
 app.use((req, res, next) => {
   res.set("X-SoundWave-Realtime", "sse");
-  res.set("X-SoundWave-Version", "23.16.0");
+  res.set("X-SoundWave-Version", "23.22.0");
   next();
 });
 app.use(express.json({ limit: "1mb" }));
@@ -68,7 +68,7 @@ app.use("/api/social", socialRouter);
 app.use("/api/realtime", realtimeRouter);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.17.0", realtime: "sse" });
+  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.22.0", realtime: "sse" });
 });
 
 app.get("/", (_req, res) => {

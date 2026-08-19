@@ -1,17 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
+import { useRealtime } from "../../context/RealtimeContext";
 import {
   ACTIVE_ROOM_SESSION_EVENT,
+  clearActiveLiveRoomSession,
   readActiveLiveRoomSession,
 } from "../../utils/liveRoomSession";
 import "../../pages/CSS/LiveRoomQuickNavigator.css";
+import "../../pages/CSS/LiveRoomLifecycleV2322.css";
 
 const normalizeCode = (value = "") => String(value || "").trim().toUpperCase();
+const DISMISSED_KEY = "soundwave:live-quick-nav-dismissed-room";
+
+const readDismissedCode = () => {
+  if (typeof window === "undefined") return "";
+  try {
+    return normalizeCode(window.sessionStorage.getItem(DISMISSED_KEY) || "");
+  } catch {
+    return "";
+  }
+};
 
 const LiveRoomQuickNavigator = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { socket } = useRealtime();
   const [session, setSession] = useState(() => readActiveLiveRoomSession());
+  const [dismissedCode, setDismissedCode] = useState(() => readDismissedCode());
 
   const refresh = () => {
     const next = readActiveLiveRoomSession();
@@ -26,15 +42,20 @@ const LiveRoomQuickNavigator = () => {
     refresh();
 
     const onSessionChange = (event) => {
-      setSession(event?.detail?.session || readActiveLiveRoomSession());
+      const next = event?.detail?.session || readActiveLiveRoomSession();
+      setSession(next);
+      const nextCode = normalizeCode(next?.code);
+      if (nextCode && dismissedCode && nextCode !== dismissedCode) {
+        try {
+          window.sessionStorage.removeItem(DISMISSED_KEY);
+        } catch {}
+        setDismissedCode("");
+      }
     };
 
     window.addEventListener(ACTIVE_ROOM_SESSION_EVENT, onSessionChange);
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", refresh);
-
-    // Very light fallback in case a browser blocks/discards a custom event.
-    // This is only a sessionStorage read; there is NO API/network polling.
     const timer = window.setInterval(refresh, 4000);
 
     return () => {
@@ -43,11 +64,9 @@ const LiveRoomQuickNavigator = () => {
       document.removeEventListener("visibilitychange", refresh);
       window.clearInterval(timer);
     };
-  }, []);
+  }, [dismissedCode]);
 
   useEffect(() => {
-    // Route changes can happen without the live room writing a new snapshot.
-    // Re-read once so the button appears immediately when leaving LiveRoom.
     refresh();
   }, [location.pathname]);
 
@@ -58,33 +77,77 @@ const LiveRoomQuickNavigator = () => {
     return normalizeCode(location.pathname) === normalizeCode(roomPath);
   }, [location.pathname, roomCode, roomPath]);
 
+  useEffect(() => {
+    if (!alreadyInsideRoom || !roomCode || dismissedCode !== roomCode) return;
+    try {
+      window.sessionStorage.removeItem(DISMISSED_KEY);
+    } catch {}
+    setDismissedCode("");
+  }, [alreadyInsideRoom, dismissedCode, roomCode]);
+
+  useEffect(() => {
+    if (!socket || !roomCode) return undefined;
+
+    const onRoomUpdate = (event) => {
+      if (normalizeCode(event?.code) !== roomCode) return;
+      if (event?.reason !== "room_deleted") return;
+      clearActiveLiveRoomSession(roomCode);
+      setSession(null);
+      setDismissedCode("");
+      try {
+        window.sessionStorage.removeItem(DISMISSED_KEY);
+      } catch {}
+    };
+
+    socket.on("room:update", onRoomUpdate);
+    return () => socket.off("room:update", onRoomUpdate);
+  }, [roomCode, socket]);
+
   const hasLiveSong = Boolean(session?.currentSongId || session?.currentSong?._id);
 
-  if (!roomCode || !hasLiveSong || alreadyInsideRoom) return null;
+  if (!roomCode || !hasLiveSong || alreadyInsideRoom || dismissedCode === roomCode) {
+    return null;
+  }
 
-  const songTitle =
-    String(session?.currentSong?.name || session?.currentSong?.title || "").trim();
+  const songTitle = String(session?.currentSong?.name || session?.currentSong?.title || "").trim();
+
+  const dismiss = () => {
+    try {
+      window.sessionStorage.setItem(DISMISSED_KEY, roomCode);
+    } catch {}
+    setDismissedCode(roomCode);
+  };
 
   return (
-    <button
-      type="button"
-      className="sw2321-live-jump"
-      onClick={() => navigate(roomPath)}
-      aria-label={`Go to live room ${roomCode}`}
-      title={songTitle ? `Back to live: ${songTitle}` : `Back to live room ${roomCode}`}
-    >
-      <span className="sw2321-live-jump__signal" aria-hidden="true">
-        <span className="sw2321-live-jump__dot" />
-        <span className="sw2321-live-jump__live">LIVE</span>
-      </span>
+    <div className="sw2322-live-jump-wrap">
+      <button
+        type="button"
+        className="sw2321-live-jump"
+        onClick={() => navigate(roomPath)}
+        aria-label={`Go to live room ${roomCode}`}
+        title={songTitle ? `Back to live: ${songTitle}` : `Back to live room ${roomCode}`}
+      >
+        <span className="sw2321-live-jump__signal" aria-hidden="true">
+          <span className="sw2321-live-jump__dot" />
+          <span className="sw2321-live-jump__live">LIVE</span>
+        </span>
+        <span className="sw2321-live-jump__copy">
+          <strong>Go to Live</strong>
+          <small>{roomCode}</small>
+        </span>
+        <span className="sw2321-live-jump__arrow" aria-hidden="true">→</span>
+      </button>
 
-      <span className="sw2321-live-jump__copy">
-        <strong>Go to Live</strong>
-        <small>{roomCode}</small>
-      </span>
-
-      <span className="sw2321-live-jump__arrow" aria-hidden="true">→</span>
-    </button>
+      <button
+        type="button"
+        className="sw2322-live-jump-close"
+        onClick={dismiss}
+        aria-label="Dismiss live room shortcut"
+        title="Dismiss"
+      >
+        <X size={14} />
+      </button>
+    </div>
   );
 };
 

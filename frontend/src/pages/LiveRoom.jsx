@@ -1,12 +1,12 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowBigUp, Check, ChevronDown, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowBigUp, Check, ChevronDown, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X, LogOut, Trash2 } from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { useRealtime } from "../context/RealtimeContext";
 import { apiClient, authHeaders } from "../config/apiClient";
 import { getArtistName, getSongCover } from "../utils/catalog";
-import { writeActiveLiveRoomSession } from "../utils/liveRoomSession";
+import { clearActiveLiveRoomSession, writeActiveLiveRoomSession } from "../utils/liveRoomSession";
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
@@ -17,6 +17,7 @@ import { SOCIAL_IMAGES } from "../components/Social/socialImages";
 import "./CSS/Social.css";
 import "./CSS/SocialV20.css";
 import "./CSS/LiveRoomPremiumV2318.css";
+import "./CSS/LiveRoomLifecycleV2322.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 const formatClock = (seconds = 0) => {
@@ -44,6 +45,7 @@ const LiveRoom = () => {
   const [error, setError] = useState("");
   const [songId, setSongId] = useState("");
   const [message, setMessage] = useState("");
+  const [roomActionBusy, setRoomActionBusy] = useState("");
   const [chatBody, setChatBody] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const [hostPlayBusy, setHostPlayBusy] = useState("");
@@ -636,6 +638,11 @@ const LiveRoom = () => {
 
     const onRoomUpdate = (event) => {
       if (String(event?.code || "").toUpperCase() !== roomCode) return;
+      if (event?.reason === "room_deleted") {
+        clearActiveLiveRoomSession(roomCode);
+        navigate("/social/rooms", { replace: true });
+        return;
+      }
       if (event?.reason === "live_reaction" && event?.reaction?.emoji) {
         spawnRoomReaction(event.reaction);
         return;
@@ -726,7 +733,7 @@ const LiveRoom = () => {
       socket.off("room:chat:reaction", onRoomChatReaction);
       socket.off("presence:update", onPresence);
     };
-  }, [socket, roomCode, load, spawnRoomReaction]);
+  }, [socket, roomCode, load, navigate, spawnRoomReaction]);
 
   useEffect(() => {
     if (!authToken) return undefined;
@@ -995,6 +1002,58 @@ const LiveRoom = () => {
     }
   };
 
+  const exitRoom = async () => {
+    if (!room?.code || roomActionBusy) return;
+    setRoomActionBusy("exit");
+    try {
+      if (!room._isHost) {
+        const { data } = await apiClient.post(
+          `/api/social/rooms/${room.code}/leave`,
+          {},
+          { headers }
+        );
+        if (!data?.success) throw new Error(data?.message || "Could not leave room");
+      }
+
+      clearActiveLiveRoomSession(room.code);
+      window.dispatchEvent(new CustomEvent("soundwave-social-mutated", {
+        detail: { reason: room._isHost ? "room-exit-view" : "room-left", code: room.code },
+      }));
+      navigate("/social/rooms");
+    } catch (errorValue) {
+      setMessage(errorValue?.response?.data?.message || errorValue?.message || "Could not exit room.");
+    } finally {
+      setRoomActionBusy("");
+    }
+  };
+
+  const deleteRoom = async () => {
+    if (!room?._isHost || !room?.code || roomActionBusy) return;
+    const approved = window.confirm(
+      `Delete "${room.name || room.code}" permanently? Everyone will be removed from this room.`
+    );
+    if (!approved) return;
+
+    setRoomActionBusy("delete");
+    try {
+      const { data } = await apiClient.delete(
+        `/api/social/rooms/${room.code}`,
+        { headers }
+      );
+      if (!data?.success) throw new Error(data?.message || "Could not delete room");
+
+      clearActiveLiveRoomSession(room.code);
+      window.dispatchEvent(new CustomEvent("soundwave-social-mutated", {
+        detail: { reason: "room-deleted", code: room.code },
+      }));
+      navigate("/social/rooms", { replace: true });
+    } catch (errorValue) {
+      setMessage(errorValue?.response?.data?.message || errorValue?.message || "Could not delete room.");
+    } finally {
+      setRoomActionBusy("");
+    }
+  };
+
   const onlineCount = (room.members || []).filter((member) => member.user?.online).length;
   const chatMessageCount = (room.chat || []).length;
   const roomPlaying = room.playbackState === "playing";
@@ -1023,9 +1082,33 @@ const LiveRoom = () => {
             <p><strong>{hostName}</strong> is hosting · {onlineCount} online · {room.members?.length || 1} in room · everyone must use code <strong>{room.code}</strong></p>
           </div>
         </div>
-        <div className="sw23-room-code-card">
-          <span><LockKeyhole size={13} /> Private room code</span>
-          <div><code>{room.code}</code><button type="button" onClick={copy}><Copy size={14} /> Copy invite</button></div>
+        <div className="sw2322-room-header-side">
+          <div className="sw23-room-code-card">
+            <span><LockKeyhole size={13} /> Private room code</span>
+            <div><code>{room.code}</code><button type="button" onClick={copy}><Copy size={14} /> Copy invite</button></div>
+          </div>
+          <div className="sw2322-room-lifecycle-actions">
+            <button
+              type="button"
+              className="sw2322-room-exit"
+              onClick={exitRoom}
+              disabled={Boolean(roomActionBusy)}
+            >
+              <LogOut size={14} />
+              {roomActionBusy === "exit" ? "Exiting…" : "Exit room"}
+            </button>
+            {room._isHost ? (
+              <button
+                type="button"
+                className="sw2322-room-delete"
+                onClick={deleteRoom}
+                disabled={Boolean(roomActionBusy)}
+              >
+                <Trash2 size={14} />
+                {roomActionBusy === "delete" ? "Deleting…" : "Delete room"}
+              </button>
+            ) : null}
+          </div>
         </div>
       </header>
 
