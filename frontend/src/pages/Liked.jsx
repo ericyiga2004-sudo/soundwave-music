@@ -1,3 +1,4 @@
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -388,6 +389,7 @@ const Liked = () => {
                       <FaPlay />
                     </button>
 
+                    <SongActionMenu song={song} queue={likedQueue} triggerClassName="sw2324-liked-more" triggerLabel={`More options for ${song.title}`} />
                     <button
                       type="button"
                       className="liked-row-remove"

@@ -1,3 +1,4 @@
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Edit3, ListMusic, Play, Save, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -195,6 +196,7 @@ const PlaylistDetails = () => {
                   <button className="sw-icon-only" type="button" onClick={() => playSong?.(song, songs)} aria-label={`Play ${song.title}`}>
                     <Play size={16} fill="currentColor" />
                   </button>
+                  <SongActionMenu song={song} queue={songs} triggerClassName="sw-icon-only" triggerLabel={`More options for ${song.title}`} />
                   <button className="sw-icon-only" type="button" disabled={busy} onClick={() => removeSong(song._id)} aria-label={`Remove ${song.title} from playlist`}>
                     <Trash2 size={16} />
                   </button>

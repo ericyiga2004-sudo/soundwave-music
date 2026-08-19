@@ -1,3 +1,4 @@
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaMusic, FaPlay } from "react-icons/fa";
@@ -390,6 +391,12 @@ const YearsPage = () => {
                       </span>
                     </div>
                   </Link>
+                  <SongActionMenu
+                    song={song}
+                    queue={playlist}
+                    triggerClassName="sw2324-overlay-more sw2324-years-more"
+                    triggerLabel={`More options for ${song.title}`}
+                  />
                 </div>
               </div>
             ))}

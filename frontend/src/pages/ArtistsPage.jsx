@@ -1,3 +1,4 @@
+import PremiumSelect from "../components/UI/PremiumSelect";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Check, Search, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -95,7 +96,7 @@ const ArtistsPage = () => {
       <div className="sw-catalog-toolbar">
         <label className="visually-hidden" htmlFor="artist-search">Search artists</label>
         <div style={{ position: "relative" }}><Search size={16} style={{ position: "absolute", left: 13, top: 14, color: "var(--sw-text-tertiary)" }} /><input id="artist-search" style={{ paddingLeft: 39 }} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search artists" /></div>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort artists"><option value="followers">Most followed</option><option value="newest">Newest</option><option value="name">A–Z</option></select>
+        <PremiumSelect value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort artists"><option value="followers">Most followed</option><option value="newest">Newest</option><option value="name">A–Z</option></PremiumSelect>
         <button className="sw-secondary-btn" type="button" onClick={() => { setQuery(""); setSort("followers"); }}>Reset</button>
       </div>
 

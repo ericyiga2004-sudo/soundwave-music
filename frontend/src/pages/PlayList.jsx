@@ -1,3 +1,5 @@
+import PremiumSelect from "../components/UI/PremiumSelect";
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -1178,6 +1180,7 @@ const PlayList = () => {
                             >
                               <FaPlay />
                             </button>
+                            <SongActionMenu song={song} queue={sharedPlaylistSongs} triggerClassName="sw2324-overlay-more sw2324-shared-playlist-more" triggerLabel={`More options for ${song.title}`} />
                           </div>
                         ))}
                       </div>
@@ -1247,6 +1250,7 @@ const PlayList = () => {
                               <FaPlay />
                             </button>
 
+                            <SongActionMenu song={song} queue={playlistSongs} triggerClassName="sw2324-overlay-more sw2324-owned-playlist-more" triggerLabel={`More options for ${song.title}`} />
                             <button
                               type="button"
                               className="song-remove-btn"
@@ -1375,7 +1379,7 @@ const PlayList = () => {
                           </div>
 
                           <div className="col-12 col-sm-4 col-lg-2">
-                            <select
+                            <PremiumSelect
                               value={selectedCountry}
                               onChange={(e) =>
                                 setSelectedCountry(e.target.value)
@@ -1388,11 +1392,11 @@ const PlayList = () => {
                                     : country}
                                 </option>
                               ))}
-                            </select>
+                            </PremiumSelect>
                           </div>
 
                           <div className="col-12 col-sm-4 col-lg-2">
-                            <select
+                            <PremiumSelect
                               value={selectedGenre}
                               onChange={(e) =>
                                 setSelectedGenre(e.target.value)
@@ -1403,11 +1407,11 @@ const PlayList = () => {
                                   {genre === "All" ? "All Genres" : genre}
                                 </option>
                               ))}
-                            </select>
+                            </PremiumSelect>
                           </div>
 
                           <div className="col-12 col-sm-4 col-lg-2">
-                            <select
+                            <PremiumSelect
                               value={selectedMood}
                               onChange={(e) => setSelectedMood(e.target.value)}
                             >
@@ -1416,7 +1420,7 @@ const PlayList = () => {
                                   {mood === "All" ? "All Moods" : mood}
                                 </option>
                               ))}
-                            </select>
+                            </PremiumSelect>
                           </div>
 
                           {(songSearch ||
@@ -1468,6 +1472,7 @@ const PlayList = () => {
                                 >
                                   <FaPlus />
                                 </button>
+                                <SongActionMenu song={song} queue={visibleAvailableSongs} triggerClassName="sw2324-overlay-more sw2324-available-song-more" triggerLabel={`More options for ${song.title}`} />
                               </div>
                             </div>
                           ))}

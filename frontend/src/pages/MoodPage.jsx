@@ -1,3 +1,4 @@
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import React, { useContext, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaMusic, FaPlay } from "react-icons/fa";
@@ -152,6 +153,12 @@ const MoodPage = () => {
                       Play
                     </button>
                   </div>
+                  <SongActionMenu
+                    song={song}
+                    queue={moodSongs}
+                    triggerClassName="sw2324-overlay-more sw2324-mood-more"
+                    triggerLabel={`More options for ${song.title}`}
+                  />
                 </article>
               </div>
             ))}

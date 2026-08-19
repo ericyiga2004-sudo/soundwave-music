@@ -1,21 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import {
-  BatteryMedium,
-  Settings2,
-  WifiOff,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  Library,
-  Moon,
-  Radio,
-  Search,
-  Sparkles,
-  Sun,
-  User,
-  UsersRound,
-} from "lucide-react";
+import { BatteryMedium, Settings2, WifiOff, ChevronLeft, ChevronRight, Home, Library, Moon, Radio, Search, Sparkles, Sun, User, UsersRound, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import "./Navbar.css";
 import SearchModal from "../SearchModel/SearchModel";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
@@ -23,9 +8,11 @@ import NotificationBell from "../../pages/NotificationBell";
 import {
   getBatterySaver,
   getLowData,
+  getSidebarHidden,
   getTheme,
   setBatterySaver,
   setLowData,
+  setSidebarHidden,
   setTheme,
   UI_PREFERENCES_EVENT,
 } from "../../utils/uiPreferences";
@@ -57,6 +44,7 @@ const Navbar = () => {
   const [batterySaver, setBatterySaverState] = useState(getBatterySaver);
   const [lowData, setLowDataState] = useState(getLowData);
   const [theme, setThemeState] = useState(getTheme);
+  const [sidebarHidden, setSidebarHiddenState] = useState(getSidebarHidden);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,6 +55,7 @@ const Navbar = () => {
       setBatterySaverState(getBatterySaver());
       setLowDataState(getLowData());
       setThemeState(getTheme());
+      setSidebarHiddenState(getSidebarHidden());
     };
     window.addEventListener(UI_PREFERENCES_EVENT, onPreference);
     return () => window.removeEventListener(UI_PREFERENCES_EVENT, onPreference);
@@ -189,6 +178,15 @@ const Navbar = () => {
                     <small>{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}</small>
                   </span>
                   <span className="sw-settings-value">{theme === "dark" ? "Dark" : "Light"}</span>
+                </button>
+
+                <button type="button" className="sw-settings-row" onClick={() => setSidebarHidden(!sidebarHidden)}>
+                  <span className="sw-settings-row-icon">{sidebarHidden ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</span>
+                  <span className="sw-settings-copy">
+                    <strong>Sidebar</strong>
+                    <small>{sidebarHidden ? "Bring the desktop sidebar back." : "Hide only the sidebar and reclaim its page width."}</small>
+                  </span>
+                  <span className={`sw-switch ${sidebarHidden ? "on" : ""}`} aria-hidden="true"><i /></span>
                 </button>
               </div>
             )}

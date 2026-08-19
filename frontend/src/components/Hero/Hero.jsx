@@ -1,3 +1,4 @@
+import SongActionMenu from "../SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Play, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -87,6 +88,14 @@ const Hero = () => {
                 <div className="hero-placeholder-art">♪</div>
               )}
             </div>
+            {mainSong ? (
+              <SongActionMenu
+                song={mainSong}
+                queue={featured.length ? featured : songs}
+                triggerClassName="sw2324-overlay-more sw2324-hero-main-more"
+                triggerLabel={`More options for ${mainSong.title}`}
+              />
+            ) : null}
           </article>
         </div>
 
@@ -105,6 +114,14 @@ const Hero = () => {
                     <Play size={15} fill="currentColor" />
                   </button>
                 )}
+                {song ? (
+                  <SongActionMenu
+                    song={song}
+                    queue={featured}
+                    triggerClassName="sw2324-overlay-more sw2324-hero-mini-more"
+                    triggerLabel={`More options for ${song.title}`}
+                  />
+                ) : null}
               </article>
             ))}
           </div>

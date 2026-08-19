@@ -1,3 +1,4 @@
+import SongActionMenu from "../SongActions/SongActionMenu";
 import {
   useContext,
   useEffect,
@@ -871,6 +872,12 @@ const SearchModal = ({
                     </div>
 
                     <Music2 size={18} />
+                    <SongActionMenu
+                      song={song}
+                      queue={songs}
+                      triggerClassName="sw2324-overlay-more sw2324-search-more"
+                      triggerLabel={`More options for ${song.title}`}
+                    />
                   </div>
                 ))}
               </>

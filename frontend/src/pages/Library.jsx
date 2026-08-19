@@ -1,3 +1,4 @@
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import {
   useCallback,
   useContext,
@@ -921,6 +922,13 @@ const Library = () => {
         {chipIcon}
         {chipText}
       </span>
+
+      <SongActionMenu
+        song={song}
+        queue={queue}
+        triggerClassName="sw2324-overlay-more sw2324-library-more"
+        triggerLabel={`More options for ${getSongTitle(song)}`}
+      />
 
       {removable ? (
         <button

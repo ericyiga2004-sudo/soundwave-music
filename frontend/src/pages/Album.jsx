@@ -1,3 +1,4 @@
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import axios from "axios";
@@ -356,6 +357,12 @@ const Album = () => {
                   >
                     {playingNow ? <FaPause /> : <FaPlay />}
                   </button>
+                  <SongActionMenu
+                    song={song}
+                    queue={albumQueue}
+                    triggerClassName="sw2324-overlay-more sw2324-album-more"
+                    triggerLabel={`More options for ${song.title}`}
+                  />
                 </div>
               );
             })}

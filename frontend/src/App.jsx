@@ -18,10 +18,12 @@ import MusicPlay from "./pages/MusicPlay";
 import {
   getBatterySaver,
   getLowData,
+  getSidebarHidden,
   getTheme,
   UI_PREFERENCES_EVENT,
 } from "./utils/uiPreferences";
 import "./App.css";
+import "./pages/CSS/PremiumControlsV2324.css";
 
 const Explore = lazy(() => import("./pages/Explore"));
 const Library = lazy(() => import("./pages/Library"));
@@ -73,6 +75,7 @@ const App = () => {
   const [batterySaver, setBatterySaverState] = useState(getBatterySaver);
   const [lowData, setLowDataState] = useState(getLowData);
   const [theme, setThemeState] = useState(getTheme);
+  const [sidebarHidden, setSidebarHiddenState] = useState(getSidebarHidden);
 
   useEffect(() => {
     if (!isLaunching) return undefined;
@@ -102,6 +105,12 @@ const App = () => {
       } else {
         setThemeState(getTheme());
       }
+
+      if (typeof event?.detail?.sidebarHidden === "boolean") {
+        setSidebarHiddenState(event.detail.sidebarHidden);
+      } else {
+        setSidebarHiddenState(getSidebarHidden());
+      }
     };
 
     window.addEventListener(UI_PREFERENCES_EVENT, syncPreferences);
@@ -113,7 +122,8 @@ const App = () => {
     document.documentElement.dataset.swLowData = lowData ? "true" : "false";
     document.documentElement.dataset.swTheme = theme;
     document.documentElement.style.colorScheme = theme;
-  }, [batterySaver, lowData, theme]);
+    document.documentElement.dataset.swSidebar = sidebarHidden ? "hidden" : "visible";
+  }, [batterySaver, lowData, theme, sidebarHidden]);
 
   const isSongDetailPage = useMemo(
     () => location.pathname.startsWith("/song/"),

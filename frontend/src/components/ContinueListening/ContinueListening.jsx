@@ -1,3 +1,4 @@
+import SongActionMenu from "../SongActions/SongActionMenu";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -256,6 +257,12 @@ const ContinueListening = () => {
                     {formatPlayedAt(playedAt)}
                   </small>
                 </div>
+                <SongActionMenu
+                  song={song}
+                  queue={playQueue}
+                  triggerClassName="sw2324-overlay-more sw2324-continue-more"
+                  triggerLabel={`More options for ${song.title}`}
+                />
               </article>
             );
           })}

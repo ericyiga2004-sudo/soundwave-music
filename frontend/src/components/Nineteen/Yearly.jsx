@@ -1,3 +1,4 @@
+import SongActionMenu from "../SongActions/SongActionMenu";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
@@ -432,6 +433,7 @@ const Yearly = () => {
                               </span>
                             </div>
                           </Link>
+                          <SongActionMenu song={song} queue={playlist} triggerClassName="sw2324-overlay-more sw2324-yearly-more" triggerLabel={`More options for ${song.title}`} />
                         </div>
                       </div>
                     ))}

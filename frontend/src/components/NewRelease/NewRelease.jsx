@@ -1,3 +1,4 @@
+import SongActionMenu from "../SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { FaArrowRight, FaPlay } from "react-icons/fa";
@@ -262,6 +263,12 @@ const NewRelease = () => {
                   <h3>{song.title || "Unknown Song"}</h3>
                   <p>{song.artist?.name || "Unknown Artist"}</p>
                 </button>
+                <SongActionMenu
+                  song={song}
+                  queue={songs}
+                  triggerClassName="sw2324-overlay-more sw2324-release-more"
+                  triggerLabel={`More options for ${song.title}`}
+                />
               </article>
             </div>
           ))}

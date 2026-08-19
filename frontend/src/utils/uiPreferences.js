@@ -2,6 +2,7 @@ const BATTERY_KEY = "soundwave_battery_saver";
 const LOW_DATA_KEY = "soundwave_low_data";
 const THEME_KEY = "soundwave_theme";
 const PERSONALIZATION_KEY = "soundwave_personalization";
+const SIDEBAR_HIDDEN_KEY = "soundwave_sidebar_hidden";
 const UI_EVENT = "soundwave-ui-preferences";
 
 const dispatchPreferences = (detail = {}) => {
@@ -48,6 +49,14 @@ export const setPersonalizationEnabled = (value) => {
   const next = Boolean(value);
   localStorage.setItem(PERSONALIZATION_KEY, String(next));
   dispatchPreferences({ personalization: next });
+};
+
+export const getSidebarHidden = () => localStorage.getItem(SIDEBAR_HIDDEN_KEY) === "true";
+
+export const setSidebarHidden = (value) => {
+  const next = Boolean(value);
+  localStorage.setItem(SIDEBAR_HIDDEN_KEY, String(next));
+  dispatchPreferences({ sidebarHidden: next });
 };
 
 export const getTheme = () => {

@@ -1,0 +1,60 @@
+/* SoundWave V23.24 — sidebar hide retained + hero artwork correction */
+html[data-sw-sidebar="hidden"] .sw-sidebar { display: none !important; }
+html[data-sw-sidebar="hidden"] .sw-workspace {
+  margin-left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+html[data-sw-sidebar="hidden"] .main-content { width: 100% !important; max-width: 100% !important; }
+
+/* Home hero: always real square artwork, never narrow oval/pill cropping. */
+.sw-workspace .hero-mini-card {
+  position: relative !important;
+  grid-template-columns: 86px minmax(0,1fr) 38px !important;
+}
+.sw-workspace .hero-mini-card img,
+.sw-workspace .hero-mini-placeholder {
+  display: block !important;
+  width: 86px !important;
+  min-width: 86px !important;
+  max-width: 86px !important;
+  height: 86px !important;
+  min-height: 86px !important;
+  max-height: 86px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 12px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+.sw-workspace .hero-feature-card,
+.continue-card,
+.release-card,
+.filter-release-card,
+.years-song-card,
+.year-song-card,
+.mood-song-card,
+.explore-art-grid > article,
+.album-track,
+.liked-row,
+.boom-song-row,
+.playlist-song-row,
+.available-song-card,
+.sw-search-item,
+.song-recommendation-row {
+  position: relative;
+}
+
+@media (max-width: 575.98px) {
+  .sw-workspace .hero-mini-card {
+    grid-template-columns: 68px minmax(0,1fr) 34px !important;
+  }
+  .sw-workspace .hero-mini-card img,
+  .sw-workspace .hero-mini-placeholder {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+  }
+}

@@ -1,3 +1,5 @@
+import PremiumSelect from "../components/UI/PremiumSelect";
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -938,7 +940,7 @@ const SongDetails = () => {
         </div>
         <p className="song-muted-copy">Reactions are attached to an exact point in the track. Tap a timestamp to jump there.</p>
         <form className="song-moment-form" onSubmit={postMoment}>
-          <select value={momentEmoji} onChange={(event) => setMomentEmoji(event.target.value)} aria-label="Reaction"><option>🔥</option><option>❤️</option><option>😭</option><option>✨</option><option>🎧</option><option>🤯</option></select>
+          <PremiumSelect value={momentEmoji} onChange={(event) => setMomentEmoji(event.target.value)} aria-label="Reaction"><option>🔥</option><option>❤️</option><option>😭</option><option>✨</option><option>🎧</option><option>🤯</option></PremiumSelect>
           <input value={momentBody} onChange={(event) => setMomentBody(event.target.value.slice(0,320))} placeholder={token ? `React at ${formatDuration(isCurrent ? progress : 0)}…` : "Sign in to leave a song moment"} disabled={!token}/>
           <button type="submit" className="sw-primary-btn" disabled={!token}>{token ? "Post moment" : "Sign in"}</button>
         </form>
@@ -957,7 +959,7 @@ const SongDetails = () => {
 
       <section className="song-below-grid">
         <div className="song-comments-section">
-          <div className="song-section-title"><div><span className="song-premium-kicker">Community</span><h2>Comments</h2></div><div className="song-comment-heading-actions"><span>{commentTotal}</span><select value={commentSort} onChange={(event)=>setCommentSort(event.target.value)} aria-label="Sort comments"><option value="recent">Recent</option><option value="top">Top</option></select></div></div>
+          <div className="song-section-title"><div><span className="song-premium-kicker">Community</span><h2>Comments</h2></div><div className="song-comment-heading-actions"><span>{commentTotal}</span><PremiumSelect value={commentSort} onChange={(event)=>setCommentSort(event.target.value)} aria-label="Sort comments"><option value="recent">Recent</option><option value="top">Top</option></PremiumSelect></div></div>
           <form className="song-comment-form" onSubmit={submitComment}>
             <textarea value={commentBody} onChange={(e)=>setCommentBody(e.target.value.slice(0,600))} placeholder={token?"Add a comment… use @username to mention someone":"Sign in to join the conversation"} disabled={!token||commentBusy}/>
             <div className="song-comment-form-footer"><label className={isCurrent ? "song-time-toggle" : "song-time-toggle disabled"}><input type="checkbox" checked={commentAtTime} onChange={(e)=>setCommentAtTime(e.target.checked)} disabled={!isCurrent||!token}/><Clock3 size={13}/> Attach {isCurrent ? formatDuration(progress) : "playback time"}</label><span className="song-comment-count">{commentBody.length}/600</span><button className="sw-primary-btn" type="submit" disabled={!token||!commentBody.trim()||commentBusy}>{commentBusy?"Posting…":"Comment"}</button></div>
@@ -979,7 +981,7 @@ const SongDetails = () => {
 
         <aside className="song-recommendations">
           <div className="song-section-title"><div><span className="song-premium-kicker">Up next</span><h2>More like this</h2></div></div>
-          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><div className="song-recommendation-row" key={item._id}><button className="song-recommendation-main" type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><img src={getSongCover(item)} alt="" loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small>{getArtistName(item)}</small></span></button><div className="song-recommendation-actions"><button className="song-recommendation-queue" type="button" onClick={(event)=>playNextRecommendation(event,item)} aria-label={`Play ${item.title} next`} title="Play next"><Sparkles size={15}/><span>Next</span></button><button className="song-recommendation-queue" type="button" onClick={(event)=>addRecommendationToQueue(event,item)} aria-label={`Add ${item.title} to queue`} title="Add later"><ListMusic size={15}/><span>+</span></button></div></div>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
+          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><div className="song-recommendation-row" key={item._id}><button className="song-recommendation-main" type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><img src={getSongCover(item)} alt="" loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small>{getArtistName(item)}</small></span></button><div className="song-recommendation-actions"><SongActionMenu song={item} queue={recommendations} triggerLabel={`More options for ${item.title}`} /><button className="song-recommendation-queue" type="button" onClick={(event)=>playNextRecommendation(event,item)} aria-label={`Play ${item.title} next`} title="Play next"><Sparkles size={15}/><span>Next</span></button><button className="song-recommendation-queue" type="button" onClick={(event)=>addRecommendationToQueue(event,item)} aria-label={`Add ${item.title} to queue`} title="Add later"><ListMusic size={15}/><span>+</span></button></div></div>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
 
           <div className="song-discovery-trail">
             <div className="song-section-title compact"><div><span className="song-premium-kicker">Friends</span><h2>Discovery trail</h2></div></div>

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import Hero from "../components/Hero/Hero";
 import "./CSS/Home.css";
 import DeferredSection from "../components/DeferredSection/DeferredSection";
+import HomeSidebarToggle from "../components/HomeSidebarToggle/HomeSidebarToggle";
 
 const MadeForYou = lazy(() => import("../components/MadeForYou/MadeForYou"));
 const ContinueListening = lazy(() => import("../components/ContinueListening/ContinueListening"));
@@ -133,6 +134,7 @@ const Home = () => {
       <DeferredSection minHeight={300}><LazySection><FilterSongs /></LazySection></DeferredSection>
       <DeferredSection minHeight={420}><LazySection><Yearly /></LazySection></DeferredSection>
       <DeferredSection minHeight={220}><LazySection><DownloadAd /></LazySection></DeferredSection>
+      <HomeSidebarToggle />
 
     </div>
   );

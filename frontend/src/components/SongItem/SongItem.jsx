@@ -1,3 +1,4 @@
+import SongActionMenu from "../SongActions/SongActionMenu";
 import React, { useContext, useMemo } from "react";
 import { FaPlay } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -82,6 +83,11 @@ const SongItem = ({ song, queue = [] }) => {
           </p>
         </div>
       </Link>
+      <SongActionMenu
+        song={song}
+        queue={songQueue}
+        triggerLabel={`More options for ${song?.title || "song"}`}
+      />
     </div>
   );
 };

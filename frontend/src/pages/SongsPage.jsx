@@ -1,3 +1,5 @@
+import PremiumSelect from "../components/UI/PremiumSelect";
+import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { MoreHorizontal, Play, Search, X } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -121,12 +123,12 @@ const SongsPage = () => {
           />
         </div>
 
-        <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort songs">
+        <PremiumSelect value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort songs">
           <option value="popular">Popular</option>
           <option value="newest">Newest</option>
           <option value="liked">Most liked</option>
           <option value="az">Title A–Z</option>
-        </select>
+        </PremiumSelect>
 
         <button
           type="button"
@@ -179,14 +181,7 @@ const SongsPage = () => {
                 >
                   <Play size={16} fill="currentColor" />
                 </button>
-                <button
-                  className="sw-icon-only"
-                  type="button"
-                  onClick={() => navigate(`/song/${song._id}`, { state: { playlist: songs } })}
-                  aria-label={`Open ${song.title}`}
-                >
-                  <MoreHorizontal size={17} />
-                </button>
+                <SongActionMenu song={song} queue={songs} triggerClassName="sw-icon-only" triggerLabel={`More options for ${song.title}`} />
               </div>
             </div>
           ))}

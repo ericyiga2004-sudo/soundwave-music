@@ -1,3 +1,5 @@
+import PremiumSelect from "../UI/PremiumSelect";
+import SongActionMenu from "../SongActions/SongActionMenu";
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
@@ -253,7 +255,7 @@ const FilterSongs = () => {
           </div>
 
           <div className="col-12 col-sm-6 col-md-4 col-lg-3">
-            <select
+            <PremiumSelect
               className="w-100"
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
@@ -265,7 +267,7 @@ const FilterSongs = () => {
                   {genreName}
                 </option>
               ))}
-            </select>
+            </PremiumSelect>
           </div>
 
           <div className="col-12 col-sm-8 col-md-4 col-lg-4">
@@ -345,6 +347,12 @@ const FilterSongs = () => {
                       )}
                     </div>
                   </Link>
+                  <SongActionMenu
+                    song={song}
+                    queue={songs}
+                    triggerClassName="sw2324-overlay-more sw2324-filter-more"
+                    triggerLabel={`More options for ${song.title}`}
+                  />
                 </div>
               ))}
             </div>
