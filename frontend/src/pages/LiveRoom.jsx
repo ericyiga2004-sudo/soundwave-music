@@ -385,16 +385,18 @@ const LiveRoom = () => {
     if (seenRoomReactionIdsRef.current.has(reactionId)) return;
     seenRoomReactionIdsRef.current.add(reactionId);
 
-    const duration = 3000 + Math.floor(Math.random() * 1800);
+    // V23.13: motion is generated once by the sender and shared with the room.
+    const duration = Math.max(2400, Math.min(6200, Number(payload?.duration || (3000 + Math.floor(Math.random() * 1800)))));
+    const startedAt = Number(payload?.startedAt || Date.now());
+    const elapsed = Math.max(0, Math.min(duration - 20, Date.now() - startedAt));
     const bubble = {
       id: reactionId,
       emoji,
-      // Give every tap an independent lane so rapid reactions do not stack on
-      // top of one another. The layer is viewport-wide, like YouTube live.
-      left: 6 + Math.random() * 88,
-      drift: -105 + Math.random() * 210,
-      scale: 0.86 + Math.random() * 0.48,
+      left: Math.max(4, Math.min(94, Number(payload?.left ?? (6 + Math.random() * 88)))),
+      drift: Math.max(-220, Math.min(220, Number(payload?.drift ?? (-105 + Math.random() * 210)))),
+      scale: Math.max(0.72, Math.min(1.65, Number(payload?.scale ?? (0.86 + Math.random() * 0.48)))),
       duration,
+      delay: -elapsed,
     };
 
     setFloatingReactions((current) => [...current.slice(-139), bubble]);
@@ -467,6 +469,11 @@ const LiveRoom = () => {
       reactionId,
       emoji,
       actorId: snapshot._viewerId || "",
+      startedAt: Date.now(),
+      left: 6 + Math.random() * 88,
+      drift: -105 + Math.random() * 210,
+      scale: 0.86 + Math.random() * 0.48,
+      duration: 3000 + Math.floor(Math.random() * 1800),
       at: new Date().toISOString(),
     };
 
@@ -476,7 +483,10 @@ const LiveRoom = () => {
     broadcastReactionToLocalTabs(packet);
     // 3) The backend broadcasts it to every authenticated member of this room,
     //    including the leader and the sender's other devices.
-    const post = () => apiClient.post(`/api/social/rooms/${snapshot.code}/reactions`, { emoji, reactionId }, { headers });
+    const post = () => apiClient.post(`/api/social/rooms/${snapshot.code}/reactions`, {
+      emoji, reactionId, startedAt: packet.startedAt, left: packet.left,
+      drift: packet.drift, scale: packet.scale, duration: packet.duration,
+    }, { headers });
     try {
       await post();
     } catch {
@@ -586,6 +596,10 @@ const LiveRoom = () => {
 
     const onRoomUpdate = (event) => {
       if (String(event?.code || "").toUpperCase() !== roomCode) return;
+      if (event?.reason === "live_reaction" && event?.reaction?.emoji) {
+        spawnRoomReaction(event.reaction);
+        return;
+      }
       // room:playback already carries the lightweight playback state. Avoid a
       // full room fetch for every host pause/seek/play command.
       if (event?.reason === "playback_changed") return;
@@ -1256,6 +1270,7 @@ const LiveRoom = () => {
               "--sw-reaction-drift": `${reaction.drift}px`,
               "--sw-reaction-scale": reaction.scale,
               "--sw-reaction-duration": `${reaction.duration}ms`,
+              animationDelay: `${reaction.delay || 0}ms`,
             }}
           >
             {reaction.emoji}

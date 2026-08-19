@@ -824,6 +824,12 @@ export const sendLiveRoomReaction = async (req, res) => {
     const code = String(req.params.code || "").toUpperCase();
     const emoji = String(req.body.emoji || "❤️").trim().slice(0, 8);
     const reactionId = String(req.body.reactionId || `${id(req.userId)}-${Date.now()}`).trim().slice(0, 96);
+    const startedAtRaw = Number(req.body.startedAt || Date.now());
+    const startedAt = Number.isFinite(startedAtRaw) && Math.abs(Date.now() - startedAtRaw) < 30000 ? startedAtRaw : Date.now();
+    const left = Math.max(4, Math.min(94, Number(req.body.left ?? 50)));
+    const drift = Math.max(-220, Math.min(220, Number(req.body.drift ?? 0)));
+    const scale = Math.max(0.72, Math.min(1.65, Number(req.body.scale ?? 1)));
+    const duration = Math.max(2400, Math.min(6200, Number(req.body.duration ?? 3600)));
     const allowed = new Set(["❤️", "🔥", "😂", "👏", "🎵", "🙌"]);
     if (!allowed.has(emoji)) return res.status(400).json({ success: false, message: "Unsupported reaction" });
 
@@ -838,6 +844,11 @@ export const sendLiveRoomReaction = async (req, res) => {
       emoji,
       actorId: id(req.userId),
       actorName: actor?.username || actor?.name || "Listener",
+      startedAt,
+      left,
+      drift,
+      scale,
+      duration,
       at: new Date().toISOString(),
     };
 
@@ -845,6 +856,13 @@ export const sendLiveRoomReaction = async (req, res) => {
     // active room member but never stored in chat or in MongoDB, so rapid taps
     // feel like live audience energy instead of generating message history.
     emitToUsers(memberIds, "room:reaction", packet);
+    emitToUsers(memberIds, "room:update", {
+      code: room.code,
+      reason: "live_reaction",
+      reaction: packet,
+      at: packet.at,
+    });
+    setTimeout(() => emitToUsers(memberIds, "room:reaction", packet), 90);
     return res.status(202).json({ success: true, reaction: packet });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Could not send room reaction" });
