@@ -43,6 +43,7 @@ const LiveRoom = () => {
   const [message, setMessage] = useState("");
   const [chatBody, setChatBody] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
+  const [hostPlayBusy, setHostPlayBusy] = useState("");
   const [listenerPaused, setListenerPaused] = useState(false);
   const [roomClock, setRoomClock] = useState(0);
   const chatEndRef = useRef(null);
@@ -509,6 +510,32 @@ const LiveRoom = () => {
     }
   };
 
+
+  const hostPlayQueuedSong = async (entryId) => {
+    if (!room?._isHost || !room?.code || !entryId || hostPlayBusy) return;
+    setHostPlayBusy(String(entryId));
+    try {
+      const { data } = await apiClient.post(`/api/social/rooms/${room.code}/queue/${entryId}/play`, {}, { headers });
+      if (!data?.success || !data.currentSong) throw new Error(data?.message || "Could not play that song");
+
+      listenerPausedRef.current = false;
+      setListenerPaused(false);
+      await playerRef.current?.playSong?.(data.currentSong, [data.currentSong], { roomSync: true });
+      playerRef.current?.seekTo?.(0, { roomSync: true });
+      await playerRef.current?.resumeSong?.({ roomSync: true });
+
+      setMessage(`${data.currentSong.title || "Voted song"} is now playing for the whole room.`);
+      window.dispatchEvent(new CustomEvent("soundwave-social-mutated", {
+        detail: { reason: "room-host-play", code: roomCode, songId: data.currentSong?._id || "" },
+      }));
+      await load({ quiet: true });
+    } catch (errorValue) {
+      setMessage(errorValue?.response?.data?.message || errorValue.message || "Could not play that voted song.");
+    } finally {
+      setHostPlayBusy("");
+    }
+  };
+
   const toggleRoomPlayback = async () => {
     if (!room?.currentSong?._id) {
       if (room?._isHost && queue.length) await advanceRoom();
@@ -638,6 +665,65 @@ const LiveRoom = () => {
               </div>
             )}
           </section>
+
+          {room._isHost ? (
+            <section className="sw-social-panel sw20-panel sw25-leader-player">
+              <div className="sw25-leader-player-head">
+                <div>
+                  <span className="sw-social-kicker">Leader only</span>
+                  <h2>Voted Songs Player</h2>
+                  <p>Only you can start a queued song. Members keep voting while music plays; their votes reorder this waiting list but never interrupt the current track.</p>
+                </div>
+                <span className="sw25-leader-badge"><Crown size={14} /> Host player</span>
+              </div>
+
+              {queue.length ? (
+                <>
+                  <div className="sw25-leader-top">
+                    <img src={getSongCover(queue[0].song)} alt="" />
+                    <div>
+                      <small>#1 by live votes</small>
+                      <strong>{queue[0].song?.title || "Top voted song"}</strong>
+                      <span>{getArtistName(queue[0].song)} · {queue[0].votes?.length || 0} vote{(queue[0].votes?.length || 0) === 1 ? "" : "s"}</span>
+                    </div>
+                    <button type="button" onClick={() => hostPlayQueuedSong(queue[0]._id)} disabled={Boolean(hostPlayBusy)}>
+                      <Play size={16} fill="currentColor" />
+                      {hostPlayBusy === String(queue[0]._id) ? "Starting…" : room.currentSong ? "Play top voted now" : "Start top voted"}
+                    </button>
+                  </div>
+
+                  <div className="sw25-leader-list">
+                    {queue.slice(0, 8).map((entry, index) => (
+                      <article key={`leader-${entry._id}`}>
+                        <span className="sw25-leader-rank">{index + 1}</span>
+                        <img src={getSongCover(entry.song)} alt="" />
+                        <div>
+                          <strong>{entry.song?.title}</strong>
+                          <span>{getArtistName(entry.song)}</span>
+                        </div>
+                        <span className="sw25-leader-votes"><ArrowBigUp size={14} /> {entry.votes?.length || 0}</span>
+                        <button
+                          type="button"
+                          className="sw25-leader-play"
+                          onClick={() => hostPlayQueuedSong(entry._id)}
+                          disabled={Boolean(hostPlayBusy)}
+                          aria-label={`Play ${entry.song?.title || "voted song"} for the room`}
+                        >
+                          <Play size={14} fill="currentColor" />
+                          {hostPlayBusy === String(entry._id) ? "Starting…" : "Play"}
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="sw25-leader-empty">
+                  <Play size={20} />
+                  <div><strong>No voted songs ready</strong><span>Members can add songs below. As soon as songs are queued, your leader player will appear here.</span></div>
+                </div>
+              )}
+            </section>
+          ) : null}
 
           <section className="sw-social-panel sw20-panel sw23-room-queue-panel">
             <div className="sw23-queue-heading">

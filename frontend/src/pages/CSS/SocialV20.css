@@ -500,3 +500,44 @@ html[data-sw-theme="dark"] .danger-soft{color:#ff7f8d!important;background:color
 .sw24-vote-lock span{font-size:.61rem;line-height:1.42;color:var(--sw-text-tertiary)}
 .sw23-room-code-card button{white-space:nowrap}
 @media(max-width:520px){.sw24-vote-lock{padding:8px}.sw24-vote-lock span{font-size:.59rem}}
+
+
+/* ===== V23.5 host-only voted songs player ===== */
+.sw25-leader-player{overflow:hidden;border-color:color-mix(in srgb,var(--sw-accent) 20%,var(--sw-border))}
+.sw25-leader-player-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+.sw25-leader-player-head h2{margin:2px 0 0;font-size:1rem;letter-spacing:-.025em}
+.sw25-leader-player-head p{max-width:650px;margin:5px 0 0;color:var(--sw-text-secondary);font-size:.67rem;line-height:1.45}
+.sw25-leader-badge{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:5px 9px;border:1px solid color-mix(in srgb,var(--sw-accent) 30%,var(--sw-border));border-radius:999px;background:var(--sw-accent-soft);color:var(--sw-accent);font-size:.64rem;font-weight:850;white-space:nowrap}
+.sw25-leader-top{display:grid;grid-template-columns:68px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid color-mix(in srgb,var(--sw-accent) 30%,var(--sw-border));border-radius:16px;background:color-mix(in srgb,var(--sw-accent) 5%,var(--sw-bg-elevated));margin-bottom:9px}
+.sw25-leader-top>img{width:68px;height:68px;border-radius:13px;object-fit:cover;background:var(--sw-bg-elevated)}
+.sw25-leader-top>div{display:grid;min-width:0}
+.sw25-leader-top small{font-size:.6rem;color:var(--sw-accent);font-weight:850;text-transform:uppercase;letter-spacing:.05em}
+.sw25-leader-top strong{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.sw25-leader-top span{font-size:.65rem;color:var(--sw-text-secondary);margin-top:2px}
+.sw25-leader-top>button,.sw25-leader-play{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:11px;background:var(--sw-accent);color:#fff;font-size:.65rem;font-weight:850;white-space:nowrap}
+.sw25-leader-top>button{min-height:38px;padding:0 12px}
+.sw25-leader-top>button:disabled,.sw25-leader-play:disabled{opacity:.55;cursor:wait}
+.sw25-leader-list{display:grid;gap:6px}
+.sw25-leader-list article{display:grid;grid-template-columns:26px 42px minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--sw-border);border-radius:12px;background:var(--sw-surface)}
+.sw25-leader-list article>img{width:42px;height:42px;border-radius:9px;object-fit:cover;background:var(--sw-bg-elevated)}
+.sw25-leader-list article>div{display:grid;min-width:0}
+.sw25-leader-list article strong{font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw25-leader-list article div span{font-size:.61rem;color:var(--sw-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw25-leader-rank{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:var(--sw-bg-elevated);font-size:.61rem;font-weight:900;color:var(--sw-text-secondary)}
+.sw25-leader-list article:first-child .sw25-leader-rank{background:var(--sw-accent);color:#fff}
+.sw25-leader-votes{display:inline-flex;align-items:center;gap:3px;color:var(--sw-text-secondary);font-size:.62rem;font-weight:850}
+.sw25-leader-play{min-height:31px;padding:0 9px}
+.sw25-leader-empty{display:flex;align-items:center;gap:10px;padding:15px;border:1px dashed var(--sw-border-strong);border-radius:14px;background:var(--sw-bg-elevated);color:var(--sw-text-secondary)}
+.sw25-leader-empty>svg{color:var(--sw-accent);flex:0 0 auto}
+.sw25-leader-empty strong{display:block;color:var(--sw-text);font-size:.76rem}
+.sw25-leader-empty span{display:block;margin-top:2px;font-size:.64rem;line-height:1.4}
+@media(max-width:650px){
+  .sw25-leader-player-head{display:grid}
+  .sw25-leader-badge{justify-self:start}
+  .sw25-leader-top{grid-template-columns:56px minmax(0,1fr)}
+  .sw25-leader-top>img{width:56px;height:56px}
+  .sw25-leader-top>button{grid-column:1/-1;width:100%}
+  .sw25-leader-list article{grid-template-columns:24px 38px minmax(0,1fr) auto}
+  .sw25-leader-list article>img{width:38px;height:38px}
+  .sw25-leader-play{grid-column:2/-1;width:100%}
+}

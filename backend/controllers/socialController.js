@@ -871,6 +871,61 @@ export const voteLiveRoomSong = async (req, res) => {
   } catch (error) { return res.status(500).json({ success: false, message: "Could not vote" }); }
 };
 
+
+export const playLiveRoomQueueEntry = async (req, res) => {
+  try {
+    const room = await LiveRoom.findOne({ code: String(req.params.code || "").toUpperCase(), status: "active" });
+    if (!room || id(room.host) !== id(req.userId)) {
+      return res.status(403).json({ success: false, message: "Only the host can play voted room songs" });
+    }
+
+    const entry = room.queue.id(req.params.entryId);
+    if (!entry || entry.played) {
+      return res.status(404).json({ success: false, message: "That voted song is no longer waiting in the room queue" });
+    }
+
+    const selectedSongId = id(entry.song);
+    if (!selectedSongId || !(await Song.exists({ _id: selectedSongId }))) {
+      return res.status(404).json({ success: false, message: "Song not found" });
+    }
+
+    // A deliberate host selection is the only action here that can replace the
+    // current room song. Ordinary vote changes only reorder the waiting queue.
+    room.queue.forEach((queuedEntry) => {
+      if (id(queuedEntry.song) === selectedSongId) queuedEntry.played = true;
+    });
+
+    const now = new Date();
+    room.currentSong = selectedSongId;
+    room.currentStartedAt = now;
+    room.playbackState = "playing";
+    room.playbackPosition = 0;
+    room.playbackStartedAt = now;
+    room.playbackVersion = Number(room.playbackVersion || 0) + 1;
+    room.lastActiveAt = now;
+    await room.save();
+
+    const song = await Song.findById(selectedSongId).populate("artist album");
+    const memberIds = [room.host, ...(room.members || []).map((member) => member.user)];
+
+    emitToUsers(memberIds, "room:update", {
+      code: room.code,
+      reason: "host_selected_song",
+      songId: id(song?._id),
+      at: now.toISOString(),
+    });
+    emitToUsers(memberIds, "room:playback", {
+      ...roomPlaybackPacket(room, now),
+      songId: id(song?._id),
+    });
+    emitSocialRefresh(memberIds, "room_host_selected_song");
+
+    return res.json({ success: true, currentSong: song });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Could not play that voted room song" });
+  }
+};
+
 export const advanceLiveRoom = async (req, res) => {
   try {
     const room = await LiveRoom.findOne({ code: String(req.params.code || "").toUpperCase(), status: "active" });

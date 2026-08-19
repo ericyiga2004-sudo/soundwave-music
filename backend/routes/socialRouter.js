@@ -24,6 +24,7 @@ import {
   replySongMoment,
   toggleSongMomentReplyLike,
   postLiveRoomChat,
+  playLiveRoomQueueEntry,
   reactLiveRoomChat,
   searchUsers,
   shareSongDirect,
@@ -68,6 +69,7 @@ router.post("/rooms/join", authUser, joinLiveRoom);
 router.get("/rooms/:code", authUser, getLiveRoom);
 router.post("/rooms/:code/queue", authUser, addLiveRoomSong);
 router.post("/rooms/:code/queue/:entryId/vote", authUser, voteLiveRoomSong);
+router.post("/rooms/:code/queue/:entryId/play", authUser, playLiveRoomQueueEntry);
 router.post("/rooms/:code/advance", authUser, advanceLiveRoom);
 router.post("/rooms/:code/playback", authUser, updateLiveRoomPlayback);
 router.post("/rooms/:code/chat", authUser, postLiveRoomChat);
