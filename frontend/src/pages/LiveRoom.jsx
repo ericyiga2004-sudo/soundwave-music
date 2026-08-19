@@ -51,6 +51,7 @@ const LiveRoom = () => {
   const seekTimerRef = useRef(null);
   const pendingSeekRef = useRef(null);
   const listenerPausedRef = useRef(false);
+  const joinAttemptRef = useRef(false);
   const roomCode = String(code || "").toUpperCase();
 
   roomRef.current = room;
@@ -87,6 +88,27 @@ const LiveRoom = () => {
       setError("");
       return nextRoom;
     } catch (errorValue) {
+      // V23.4: a private room link is also a join link. If a logged-in user
+      // opens the host's exact /social/rooms/:code URL but is not a member yet,
+      // join that room once and immediately reload it. This avoids accidentally
+      // creating a second room when friends are trying to listen together.
+      if (errorValue?.response?.status === 404 && !joinAttemptRef.current) {
+        joinAttemptRef.current = true;
+        try {
+          const { data: joined } = await apiClient.post("/api/social/rooms/join", { code: roomCode }, { headers });
+          if (joined?.success) {
+            const { data } = await apiClient.get(`/api/social/rooms/${roomCode}`, { headers });
+            if (data?.success) {
+              const nextRoom = normalizeRoomResponse(data);
+              setRoom(nextRoom);
+              setError("");
+              return nextRoom;
+            }
+          }
+        } catch {
+          // Fall through to the original room-unavailable message.
+        }
+      }
       if (!quiet) setError(errorValue?.response?.data?.message || errorValue.message || "Could not load room");
       return null;
     } finally {
@@ -120,6 +142,8 @@ const LiveRoom = () => {
       const started = await activePlayer.playSong?.(current, [current], { roomSync: true });
       if (started !== false) {
         activePlayer.seekTo?.(wantedPosition, { roomSync: true });
+      } else if (!snapshot?._isHost && snapshot.playbackState === "playing") {
+        setMessage("Your browser blocked automatic audio. Tap Play once to join the live sound; after that SoundWave keeps you synced to the host.");
       }
     } else {
       const actual = Number(activePlayer.progress || 0);
@@ -132,7 +156,10 @@ const LiveRoom = () => {
     if (snapshot.playbackState === "paused") {
       if (activePlayer.isPlaying) activePlayer.pauseSong?.({ roomSync: true });
     } else if (!activePlayer.isPlaying) {
-      await activePlayer.resumeSong?.({ roomSync: true });
+      const resumed = await activePlayer.resumeSong?.({ roomSync: true });
+      if (resumed === false && !snapshot?._isHost) {
+        setMessage("Tap Play once to enable live audio on this device. SoundWave will then catch up to the host automatically.");
+      }
     }
   }, [expectedPosition]);
 
@@ -500,26 +527,28 @@ const LiveRoom = () => {
       setMessage("The host has paused the room. Playback resumes for everyone when the host presses Play.");
       return;
     }
-    if (listenerPausedRef.current) await playerRef.current?.resumeSong?.();
+    if (listenerPausedRef.current || !playerRef.current?.isPlaying) await resumeListenerLive();
     else playerRef.current?.pauseSong?.();
   };
 
   const copy = async () => {
+    const inviteUrl = `${window.location.origin}/social/rooms/${room.code}`;
     try {
-      await navigator.clipboard.writeText(room.code);
-      setMessage("Room code copied.");
+      await navigator.clipboard.writeText(inviteUrl);
+      setMessage(`Invite copied for room ${room.code}. Everyone must join this exact room to share votes, chat and playback.`);
     } catch {
-      setMessage(`Room code: ${room.code}`);
+      setMessage(`Share room code ${room.code}. Everyone must join the same code to listen together.`);
     }
   };
 
   const onlineCount = (room.members || []).filter((member) => member.user?.online).length;
   const roomPlaying = room.playbackState === "playing";
-  const localLive = room._isHost || !listenerPaused;
   const hostName = nameOf(room.host);
   const roomDuration = Math.max(0, Number(room.currentSong?.duration || player?.duration || 0));
   const displayPosition = roomDuration ? Math.min(roomClock, roomDuration) : roomClock;
   const roomProgress = roomDuration > 0 ? Math.min(100, (displayPosition / roomDuration) * 100) : 0;
+  const nextQueued = queue[0] || null;
+  const localAudioFollowing = Boolean(room._isHost || (roomPlaying && !listenerPaused && player?.isPlaying));
 
   return (
     <div className="sw-social-page sw20-page sw23-live-room-page">
@@ -536,12 +565,12 @@ const LiveRoom = () => {
               </span>
             </div>
             <h1>{room.name}</h1>
-            <p><strong>{hostName}</strong> is hosting · {onlineCount} online · {room.members?.length || 1} in room</p>
+            <p><strong>{hostName}</strong> is hosting · {onlineCount} online · {room.members?.length || 1} in room · everyone must use code <strong>{room.code}</strong></p>
           </div>
         </div>
         <div className="sw23-room-code-card">
           <span><LockKeyhole size={13} /> Private room code</span>
-          <div><code>{room.code}</code><button type="button" onClick={copy}><Copy size={14} /> Copy</button></div>
+          <div><code>{room.code}</code><button type="button" onClick={copy}><Copy size={14} /> Copy invite</button></div>
         </div>
       </header>
 
@@ -555,8 +584,8 @@ const LiveRoom = () => {
                 <span className="sw-social-kicker">Now playing</span>
                 <h2>{roomPlaying ? "Live with the host" : "Room paused"}</h2>
               </div>
-              <span className={`sw23-room-follow-state ${roomPlaying && localLive ? "live" : ""}`}>
-                {room._isHost ? <><Crown size={14} /> Host controls</> : listenerPaused ? <><VolumeX size={14} /> Paused on this device</> : roomPlaying ? <><Volume2 size={14} /> Following live</> : <><Pause size={14} /> Host paused</>}
+              <span className={`sw23-room-follow-state ${localAudioFollowing ? "live" : ""}`}>
+                {room._isHost ? <><Crown size={14} /> Host controls</> : listenerPaused ? <><VolumeX size={14} /> Paused on this device</> : roomPlaying && player?.isPlaying ? <><Volume2 size={14} /> Following live</> : roomPlaying ? <><RefreshCw size={14} /> Tap to join audio</> : <><Pause size={14} /> Host paused</>}
               </span>
             </div>
 
@@ -567,7 +596,11 @@ const LiveRoom = () => {
                   <small>Everyone in this room is synced to</small>
                   <strong>{room.currentSong.title}</strong>
                   <span>{getArtistName(room.currentSong)}</span>
-                  <p>{room._isHost ? "Your player controls the room for everyone." : listenerPaused ? "The room keeps moving while your device is paused. Resume to jump back to the host’s current position." : "Your player follows the host’s song, position and host pause state."}</p>
+                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.isPlaying ? "Your media follows the host’s song, position and host pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
+                  <div className="sw24-vote-lock">
+                    <strong>Current song stays locked.</strong>
+                    <span>{nextQueued ? `${nextQueued.song?.title || "The leading song"} is currently next with ${nextQueued.votes?.length || 0} vote${(nextQueued.votes?.length || 0) === 1 ? "" : "s"}. New votes can reorder the waiting queue without interrupting this song.` : "Votes can keep changing while this song plays. The current song will not be interrupted."}</span>
+                  </div>
                   <div className="sw23-room-progress-wrap">
                     <div className="sw23-room-progress-time"><span>{formatClock(displayPosition)}</span><span>{roomDuration ? formatClock(roomDuration) : "Live"}</span></div>
                     <input
@@ -585,14 +618,14 @@ const LiveRoom = () => {
                   </div>
                 </div>
                 <div className="sw23-room-player-actions">
-                  <button type="button" className="sw23-room-play-btn" onClick={toggleRoomPlayback} aria-label={roomPlaying && !listenerPaused ? "Pause" : "Play"}>
-                    {roomPlaying && !listenerPaused ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                  <button type="button" className="sw23-room-play-btn" onClick={toggleRoomPlayback} aria-label={localAudioFollowing ? "Pause" : "Play"}>
+                    {localAudioFollowing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
                   </button>
                   {room._isHost ? (
-                    <button type="button" className="sw23-room-next-btn" onClick={advanceRoom}><SkipForward size={16} /> Play top voted</button>
+                    <button type="button" className="sw23-room-next-btn" onClick={advanceRoom}><SkipForward size={16} /> Next · top voted</button>
                   ) : (
-                    <button type="button" className="sw23-room-sync-btn" onClick={() => resumeListenerLive()} disabled={!listenerPaused && roomPlaying}>
-                      <RefreshCw size={15} /> {listenerPaused ? "Rejoin live" : roomPlaying ? "In sync" : "Waiting for host"}
+                    <button type="button" className="sw23-room-sync-btn" onClick={() => resumeListenerLive()} disabled={!listenerPaused && roomPlaying && player?.isPlaying}>
+                      <RefreshCw size={15} /> {listenerPaused ? "Rejoin live" : roomPlaying && player?.isPlaying ? "In sync" : roomPlaying ? "Join live audio" : "Waiting for host"}
                     </button>
                   )}
                 </div>
@@ -601,7 +634,7 @@ const LiveRoom = () => {
               <div className="sw23-room-empty-playing">
                 <Play size={22} />
                 <div><strong>No song playing yet</strong><span>{queue.length ? "The highest-voted song is ready for the host." : "Add songs below, then vote for what everyone should hear."}</span></div>
-                {room._isHost && queue.length ? <button type="button" className="sw23-room-start-btn" onClick={advanceRoom}><Play size={15} fill="currentColor" /> Start top voted</button> : null}
+                {room._isHost && queue.length ? <button type="button" className="sw23-room-start-btn" onClick={advanceRoom}><Play size={15} fill="currentColor" /> Start voted queue</button> : null}
               </div>
             )}
           </section>
@@ -610,8 +643,8 @@ const LiveRoom = () => {
             <div className="sw23-queue-heading">
               <div>
                 <span className="sw-social-kicker">Room queue</span>
-                <h2>Vote what everyone hears next</h2>
-                <p>One vote per listener. Tap again to cancel your vote. Highest votes win; ties go to the earliest add.</p>
+                <h2>Everyone adds. Everyone votes. Host starts the winner.</h2>
+                <p>Waiting songs reorder live from highest votes to lowest. One vote per member; tap again to cancel. Ties go to the earliest add. Vote changes never interrupt the song already playing.</p>
               </div>
               <span className="sw23-queue-count">{queue.length} queued</span>
             </div>
@@ -632,7 +665,7 @@ const LiveRoom = () => {
                     <div className="sw23-queue-copy">
                       <strong>{entry.song?.title}</strong>
                       <span>{getArtistName(entry.song)}</span>
-                      <small>{index === 0 ? "Top voted · plays next" : `Added by ${nameOf(entry.addedBy)}`}</small>
+                      <small>{index === 0 ? "Top voted · plays next when current song finishes" : `Added by ${nameOf(entry.addedBy)}`}</small>
                     </div>
                     <button type="button" className={`sw23-vote-btn ${hasVoted ? "voted" : ""}`} onClick={() => vote(entry._id)} aria-pressed={hasVoted}>
                       {hasVoted ? <X size={15} /> : <ArrowBigUp size={16} />}

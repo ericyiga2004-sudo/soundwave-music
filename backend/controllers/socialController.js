@@ -828,7 +828,19 @@ export const addLiveRoomSong = async (req, res) => {
     if (id(room.currentSong) === id(songId)) {
       return res.status(409).json({ success: false, message: "That song is already playing in this room" });
     }
-    if (!room.queue.some((entry) => !entry.played && id(entry.song) === id(songId))) room.queue.push({ song: songId, addedBy: req.userId, votes: [req.userId] });
+
+    // V23.4: one song may appear only once during a live-room session. This
+    // prevents members from repeatedly re-adding the same track after it has
+    // played and accidentally creating a loop that dominates the voted queue.
+    const existing = (room.queue || []).find((entry) => id(entry.song) === id(songId));
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: existing.played ? "That song has already played in this room" : "That song is already in the room queue",
+      });
+    }
+
+    room.queue.push({ song: songId, addedBy: req.userId, votes: [req.userId] });
     room.lastActiveAt = new Date();
     await room.save();
     const memberIds = [room.host, ...(room.members || []).map((member) => member.user)];
@@ -844,6 +856,9 @@ export const voteLiveRoomSong = async (req, res) => {
     if (!room || !memberOfRoom(room, req.userId)) return res.status(404).json({ success: false, message: "Room not found" });
     const entry = room.queue.id(req.params.entryId);
     if (!entry) return res.status(404).json({ success: false, message: "Queue item not found" });
+    if (entry.played || id(entry.song) === id(room.currentSong)) {
+      return res.status(409).json({ success: false, message: "Voting is closed for the song already playing" });
+    }
     const index = entry.votes.findIndex((item) => id(item) === id(req.userId));
     let voted = false;
     if (index >= 0) entry.votes.splice(index, 1); else { entry.votes.push(req.userId); voted = true; }
@@ -861,9 +876,13 @@ export const advanceLiveRoom = async (req, res) => {
     const room = await LiveRoom.findOne({ code: String(req.params.code || "").toUpperCase(), status: "active" });
     if (!room || id(room.host) !== id(req.userId)) return res.status(403).json({ success: false, message: "Only the host can advance the room" });
     const currentSongId = id(room.currentSong);
+    // V23.4 voted queue contract: choose the winner only at the moment the host
+    // starts/advances (or the current track ends). Votes may reorder the waiting
+    // queue at any time, but they never interrupt the song that is already live.
+    // Highest vote count wins; ties go to the song added earliest.
     const candidates = room.queue
       .filter((entry) => !entry.played && id(entry.song) !== currentSongId)
-      .sort((a, b) => b.votes.length - a.votes.length || new Date(a.createdAt) - new Date(b.createdAt));
+      .sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0) || new Date(a.createdAt) - new Date(b.createdAt));
     const next = candidates[0];
     if (!next) {
       const now = new Date();
