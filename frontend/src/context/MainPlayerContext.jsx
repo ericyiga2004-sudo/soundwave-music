@@ -142,6 +142,7 @@ export const MusicPlayerProvider = ({ children }) => {
   const playbackRequestRef = useRef(0);
   const audioRetryRef = useRef({ songId: "", count: 0 });
   const roomControlRef = useRef({ active: false });
+  const roomAudioUnlockedRef = useRef(false);
 
   const musicContext = useContext(MusicContext);
 
@@ -535,6 +536,9 @@ export const MusicPlayerProvider = ({ children }) => {
             setIsPlaying(true);
             setBufferingState(false);
             setPlaybackError("");
+            if (roomControl?.active && !roomControl?.isHost) {
+              roomAudioUnlockedRef.current = true;
+            }
             addSongToHistory(song).catch(() => {});
           });
 
@@ -544,6 +548,9 @@ export const MusicPlayerProvider = ({ children }) => {
         setIsPlaying(true);
         setBufferingState(false);
         setPlaybackError("");
+        if (roomControl?.active && !roomControl?.isHost) {
+          roomAudioUnlockedRef.current = true;
+        }
 
         addSongToHistory(song).catch(() => {});
         if (!options?.roomSync && roomControl?.active && roomControl.isHost) {
@@ -617,6 +624,110 @@ export const MusicPlayerProvider = ({ children }) => {
     return true;
   }, [clearRecoveryTimer, setBufferingState]);
 
+  const resumeLiveRoomFromGesture = useCallback(async (targetPosition = 0) => {
+    const audio = audioRef.current;
+    const activeSong = currentSongRef.current;
+    const roomControl = roomControlRef.current;
+
+    if (!audio || !activeSong?._id || !roomControl?.active || roomControl?.isHost) {
+      return false;
+    }
+
+    const requestId = playbackRequestRef.current + 1;
+    playbackRequestRef.current = requestId;
+    userWantedPlayRef.current = true;
+    clearRecoveryTimer();
+    setPlaybackError("");
+    setBufferingState(true, "Starting live audio...");
+
+    audio.preload = "auto";
+    audio.removeAttribute("crossorigin");
+    audio.setAttribute("playsinline", "true");
+    audio.setAttribute("webkit-playsinline", "true");
+    audio.setAttribute("x-webkit-airplay", "allow");
+
+    // audio.play() must be called in the same click/tap call stack. Waiting
+    // for metadata first can consume browser user activation and leave the
+    // listener stuck on "Enable live audio".
+    const directSource = getSongAudioUrl(activeSong);
+    const currentSource = String(audio.currentSrc || audio.src || "");
+    if (directSource && (!currentSource || currentSource !== directSource)) {
+      try {
+        audio.pause();
+        audio.src = directSource;
+        audio.load();
+      } catch {
+        // The normal room sync path can retry the source if needed.
+      }
+    }
+
+    const requestedTarget = Math.max(0, Number(targetPosition || 0));
+    const seekNow = () => {
+      if (!Number.isFinite(requestedTarget) || requestedTarget <= 0 || audio.readyState < 1) return;
+      const knownDuration = Number.isFinite(audio.duration) ? Number(audio.duration) : 0;
+      const safeTarget = knownDuration > 0
+        ? Math.min(requestedTarget, Math.max(0, knownDuration - 0.12))
+        : requestedTarget;
+      try {
+        if (Math.abs(Number(audio.currentTime || 0) - safeTarget) > 0.7) {
+          audio.currentTime = safeTarget;
+          setProgress(safeTarget);
+        }
+      } catch {
+        // Metadata may still be arriving.
+      }
+    };
+
+    seekNow();
+    const onMetadata = () => seekNow();
+    audio.addEventListener("loadedmetadata", onMetadata, { once: true });
+    audio.addEventListener("canplay", onMetadata, { once: true });
+
+    let playPromise;
+    try {
+      // Intentionally invoked before any await.
+      playPromise = audio.play();
+    } catch (error) {
+      audio.removeEventListener("loadedmetadata", onMetadata);
+      audio.removeEventListener("canplay", onMetadata);
+      setIsPlaying(false);
+      setBufferingState(false);
+      setPlaybackError(
+        error?.name === "NotAllowedError"
+          ? "Tap anywhere in the room once to enable live audio."
+          : "Could not start live audio. Tap once to retry."
+      );
+      return false;
+    }
+
+    try {
+      await playPromise;
+      if (requestId !== playbackRequestRef.current) return false;
+
+      roomAudioUnlockedRef.current = true;
+      seekNow();
+      setIsPlaying(true);
+      setBufferingState(false);
+      setPlaybackError("");
+      return true;
+    } catch (error) {
+      if (requestId !== playbackRequestRef.current) return false;
+
+      roomAudioUnlockedRef.current = false;
+      setIsPlaying(false);
+      setBufferingState(false);
+      setPlaybackError(
+        error?.name === "NotAllowedError"
+          ? "Tap anywhere in the room once to enable live audio."
+          : "Could not start live audio. Tap once to retry."
+      );
+      return false;
+    } finally {
+      audio.removeEventListener("loadedmetadata", onMetadata);
+      audio.removeEventListener("canplay", onMetadata);
+    }
+  }, [clearRecoveryTimer, setBufferingState]);
+
   const resumeSong = useCallback(async (options = {}) => {
     const audio = audioRef.current;
     const activeSong = currentSongRef.current;
@@ -666,6 +777,9 @@ export const MusicPlayerProvider = ({ children }) => {
       setIsPlaying(true);
       setBufferingState(false);
       setPlaybackError("");
+      if (roomControl?.active && !roomControl?.isHost) {
+        roomAudioUnlockedRef.current = true;
+      }
       if (!options?.roomSync && roomControl?.active && roomControl.isHost) {
         Promise.resolve(roomControl.onPlaybackChange?.({
           playbackState: "playing",
@@ -1014,6 +1128,9 @@ export const MusicPlayerProvider = ({ children }) => {
     const handlePlaying = () => {
       setIsPlaying(true);
       setBufferingState(false);
+      if (roomControlRef.current?.active && !roomControlRef.current?.isHost) {
+        roomAudioUnlockedRef.current = true;
+      }
 
       if ("mediaSession" in navigator) {
         navigator.mediaSession.playbackState = "playing";
@@ -1393,6 +1510,7 @@ export const MusicPlayerProvider = ({ children }) => {
       playSong,
       pauseSong,
       resumeSong,
+      resumeLiveRoomFromGesture,
       togglePlay,
       nextSong,
       prevSong,
@@ -1426,6 +1544,7 @@ export const MusicPlayerProvider = ({ children }) => {
       playSong,
       pauseSong,
       resumeSong,
+      resumeLiveRoomFromGesture,
       togglePlay,
       nextSong,
       prevSong,

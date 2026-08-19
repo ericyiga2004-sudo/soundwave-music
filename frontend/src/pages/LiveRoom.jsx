@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowBigUp, Check, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, UsersRound, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowBigUp, Check, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X } from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { useRealtime } from "../context/RealtimeContext";
@@ -44,6 +44,7 @@ const LiveRoom = () => {
   const [chatBody, setChatBody] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const [hostPlayBusy, setHostPlayBusy] = useState("");
+  const [floatingReactions, setFloatingReactions] = useState([]);
   const [roomPanel, setRoomPanel] = useState("queue");
   const [listenerPaused, setListenerPaused] = useState(false);
   const [roomClock, setRoomClock] = useState(0);
@@ -54,7 +55,10 @@ const LiveRoom = () => {
   const pendingSeekRef = useRef(null);
   const listenerPausedRef = useRef(false);
   const joinAttemptRef = useRef(false);
+  const gestureUnlockInFlightRef = useRef(false);
   const previousHostQueueCountRef = useRef(0);
+  const seenRoomReactionIdsRef = useRef(new Set());
+  const reactionTimersRef = useRef(new Map());
   const serverClockOffsetRef = useRef(null);
   const syncInFlightRef = useRef(false);
   const lastHardSyncAtRef = useRef(0);
@@ -320,10 +324,97 @@ const LiveRoom = () => {
   const resumeListenerLive = useCallback(async () => {
     listenerPausedRef.current = false;
     setListenerPaused(false);
+
+    const snapshot = roomRef.current;
+    const activePlayer = playerRef.current;
+    const target = Math.max(0, expectedPosition(snapshot) - 0.08);
+
+    // If this came from a click/tap, start the HTML media element immediately
+    // inside that gesture. This avoids losing browser audio permission while
+    // asynchronous room sync/network work is still happening.
+    let startedFromGesture = false;
+    if (!snapshot?._isHost && snapshot?.playbackState === "playing" && activePlayer?.resumeLiveRoomFromGesture) {
+      startedFromGesture = await activePlayer.resumeLiveRoomFromGesture(target);
+    }
+
     await syncFromRoom({ force: true, ignoreLocalPause: true });
-    setMessage("Back live with the host.");
+    setMessage(startedFromGesture ? "Live audio connected to the host." : "Back live with the host.");
     return true;
-  }, [syncFromRoom]);
+  }, [expectedPosition, syncFromRoom]);
+
+  const unlockListenerAudioFromAnyGesture = useCallback(() => {
+    if (gestureUnlockInFlightRef.current) return;
+    const snapshot = roomRef.current;
+    const activePlayer = playerRef.current;
+
+    if (
+      !snapshot ||
+      snapshot._isHost ||
+      snapshot.playbackState !== "playing" ||
+      !snapshot.currentSong?._id ||
+      listenerPausedRef.current ||
+      activePlayer?.isPlaying
+    ) {
+      return;
+    }
+
+    // Do not interfere with ordinary network buffering. Only convert a normal
+    // room click/tap into the one browser permission gesture when autoplay was
+    // actually rejected.
+    const needsGesture = /tap|enable live|permission|notallowed/i.test(String(activePlayer?.playbackError || ""));
+    if (!needsGesture) return;
+
+    gestureUnlockInFlightRef.current = true;
+    const target = Math.max(0, expectedPosition(snapshot) - 0.08);
+
+    Promise.resolve(activePlayer?.resumeLiveRoomFromGesture?.(target))
+      .then(() => syncFromRoom({ force: true, ignoreLocalPause: true }))
+      .finally(() => {
+        window.setTimeout(() => {
+          gestureUnlockInFlightRef.current = false;
+        }, 350);
+      });
+  }, [expectedPosition, syncFromRoom]);
+
+
+  const spawnRoomReaction = useCallback((payload = {}) => {
+    const emoji = String(payload?.emoji || "❤️");
+    const reactionId = String(payload?.reactionId || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+    if (seenRoomReactionIdsRef.current.has(reactionId)) return;
+    seenRoomReactionIdsRef.current.add(reactionId);
+
+    const duration = 2800 + Math.floor(Math.random() * 1700);
+    const bubble = {
+      id: reactionId,
+      emoji,
+      left: 8 + Math.random() * 84,
+      drift: -85 + Math.random() * 170,
+      scale: 0.88 + Math.random() * 0.42,
+      duration,
+    };
+
+    setFloatingReactions((current) => [...current.slice(-89), bubble]);
+    const timer = window.setTimeout(() => {
+      setFloatingReactions((current) => current.filter((item) => item.id !== reactionId));
+      reactionTimersRef.current.delete(reactionId);
+      window.setTimeout(() => seenRoomReactionIdsRef.current.delete(reactionId), 12000);
+    }, duration + 450);
+    reactionTimersRef.current.set(reactionId, timer);
+  }, []);
+
+  const sendRoomReaction = useCallback(async (emoji = "❤️") => {
+    if (!roomRef.current?.code) return;
+    const reactionId = `${roomRef.current._viewerId || "room"}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Render instantly on the sender's screen. The echoed SSE packet uses the
+    // same id, so it will not create a duplicate bubble locally.
+    spawnRoomReaction({ reactionId, emoji });
+    try {
+      await apiClient.post(`/api/social/rooms/${roomRef.current.code}/reactions`, { emoji, reactionId }, { headers });
+    } catch {
+      // Reactions are intentionally ephemeral. A failed network tap should not
+      // interrupt music or replace the chat UI with an error state.
+    }
+  }, [headers, spawnRoomReaction]);
 
   const postPlayback = useCallback(async ({ playbackState, position }) => {
     const snapshot = roomRef.current;
@@ -478,6 +569,11 @@ const LiveRoom = () => {
       } : current);
     };
 
+    const onRoomReaction = (event) => {
+      if (String(event?.code || "").toUpperCase() !== roomCode || !event?.emoji) return;
+      spawnRoomReaction(event);
+    };
+
     const onPresence = (event) => {
       const userId = String(event?.userId || "");
       if (!userId) return;
@@ -494,15 +590,17 @@ const LiveRoom = () => {
     socket.on("room:playback", onRoomPlayback);
     socket.on("room:chat", onRoomChat);
     socket.on("room:chat:reaction", onRoomChatReaction);
+    socket.on("room:reaction", onRoomReaction);
     socket.on("presence:update", onPresence);
     return () => {
       socket.off("room:update", onRoomUpdate);
       socket.off("room:playback", onRoomPlayback);
       socket.off("room:chat", onRoomChat);
       socket.off("room:chat:reaction", onRoomChatReaction);
+      socket.off("room:reaction", onRoomReaction);
       socket.off("presence:update", onPresence);
     };
-  }, [socket, roomCode, load]);
+  }, [socket, roomCode, load, spawnRoomReaction]);
 
   useEffect(() => {
     if (!authToken) return undefined;
@@ -591,6 +689,7 @@ const LiveRoom = () => {
         onNext: advanceRoom,
         onLocalPause: pauseListenerLocally,
         onListenerResume: resumeListenerLive,
+        getExpectedPosition: () => expectedPosition(roomRef.current),
         onBlocked: (reason) => {
           const action = reason === "seek" ? "Seeking" : reason === "next" || reason === "previous" ? "Changing songs" : "Starting another song";
           setMessage(`${action} is controlled by the host. You can locally pause and rejoin live anytime.`);
@@ -602,10 +701,12 @@ const LiveRoom = () => {
     return () => {
       window.dispatchEvent(new CustomEvent("soundwave-room-control", { detail: { active: false } }));
     };
-  }, [advanceRoom, pauseListenerLocally, resumeListenerLive, room?.code, room?._isHost, room?.currentSong?._id, sendPlaybackChange, syncFromRoom]);
+  }, [advanceRoom, expectedPosition, pauseListenerLocally, resumeListenerLive, room?.code, room?._isHost, room?.currentSong?._id, sendPlaybackChange, syncFromRoom]);
 
   useEffect(() => () => {
     if (seekTimerRef.current) window.clearTimeout(seekTimerRef.current);
+    reactionTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    reactionTimersRef.current.clear();
     window.dispatchEvent(new CustomEvent("soundwave-room-control", { detail: { active: false } }));
   }, []);
 
@@ -770,7 +871,7 @@ const LiveRoom = () => {
   const localAudioFollowing = Boolean(room._isHost || (roomPlaying && !listenerPaused && player?.isPlaying));
 
   return (
-    <div className="sw-social-page sw20-page sw23-live-room-page">
+    <div className="sw-social-page sw20-page sw23-live-room-page" onPointerDownCapture={unlockListenerAudioFromAnyGesture} onKeyDownCapture={unlockListenerAudioFromAnyGesture}>
       <SocialNav />
 
       <header className="sw23-room-header">
@@ -815,7 +916,7 @@ const LiveRoom = () => {
                   <small>Everyone in this room is synced to</small>
                   <strong>{room.currentSong.title}</strong>
                   <span>{getArtistName(room.currentSong)}</span>
-                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.playbackError?.toLowerCase?.().includes("tap play") ? "Your browser is waiting for one audio permission tap. Press Join live audio once; after that SoundWave follows the host automatically." : player?.isBuffering ? "Joining the host’s current position. SoundWave now starts from a small playable buffer instead of waiting for a long full-buffer check." : player?.isPlaying ? "Your media follows the leader’s song, position and pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
+                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.playbackError?.toLowerCase?.().includes("tap play") ? "Your browser needs one audio permission gesture. Tap anywhere in the room or press Start live audio once; after that SoundWave follows the host automatically." : player?.isBuffering ? "Joining the host’s current position. SoundWave now starts from a small playable buffer instead of waiting for a long full-buffer check." : player?.isPlaying ? "Your media follows the leader’s song, position and pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
                   <div className="sw24-vote-lock">
                     <strong>Current song stays locked.</strong>
                     <span>{nextQueued ? `${nextQueued.song?.title || "The leading song"} is currently next with ${nextQueued.votes?.length || 0} vote${(nextQueued.votes?.length || 0) === 1 ? "" : "s"}. New votes can reorder the waiting queue without interrupting this song.` : "Votes can keep changing while this song plays. The current song will not be interrupted."}</span>
@@ -844,7 +945,7 @@ const LiveRoom = () => {
                     <button type="button" className="sw23-room-next-btn" onClick={advanceRoom}><SkipForward size={16} /> Next · top voted</button>
                   ) : (
                     <button type="button" className="sw23-room-sync-btn" onClick={() => resumeListenerLive()} disabled={!listenerPaused && roomPlaying && player?.isPlaying}>
-                      <RefreshCw size={15} /> {listenerPaused ? "Rejoin live" : roomPlaying && player?.isPlaying ? "In sync" : roomPlaying ? "Join live audio" : "Waiting for host"}
+                      <RefreshCw size={15} /> {listenerPaused ? "Rejoin live" : roomPlaying && player?.isPlaying ? "In sync" : roomPlaying ? "Start live audio" : "Waiting for host"}
                     </button>
                   )}
                 </div>
@@ -896,6 +997,18 @@ const LiveRoom = () => {
                 <span className="sw25-leader-badge"><Crown size={14} /> Host player</span>
               </div>
 
+              <form className="sw2310-host-add-song" onSubmit={addSong}>
+                <div>
+                  <span>Host participation</span>
+                  <strong>Add another song</strong>
+                  <small>You are part of the room too — add tracks and vote exactly like every listener.</small>
+                </div>
+                <div className="sw2310-host-picker">
+                  <SocialSongPicker songs={songs} value={songId} onChange={setSongId} label="Add a song as host" maxVisible={5} compact />
+                  <button className="sw-primary-btn" type="submit" disabled={!songId}><Plus size={15} /> Add</button>
+                </div>
+              </form>
+
               {queue.length ? (
                 <>
                   <div className="sw25-leader-top">
@@ -920,7 +1033,23 @@ const LiveRoom = () => {
                           <strong>{entry.song?.title}</strong>
                           <span>{getArtistName(entry.song)}</span>
                         </div>
-                        <span className="sw25-leader-votes"><ArrowBigUp size={14} /> {entry.votes?.length || 0}</span>
+                        <span className="sw25-leader-votes"><ThumbsUp size={14} fill="currentColor" /> {entry.votes?.length || 0}</span>
+                        {(() => {
+                          const viewerId = String(room._viewerId || "");
+                          const hasVoted = (entry.votes || []).some((item) => String(item?._id || item) === viewerId);
+                          return (
+                            <button
+                              type="button"
+                              className={`sw2310-leader-vote ${hasVoted ? "voted" : ""}`}
+                              onClick={() => vote(entry._id)}
+                              aria-pressed={hasVoted}
+                              title={hasVoted ? "Remove your vote" : "Vote for this song"}
+                            >
+                              <ThumbsUp size={14} fill={hasVoted ? "currentColor" : "none"} />
+                              <span>{hasVoted ? "Voted" : "Vote"}</span>
+                            </button>
+                          );
+                        })()}
                         <button
                           type="button"
                           className="sw25-leader-play"
@@ -974,14 +1103,14 @@ const LiveRoom = () => {
                       <small>{index === 0 ? "Top voted · plays next when current song finishes" : `Added by ${nameOf(entry.addedBy)}`}</small>
                     </div>
                     <button type="button" className={`sw23-vote-btn ${hasVoted ? "voted" : ""}`} onClick={() => vote(entry._id)} aria-pressed={hasVoted}>
-                      {hasVoted ? <X size={15} /> : <ArrowBigUp size={16} />}
-                      <span>{hasVoted ? "Cancel vote" : "Vote"}</span>
+                      <ThumbsUp size={16} fill={hasVoted ? "currentColor" : "none"} />
+                      <span>{hasVoted ? "Voted" : "Vote"}</span>
                       <strong>{entry.votes?.length || 0}</strong>
                     </button>
                   </article>
                 );
               }) : (
-                <div className="sw23-empty-queue"><ArrowBigUp size={20} /><div><strong>No songs waiting</strong><span>Add a song and cast the first vote.</span></div></div>
+                <div className="sw23-empty-queue"><ThumbsUp size={20} /><div><strong>No songs waiting</strong><span>Add a song and cast the first vote.</span></div></div>
               )}
             </div>
           </section>
@@ -994,7 +1123,7 @@ const LiveRoom = () => {
               <div><span className="sw-social-kicker">Live chat</span><h2>Room conversation</h2></div>
               <span><MessageCircle size={15} /> Live</span>
             </div>
-            <p className="sw23-live-chat-note">Messages and reactions appear instantly while the music keeps playing.</p>
+            <p className="sw23-live-chat-note">Messages stay here. Live reactions float across the room separately while the music keeps playing.</p>
 
             <div className="sw-live-chat-list sw23-live-chat-list" aria-live="polite">
               {(room.chat || []).length ? (room.chat || []).map((item) => (
@@ -1009,13 +1138,10 @@ const LiveRoom = () => {
                     </div>
                   </div>
                 </article>
-              )) : <div className="sw23-chat-empty"><MessageCircle size={20} /><strong>Chat is live</strong><span>Say hello, react to the song, or drop a heart.</span></div>}
+              )) : <div className="sw23-chat-empty"><MessageCircle size={20} /><strong>Chat is live</strong><span>Say hello here. Use the floating reaction dock to react to the room.</span></div>}
               <span ref={chatEndRef} />
             </div>
 
-            <div className="sw-live-emoji-row sw23-live-emoji-row" aria-label="Quick emojis">
-              {["❤️", "🔥", "😂", "👏", "🎵", "🙌"].map((emoji) => <button type="button" key={emoji} onClick={(event) => sendChat(event, emoji)} disabled={chatBusy}>{emoji}</button>)}
-            </div>
             <form className="sw-live-chat-form sw23-live-chat-form" onSubmit={sendChat}>
               <Smile size={16} />
               <input value={chatBody} onChange={(event) => setChatBody(event.target.value.slice(0, 280))} placeholder="Message everyone listening…" />
@@ -1045,6 +1171,34 @@ const LiveRoom = () => {
             </div>
           </section>
         </aside>
+      </div>
+
+      <div className="sw2310-reaction-layer" aria-hidden="true">
+        {floatingReactions.map((reaction) => (
+          <span
+            key={reaction.id}
+            className="sw2310-reaction-bubble"
+            style={{
+              left: `${reaction.left}vw`,
+              "--sw-reaction-drift": `${reaction.drift}px`,
+              "--sw-reaction-scale": reaction.scale,
+              "--sw-reaction-duration": `${reaction.duration}ms`,
+            }}
+          >
+            {reaction.emoji}
+          </span>
+        ))}
+      </div>
+
+      <div className="sw2310-reaction-dock" aria-label="React live to the room">
+        <span>React live</span>
+        <div>
+          {["❤️", "🔥", "😂", "👏", "🎵", "🙌"].map((emoji) => (
+            <button type="button" key={emoji} onClick={() => sendRoomReaction(emoji)} aria-label={`React ${emoji}`}>
+              {emoji}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
