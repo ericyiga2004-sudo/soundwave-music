@@ -28,6 +28,9 @@ const DEFAULT_AUDIO_EFFECTS = {
 };
 
 const MIN_BUFFER_SECONDS = 0.75;
+const ROOM_FAST_START_BUFFER_SECONDS = 0.35;
+const ROOM_RECOVERY_BUFFER_SECONDS = 0.8;
+const ROOM_PLAY_START_TIMEOUT_MS = 1800;
 const OFFLINE_CACHE_NAME = "music-app-offline-songs-v1";
 
 const normalizePlaylist = (songs = []) => {
@@ -74,6 +77,25 @@ const getBufferedAhead = (audio) => {
 
   return 0;
 };
+
+const waitForAudioSignal = (audio, events = [], timeoutMs = 1800) =>
+  new Promise((resolve) => {
+    if (!audio || !events.length) {
+      resolve();
+      return;
+    }
+
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      events.forEach((eventName) => audio.removeEventListener(eventName, finish));
+      window.clearTimeout(timer);
+      resolve();
+    };
+    events.forEach((eventName) => audio.addEventListener(eventName, finish, { once: true }));
+    const timer = window.setTimeout(finish, timeoutMs);
+  });
 
 const hasEnoughBuffer = (audio, minSeconds = MIN_BUFFER_SECONDS) => {
   if (!audio) return false;
@@ -145,6 +167,11 @@ export const MusicPlayerProvider = ({ children }) => {
     const onRoomControl = (event) => {
       const detail = event?.detail || {};
       roomControlRef.current = detail.active ? detail : { active: false };
+      if (detail.active && audioRef.current) {
+        // Live rooms favor continuity over data savings. Ask the browser to
+        // keep a healthy forward buffer so follower audio does not stutter.
+        audioRef.current.preload = "auto";
+      }
     };
     window.addEventListener("soundwave-room-control", onRoomControl);
     return () => window.removeEventListener("soundwave-room-control", onRoomControl);
@@ -210,8 +237,10 @@ export const MusicPlayerProvider = ({ children }) => {
       return;
     }
 
-    if (!hasEnoughBuffer(audio, MIN_BUFFER_SECONDS)) {
-      setBufferingState(true, "Waiting for stable audio...");
+    const roomControl = roomControlRef.current;
+    const minimumResumeBuffer = roomControl?.active && !roomControl?.isHost ? ROOM_RECOVERY_BUFFER_SECONDS : MIN_BUFFER_SECONDS;
+    if (!hasEnoughBuffer(audio, minimumResumeBuffer)) {
+      setBufferingState(true, roomControl?.active ? "Building a smooth live buffer..." : "Waiting for stable audio...");
       return;
     }
 
@@ -425,8 +454,92 @@ export const MusicPlayerProvider = ({ children }) => {
 
         if (requestId !== playbackRequestRef.current) return false;
 
-        await audio.play();
+        if (options?.smoothRoomStart && Number.isFinite(Number(options?.startAt))) {
+          // V23.9 fast live join:
+          // seek to the host first, but do NOT wait for a large canplaythrough
+          // buffer before calling play(). Some remote providers take several
+          // seconds to satisfy canplaythrough for a late range request, which
+          // made listeners sit on "Catching up..." even though the media could
+          // already begin. A small playable range is enough to start; the
+          // browser can continue filling its forward buffer while audio runs.
+          if (audio.readyState < 1) {
+            await waitForAudioSignal(audio, ["loadedmetadata", "durationchange"], 1100);
+          }
+          if (requestId !== playbackRequestRef.current) return false;
+
+          const requestedStart = Math.max(0, Number(options.startAt || 0));
+          const knownDuration = Number.isFinite(audio.duration) ? Number(audio.duration) : 0;
+          const safeStart = knownDuration > 0
+            ? Math.min(requestedStart, Math.max(0, knownDuration - 0.1))
+            : requestedStart;
+          try {
+            audio.currentTime = safeStart;
+            setProgress(safeStart);
+          } catch {
+            // Some streams delay seeking until metadata is fully available.
+          }
+
+          if (
+            audio.readyState < 2 &&
+            getBufferedAhead(audio) < ROOM_FAST_START_BUFFER_SECONDS
+          ) {
+            await waitForAudioSignal(audio, ["loadeddata", "canplay", "progress"], 700);
+          }
+          if (requestId !== playbackRequestRef.current) return false;
+        }
+
+        // audio.play() can remain pending for a long time while a remote range
+        // request is filling. Do not keep the whole room-sync routine locked
+        // during that network wait. If the browser accepts the play request but
+        // has not started within the short window below, leave it buffering;
+        // the normal playing/canplay events will finish the transition.
+        const playAttempt = Promise.resolve()
+          .then(() => audio.play())
+          .then(() => ({ started: true }))
+          .catch((playError) => ({ error: playError }));
+
+        const playResult = await Promise.race([
+          playAttempt,
+          new Promise((resolve) => {
+            window.setTimeout(() => resolve({ pending: true }), ROOM_PLAY_START_TIMEOUT_MS);
+          }),
+        ]);
+
         if (requestId !== playbackRequestRef.current) return false;
+
+        if (playResult?.error) {
+          throw playResult.error;
+        }
+
+        if (playResult?.pending) {
+          setIsPlaying(false);
+          setBufferingState(true, "Joining live audio...");
+          setPlaybackError("");
+
+          // The race above deliberately releases room sync quickly, but the
+          // original play() promise is still meaningful. Handle its eventual
+          // result so a late browser autoplay rejection cannot leave the UI
+          // stuck on "Catching up..." forever.
+          playAttempt.then((lateResult) => {
+            if (requestId !== playbackRequestRef.current) return;
+            if (lateResult?.error) {
+              setIsPlaying(false);
+              setBufferingState(false);
+              setPlaybackError(
+                lateResult.error?.name === "NotAllowedError"
+                  ? "Tap Play once to enable live room audio."
+                  : "Could not start this audio. Tap Play to retry."
+              );
+              return;
+            }
+            setIsPlaying(true);
+            setBufferingState(false);
+            setPlaybackError("");
+            addSongToHistory(song).catch(() => {});
+          });
+
+          return true;
+        }
 
         setIsPlaying(true);
         setBufferingState(false);
@@ -866,7 +979,9 @@ export const MusicPlayerProvider = ({ children }) => {
         return;
       }
 
-      if (hasEnoughBuffer(audio, 1.5)) {
+      const roomControl = roomControlRef.current;
+      const desiredBuffer = roomControl?.active && !roomControl?.isHost ? ROOM_RECOVERY_BUFFER_SECONDS : 1.5;
+      if (hasEnoughBuffer(audio, desiredBuffer)) {
         tryResumeAfterBuffer();
       }
     };
@@ -883,7 +998,13 @@ export const MusicPlayerProvider = ({ children }) => {
     const handleProgress = () => {
       if (!userWantedPlayRef.current) return;
 
-      if (audio.paused && hasEnoughBuffer(audio, MIN_BUFFER_SECONDS)) {
+      const roomControl = roomControlRef.current;
+      const startBuffer =
+        roomControl?.active && !roomControl?.isHost
+          ? ROOM_FAST_START_BUFFER_SECONDS
+          : MIN_BUFFER_SECONDS;
+
+      if (audio.paused && hasEnoughBuffer(audio, startBuffer)) {
         tryResumeAfterBuffer();
       } else if (!audio.paused && hasEnoughBuffer(audio, 1)) {
         setBufferingState(false);

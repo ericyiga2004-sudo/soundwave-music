@@ -59,6 +59,8 @@ const LiveRoom = () => {
   const syncInFlightRef = useRef(false);
   const lastHardSyncAtRef = useRef(0);
   const wasBufferingRef = useRef(false);
+  const driftBreachSinceRef = useRef(0);
+  const driftDirectionRef = useRef(0);
   const roomCode = String(code || "").toUpperCase();
   const pendingHostQueueCount = useMemo(() => (room?.queue || []).filter((entry) => !entry.played).length, [room?.queue]);
 
@@ -191,12 +193,29 @@ const LiveRoom = () => {
         // Start/load the exact song chosen by the leader. playSong may wait on
         // the network, so calculate the target AGAIN after it resolves. That
         // prevents slow listeners from beginning several seconds behind.
-        const started = await activePlayer.playSong?.(current, [current], { roomSync: true });
+        const initialTarget = Math.max(0, wantedPosition - 0.12);
+        const started = await activePlayer.playSong?.(current, [current], {
+          roomSync: true,
+          startAt: snapshot?._isHost ? undefined : initialTarget,
+          smoothRoomStart: !snapshot?._isHost,
+        });
         const latestSnapshot = roomRef.current || snapshot;
-        const liveTarget = expectedPosition(latestSnapshot);
+        const liveTarget = Math.max(0, expectedPosition(latestSnapshot) - 0.12);
         if (started !== false) {
-          activePlayer.seekTo?.(liveTarget, { roomSync: true });
-          lastHardSyncAtRef.current = Date.now();
+          const startedAudio = activePlayer.audioRef?.current || null;
+          const startedAt = Number(startedAudio?.currentTime || activePlayer.progress || 0);
+          // Only perform the post-start correction after the browser is
+          // genuinely playing. Seeking a still-buffering range request can
+          // restart that request and is a major cause of slow live joins.
+          if (
+            startedAudio &&
+            !startedAudio.paused &&
+            !activePlayer.isBuffering &&
+            Math.abs(liveTarget - startedAt) > 2.2
+          ) {
+            activePlayer.seekTo?.(liveTarget, { roomSync: true });
+            lastHardSyncAtRef.current = Date.now();
+          }
         } else if (!latestSnapshot?._isHost && latestSnapshot.playbackState === "playing") {
           setMessage("Live audio is waiting for this device. SoundWave will catch up to the leader as soon as audio can start.");
         }
@@ -205,32 +224,60 @@ const LiveRoom = () => {
         const actual = Number.isFinite(liveAudio?.currentTime)
           ? Number(liveAudio.currentTime)
           : Number(activePlayer.progress || 0);
-        const signedDrift = wantedPosition - actual;
+        // V23.8 smooth-room sync: prioritize uninterrupted audio over chasing
+        // sub-second clock differences. Frequent seeks and large playback-rate
+        // swings can sound like stutter on remote/mobile streams.
+        const listenerTarget = Math.max(0, wantedPosition - 0.22);
+        const signedDrift = listenerTarget - actual;
         const drift = Math.abs(signedDrift);
         const buffering = Boolean(activePlayer.isBuffering) || Boolean(liveAudio && !liveAudio.paused && liveAudio.readyState < 3);
 
         if (!snapshot?._isHost && liveAudio && snapshot.playbackState === "playing") {
-          if (buffering && !force) {
-            // Do not seek on every timer tick while the network is buffering;
-            // that can restart range requests and keep a weak connection stuck.
-            // Make only an occasional hard jump when the listener is far behind.
-            if (drift > 7 && Date.now() - lastHardSyncAtRef.current > 4500) {
-              activePlayer.seekTo?.(wantedPosition, { roomSync: true });
-              lastHardSyncAtRef.current = Date.now();
-            }
+          try {
+            liveAudio.preservesPitch = true;
+            liveAudio.webkitPreservesPitch = true;
+          } catch {
+            // Older browsers may not expose pitch-preservation controls.
+          }
+
+          if (buffering) {
+            // Never seek or speed-change while the browser is filling its
+            // buffer. Let the current range request finish instead of
+            // repeatedly invalidating it.
+            driftBreachSinceRef.current = 0;
+            driftDirectionRef.current = 0;
             if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
-          } else if (force || drift > 1.35) {
-            activePlayer.seekTo?.(wantedPosition, { roomSync: true });
+          } else if (force && drift > 3.2 && Date.now() - lastHardSyncAtRef.current > 6500) {
+            activePlayer.seekTo?.(listenerTarget, { roomSync: true });
             lastHardSyncAtRef.current = Date.now();
+            driftBreachSinceRef.current = 0;
+            driftDirectionRef.current = 0;
             if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
-          } else if (drift > 0.28) {
-            // Tiny speed correction removes normal network drift without an
-            // audible jump. Browser audio keeps pitch stable at these rates.
-            liveAudio.playbackRate = 1.035;
-          } else if (signedDrift < -0.28) {
-            liveAudio.playbackRate = 0.965;
-          } else if (liveAudio.playbackRate !== 1) {
-            liveAudio.playbackRate = 1;
+          } else if (drift > 3.8 && Date.now() - lastHardSyncAtRef.current > 8500) {
+            // Only a large, sustained desync earns a hard seek. This is rare
+            // enough that it corrects a truly late listener without making
+            // normal playback choppy.
+            activePlayer.seekTo?.(listenerTarget, { roomSync: true });
+            lastHardSyncAtRef.current = Date.now();
+            driftBreachSinceRef.current = 0;
+            driftDirectionRef.current = 0;
+            if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
+          } else if (drift > 0.95) {
+            const direction = signedDrift > 0 ? 1 : -1;
+            if (driftDirectionRef.current !== direction) {
+              driftDirectionRef.current = direction;
+              driftBreachSinceRef.current = Date.now();
+              if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
+            } else if (Date.now() - driftBreachSinceRef.current > 3200) {
+              // An inaudibly small correction is applied only after drift has
+              // stayed in the same direction for several seconds. Hysteresis
+              // prevents rate oscillation around the threshold.
+              liveAudio.playbackRate = direction > 0 ? 1.008 : 0.992;
+            }
+          } else if (drift < 0.42) {
+            driftBreachSinceRef.current = 0;
+            driftDirectionRef.current = 0;
+            if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
           }
         } else if (liveAudio && liveAudio.playbackRate !== 1) {
           liveAudio.playbackRate = 1;
@@ -251,8 +298,8 @@ const LiveRoom = () => {
         if (resumedAudio && !resumedAudio.paused) {
           const liveTarget = expectedPosition(afterResume);
           const actual = Number(resumedAudio.currentTime || 0);
-          if (Math.abs(liveTarget - actual) > 0.9) {
-            activePlayer.seekTo?.(liveTarget, { roomSync: true });
+          if (Math.abs(liveTarget - actual) > 3.2 && Date.now() - lastHardSyncAtRef.current > 6500) {
+            activePlayer.seekTo?.(Math.max(0, liveTarget - 0.22), { roomSync: true });
             lastHardSyncAtRef.current = Date.now();
           }
         } else if (!afterResume?._isHost) {
@@ -493,7 +540,7 @@ const LiveRoom = () => {
     if (!room?.currentSong?._id) return undefined;
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") syncFromRoom({ force: false });
-    }, 900);
+    }, 1800);
     return () => window.clearInterval(interval);
   }, [room?.currentSong?._id, syncFromRoom]);
 
@@ -509,9 +556,11 @@ const LiveRoom = () => {
       !listenerPausedRef.current &&
       !bufferingNow &&
       player?.isPlaying &&
-      (wasBuffering || player?.isPlaying)
+      wasBuffering
     ) {
-      const timer = window.setTimeout(() => syncFromRoom({ force: true }), wasBuffering ? 60 : 160);
+      // Give the browser a short stability window after a stall. Seeking the
+      // instant `playing` fires can throw away the buffer it just recovered.
+      const timer = window.setTimeout(() => syncFromRoom({ force: true }), 650);
       return () => window.clearTimeout(timer);
     }
     return undefined;
@@ -755,7 +804,7 @@ const LiveRoom = () => {
                 <h2>{roomPlaying ? "Live with the host" : "Room paused"}</h2>
               </div>
               <span className={`sw23-room-follow-state ${localAudioFollowing ? "live" : ""}`}>
-                {room._isHost ? <><Crown size={14} /> Host controls</> : listenerPaused ? <><VolumeX size={14} /> Paused on this device</> : player?.isBuffering && roomPlaying ? <><RefreshCw size={14} /> Catching up…</> : roomPlaying && player?.isPlaying ? <><Volume2 size={14} /> Following live</> : roomPlaying ? <><RefreshCw size={14} /> Tap to join audio</> : <><Pause size={14} /> Host paused</>}
+                {room._isHost ? <><Crown size={14} /> Host controls</> : listenerPaused ? <><VolumeX size={14} /> Paused on this device</> : player?.playbackError?.toLowerCase?.().includes("tap play") ? <><Play size={14} /> Enable live audio</> : player?.isBuffering && roomPlaying ? <><RefreshCw size={14} /> Joining live…</> : roomPlaying && player?.isPlaying ? <><Volume2 size={14} /> Following live</> : roomPlaying ? <><RefreshCw size={14} /> Tap to join audio</> : <><Pause size={14} /> Host paused</>}
               </span>
             </div>
 
@@ -766,7 +815,7 @@ const LiveRoom = () => {
                   <small>Everyone in this room is synced to</small>
                   <strong>{room.currentSong.title}</strong>
                   <span>{getArtistName(room.currentSong)}</span>
-                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.isBuffering ? "Your connection is buffering. The room clock keeps moving and SoundWave will jump you to the leader’s current position as soon as audio is ready." : player?.isPlaying ? "Your media follows the leader’s song, position and pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
+                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.playbackError?.toLowerCase?.().includes("tap play") ? "Your browser is waiting for one audio permission tap. Press Join live audio once; after that SoundWave follows the host automatically." : player?.isBuffering ? "Joining the host’s current position. SoundWave now starts from a small playable buffer instead of waiting for a long full-buffer check." : player?.isPlaying ? "Your media follows the leader’s song, position and pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
                   <div className="sw24-vote-lock">
                     <strong>Current song stays locked.</strong>
                     <span>{nextQueued ? `${nextQueued.song?.title || "The leading song"} is currently next with ${nextQueued.votes?.length || 0} vote${(nextQueued.votes?.length || 0) === 1 ? "" : "s"}. New votes can reorder the waiting queue without interrupting this song.` : "Votes can keep changing while this song plays. The current song will not be interrupted."}</span>
