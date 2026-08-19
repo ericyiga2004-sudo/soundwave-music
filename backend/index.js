@@ -68,7 +68,7 @@ app.use("/api/social", socialRouter);
 app.use("/api/realtime", realtimeRouter);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.16.0", realtime: "sse" });
+  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.17.0", realtime: "sse" });
 });
 
 app.get("/", (_req, res) => {

@@ -11,7 +11,7 @@ import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import SocialSongPicker from "../components/Social/SocialSongPicker";
 import SocialNav from "../components/Social/SocialNav";
-import RoomReactionOverlayReliable from "../components/Social/RoomReactionOverlayReliable";
+import RoomReactionSharedLedger from "../components/Social/RoomReactionSharedLedger";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
 import "./CSS/Social.css";
 import "./CSS/SocialV20.css";
@@ -1289,7 +1289,7 @@ const LiveRoom = () => {
           ))}
         </div>
       </div>
-      <RoomReactionOverlayReliable roomCode={roomCode} viewerId={room?._viewerId || ""} />
+      <RoomReactionSharedLedger roomCode={roomCode} viewerId={room?._viewerId || ""} />
     </div>
   );
 };

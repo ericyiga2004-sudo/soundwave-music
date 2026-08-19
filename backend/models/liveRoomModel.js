@@ -8,6 +8,16 @@ const roomMemberSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const roomLiveReactionSchema = new mongoose.Schema(
+  {
+    reactionId: { type: String, required: true },
+    emoji: { type: String, required: true },
+    actor: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const roomQueueSchema = new mongoose.Schema(
   {
     song: { type: mongoose.Schema.Types.ObjectId, ref: "Song", required: true },
@@ -45,6 +55,7 @@ const liveRoomSchema = new mongoose.Schema(
     members: { type: [roomMemberSchema], default: [] },
     invitedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     queue: { type: [roomQueueSchema], default: [] },
+    liveReactions: { type: [roomLiveReactionSchema], default: [] },
     chat: { type: [roomChatSchema], default: [] },
     currentSong: { type: mongoose.Schema.Types.ObjectId, ref: "Song", default: null },
     currentStartedAt: { type: Date, default: null },

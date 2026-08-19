@@ -1,0 +1,86 @@
+.sw2317-shared-reaction-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sw2317-shared-reaction-bubble {
+  position: absolute;
+  bottom: max(118px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 28px;
+  line-height: 1;
+  background: rgba(19, 19, 22, .82);
+  border: 1px solid rgba(255,255,255,.15);
+  box-shadow: 0 14px 34px rgba(0,0,0,.30);
+  backdrop-filter: blur(10px);
+  will-change: transform, opacity;
+}
+
+.sw2317-shared-reaction-dock {
+  position: fixed;
+  z-index: 99991;
+  left: 50%;
+  bottom: max(126px, calc(env(safe-area-inset-bottom, 0px) + 116px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 999px;
+  background: rgba(18,18,20,.92);
+  border: 1px solid rgba(255,255,255,.13);
+  box-shadow: 0 16px 38px rgba(0,0,0,.34);
+  backdrop-filter: blur(14px);
+}
+
+.sw2317-shared-reaction-dock button {
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.045);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease;
+}
+
+.sw2317-shared-reaction-dock button:hover {
+  transform: translateY(-2px) scale(1.06);
+  background: rgba(255,255,255,.09);
+}
+
+.sw2317-shared-reaction-dock button:active { transform: scale(.84); }
+
+.sw2317-shared-reaction-error {
+  position: fixed;
+  z-index: 99992;
+  left: 50%;
+  bottom: max(179px, calc(env(safe-area-inset-bottom, 0px) + 169px));
+  transform: translateX(-50%);
+  max-width: min(88vw, 420px);
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(160,24,42,.94);
+  font-size: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.30);
+}
+
+@media (max-width: 720px) {
+  .sw2317-shared-reaction-dock { gap: 4px; padding: 6px; }
+  .sw2317-shared-reaction-dock button { width: 34px; height: 34px; font-size: 18px; }
+  .sw2317-shared-reaction-bubble { width: 44px; height: 44px; margin-left: -22px; font-size: 26px; }
+}
