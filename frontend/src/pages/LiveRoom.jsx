@@ -44,6 +44,7 @@ const LiveRoom = () => {
   const [chatBody, setChatBody] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const [hostPlayBusy, setHostPlayBusy] = useState("");
+  const [roomPanel, setRoomPanel] = useState("queue");
   const [listenerPaused, setListenerPaused] = useState(false);
   const [roomClock, setRoomClock] = useState(0);
   const chatEndRef = useRef(null);
@@ -53,7 +54,9 @@ const LiveRoom = () => {
   const pendingSeekRef = useRef(null);
   const listenerPausedRef = useRef(false);
   const joinAttemptRef = useRef(false);
+  const previousHostQueueCountRef = useRef(0);
   const roomCode = String(code || "").toUpperCase();
+  const pendingHostQueueCount = useMemo(() => (room?.queue || []).filter((entry) => !entry.played).length, [room?.queue]);
 
   roomRef.current = room;
   playerRef.current = player;
@@ -253,6 +256,19 @@ const LiveRoom = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // V23.6: when the first votable song arrives, reveal the host-only player
+  // automatically. Members never see this tab. If the waiting queue becomes
+  // empty, return the host to the shared queue view.
+  useEffect(() => {
+    const previousCount = previousHostQueueCountRef.current;
+    if (room?._isHost && pendingHostQueueCount > 0 && previousCount === 0) {
+      setRoomPanel("leader");
+    } else if (pendingHostQueueCount === 0 && roomPanel === "leader") {
+      setRoomPanel("queue");
+    }
+    previousHostQueueCountRef.current = pendingHostQueueCount;
+  }, [pendingHostQueueCount, room?._isHost, roomPanel]);
 
   useEffect(() => {
     if (!socket || !roomCode) return undefined;
@@ -666,11 +682,38 @@ const LiveRoom = () => {
             )}
           </section>
 
-          {room._isHost ? (
-            <section className="sw-social-panel sw20-panel sw25-leader-player">
+          {room._isHost && queue.length ? (
+            <div className="sw26-room-tabs" role="tablist" aria-label="Host room controls">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={roomPanel === "queue"}
+                className={roomPanel === "queue" ? "active" : ""}
+                onClick={() => setRoomPanel("queue")}
+              >
+                <ArrowBigUp size={15} />
+                <span>Room Queue</span>
+                <strong>{queue.length}</strong>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={roomPanel === "leader"}
+                className={`sw26-leader-tab ${roomPanel === "leader" ? "active" : ""}`}
+                onClick={() => setRoomPanel("leader")}
+              >
+                <Crown size={15} />
+                <span>Leader Player</span>
+                <strong>{queue.length} ready</strong>
+              </button>
+            </div>
+          ) : null}
+
+          {room._isHost && queue.length && roomPanel === "leader" ? (
+            <section className="sw-social-panel sw20-panel sw25-leader-player sw26-leader-player-tab">
               <div className="sw25-leader-player-head">
                 <div>
-                  <span className="sw-social-kicker">Leader only</span>
+                  <span className="sw-social-kicker">Leader only · voted queue</span>
                   <h2>Voted Songs Player</h2>
                   <p>Only you can start a queued song. Members keep voting while music plays; their votes reorder this waiting list but never interrupt the current track.</p>
                 </div>
@@ -725,6 +768,7 @@ const LiveRoom = () => {
             </section>
           ) : null}
 
+          {(!room._isHost || !queue.length || roomPanel === "queue") ? (
           <section className="sw-social-panel sw20-panel sw23-room-queue-panel">
             <div className="sw23-queue-heading">
               <div>
@@ -765,6 +809,7 @@ const LiveRoom = () => {
               )}
             </div>
           </section>
+          ) : null}
         </main>
 
         <aside className="sw23-room-side">
