@@ -59,6 +59,8 @@ const LiveRoom = () => {
   const previousHostQueueCountRef = useRef(0);
   const seenRoomReactionIdsRef = useRef(new Set());
   const reactionTimersRef = useRef(new Map());
+  const reactionChannelRef = useRef(null);
+  const reactionSequenceRef = useRef(0);
   const serverClockOffsetRef = useRef(null);
   const syncInFlightRef = useRef(false);
   const lastHardSyncAtRef = useRef(0);
@@ -383,38 +385,109 @@ const LiveRoom = () => {
     if (seenRoomReactionIdsRef.current.has(reactionId)) return;
     seenRoomReactionIdsRef.current.add(reactionId);
 
-    const duration = 2800 + Math.floor(Math.random() * 1700);
+    const duration = 3000 + Math.floor(Math.random() * 1800);
     const bubble = {
       id: reactionId,
       emoji,
-      left: 8 + Math.random() * 84,
-      drift: -85 + Math.random() * 170,
-      scale: 0.88 + Math.random() * 0.42,
+      // Give every tap an independent lane so rapid reactions do not stack on
+      // top of one another. The layer is viewport-wide, like YouTube live.
+      left: 6 + Math.random() * 88,
+      drift: -105 + Math.random() * 210,
+      scale: 0.86 + Math.random() * 0.48,
       duration,
     };
 
-    setFloatingReactions((current) => [...current.slice(-89), bubble]);
+    setFloatingReactions((current) => [...current.slice(-139), bubble]);
     const timer = window.setTimeout(() => {
       setFloatingReactions((current) => current.filter((item) => item.id !== reactionId));
       reactionTimersRef.current.delete(reactionId);
-      window.setTimeout(() => seenRoomReactionIdsRef.current.delete(reactionId), 12000);
-    }, duration + 450);
+      window.setTimeout(() => seenRoomReactionIdsRef.current.delete(reactionId), 15000);
+    }, duration + 500);
     reactionTimersRef.current.set(reactionId, timer);
   }, []);
 
-  const sendRoomReaction = useCallback(async (emoji = "❤️") => {
-    if (!roomRef.current?.code) return;
-    const reactionId = `${roomRef.current._viewerId || "room"}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    // Render instantly on the sender's screen. The echoed SSE packet uses the
-    // same id, so it will not create a duplicate bubble locally.
-    spawnRoomReaction({ reactionId, emoji });
-    try {
-      await apiClient.post(`/api/social/rooms/${roomRef.current.code}/reactions`, { emoji, reactionId }, { headers });
-    } catch {
-      // Reactions are intentionally ephemeral. A failed network tap should not
-      // interrupt music or replace the chat UI with an error state.
+  // Same-device rooms (for example two localhost browser windows) get a
+  // zero-latency cross-tab path in addition to the server SSE path. Remote
+  // devices still receive the exact same packet through room:reaction.
+  useEffect(() => {
+    if (!roomCode || typeof window === "undefined") return undefined;
+
+    let channel = null;
+    if ("BroadcastChannel" in window) {
+      channel = new BroadcastChannel("soundwave-live-room-reactions-v1");
+      reactionChannelRef.current = channel;
+      channel.onmessage = (event) => {
+        const packet = event?.data;
+        if (String(packet?.code || "").toUpperCase() !== roomCode || !packet?.emoji) return;
+        spawnRoomReaction(packet);
+      };
     }
-  }, [headers, spawnRoomReaction]);
+
+    const onStorage = (event) => {
+      if (event.key !== "soundwave:live-room-reaction" || !event.newValue) return;
+      try {
+        const packet = JSON.parse(event.newValue);
+        if (String(packet?.code || "").toUpperCase() !== roomCode || !packet?.emoji) return;
+        spawnRoomReaction(packet);
+      } catch {
+        // Ignore malformed ephemeral reaction packets.
+      }
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      try { channel?.close?.(); } catch {}
+      if (reactionChannelRef.current === channel) reactionChannelRef.current = null;
+    };
+  }, [roomCode, spawnRoomReaction]);
+
+  const broadcastReactionToLocalTabs = useCallback((packet) => {
+    try {
+      reactionChannelRef.current?.postMessage?.(packet);
+    } catch {
+      // BroadcastChannel is only a local fast path; SSE remains authoritative.
+    }
+    try {
+      localStorage.setItem("soundwave:live-room-reaction", JSON.stringify({ ...packet, localAt: Date.now() }));
+      localStorage.removeItem("soundwave:live-room-reaction");
+    } catch {
+      // Private browsing/storage restrictions should not block room reactions.
+    }
+  }, []);
+
+  const sendRoomReaction = useCallback(async (emoji = "❤️") => {
+    const snapshot = roomRef.current;
+    if (!snapshot?.code) return;
+
+    reactionSequenceRef.current += 1;
+    const reactionId = `${snapshot._viewerId || "room"}-${Date.now()}-${reactionSequenceRef.current}-${Math.random().toString(36).slice(2, 7)}`;
+    const packet = {
+      code: String(snapshot.code).toUpperCase(),
+      reactionId,
+      emoji,
+      actorId: snapshot._viewerId || "",
+      at: new Date().toISOString(),
+    };
+
+    // 1) The person who tapped sees the bubble immediately.
+    spawnRoomReaction(packet);
+    // 2) Other tabs/windows on the same device see it immediately too.
+    broadcastReactionToLocalTabs(packet);
+    // 3) The backend broadcasts it to every authenticated member of this room,
+    //    including the leader and the sender's other devices.
+    const post = () => apiClient.post(`/api/social/rooms/${snapshot.code}/reactions`, { emoji, reactionId }, { headers });
+    try {
+      await post();
+    } catch {
+      // Retry once. If the first request actually reached the server but only
+      // its response was lost, the repeated reactionId is harmless because all
+      // clients de-duplicate by reactionId.
+      window.setTimeout(() => {
+        post().catch(() => {});
+      }, 220);
+    }
+  }, [broadcastReactionToLocalTabs, headers, spawnRoomReaction]);
 
   const postPlayback = useCallback(async ({ playbackState, position }) => {
     const snapshot = roomRef.current;
@@ -868,7 +941,7 @@ const LiveRoom = () => {
   const displayPosition = roomDuration ? Math.min(roomClock, roomDuration) : roomClock;
   const roomProgress = roomDuration > 0 ? Math.min(100, (displayPosition / roomDuration) * 100) : 0;
   const nextQueued = queue[0] || null;
-  const localAudioFollowing = Boolean(room._isHost || (roomPlaying && !listenerPaused && player?.isPlaying));
+  const localAudioFollowing = Boolean(room._isHost ? (roomPlaying && player?.isPlaying) : (roomPlaying && !listenerPaused && player?.isPlaying));
 
   return (
     <div className="sw-social-page sw20-page sw23-live-room-page" onPointerDownCapture={unlockListenerAudioFromAnyGesture} onKeyDownCapture={unlockListenerAudioFromAnyGesture}>
