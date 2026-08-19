@@ -55,6 +55,10 @@ const LiveRoom = () => {
   const listenerPausedRef = useRef(false);
   const joinAttemptRef = useRef(false);
   const previousHostQueueCountRef = useRef(0);
+  const serverClockOffsetRef = useRef(null);
+  const syncInFlightRef = useRef(false);
+  const lastHardSyncAtRef = useRef(0);
+  const wasBufferingRef = useRef(false);
   const roomCode = String(code || "").toUpperCase();
   const pendingHostQueueCount = useMemo(() => (room?.queue || []).filter((entry) => !entry.played).length, [room?.queue]);
 
@@ -62,8 +66,17 @@ const LiveRoom = () => {
   playerRef.current = player;
   listenerPausedRef.current = listenerPaused;
 
-  const normalizeRoomResponse = useCallback((data) => {
+  const normalizeRoomResponse = useCallback((data, requestStartedAt = Date.now()) => {
     const raw = data?.room || {};
+    const receivedAt = Date.now();
+    const serverTimeMs = Date.parse(data?.serverTime || "");
+    if (Number.isFinite(serverTimeMs)) {
+      // Estimate the server clock from the midpoint of the request. This lets
+      // listeners account for network travel time instead of starting every
+      // room clock only when the response happens to arrive on their device.
+      const midpoint = (Number(requestStartedAt || receivedAt) + receivedAt) / 2;
+      serverClockOffsetRef.current = serverTimeMs - midpoint;
+    }
     return {
       ...raw,
       chat: (raw.chat || []).map((item) => ({
@@ -76,8 +89,9 @@ const LiveRoom = () => {
       _isHost: Boolean(data?.isHost),
       _viewerId: String(data?.viewerId || ""),
       _expectedPosition: Math.max(0, Number(data?.expectedPosition || raw.playbackPosition || 0)),
-      _snapshotReceivedAt: Date.now(),
+      _snapshotReceivedAt: receivedAt,
       _serverTime: data?.serverTime || null,
+      _serverClockOffsetMs: Number.isFinite(serverClockOffsetRef.current) ? serverClockOffsetRef.current : 0,
     };
   }, []);
 
@@ -85,9 +99,10 @@ const LiveRoom = () => {
     if (!authToken || !roomCode) return null;
     if (!quiet) setLoading(true);
     try {
+      const requestStartedAt = Date.now();
       const { data } = await apiClient.get(`/api/social/rooms/${roomCode}`, { headers });
       if (!data?.success) throw new Error(data?.message || "Could not load room");
-      const nextRoom = normalizeRoomResponse(data);
+      const nextRoom = normalizeRoomResponse(data, requestStartedAt);
       setRoom(nextRoom);
       setError("");
       return nextRoom;
@@ -101,9 +116,10 @@ const LiveRoom = () => {
         try {
           const { data: joined } = await apiClient.post("/api/social/rooms/join", { code: roomCode }, { headers });
           if (joined?.success) {
+            const retryStartedAt = Date.now();
             const { data } = await apiClient.get(`/api/social/rooms/${roomCode}`, { headers });
             if (data?.success) {
-              const nextRoom = normalizeRoomResponse(data);
+              const nextRoom = normalizeRoomResponse(data, retryStartedAt);
               setRoom(nextRoom);
               setError("");
               return nextRoom;
@@ -124,46 +140,127 @@ const LiveRoom = () => {
     if (!snapshot?.currentSong?._id) return 0;
     const base = Math.max(0, Number(snapshot._expectedPosition ?? snapshot.playbackPosition ?? 0));
     if (snapshot.playbackState !== "playing") return base;
+
+    const offset = Number.isFinite(snapshot?._serverClockOffsetMs)
+      ? Number(snapshot._serverClockOffsetMs)
+      : Number.isFinite(serverClockOffsetRef.current)
+        ? Number(serverClockOffsetRef.current)
+        : 0;
+    const serverNowMs = Date.now() + offset;
+    const startedAtMs = Date.parse(snapshot.playbackStartedAt || "");
+    const storedBase = Math.max(0, Number(snapshot.playbackPosition || 0));
+
+    // playbackStartedAt is the authoritative leader clock origin. Using it
+    // means a slow listener catches up to where the host is NOW, not to the
+    // stale timestamp at which the SSE packet reached that listener.
+    if (Number.isFinite(startedAtMs)) {
+      return Math.max(0, storedBase + Math.max(0, serverNowMs - startedAtMs) / 1000);
+    }
+
+    const packetServerMs = Date.parse(snapshot._serverTime || "");
+    if (Number.isFinite(packetServerMs)) {
+      return Math.max(0, base + Math.max(0, serverNowMs - packetServerMs) / 1000);
+    }
+
     const receivedAt = Number(snapshot._snapshotReceivedAt || Date.now());
     return Math.max(0, base + Math.max(0, Date.now() - receivedAt) / 1000);
   }, []);
 
   const syncFromRoom = useCallback(async ({ force = false, ignoreLocalPause = false } = {}) => {
+    if (syncInFlightRef.current) return;
     const snapshot = roomRef.current;
     const activePlayer = playerRef.current;
     const current = snapshot?.currentSong;
     if (!current?._id || !activePlayer) return;
 
-    // A listener's local pause never changes the room clock. Keep their device
-    // quiet until they explicitly resume, then jump them to the host's live
-    // position. Host pause/play still controls everybody who is following live.
+    // A listener's local pause never changes the leader's room clock.
     if (!snapshot?._isHost && listenerPausedRef.current && !ignoreLocalPause) return;
 
-    const wantedPosition = expectedPosition(snapshot);
-    const sameSong = String(activePlayer.currentSong?._id || "") === String(current._id);
+    syncInFlightRef.current = true;
+    try {
+      const wantedPosition = expectedPosition(snapshot);
+      const sameSong = String(activePlayer.currentSong?._id || "") === String(current._id);
+      const audioNode = activePlayer.audioRef?.current || null;
 
-    if (!sameSong) {
-      const started = await activePlayer.playSong?.(current, [current], { roomSync: true });
-      if (started !== false) {
-        activePlayer.seekTo?.(wantedPosition, { roomSync: true });
-      } else if (!snapshot?._isHost && snapshot.playbackState === "playing") {
-        setMessage("Your browser blocked automatic audio. Tap Play once to join the live sound; after that SoundWave keeps you synced to the host.");
-      }
-    } else {
-      const actual = Number(activePlayer.progress || 0);
-      const drift = Math.abs(actual - wantedPosition);
-      if (force || drift > 1.1) {
-        activePlayer.seekTo?.(wantedPosition, { roomSync: true });
-      }
-    }
+      if (!sameSong) {
+        // If the leader has selected the next song but their own media is still
+        // preparing, keep listeners silent. The first PLAYING packet starts
+        // everybody together from the leader's real media clock.
+        if (!snapshot?._isHost && snapshot.playbackState !== "playing") return;
 
-    if (snapshot.playbackState === "paused") {
-      if (activePlayer.isPlaying) activePlayer.pauseSong?.({ roomSync: true });
-    } else if (!activePlayer.isPlaying) {
-      const resumed = await activePlayer.resumeSong?.({ roomSync: true });
-      if (resumed === false && !snapshot?._isHost) {
-        setMessage("Tap Play once to enable live audio on this device. SoundWave will then catch up to the host automatically.");
+        // Start/load the exact song chosen by the leader. playSong may wait on
+        // the network, so calculate the target AGAIN after it resolves. That
+        // prevents slow listeners from beginning several seconds behind.
+        const started = await activePlayer.playSong?.(current, [current], { roomSync: true });
+        const latestSnapshot = roomRef.current || snapshot;
+        const liveTarget = expectedPosition(latestSnapshot);
+        if (started !== false) {
+          activePlayer.seekTo?.(liveTarget, { roomSync: true });
+          lastHardSyncAtRef.current = Date.now();
+        } else if (!latestSnapshot?._isHost && latestSnapshot.playbackState === "playing") {
+          setMessage("Live audio is waiting for this device. SoundWave will catch up to the leader as soon as audio can start.");
+        }
+      } else {
+        const liveAudio = activePlayer.audioRef?.current || audioNode;
+        const actual = Number.isFinite(liveAudio?.currentTime)
+          ? Number(liveAudio.currentTime)
+          : Number(activePlayer.progress || 0);
+        const signedDrift = wantedPosition - actual;
+        const drift = Math.abs(signedDrift);
+        const buffering = Boolean(activePlayer.isBuffering) || Boolean(liveAudio && !liveAudio.paused && liveAudio.readyState < 3);
+
+        if (!snapshot?._isHost && liveAudio && snapshot.playbackState === "playing") {
+          if (buffering && !force) {
+            // Do not seek on every timer tick while the network is buffering;
+            // that can restart range requests and keep a weak connection stuck.
+            // Make only an occasional hard jump when the listener is far behind.
+            if (drift > 7 && Date.now() - lastHardSyncAtRef.current > 4500) {
+              activePlayer.seekTo?.(wantedPosition, { roomSync: true });
+              lastHardSyncAtRef.current = Date.now();
+            }
+            if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
+          } else if (force || drift > 1.35) {
+            activePlayer.seekTo?.(wantedPosition, { roomSync: true });
+            lastHardSyncAtRef.current = Date.now();
+            if (liveAudio.playbackRate !== 1) liveAudio.playbackRate = 1;
+          } else if (drift > 0.28) {
+            // Tiny speed correction removes normal network drift without an
+            // audible jump. Browser audio keeps pitch stable at these rates.
+            liveAudio.playbackRate = 1.035;
+          } else if (signedDrift < -0.28) {
+            liveAudio.playbackRate = 0.965;
+          } else if (liveAudio.playbackRate !== 1) {
+            liveAudio.playbackRate = 1;
+          }
+        } else if (liveAudio && liveAudio.playbackRate !== 1) {
+          liveAudio.playbackRate = 1;
+        }
       }
+
+      const latest = roomRef.current || snapshot;
+      const latestAudio = activePlayer.audioRef?.current || null;
+      if (latest.playbackState === "paused") {
+        if (latestAudio && latestAudio.playbackRate !== 1) latestAudio.playbackRate = 1;
+        if (activePlayer.isPlaying) activePlayer.pauseSong?.({ roomSync: true });
+      } else if (!activePlayer.isPlaying && !activePlayer.isBuffering) {
+        await activePlayer.resumeSong?.({ roomSync: true });
+        // resumeSong itself can spend time buffering. Recalculate from the
+        // leader clock after it returns and immediately catch up again.
+        const afterResume = roomRef.current || latest;
+        const resumedAudio = activePlayer.audioRef?.current || null;
+        if (resumedAudio && !resumedAudio.paused) {
+          const liveTarget = expectedPosition(afterResume);
+          const actual = Number(resumedAudio.currentTime || 0);
+          if (Math.abs(liveTarget - actual) > 0.9) {
+            activePlayer.seekTo?.(liveTarget, { roomSync: true });
+            lastHardSyncAtRef.current = Date.now();
+          }
+        } else if (!afterResume?._isHost) {
+          setMessage("Tap Join live audio once if your browser asks for permission. After that, buffering listeners automatically catch up to the leader.");
+        }
+      }
+    } finally {
+      syncInFlightRef.current = false;
     }
   }, [expectedPosition]);
 
@@ -236,9 +333,12 @@ const LiveRoom = () => {
       const { data } = await apiClient.post(`/api/social/rooms/${snapshot.code}/advance`, {}, { headers });
       if (data?.success) {
         if (data.currentSong) {
-          await playerRef.current?.playSong?.(data.currentSong, [data.currentSong], { roomSync: true });
-          playerRef.current?.seekTo?.(0, { roomSync: true });
-          await playerRef.current?.resumeSong?.({ roomSync: true });
+          const started = await playerRef.current?.playSong?.(data.currentSong, [data.currentSong], { roomSync: true });
+          if (started !== false) {
+            playerRef.current?.seekTo?.(0, { roomSync: true });
+            const leaderPosition = Number(playerRef.current?.audioRef?.current?.currentTime || playerRef.current?.progress || 0);
+            await postPlayback({ playbackState: "playing", position: leaderPosition });
+          }
         }
         window.dispatchEvent(new CustomEvent("soundwave-social-mutated", {
           detail: { reason: "room-advance", code: roomCode, songId: data.currentSong?._id || "" },
@@ -251,7 +351,7 @@ const LiveRoom = () => {
       setMessage(errorValue?.response?.data?.message || "Only the host can advance the room.");
       return null;
     }
-  }, [headers, load, roomCode, syncFromRoom]);
+  }, [headers, load, postPlayback, roomCode, syncFromRoom]);
 
   useEffect(() => {
     load();
@@ -284,18 +384,18 @@ const LiveRoom = () => {
     const onRoomPlayback = (event) => {
       if (String(event?.code || "").toUpperCase() !== roomCode) return;
 
-      // A room advance can deliver the lightweight playback packet before the
-      // populated room:update fetch finishes. If the song changed, refresh the
-      // room first instead of briefly forcing the listener back to the old song.
+      const receivedAt = Date.now();
+      const eventServerMs = Date.parse(event?.serverTime || "");
+      if (!Number.isFinite(serverClockOffsetRef.current) && Number.isFinite(eventServerMs)) {
+        serverClockOffsetRef.current = eventServerMs - receivedAt;
+      }
+
+      // The playback packet is the wake-up signal for a newly selected song.
+      // Always fetch the populated song when its id differs, including the
+      // first song when the listener currently has no room song at all.
       const eventSongId = String(event?.songId || "");
       const localSongId = String(roomRef.current?.currentSong?._id || "");
-      if (!eventSongId && localSongId) {
-        // Queue finished: refresh the populated room so every client clears
-        // the old current song instead of trying to resync into it again.
-        load({ quiet: true });
-        return;
-      }
-      if (eventSongId && localSongId && eventSongId !== localSongId) {
+      if ((!eventSongId && localSongId) || (eventSongId && eventSongId !== localSongId)) {
         load({ quiet: true });
         return;
       }
@@ -307,8 +407,9 @@ const LiveRoom = () => {
         playbackStartedAt: event.playbackStartedAt || null,
         playbackVersion: Number(event.playbackVersion || 0),
         _expectedPosition: Math.max(0, Number(event.playbackPosition || 0)),
-        _snapshotReceivedAt: Date.now(),
+        _snapshotReceivedAt: receivedAt,
         _serverTime: event.serverTime || null,
+        _serverClockOffsetMs: Number.isFinite(serverClockOffsetRef.current) ? serverClockOffsetRef.current : 0,
       } : current);
     };
 
@@ -357,10 +458,10 @@ const LiveRoom = () => {
   }, [socket, roomCode, load]);
 
   useEffect(() => {
-    if (!authToken || connected) return undefined;
+    if (!authToken) return undefined;
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") load({ quiet: true });
-    }, 1500);
+    }, connected ? 4500 : 1500);
     return () => window.clearInterval(interval);
   }, [authToken, connected, load]);
 
@@ -392,9 +493,29 @@ const LiveRoom = () => {
     if (!room?.currentSong?._id) return undefined;
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") syncFromRoom({ force: false });
-    }, 1500);
+    }, 900);
     return () => window.clearInterval(interval);
   }, [room?.currentSong?._id, syncFromRoom]);
+
+  useEffect(() => {
+    const bufferingNow = Boolean(player?.isBuffering);
+    const wasBuffering = wasBufferingRef.current;
+    wasBufferingRef.current = bufferingNow;
+
+    if (
+      room?.currentSong?._id &&
+      !room?._isHost &&
+      room?.playbackState === "playing" &&
+      !listenerPausedRef.current &&
+      !bufferingNow &&
+      player?.isPlaying &&
+      (wasBuffering || player?.isPlaying)
+    ) {
+      const timer = window.setTimeout(() => syncFromRoom({ force: true }), wasBuffering ? 60 : 160);
+      return () => window.clearTimeout(timer);
+    }
+    return undefined;
+  }, [player?.isBuffering, player?.isPlaying, room?.currentSong?._id, room?._isHost, room?.playbackState, syncFromRoom]);
 
   useEffect(() => {
     const updateClock = () => setRoomClock(expectedPosition(roomRef.current));
@@ -536,11 +657,17 @@ const LiveRoom = () => {
 
       listenerPausedRef.current = false;
       setListenerPaused(false);
-      await playerRef.current?.playSong?.(data.currentSong, [data.currentSong], { roomSync: true });
+      const started = await playerRef.current?.playSong?.(data.currentSong, [data.currentSong], { roomSync: true });
+      if (started === false) {
+        await load({ quiet: true });
+        setMessage("The voted song is selected, but the leader audio is still loading. Press Play when it is ready; listeners will start from your exact live position.");
+        return;
+      }
       playerRef.current?.seekTo?.(0, { roomSync: true });
-      await playerRef.current?.resumeSong?.({ roomSync: true });
+      const leaderPosition = Number(playerRef.current?.audioRef?.current?.currentTime || playerRef.current?.progress || 0);
+      await postPlayback({ playbackState: "playing", position: leaderPosition });
 
-      setMessage(`${data.currentSong.title || "Voted song"} is now playing for the whole room.`);
+      setMessage(`${data.currentSong.title || "Voted song"} is now live for the whole room.`);
       window.dispatchEvent(new CustomEvent("soundwave-social-mutated", {
         detail: { reason: "room-host-play", code: roomCode, songId: data.currentSong?._id || "" },
       }));
@@ -628,7 +755,7 @@ const LiveRoom = () => {
                 <h2>{roomPlaying ? "Live with the host" : "Room paused"}</h2>
               </div>
               <span className={`sw23-room-follow-state ${localAudioFollowing ? "live" : ""}`}>
-                {room._isHost ? <><Crown size={14} /> Host controls</> : listenerPaused ? <><VolumeX size={14} /> Paused on this device</> : roomPlaying && player?.isPlaying ? <><Volume2 size={14} /> Following live</> : roomPlaying ? <><RefreshCw size={14} /> Tap to join audio</> : <><Pause size={14} /> Host paused</>}
+                {room._isHost ? <><Crown size={14} /> Host controls</> : listenerPaused ? <><VolumeX size={14} /> Paused on this device</> : player?.isBuffering && roomPlaying ? <><RefreshCw size={14} /> Catching up…</> : roomPlaying && player?.isPlaying ? <><Volume2 size={14} /> Following live</> : roomPlaying ? <><RefreshCw size={14} /> Tap to join audio</> : <><Pause size={14} /> Host paused</>}
               </span>
             </div>
 
@@ -639,7 +766,7 @@ const LiveRoom = () => {
                   <small>Everyone in this room is synced to</small>
                   <strong>{room.currentSong.title}</strong>
                   <span>{getArtistName(room.currentSong)}</span>
-                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.isPlaying ? "Your media follows the host’s song, position and host pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
+                  <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.isBuffering ? "Your connection is buffering. The room clock keeps moving and SoundWave will jump you to the leader’s current position as soon as audio is ready." : player?.isPlaying ? "Your media follows the leader’s song, position and pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
                   <div className="sw24-vote-lock">
                     <strong>Current song stays locked.</strong>
                     <span>{nextQueued ? `${nextQueued.song?.title || "The leading song"} is currently next with ${nextQueued.votes?.length || 0} vote${(nextQueued.votes?.length || 0) === 1 ? "" : "s"}. New votes can reorder the waiting queue without interrupting this song.` : "Votes can keep changing while this song plays. The current song will not be interrupted."}</span>
