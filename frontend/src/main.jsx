@@ -10,6 +10,7 @@ import { BrowserRouter } from "react-router-dom";
 import MusicContextProvider from "./context/ShopContext";
 import { MusicPlayerProvider } from "./context/MainPlayerContext.jsx";
 import { RealtimeProvider } from "./context/RealtimeContext.jsx";
+import LiveRoomQuickNavigator from "./components/Social/LiveRoomQuickNavigator.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")).render(
       <RealtimeProvider>
         <MusicPlayerProvider>
           <App />
+          <LiveRoomQuickNavigator />
         </MusicPlayerProvider>
       </RealtimeProvider>
     </MusicContextProvider>

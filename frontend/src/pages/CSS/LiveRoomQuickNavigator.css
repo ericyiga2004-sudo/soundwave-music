@@ -1,0 +1,185 @@
+.sw2321-live-jump {
+  position: fixed;
+  z-index: 1450;
+  right: clamp(14px, 2vw, 28px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  max-width: min(220px, calc(100vw - 28px));
+  padding: 8px 11px 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  color: rgba(255, 255, 255, 0.96);
+  background:
+    linear-gradient(180deg, rgba(35, 35, 39, 0.96), rgba(17, 17, 20, 0.97));
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.32),
+    0 2px 10px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.sw2321-live-jump:hover {
+  transform: translateY(-50%) translateX(-3px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, 0.38),
+    0 4px 14px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.sw2321-live-jump:active {
+  transform: translateY(-50%) scale(0.97);
+}
+
+.sw2321-live-jump:focus-visible {
+  outline: 2px solid rgba(74, 222, 128, 0.92);
+  outline-offset: 3px;
+}
+
+.sw2321-live-jump__signal {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 47px;
+  padding: 6px 7px;
+  border-radius: 11px;
+  background: rgba(74, 222, 128, 0.09);
+  border: 1px solid rgba(74, 222, 128, 0.16);
+}
+
+.sw2321-live-jump__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #39d56f;
+  box-shadow: 0 0 0 4px rgba(57, 213, 111, 0.10);
+  animation: sw2321LivePulse 1.8s ease-in-out infinite;
+}
+
+.sw2321-live-jump__live {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  color: #66e58f;
+}
+
+.sw2321-live-jump__copy {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.sw2321-live-jump__copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sw2321-live-jump__copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.sw2321-live-jump__arrow {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  line-height: 1;
+}
+
+@keyframes sw2321LivePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(57, 213, 111, 0.10);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.88);
+    box-shadow: 0 0 0 7px rgba(57, 213, 111, 0.04);
+  }
+}
+
+/* Keep it fast and unobtrusive on phones. */
+@media (max-width: 767.98px) {
+  .sw2321-live-jump {
+    right: 10px;
+    top: 48%;
+    min-height: 46px;
+    max-width: 152px;
+    gap: 7px;
+    padding: 7px 9px 7px 8px;
+    border-radius: 15px;
+  }
+
+  .sw2321-live-jump__signal {
+    min-width: auto;
+    padding: 6px;
+  }
+
+  .sw2321-live-jump__live {
+    display: none;
+  }
+
+  .sw2321-live-jump__copy strong {
+    font-size: 12px;
+  }
+
+  .sw2321-live-jump__copy small {
+    font-size: 9px;
+  }
+
+  .sw2321-live-jump__arrow {
+    width: 21px;
+    height: 21px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw2321-live-jump,
+  .sw2321-live-jump__dot {
+    transition: none;
+    animation: none;
+  }
+}
+
+html[data-sw-battery-saver="true"] .sw2321-live-jump,
+html[data-sw-battery-saver="true"] .sw2321-live-jump__dot {
+  transition: none;
+  animation: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
