@@ -26,6 +26,7 @@ import {
   postLiveRoomChat,
   playLiveRoomQueueEntry,
   reactLiveRoomChat,
+  sendLiveRoomReaction,
   searchUsers,
   shareSongDirect,
   setDailyPick,
@@ -74,5 +75,6 @@ router.post("/rooms/:code/advance", authUser, advanceLiveRoom);
 router.post("/rooms/:code/playback", authUser, updateLiveRoomPlayback);
 router.post("/rooms/:code/chat", authUser, postLiveRoomChat);
 router.post("/rooms/:code/chat/:messageId/react", authUser, reactLiveRoomChat);
+router.post("/rooms/:code/reactions", authUser, sendLiveRoomReaction);
 
 export default router;

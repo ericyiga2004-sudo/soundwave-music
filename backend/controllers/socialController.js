@@ -819,6 +819,38 @@ export const reactLiveRoomChat = async (req, res) => {
   }
 };
 
+export const sendLiveRoomReaction = async (req, res) => {
+  try {
+    const code = String(req.params.code || "").toUpperCase();
+    const emoji = String(req.body.emoji || "❤️").trim().slice(0, 8);
+    const reactionId = String(req.body.reactionId || `${id(req.userId)}-${Date.now()}`).trim().slice(0, 96);
+    const allowed = new Set(["❤️", "🔥", "😂", "👏", "🎵", "🙌"]);
+    if (!allowed.has(emoji)) return res.status(400).json({ success: false, message: "Unsupported reaction" });
+
+    const room = await LiveRoom.findOne({ code, status: "active" });
+    if (!room || !memberOfRoom(room, req.userId)) return res.status(404).json({ success: false, message: "Room not found" });
+
+    const actor = await User.findById(req.userId).select("username name image").lean();
+    const memberIds = [room.host, ...(room.members || []).map((member) => member.user)];
+    const packet = {
+      code: room.code,
+      reactionId,
+      emoji,
+      actorId: id(req.userId),
+      actorName: actor?.username || actor?.name || "Listener",
+      at: new Date().toISOString(),
+    };
+
+    // Room reactions are intentionally ephemeral. They are broadcast to every
+    // active room member but never stored in chat or in MongoDB, so rapid taps
+    // feel like live audience energy instead of generating message history.
+    emitToUsers(memberIds, "room:reaction", packet);
+    return res.status(202).json({ success: true, reaction: packet });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Could not send room reaction" });
+  }
+};
+
 export const addLiveRoomSong = async (req, res) => {
   try {
     const room = await LiveRoom.findOne({ code: String(req.params.code || "").toUpperCase(), status: "active" });
@@ -897,19 +929,30 @@ export const playLiveRoomQueueEntry = async (req, res) => {
 
     const now = new Date();
     room.currentSong = selectedSongId;
-    room.currentStartedAt = null;
-    // V23.7 two-phase start: selecting a voted song does NOT start the room
-    // clock yet. The leader loads/starts the real media first, then the normal
-    // /playback endpoint publishes the exact position that listeners follow.
-    room.playbackState = "paused";
+    room.currentStartedAt = now;
+    room.playbackState = "playing";
     room.playbackPosition = 0;
-    room.playbackStartedAt = null;
+    room.playbackStartedAt = now;
     room.playbackVersion = Number(room.playbackVersion || 0) + 1;
     room.lastActiveAt = now;
     await room.save();
 
     const song = await Song.findById(selectedSongId).populate("artist album");
-    return res.json({ success: true, currentSong: song, awaitingLeaderPlayback: true });
+    const memberIds = [room.host, ...(room.members || []).map((member) => member.user)];
+
+    emitToUsers(memberIds, "room:update", {
+      code: room.code,
+      reason: "host_selected_song",
+      songId: id(song?._id),
+      at: now.toISOString(),
+    });
+    emitToUsers(memberIds, "room:playback", {
+      ...roomPlaybackPacket(room, now),
+      songId: id(song?._id),
+    });
+    emitSocialRefresh(memberIds, "room_host_selected_song");
+
+    return res.json({ success: true, currentSong: song });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Could not play that voted room song" });
   }
@@ -954,18 +997,22 @@ export const advanceLiveRoom = async (req, res) => {
     });
     room.currentSong = next.song;
     const now = new Date();
-    room.currentStartedAt = null;
-    // Pick the winner now, but do not start the shared clock until the leader's
-    // actual audio element has started. This prevents every listener from being
-    // several seconds ahead when the leader itself needs time to buffer.
-    room.playbackState = "paused";
+    room.currentStartedAt = now;
+    room.playbackState = "playing";
     room.playbackPosition = 0;
-    room.playbackStartedAt = null;
+    room.playbackStartedAt = now;
     room.playbackVersion = Number(room.playbackVersion || 0) + 1;
     room.lastActiveAt = now;
     await room.save();
     const song = await Song.findById(next.song).populate("artist album");
-    return res.json({ success: true, currentSong: song, awaitingLeaderPlayback: true });
+    const memberIds = [room.host, ...(room.members || []).map((member) => member.user)];
+    emitToUsers(memberIds, "room:update", { code: room.code, reason: "song_advanced", songId: id(song?._id), at: now.toISOString() });
+    emitToUsers(memberIds, "room:playback", {
+      ...roomPlaybackPacket(room, now),
+      songId: id(song?._id),
+    });
+    emitSocialRefresh(memberIds, "room_song_advanced");
+    return res.json({ success: true, currentSong: song });
   } catch (error) { return res.status(500).json({ success: false, message: "Could not advance room" }); }
 };
 
