@@ -1,0 +1,114 @@
+.sw2515-reaction-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sw2515-reaction-bubble {
+  position: absolute;
+  left: 50%;
+  bottom: max(108px, calc(env(safe-area-inset-bottom, 0px) + 98px));
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  border-radius: 999px;
+  font-size: 28px;
+  line-height: 1;
+  background: rgba(20, 20, 22, 0.82);
+  border: 1px solid rgba(255,255,255,.13);
+  box-shadow: 0 12px 32px rgba(0,0,0,.28);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translate3d(0, 12px, 0) scale(.82) rotate(0deg);
+  animation-name: sw2515ReactionRise;
+  animation-duration: var(--sw2515-duration, 3600ms);
+  animation-timing-function: cubic-bezier(.16,.78,.22,1);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes sw2515ReactionRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(.82) rotate(0deg);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  68% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(var(--sw2515-drift, 0px), -82vh, 0)
+      scale(1.14)
+      rotate(var(--sw2515-rotate, 0deg));
+  }
+}
+
+.sw2515-reaction-controls {
+  position: fixed;
+  z-index: 1401;
+  left: 50%;
+  bottom: max(118px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  background: rgba(18,18,20,.91);
+  box-shadow: 0 16px 38px rgba(0,0,0,.32);
+  backdrop-filter: blur(14px);
+}
+
+.sw2515-reaction-controls button {
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+  background: rgba(255,255,255,.045);
+  color: inherit;
+  font: inherit;
+  font-size: 19px;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease;
+}
+
+.sw2515-reaction-controls button:hover {
+  background: rgba(255,255,255,.09);
+  transform: translateY(-2px) scale(1.06);
+}
+
+.sw2515-reaction-controls button:active {
+  transform: scale(.88);
+}
+
+@media (max-width: 720px) {
+  .sw2515-reaction-controls {
+    bottom: max(128px, calc(env(safe-area-inset-bottom, 0px) + 118px));
+  }
+
+  .sw2515-reaction-bubble {
+    bottom: max(118px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw2515-reaction-bubble {
+    animation-duration: 1800ms;
+  }
+}
