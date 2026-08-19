@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { MusicContext } from "../../context/ShopContext";
 import { useRealtime } from "../../context/RealtimeContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
+import { ChevronDown, Heart } from "lucide-react";
 import "../../pages/CSS/RoomReactionsSharedLedger.css";
 
 const EMOJIS = ["❤️", "🔥", "😂", "👏", "🎵", "🙌"];
@@ -56,6 +57,7 @@ const RoomReactionSharedLedger = ({ roomCode = "", viewerId = "" }) => {
   const pollBusyRef = useRef(false);
   const sequenceRef = useRef(0);
   const [sendError, setSendError] = useState("");
+  const [expanded, setExpanded] = useState(false);
 
   const alreadySeen = useCallback((reactionId) => {
     const now = Date.now();
@@ -205,12 +207,33 @@ const RoomReactionSharedLedger = ({ roomCode = "", viewerId = "" }) => {
     <>
       <div ref={layerRef} className="sw2317-shared-reaction-layer" aria-hidden="true" />
 
-      <div className="sw2317-shared-reaction-dock" aria-label="Live room reactions">
-        {EMOJIS.map((emoji) => (
-          <button type="button" key={emoji} onClick={() => react(emoji)} aria-label={`Send ${emoji}`}>
-            {emoji}
-          </button>
-        ))}
+      <div className={`sw2318-reaction-shell ${expanded ? "is-expanded" : ""}`} aria-label="Live room reactions">
+        {expanded ? (
+          <div className="sw2318-reaction-options" role="group" aria-label="Choose a live reaction">
+            {EMOJIS.map((emoji) => (
+              <button
+                type="button"
+                key={emoji}
+                className="sw2318-reaction-option"
+                onClick={() => react(emoji)}
+                aria-label={`Send ${emoji} to everyone in the room`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          className={`sw2318-reaction-toggle ${expanded ? "is-expanded" : ""}`}
+          onClick={() => setExpanded((current) => !current)}
+          aria-expanded={expanded}
+          aria-label={expanded ? "Collapse live reactions" : "Open live reactions"}
+          title={expanded ? "Collapse reactions" : "Live reactions"}
+        >
+          {expanded ? <ChevronDown size={20} strokeWidth={2.3} /> : <Heart size={21} strokeWidth={2.2} />}
+        </button>
       </div>
 
       {sendError ? <div className="sw2317-shared-reaction-error" role="status">{sendError}</div> : null}

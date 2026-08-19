@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowBigUp, Check, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowBigUp, Check, ChevronDown, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X } from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { useRealtime } from "../context/RealtimeContext";
@@ -15,6 +15,7 @@ import RoomReactionSharedLedger from "../components/Social/RoomReactionSharedLed
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
 import "./CSS/Social.css";
 import "./CSS/SocialV20.css";
+import "./CSS/LiveRoomPremiumV2318.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 const formatClock = (seconds = 0) => {
@@ -47,6 +48,7 @@ const LiveRoom = () => {
   const [hostPlayBusy, setHostPlayBusy] = useState("");
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [roomPanel, setRoomPanel] = useState("queue");
+  const [chatOpen, setChatOpen] = useState(false);
   const [listenerPaused, setListenerPaused] = useState(false);
   const [roomClock, setRoomClock] = useState(0);
   const chatEndRef = useRef(null);
@@ -413,7 +415,8 @@ const LiveRoom = () => {
   // zero-latency cross-tab path in addition to the server SSE path. Remote
   // devices still receive the exact same packet through room:reaction.
   useEffect(() => {
-    if (!roomCode || typeof window === "undefined") return undefined;
+    // Legacy V1 reaction transport intentionally disabled.
+    return undefined;
 
     let channel = null;
     if ("BroadcastChannel" in window) {
@@ -678,14 +681,13 @@ const LiveRoom = () => {
     socket.on("room:playback", onRoomPlayback);
     socket.on("room:chat", onRoomChat);
     socket.on("room:chat:reaction", onRoomChatReaction);
-    socket.on("room:reaction", onRoomReaction);
+    // Legacy room:reaction disabled by V23.14.
     socket.on("presence:update", onPresence);
     return () => {
       socket.off("room:update", onRoomUpdate);
       socket.off("room:playback", onRoomPlayback);
       socket.off("room:chat", onRoomChat);
       socket.off("room:chat:reaction", onRoomChatReaction);
-      socket.off("room:reaction", onRoomReaction);
       socket.off("presence:update", onPresence);
     };
   }, [socket, roomCode, load, spawnRoomReaction]);
@@ -763,6 +765,14 @@ const LiveRoom = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView?.({ block: "nearest" });
   }, [room?.chat?.length]);
+
+  useEffect(() => {
+    if (!chatOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      chatEndRef.current?.scrollIntoView?.({ block: "nearest" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [chatOpen]);
 
   useEffect(() => {
     if (!room?.code || !room?.currentSong?._id) return undefined;
@@ -950,6 +960,7 @@ const LiveRoom = () => {
   };
 
   const onlineCount = (room.members || []).filter((member) => member.user?.online).length;
+  const chatMessageCount = (room.chat || []).length;
   const roomPlaying = room.playbackState === "playing";
   const hostName = nameOf(room.host);
   const roomDuration = Math.max(0, Number(room.currentSong?.duration || player?.duration || 0));
@@ -959,7 +970,7 @@ const LiveRoom = () => {
   const localAudioFollowing = Boolean(room._isHost ? (roomPlaying && player?.isPlaying) : (roomPlaying && !listenerPaused && player?.isPlaying));
 
   return (
-    <div className="sw-social-page sw20-page sw23-live-room-page" onPointerDownCapture={unlockListenerAudioFromAnyGesture} onKeyDownCapture={unlockListenerAudioFromAnyGesture}>
+    <div className="sw-social-page sw20-page sw23-live-room-page sw2318-premium-room" onPointerDownCapture={unlockListenerAudioFromAnyGesture} onKeyDownCapture={unlockListenerAudioFromAnyGesture}>
       <SocialNav />
 
       <header className="sw23-room-header">
@@ -1166,7 +1177,7 @@ const LiveRoom = () => {
             <div className="sw23-queue-heading">
               <div>
                 <span className="sw-social-kicker">Room queue</span>
-                <h2>Everyone adds. Everyone votes. Host starts the winner.</h2>
+                <h2>Live Queue</h2>
                 <p>Waiting songs reorder live from highest votes to lowest. One vote per member; tap again to cancel. Ties go to the earliest add. Vote changes never interrupt the song already playing.</p>
               </div>
               <span className="sw23-queue-count">{queue.length} queued</span>
@@ -1206,12 +1217,17 @@ const LiveRoom = () => {
         </main>
 
         <aside className="sw23-room-side">
-          <section className="sw-social-panel sw20-panel sw23-live-chat-panel">
-            <div className="sw23-live-chat-header">
-              <div><span className="sw-social-kicker">Live chat</span><h2>Room conversation</h2></div>
-              <span><MessageCircle size={15} /> Live</span>
+          <section className={`sw-social-panel sw20-panel sw23-live-chat-panel sw2318-chat-sheet ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
+            <div className="sw23-live-chat-header sw2318-chat-sheet-header">
+              <div><span className="sw-social-kicker">Live chat</span><h2>Room Chat</h2></div>
+              <div className="sw2318-chat-sheet-actions">
+                <span><MessageCircle size={15} /> {chatMessageCount} messages</span>
+                <button type="button" className="sw2318-chat-collapse" onClick={() => setChatOpen(false)} aria-label="Collapse live chat" title="Collapse chat">
+                  <ChevronDown size={18} />
+                </button>
+              </div>
             </div>
-            <p className="sw23-live-chat-note">Messages stay here. Live reactions float across the room separately while the music keeps playing.</p>
+            <p className="sw23-live-chat-note">Live conversation while the room keeps playing.</p>
 
             <div className="sw-live-chat-list sw23-live-chat-list" aria-live="polite">
               {(room.chat || []).length ? (room.chat || []).map((item) => (
@@ -1226,7 +1242,7 @@ const LiveRoom = () => {
                     </div>
                   </div>
                 </article>
-              )) : <div className="sw23-chat-empty"><MessageCircle size={20} /><strong>Chat is live</strong><span>Say hello here. Use the floating reaction dock to react to the room.</span></div>}
+              )) : <div className="sw23-chat-empty"><MessageCircle size={20} /><strong>Chat is live</strong><span>Say hello here. Use the heart button for live room reactions.</span></div>}
               <span ref={chatEndRef} />
             </div>
 
@@ -1261,34 +1277,27 @@ const LiveRoom = () => {
         </aside>
       </div>
 
-      <div className="sw2310-reaction-layer" aria-hidden="true">
-        {floatingReactions.map((reaction) => (
-          <span
-            key={reaction.id}
-            className="sw2310-reaction-bubble"
-            style={{
-              left: `${reaction.left}vw`,
-              "--sw-reaction-drift": `${reaction.drift}px`,
-              "--sw-reaction-scale": reaction.scale,
-              "--sw-reaction-duration": `${reaction.duration}ms`,
-              animationDelay: `${reaction.delay || 0}ms`,
-            }}
-          >
-            {reaction.emoji}
-          </span>
-        ))}
-      </div>
+      {chatOpen ? (
+        <button
+          type="button"
+          className="sw2318-chat-backdrop"
+          onClick={() => setChatOpen(false)}
+          aria-label="Close live chat"
+        />
+      ) : null}
 
-      <div className="sw2310-reaction-dock" aria-label="React live to the room">
-        <span>React live</span>
-        <div>
-          {["❤️", "🔥", "😂", "👏", "🎵", "🙌"].map((emoji) => (
-            <button type="button" key={emoji} onClick={() => sendRoomReaction(emoji)} aria-label={`React ${emoji}`}>
-              {emoji}
-            </button>
-          ))}
-        </div>
-      </div>
+      <button
+        type="button"
+        className={`sw2318-chat-launcher ${chatOpen ? "is-open" : ""}`}
+        onClick={() => setChatOpen((current) => !current)}
+        aria-expanded={chatOpen}
+        aria-label={`Live chat, ${chatMessageCount} message${chatMessageCount === 1 ? "" : "s"}`}
+        title="Live chat"
+      >
+        <MessageCircle size={21} strokeWidth={2.15} />
+        <span className="sw2318-chat-count">{chatMessageCount > 99 ? "99+" : chatMessageCount}</span>
+      </button>
+
       <RoomReactionSharedLedger roomCode={roomCode} viewerId={room?._viewerId || ""} />
     </div>
   );
