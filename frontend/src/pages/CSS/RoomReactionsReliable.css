@@ -1,0 +1,106 @@
+.sw2316-reaction-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.sw2316-reaction-bubble {
+  position: absolute;
+  bottom: max(118px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+  width: 46px;
+  height: 46px;
+  margin-left: -23px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 27px;
+  line-height: 1;
+  background: rgba(21, 21, 24, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.78) rotate(0deg);
+  animation: sw2316-room-reaction-rise 3900ms cubic-bezier(.16,.78,.22,1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes sw2316-room-reaction-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.78) rotate(0deg);
+  }
+  7% { opacity: 1; }
+  72% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(var(--sw2316-drift, 0px), -84vh, 0)
+      scale(var(--sw2316-scale, 1.06))
+      rotate(var(--sw2316-rotate, 0deg));
+  }
+}
+
+.sw2316-reaction-dock {
+  position: fixed;
+  z-index: 2501;
+  left: 50%;
+  bottom: max(126px, calc(env(safe-area-inset-bottom, 0px) + 116px));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 999px;
+  background: rgba(18,18,20,.9);
+  border: 1px solid rgba(255,255,255,.13);
+  box-shadow: 0 14px 36px rgba(0,0,0,.34);
+  backdrop-filter: blur(14px);
+}
+
+.sw2316-reaction-dock button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease;
+}
+
+.sw2316-reaction-dock button:hover {
+  transform: translateY(-2px) scale(1.06);
+  background: rgba(255,255,255,.09);
+}
+.sw2316-reaction-dock button:active { transform: scale(.86); }
+
+.sw2316-reaction-error {
+  position: fixed;
+  z-index: 2502;
+  left: 50%;
+  bottom: max(177px, calc(env(safe-area-inset-bottom, 0px) + 167px));
+  transform: translateX(-50%);
+  max-width: min(88vw, 420px);
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(160, 24, 42, .92);
+  font-size: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.28);
+}
+
+@media (max-width: 720px) {
+  .sw2316-reaction-dock { gap: 4px; padding: 6px; }
+  .sw2316-reaction-dock button { width: 34px; height: 34px; font-size: 18px; }
+  .sw2316-reaction-bubble { width: 42px; height: 42px; margin-left: -21px; font-size: 25px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw2316-reaction-bubble { animation-duration: 2400ms; }
+}

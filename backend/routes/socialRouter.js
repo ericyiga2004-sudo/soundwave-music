@@ -1,4 +1,5 @@
 import express from "express";
+import { listReliableRoomReactions, sendReliableRoomReaction } from "../controllers/roomReactionController.js";
 import authUser from "../middleware/authUser.js";
 import optionalAuthUser from "../middleware/optionalAuthUser.js";
 import {
@@ -75,6 +76,7 @@ router.post("/rooms/:code/advance", authUser, advanceLiveRoom);
 router.post("/rooms/:code/playback", authUser, updateLiveRoomPlayback);
 router.post("/rooms/:code/chat", authUser, postLiveRoomChat);
 router.post("/rooms/:code/chat/:messageId/react", authUser, reactLiveRoomChat);
-router.post("/rooms/:code/reactions", authUser, sendLiveRoomReaction);
+router.post("/rooms/:code/reactions", authUser, sendReliableRoomReaction);
+router.get("/rooms/:code/reactions/recent", authUser, listReliableRoomReactions);
 
 export default router;
