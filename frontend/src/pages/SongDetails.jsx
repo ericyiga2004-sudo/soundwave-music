@@ -31,9 +31,11 @@ import { formatCompactNumber, formatDuration, getArtistName, getSongCover } from
 import { getBatterySaver } from "../utils/uiPreferences";
 import { isSongOfflineAvailable, removeOfflineSong, saveSongForOffline } from "../utils/offlineDownload";
 import { trackTasteEvent } from "../utils/personalization";
+import useSongDetailsLiveRoomSync from "../hooks/useSongDetailsLiveRoomSync";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import "./CSS/SongDetails.css";
+import "./CSS/SongDetailsLiveV2320.css";
 
 const parseLrc = (value = "") => {
   if (!value || typeof value !== "string") return [];
@@ -147,6 +149,15 @@ const SongDetails = () => {
   const lineRefs = useRef([]);
   const mobileSwipeRef = useRef({ active: false, x: 0, y: 0 });
 
+  const liveRoomSync = useSongDetailsLiveRoomSync({
+    songId,
+    player,
+    authToken: token,
+    socket: realtimeSocket,
+    connected: realtimeConnected,
+    onStatus: setStatus,
+  });
+
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     const mobileQuery = window.matchMedia("(max-width: 767.98px)");
@@ -198,7 +209,13 @@ const SongDetails = () => {
   const queue = useMemo(() => playlistFromRoute.length ? playlistFromRoute : (globalSongs.length ? globalSongs : song ? [song] : []), [playlistFromRoute, globalSongs, song]);
   const isCurrent = player?.currentSong?._id === song?._id;
   const isPlaying = isCurrent && player?.isPlaying;
-  const progress = isCurrent ? Number(player?.progress || 0) : 0;
+  const playerProgress = isCurrent ? Number(player?.progress || 0) : 0;
+  // When this is the song currently playing in a live room, the visible
+  // timeline follows the ROOM clock. A listener can pause only their device
+  // while this clock keeps advancing, exactly like the Live Room page.
+  const progress = liveRoomSync.isLiveSong
+    ? Math.max(0, Number(liveRoomSync.livePosition ?? playerProgress ?? 0))
+    : playerProgress;
   const lyrics = useMemo(() => normalizeLyrics(song), [song]);
   const synced = lyrics.some((line) => Number.isFinite(line.start));
   const activeLyricIndex = useMemo(() => {
@@ -220,6 +237,19 @@ const SongDetails = () => {
   const compactLyricIndex = activeLyricIndex >= 0 ? activeLyricIndex : 0;
   const compactLyric = lyrics[compactLyricIndex]?.text || lyrics[0]?.text || "Lyrics";
   const compactNextLyric = lyrics[compactLyricIndex + 1]?.text || "";
+
+  const liveRoomStatus = liveRoomSync.isLiveSong
+    ? liveRoomSync.isHost
+      ? liveRoomSync.playbackState === "playing"
+        ? "You control this live room from Song Details."
+        : "Live room paused by you. Press Play here to resume everyone."
+      : liveRoomSync.listenerPaused
+        ? `Paused on this device · room is live at ${formatDuration(liveRoomSync.livePosition)}.`
+        : liveRoomSync.playbackState === "playing"
+          ? "Synced to the live room host."
+          : "The host has paused the live room."
+    : "";
+  const liveListenerSeekLocked = Boolean(liveRoomSync.isLiveSong && !liveRoomSync.isHost);
 
   const fetchSong = useCallback(async () => {
     setLoading(true); setError("");
@@ -775,10 +805,31 @@ const SongDetails = () => {
             <img className="song-premium-art" src={getSongCover(song)} alt={`${song.title} artwork`} />
 
             <div className="song-premium-meta-block">
-              <span className="song-premium-kicker">Now Playing</span>
+              <div className="song-v2320-kicker-row">
+                <span className="song-premium-kicker">{liveRoomSync.isLiveSong ? "Now Playing · Live room" : "Now Playing"}</span>
+                {liveRoomSync.isLiveSong ? (
+                  <button
+                    type="button"
+                    className="song-v2320-live-badge"
+                    onClick={() => navigate(`/social/rooms/${liveRoomSync.roomCode}`)}
+                    title={`Return to live room ${liveRoomSync.roomCode}`}
+                    aria-label={`Live in room ${liveRoomSync.roomCode}. Return to room.`}
+                  >
+                    <i className="song-v2320-live-dot" aria-hidden="true" />
+                    <span>LIVE</span>
+                    <small>{liveRoomSync.roomCode}</small>
+                  </button>
+                ) : null}
+              </div>
               <h1>{song.title}</h1>
               <button className="song-premium-link" type="button" disabled={!artistId} onClick={()=>artistId&&navigate(`/artist/${artistId}`)}>{getArtistName(song)}</button>
               <button className="song-premium-link muted" type="button" disabled={!albumId} onClick={()=>albumId&&navigate(`/album/${albumId}`)}>{song.album?.title || "Single"}</button>
+              {liveRoomSync.isLiveSong ? (
+                <div className={`song-v2320-live-state ${liveRoomSync.listenerPaused ? "is-local-paused" : ""}`}>
+                  <span>{liveRoomStatus}</span>
+                  <small>{liveRoomSync.isHost ? "Host controls" : "Live sync"}</small>
+                </div>
+              ) : null}
               {lyrics.length ? (
                 <button type="button" className="song-mobile-lyrics-link d-md-none" onClick={openLyrics}>
                   <span>Lyrics</span><strong>View lyrics</strong><ChevronRight size={16}/>
@@ -805,20 +856,20 @@ const SongDetails = () => {
                   step="0.01"
                   value={detailProgress}
                   onChange={handleDetailSeek}
-                  disabled={!isCurrent || !detailDuration}
-                  aria-label="Precise song position"
+                  disabled={!isCurrent || !detailDuration || liveListenerSeekLocked}
+                  aria-label={liveListenerSeekLocked ? "Live room position is controlled by the host" : "Precise song position"}
                   style={{ "--song-progress": `${detailDuration ? (detailProgress / detailDuration) * 100 : 0}%` }}
                 />
                 <time>{formatDuration(detailDuration)}</time>
               </div>
               <div className="song-detail-transport-controls">
-                <button type="button" className="song-detail-track-control" onClick={goToPreviousTrack} aria-label="Previous song" title="Previous song"><SkipBack size={19} fill="currentColor" /></button>
-                <button type="button" className="song-detail-skip-control" onClick={skipDetailBackward} disabled={!isCurrent} aria-label="Go back 30 seconds" title="Back 30 seconds"><Rewind size={17}/><span>30</span></button>
+                <button type="button" className="song-detail-track-control" onClick={goToPreviousTrack} disabled={liveListenerSeekLocked} aria-label={liveListenerSeekLocked ? "Live room song changes are controlled by the host" : "Previous song"} title={liveListenerSeekLocked ? "Host controls the live song" : "Previous song"}><SkipBack size={19} fill="currentColor" /></button>
+                <button type="button" className="song-detail-skip-control" onClick={skipDetailBackward} disabled={!isCurrent || liveListenerSeekLocked} aria-label={liveListenerSeekLocked ? "Live room seeking is controlled by the host" : "Go back 30 seconds"} title="Back 30 seconds"><Rewind size={17}/><span>30</span></button>
                 <button type="button" className="song-detail-mini-play" onClick={handlePlay} aria-label={isPlaying ? "Pause" : "Play"}>{isPlaying ? <Pause size={23} fill="currentColor" /> : <Play size={23} fill="currentColor" />}</button>
-                <button type="button" className="song-detail-skip-control" onClick={skipDetailForward} disabled={!isCurrent} aria-label="Go forward 30 seconds" title="Forward 30 seconds"><FastForward size={17}/><span>30</span></button>
-                <button type="button" className="song-detail-track-control" onClick={goToNextTrack} aria-label="Next song" title="Next song"><SkipForward size={19} fill="currentColor" /></button>
+                <button type="button" className="song-detail-skip-control" onClick={skipDetailForward} disabled={!isCurrent || liveListenerSeekLocked} aria-label={liveListenerSeekLocked ? "Live room seeking is controlled by the host" : "Go forward 30 seconds"} title="Forward 30 seconds"><FastForward size={17}/><span>30</span></button>
+                <button type="button" className="song-detail-track-control" onClick={goToNextTrack} disabled={liveListenerSeekLocked} aria-label={liveListenerSeekLocked ? "Live room song changes are controlled by the host" : "Next song"} title={liveListenerSeekLocked ? "Host controls the live song" : "Next song"}><SkipForward size={19} fill="currentColor" /></button>
               </div>
-              {!isCurrent ? <small className="song-detail-seek-hint">Tap play to start this song.</small> : null}
+              {!isCurrent ? <small className="song-detail-seek-hint">Tap play to start this song.</small> : liveListenerSeekLocked ? <small className="song-detail-seek-hint song-v2320-live-hint">The live timeline keeps moving even when you pause this device. Press Play to jump back to the room's current position.</small> : null}
             </div>
 
             {status?<p className="song-status" role="status">{status}</p>:null}

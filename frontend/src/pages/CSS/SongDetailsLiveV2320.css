@@ -1,0 +1,123 @@
+/* SoundWave V23.20 — Song Details live-room bridge.
+   Additive styles only; the existing Song Details design remains intact. */
+
+.song-v2320-kicker-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.song-v2320-live-badge {
+  min-height: 27px;
+  padding: 4px 9px 4px 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, #31d158 34%, var(--sw-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, #31d158 8%, var(--sw-surface-2));
+  color: var(--sw-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.song-v2320-live-badge > span {
+  font-size: .62rem;
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: .11em;
+}
+
+.song-v2320-live-badge > small {
+  color: var(--sw-text-secondary);
+  font-size: .58rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.song-v2320-live-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #31d158;
+  box-shadow: 0 0 0 0 rgba(49, 209, 88, .32);
+  animation: sw-v2320-live-dot 2.2s ease-out infinite;
+}
+
+.song-v2320-live-state {
+  width: min(100%, 430px);
+  margin-top: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, #31d158 20%, var(--sw-border));
+  border-radius: 13px;
+  background: color-mix(in srgb, #31d158 5%, var(--sw-surface-2));
+}
+
+.song-v2320-live-state > span {
+  min-width: 0;
+  color: var(--sw-text-secondary);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+.song-v2320-live-state > small {
+  flex: 0 0 auto;
+  color: #31d158;
+  font-size: .59rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.song-v2320-live-state.is-local-paused {
+  border-color: color-mix(in srgb, #31d158 28%, var(--sw-border));
+}
+
+.song-v2320-live-hint {
+  color: var(--sw-text-secondary);
+}
+
+.song-detail-seek-row input[type="range"]:disabled[aria-label*="Live room"] {
+  opacity: .78;
+  cursor: default;
+}
+
+@keyframes sw-v2320-live-dot {
+  0% { box-shadow: 0 0 0 0 rgba(49, 209, 88, .32); }
+  60%, 100% { box-shadow: 0 0 0 6px rgba(49, 209, 88, 0); }
+}
+
+@media (max-width: 767.98px) {
+  .song-v2320-kicker-row {
+    justify-content: center;
+  }
+
+  .song-v2320-live-state {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+}
+
+@media (max-width: 430px) {
+  .song-v2320-live-state {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .song-v2320-live-dot { animation: none; }
+}
+
+html[data-sw-battery-saver="true"] .song-v2320-live-dot {
+  animation: none;
+}

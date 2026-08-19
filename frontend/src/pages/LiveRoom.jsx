@@ -6,6 +6,7 @@ import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { useRealtime } from "../context/RealtimeContext";
 import { apiClient, authHeaders } from "../config/apiClient";
 import { getArtistName, getSongCover } from "../utils/catalog";
+import { writeActiveLiveRoomSession } from "../utils/liveRoomSession";
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
@@ -76,6 +77,41 @@ const LiveRoom = () => {
   roomRef.current = room;
   playerRef.current = player;
   listenerPausedRef.current = listenerPaused;
+
+  // V23.20: remember the active room snapshot for this browser tab so the
+  // Song Details route can keep using the exact same live-room playback rules
+  // after LiveRoom unmounts. This does not change the room sync implementation.
+  useEffect(() => {
+    if (!room?.code) return;
+    writeActiveLiveRoomSession({
+      code: room.code,
+      isHost: Boolean(room._isHost),
+      viewerId: String(room._viewerId || ""),
+      currentSong: room.currentSong || null,
+      currentSongId: String(room.currentSong?._id || ""),
+      playbackState: room.playbackState || "paused",
+      playbackPosition: Math.max(0, Number(room.playbackPosition || 0)),
+      playbackStartedAt: room.playbackStartedAt || null,
+      playbackVersion: Number(room.playbackVersion || 0),
+      expectedPosition: Math.max(0, Number(room._expectedPosition ?? room.playbackPosition ?? 0)),
+      serverTime: room._serverTime || null,
+      serverClockOffsetMs: Number(room._serverClockOffsetMs || 0),
+      listenerPaused: Boolean(listenerPaused),
+    });
+  }, [
+    listenerPaused,
+    room?.code,
+    room?._isHost,
+    room?._viewerId,
+    room?.currentSong,
+    room?.playbackPosition,
+    room?.playbackStartedAt,
+    room?.playbackState,
+    room?.playbackVersion,
+    room?._expectedPosition,
+    room?._serverClockOffsetMs,
+    room?._serverTime,
+  ]);
 
   const normalizeRoomResponse = useCallback((data, requestStartedAt = Date.now()) => {
     const raw = data?.room || {};
