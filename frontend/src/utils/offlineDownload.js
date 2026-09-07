@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "./safeStorage";
 const OFFLINE_CACHE_NAME = "music-app-offline-songs-v1";
 const OFFLINE_META_KEY = "music_app_offline_songs";
 
@@ -8,14 +9,14 @@ const getSongId = (songOrId) => {
 
 const readOfflineMeta = () => {
   try {
-    return JSON.parse(localStorage.getItem(OFFLINE_META_KEY) || "[]");
+    return JSON.parse(safeLocalStorage.getItem(OFFLINE_META_KEY) || "[]");
   } catch {
     return [];
   }
 };
 
 const writeOfflineMeta = (items) => {
-  localStorage.setItem(OFFLINE_META_KEY, JSON.stringify(items));
+  safeLocalStorage.setItem(OFFLINE_META_KEY, JSON.stringify(items));
 };
 
 const safeFileName = (name = "song") => {

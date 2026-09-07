@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../../utils/safeStorage";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { FaLocationDot } from "react-icons/fa6";
@@ -75,7 +76,7 @@ const Country = () => {
   const [loading, setLoading] = useState(true);
 
   const saveLocation = async (location) => {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
 
     if (!token || !location) return;
 

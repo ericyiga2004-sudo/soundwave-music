@@ -1,3 +1,4 @@
+import { safeLocalStorage, safeSessionStorage } from "./utils/safeStorage";
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
@@ -87,7 +88,7 @@ const App = () => {
     }
   }, [location.pathname, location.key]);
   const [isLaunching, setIsLaunching] = useState(
-    () => sessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true"
+    () => safeSessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true"
   );
   const [batterySaver, setBatterySaverState] = useState(getBatterySaver);
   const [lowData, setLowDataState] = useState(getLowData);
@@ -97,7 +98,7 @@ const App = () => {
   useEffect(() => {
     if (!isLaunching) return undefined;
     const timer = window.setTimeout(() => {
-      sessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
+      safeSessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
       setIsLaunching(false);
     }, 850);
     return () => window.clearTimeout(timer);

@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../utils/safeStorage";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowBigUp, Check, ChevronDown, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X, LogOut, Trash2 } from "lucide-react";
@@ -493,8 +494,8 @@ const LiveRoom = () => {
       // BroadcastChannel is only a local fast path; SSE remains authoritative.
     }
     try {
-      localStorage.setItem("soundwave:live-room-reaction", JSON.stringify({ ...packet, localAt: Date.now() }));
-      localStorage.removeItem("soundwave:live-room-reaction");
+      safeLocalStorage.setItem("soundwave:live-room-reaction", JSON.stringify({ ...packet, localAt: Date.now() }));
+      safeLocalStorage.removeItem("soundwave:live-room-reaction");
     } catch {
       // Private browsing/storage restrictions should not block room reactions.
     }

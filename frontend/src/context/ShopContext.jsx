@@ -1,3 +1,4 @@
+import { safeLocalStorage, safeSessionStorage } from "../utils/safeStorage";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../config/api";
@@ -21,10 +22,10 @@ const isBadTokenValue = (value) => {
 };
 
 const getStoredToken = () => {
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
 
   if (isBadTokenValue(token)) {
-    localStorage.removeItem("token");
+    safeLocalStorage.removeItem("token");
     return "";
   }
 
@@ -43,10 +44,10 @@ const MusicContextProvider = ({ children }) => {
   const [token, setToken] = useState(getStoredToken);
 
   const getAuthToken = () => {
-    const cleanToken = String(token || localStorage.getItem("token") || "").trim();
+    const cleanToken = String(token || safeLocalStorage.getItem("token") || "").trim();
 
     if (isBadTokenValue(cleanToken)) {
-      localStorage.removeItem("token");
+      safeLocalStorage.removeItem("token");
       return "";
     }
 
@@ -74,7 +75,7 @@ const MusicContextProvider = ({ children }) => {
   const fetchPlaylists = async () => {
     try {
       const authToken = String(
-        token || localStorage.getItem("token") || ""
+        token || safeLocalStorage.getItem("token") || ""
       ).trim();
   
       if (
@@ -134,9 +135,9 @@ const MusicContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (!isBadTokenValue(token)) {
-      localStorage.setItem("token", token);
+      safeLocalStorage.setItem("token", token);
     } else {
-      localStorage.removeItem("token");
+      safeLocalStorage.removeItem("token");
     }
   }, [token]);
 
@@ -151,7 +152,7 @@ const MusicContextProvider = ({ children }) => {
 
   const logout = () => {
     setToken("");
-    localStorage.removeItem("token");
+    safeLocalStorage.removeItem("token");
     setPlaylists([]);
     setReceivedPlaylistShares([]);
   };

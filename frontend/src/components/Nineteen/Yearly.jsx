@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../../utils/safeStorage";
 import SongActionMenu from "../SongActions/SongActionMenu";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -223,7 +224,7 @@ const Yearly = () => {
 
   const fetchSections = async () => {
     try {
-      const token = String(localStorage.getItem("token") || "").trim();
+      const token = String(safeLocalStorage.getItem("token") || "").trim();
 
       let fetchedPreferences = {};
       if (token) {

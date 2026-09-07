@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../../utils/safeStorage";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -66,7 +67,7 @@ const ShareWithMe = () => {
   const authToken = useMemo(() => {
     const cleanToken =
       getAuthToken?.() ||
-      String(token || localStorage.getItem("token") || "").trim();
+      String(token || safeLocalStorage.getItem("token") || "").trim();
 
     return isBadTokenValue(cleanToken) ? "" : cleanToken;
   }, [token, getAuthToken]);

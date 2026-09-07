@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../utils/safeStorage";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBell, FaCheckDouble, FaInbox, FaTimes, FaTrash } from "react-icons/fa";
@@ -11,7 +12,7 @@ import "./CSS/NotificationBell.tailwind.css";
 
 const bad = new Set(["", "false", "null", "undefined", "none", "nan"]);
 const getValidToken = (token, getAuthToken) => {
-  const clean = String(getAuthToken?.() || token || localStorage.getItem("token") || "").trim();
+  const clean = String(getAuthToken?.() || token || safeLocalStorage.getItem("token") || "").trim();
   return bad.has(clean.toLowerCase()) ? "" : clean;
 };
 const actorName = (n) => n?.fromUser?.username || n?.fromUser?.name || "SoundWave";

@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../utils/safeStorage";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   ListMusic,
@@ -42,7 +43,7 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
   const [queueOpen, setQueueOpen] = useState(false);
   const [lowData, setLowData] = useState(getLowData);
   const [volume, setVolume] = useState(() => {
-    const saved = localStorage.getItem(VOLUME_KEY);
+    const saved = safeLocalStorage.getItem(VOLUME_KEY);
     const stored = saved === null || saved.trim() === "" ? NaN : Number(saved);
     return Number.isFinite(stored) && stored >= 0 && stored <= 1 ? stored : 0.82;
   });
@@ -88,7 +89,7 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
     if (!hiddenAudioRef.current) return;
     hiddenAudioRef.current.volume = volume;
     hiddenAudioRef.current.muted = volume <= 0.001;
-    localStorage.setItem(VOLUME_KEY, String(volume));
+    safeLocalStorage.setItem(VOLUME_KEY, String(volume));
     if (volume > 0.001) lastAudibleVolumeRef.current = volume;
   }, [volume]);
 

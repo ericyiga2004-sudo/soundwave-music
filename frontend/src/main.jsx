@@ -1,3 +1,4 @@
+import RouteErrorBoundary from "./components/UI/RouteErrorBoundary";
 import "./tailwind.css";
 import { createRoot } from "react-dom/client";
 import "./index.tailwind.css";
@@ -12,6 +13,7 @@ import { RealtimeProvider } from "./context/RealtimeContext.jsx";
 import LiveRoomQuickNavigator from "./components/Social/LiveRoomQuickNavigator.jsx";
 
 createRoot(document.getElementById("root")).render(
+  <RouteErrorBoundary>
   <BrowserRouter>
     <MusicContextProvider>
       <RealtimeProvider>
@@ -22,6 +24,7 @@ createRoot(document.getElementById("root")).render(
       </RealtimeProvider>
     </MusicContextProvider>
   </BrowserRouter>
+  </RouteErrorBoundary>
 );
 
 import "./mobile-layout.tailwind.css";

@@ -1,6 +1,7 @@
+import { safeLocalStorage } from "./safeStorage";
 const lowDataActive = () => {
   if (typeof window === "undefined") return false;
-  const stored = localStorage.getItem("soundwave_low_data");
+  const stored = safeLocalStorage.getItem("soundwave_low_data");
   if (stored === "true") return true;
   if (stored === "false") return false;
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;

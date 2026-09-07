@@ -91,3 +91,11 @@ html .app.sw-mobile-ready .explore-feature-card { @apply relative; }
   html .app.sw-mobile-ready .explore-top-row > button:not(.explore-title-btn) { @apply w-11 min-w-[44px] !important; }
   html .app.sw-mobile-ready .explore-play-btn svg { @apply h-5 w-5 min-w-[20px] shrink-0 !important; }
 }
+
+@screen query4 {
+  html .app.sw-mobile-ready.app-song-detail .sw-top-header { @apply hidden !important; }
+  html .app.sw-mobile-ready.app-song-detail .main-content { padding-top: 0; }
+  html .app.sw-mobile-ready .auth-right input { @apply text-base min-h-[44px]; }
+  html .app.sw-mobile-ready .auth-switch button,
+  html .app.sw-mobile-ready .submit-btn { @apply min-h-[44px]; }
+}

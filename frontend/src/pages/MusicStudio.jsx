@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../utils/safeStorage";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBars,
@@ -1027,7 +1028,7 @@ const MusicStudio = () => {
   };
 
   const saveProject = () => {
-    localStorage.setItem("soundwave-studio-project", JSON.stringify({ projectName, clips, bpm, trackVolumes, muted, solo }));
+    safeLocalStorage.setItem("soundwave-studio-project", JSON.stringify({ projectName, clips, bpm, trackVolumes, muted, solo }));
     setToast("Project saved");
     window.setTimeout(() => setToast(""), 1500);
   };

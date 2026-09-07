@@ -1,3 +1,4 @@
+import { safeLocalStorage, safeSessionStorage } from "../utils/safeStorage";
 import { useState, useContext, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
@@ -49,10 +50,10 @@ const getValidToken = (value) => {
 };
 
 const cleanStoredToken = () => {
-  const storedToken = localStorage.getItem("token");
+  const storedToken = safeLocalStorage.getItem("token");
 
   if (isBadTokenValue(storedToken)) {
-    localStorage.removeItem("token");
+    safeLocalStorage.removeItem("token");
     return "";
   }
 
@@ -63,7 +64,7 @@ const Account = () => {
   const { token, setToken, logout, backendUrl } = useContext(MusicContext);
 
   const validToken = useMemo(() => {
-    return getValidToken(token || localStorage.getItem("token"));
+    return getValidToken(token || safeLocalStorage.getItem("token"));
   }, [token]);
 
   const [historySongs, setHistorySongs] = useState([]);
@@ -124,54 +125,14 @@ const Account = () => {
   const showNotice = (type, message) => {
     setNotice({ type, message });
 
+    if (type === "error") return;
     window.setTimeout(() => {
       setNotice(null);
     }, 3500);
   };
 
-  const getUserLocation = () => {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-          });
-        },
-        () => {
-          resolve(null);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        }
-      );
-    });
-  };
-
-  const saveLocationAfterAuth = async (authToken, location) => {
-    if (!authToken || !location) return;
-
-    try {
-      await axios.post(`${backendUrl}/api/user/location`, location, {
-        headers: {
-          token: authToken,
-        },
-      });
-    } catch (error) {
-      console.log("Save location error:", error);
-    }
-  };
-
   const fetchHistory = async () => {
-    const authToken = getValidToken(token || localStorage.getItem("token"));
+    const authToken = getValidToken(token || safeLocalStorage.getItem("token"));
 
     if (!authToken) {
       setHistorySongs([]);
@@ -183,6 +144,7 @@ const Account = () => {
       setHistoryLoading(true);
 
       const res = await axios.get(`${backendUrl}/api/history/get`, {
+        timeout: 25000,
         headers: {
           token: authToken,
         },
@@ -206,7 +168,7 @@ const Account = () => {
         error.response?.data?.message?.toLowerCase()?.includes("jwt") ||
         error.response?.data?.message?.toLowerCase()?.includes("token")
       ) {
-        localStorage.removeItem("token");
+        safeLocalStorage.removeItem("token");
         setToken("");
       }
 
@@ -227,7 +189,7 @@ const Account = () => {
   }, [backendUrl, token]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    safeLocalStorage.removeItem("token");
 
     if (logout) {
       logout();
@@ -242,15 +204,16 @@ const Account = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    setNotice(null);
 
     try {
       setLoading(true);
 
       const cleanUsername = username.trim();
       const cleanEmail = email.trim().toLowerCase();
-      const cleanPassword = password.trim();
+      const cleanPassword = password;
 
-      const location = await getUserLocation();
 
       const endpoint = mode === "login" ? "/api/user/login" : "/api/user/register";
 
@@ -264,10 +227,10 @@ const Account = () => {
               username: cleanUsername,
               email: cleanEmail,
               password: cleanPassword,
-              location,
             };
 
       const res = await axios.post(`${backendUrl}${endpoint}`, payload, {
+        timeout: 25000,
         headers: {
           "Content-Type": "application/json",
         },
@@ -277,11 +240,7 @@ const Account = () => {
         const authToken = String(res.data.token).trim();
 
         setToken(authToken);
-        localStorage.setItem("token", authToken);
-
-        if (mode === "login") {
-          await saveLocationAfterAuth(authToken, location);
-        }
+        safeLocalStorage.setItem("token", authToken);
 
         showNotice(
           "success",
@@ -296,7 +255,7 @@ const Account = () => {
 
         window.dispatchEvent(new Event("auth-updated"));
       } else {
-        localStorage.removeItem("token");
+        safeLocalStorage.removeItem("token");
         setToken("");
 
         showNotice(
@@ -310,7 +269,7 @@ const Account = () => {
       const message =
         error.response?.data?.message ||
         error.response?.data?.error ||
-        error.message ||
+        (error.code === "ECONNABORTED" ? "Sign-in took too long. Please try again; the server may still be starting." : !error.response ? "Could not reach SoundWave. Check your connection and try again." : error.message) ||
         "Something went wrong";
 
       showNotice("error", message);
@@ -320,7 +279,7 @@ const Account = () => {
   };
 
   const noticeMarkup = notice && (
-    <div className={`auth-notice ${notice.type}`}>
+    <div role="alert" className={`auth-notice ${notice.type}`}>
       <span className="auth-notice-dot"></span>
       <p>{notice.message}</p>
     </div>
@@ -483,6 +442,7 @@ const Account = () => {
               <button
                 type="button"
                 className={mode === "login" ? "active" : ""}
+                disabled={loading}
                 onClick={() => setMode("login")}
               >
                 Login
@@ -491,6 +451,7 @@ const Account = () => {
               <button
                 type="button"
                 className={mode === "register" ? "active" : ""}
+                disabled={loading}
                 onClick={() => setMode("register")}
               >
                 Sign Up
@@ -515,6 +476,8 @@ const Account = () => {
                 <FaEnvelope />
                 <input
                   type="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -526,6 +489,7 @@ const Account = () => {
                 <FaLock />
                 <input
                   type="password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../../utils/safeStorage";
 import SongActionMenu from "../SongActions/SongActionMenu";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
@@ -12,7 +13,7 @@ const MAX_HISTORY_ITEMS = 20;
 
 const getValidToken = (token, getAuthToken) => {
   const value =
-    getAuthToken?.() || String(token || localStorage.getItem("token") || "");
+    getAuthToken?.() || String(token || safeLocalStorage.getItem("token") || "");
 
   const cleanValue = value.trim();
 

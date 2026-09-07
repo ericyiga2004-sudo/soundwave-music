@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../utils/safeStorage";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
@@ -49,7 +50,7 @@ const Artist = () => {
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
 
   const artistSongs = useMemo(() => {
     return (songs || []).filter((song) => getArtistIdFromSong(song) === artistId);

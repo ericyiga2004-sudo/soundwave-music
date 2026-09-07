@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../../utils/safeStorage";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -198,7 +199,7 @@ const PopularArtist = () => {
       setLoading(true);
       setLoadError("");
 
-      const token = String(localStorage.getItem("token") || "").trim();
+      const token = String(safeLocalStorage.getItem("token") || "").trim();
 
       // Public catalog requests must never depend on authentication.
       const [artistsRes, songsRes] = await Promise.all([
@@ -286,7 +287,7 @@ const PopularArtist = () => {
   };
 
   const handleFollowArtist = async (artistId) => {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
 
     if (!token) {
       navigate("/account");

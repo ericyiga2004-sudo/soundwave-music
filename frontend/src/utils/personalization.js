@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "./safeStorage";
 import { API_BASE_URL } from "../config/api";
 import { getLowData, getPersonalizationEnabled } from "./uiPreferences";
 
@@ -10,7 +11,7 @@ const cooldowns = new Map();
 
 const getToken = () => {
   if (typeof window === "undefined") return "";
-  const token = String(localStorage.getItem("token") || "").trim();
+  const token = String(safeLocalStorage.getItem("token") || "").trim();
   return ["", "false", "null", "undefined", "none"].includes(token.toLowerCase()) ? "" : token;
 };
 

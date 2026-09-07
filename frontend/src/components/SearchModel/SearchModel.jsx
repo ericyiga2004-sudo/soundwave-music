@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "../../utils/safeStorage";
 import SongActionMenu from "../SongActions/SongActionMenu";
 import {
   useContext,
@@ -604,7 +605,7 @@ const SearchModal = ({
       try {
         setLoading(true);
 
-        const token = localStorage.getItem("token");
+        const token = safeLocalStorage.getItem("token");
 
         const backendSearchRequest = axios.get(`${API_BASE_URL}/api/songs/search`, {
           params: {
