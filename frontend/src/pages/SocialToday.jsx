@@ -11,8 +11,8 @@ import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import SocialSongPicker from "../components/Social/SocialSongPicker";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 
@@ -65,7 +65,7 @@ const SocialToday = () => {
   const picks = home?.dailyPicks || [];
 
   return (
-    <div className="sw-social-page sw20-page container-fluid px-0">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
       <SocialPageHero
         kicker="One Song Today"
         title="One track can say more than a status."
@@ -74,8 +74,8 @@ const SocialToday = () => {
         live={realtimeConnected}
       />
 
-      <div className="row g-3 g-xl-4">
-        <div className="col-12 col-xl-8">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
+        <div className="col !w-[100%] flex-none col sw-col-wide xl:!w-[66.66666666666667%] xl:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Your pick</span><h2>Choose today&apos;s song</h2></div><MessageCircleHeart size={20} /></div>
             <form onSubmit={save}>
@@ -85,11 +85,11 @@ const SocialToday = () => {
                 <button type="submit" className="sw-primary-btn" disabled={!songId || saving}><Send size={15} /> {saving ? "Sharing…" : myPick ? "Update today's song" : "Share today's song"}</button>
               </div>
             </form>
-            {status ? <div className="sw-social-message mt-3">{status}</div> : null}
+            {status ? <div className="sw-social-message !mt-[1rem]">{status}</div> : null}
           </section>
         </div>
 
-        <div className="col-12 col-xl-4">
+        <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Friends</span><h2>Today&apos;s picks</h2></div></div>
             <div className="sw20-daily-list">

@@ -1,0 +1,110 @@
+.years-page {
+  @apply [min-height:100vh];
+  @apply [padding-bottom:44px];
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-bg)];
+}
+
+.years-page .sw-container { @apply [max-width:1480px]; }
+
+.years-hero {
+  @apply [padding:22px_0_26px];
+  @apply [border-bottom:1px_solid_var(--sw-border)];
+  @apply [background:var(--sw-bg)];
+}
+
+.years-back-btn {
+  @apply [min-height:36px];
+  @apply [margin-bottom:18px];
+  @apply [padding:0_10px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:999px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:7px];
+  @apply [background:var(--sw-surface)];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:.76rem];
+  @apply [font-weight:650];
+}
+
+.years-hero-grid {
+  @apply grid;
+  @apply [grid-template-columns:minmax(160px,_280px)_minmax(0,_1fr)];
+  @apply items-center;
+  @apply [gap:clamp(22px,_4vw,_48px)];
+}
+
+.years-hero-art {
+  @apply w-full;
+  @apply [aspect-ratio:1];
+  @apply block;
+  @apply object-cover;
+  @apply [border-radius:18px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.years-hero-content { @apply min-w-0; }
+.years-range { @apply block; @apply [margin-bottom:6px]; @apply [color:var(--sw-text-secondary)]; @apply [font-size:.74rem]; @apply [font-weight:650]; }
+.years-hero-content h1 { @apply [margin:0]; @apply [color:var(--sw-text)]; @apply [font-size:clamp(2rem,_5vw,_4.6rem)]; @apply [line-height:.98]; @apply [font-weight:770]; @apply [letter-spacing:-.055em]; }
+.years-hero-content p { @apply [max-width:620px]; @apply [margin:10px_0_0]; @apply [color:var(--sw-text-secondary)]; @apply [font-size:.9rem]; @apply [line-height:1.5]; }
+
+.years-song-card {
+  @apply h-full;
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [background:transparent];
+}
+
+.years-song-link { @apply block; @apply [color:inherit]; @apply no-underline; }
+.years-song-img-wrap { @apply relative; @apply overflow-hidden; @apply w-full; @apply [aspect-ratio:1]; @apply [border-radius:12px]; @apply [border:1px_solid_var(--sw-border)]; @apply [background:var(--sw-surface-2)]; }
+.years-song-img { @apply w-full; @apply h-full; @apply block; @apply object-cover; }
+.years-play-btn { @apply absolute; @apply [right:8px]; @apply [bottom:8px]; @apply [width:34px]; @apply [height:34px]; @apply [border:0]; @apply [border-radius:50%]; @apply grid; @apply [place-items:center]; @apply [background:var(--sw-accent)]; @apply [color:#fff]; @apply [opacity:0]; }
+.years-song-card:hover .years-play-btn, .years-song-card:focus-within .years-play-btn { @apply [opacity:1]; }
+.years-song-info { @apply [padding:9px_1px_1px]; }
+.years-song-info h3 { @apply [margin:0]; @apply [color:var(--sw-text)]; @apply [font-size:.9rem]; @apply [font-weight:680]; @apply [white-space:nowrap]; @apply overflow-hidden; @apply [text-overflow:ellipsis]; }
+.years-song-info p { @apply [margin:3px_0_0]; @apply [color:var(--sw-text-secondary)]; @apply [font-size:.76rem]; @apply [white-space:nowrap]; @apply overflow-hidden; @apply [text-overflow:ellipsis]; }
+.years-song-info span { @apply block; @apply [margin-top:3px]; @apply [color:var(--sw-text-tertiary)]; @apply [font-size:.7rem]; @apply [font-weight:550]; }
+
+.years-loading,
+.years-empty,
+.years-not-found {
+  @apply [min-height:240px];
+  @apply [padding:30px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:16px];
+  @apply grid;
+  @apply [place-content:center];
+  @apply text-center;
+  @apply [background:var(--sw-surface-2)];
+  @apply [color:var(--sw-text-secondary)];
+}
+
+.years-empty h2, .years-not-found h1 { @apply [color:var(--sw-text)]; }
+.years-empty p, .years-not-found p { @apply [color:var(--sw-text-secondary)]; }
+
+.years-skeleton-img,
+.years-skeleton-line { @apply [background:var(--sw-surface-2)]; @apply [animation:swYearsPulse_1.05s_ease-in-out_infinite_alternate]; }
+.years-skeleton-img { @apply w-full; @apply [aspect-ratio:1]; @apply [border-radius:12px]; }
+.years-skeleton-line { @apply [height:10px]; @apply [border-radius:5px]; @apply [margin-top:9px]; }
+.years-skeleton-title { @apply [width:85%]; @apply [height:12px]; }
+.years-skeleton-artist { @apply [width:64%]; }
+.years-skeleton-meta { @apply [width:45%]; }
+@keyframes swYearsPulse { from { opacity: .55; } to { opacity: 1; } }
+html[data-sw-battery-saver="true"] .years-skeleton-img,
+html[data-sw-battery-saver="true"] .years-skeleton-line,
+html[data-sw-low-data="true"] .years-skeleton-img,
+html[data-sw-low-data="true"] .years-skeleton-line { @apply [animation:none]; }
+
+@screen query4 {
+  .years-page .sw-container { @apply [padding-inline:14px]; }
+  .years-hero-grid { @apply [grid-template-columns:112px_minmax(0,_1fr)]; @apply [gap:16px]; }
+  .years-hero-art { @apply [border-radius:13px]; }
+  .years-hero-content h1 { @apply [font-size:clamp(1.8rem,_9vw,_2.7rem)]; }
+}
+
+@screen query8 {
+  .years-hero-grid { @apply [grid-template-columns:92px_minmax(0,_1fr)]; }
+  .years-hero-content p { @apply hidden; }
+}

@@ -9,7 +9,7 @@ import { authHeaders, cachedGet } from "../config/apiClient";
 import { getArtistName, getSongCover } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
-import "./CSS/Explore.css";
+import "./CSS/Explore.tailwind.css";
 
 const Explore = () => {
   const navigate = useNavigate();
@@ -91,15 +91,15 @@ const Explore = () => {
   const openSong = (song, queue = songs) => navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
 
   return (
-    <div className="explore-page-v7 container-fluid">
-      <section className="explore-v7-head row g-4 align-items-end">
-        <div className="col-12 col-xl-7">
+    <div className="explore-page-v7 sw-container-fluid w-full mx-auto px-3">
+      <section className="explore-v7-head row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] !items-end">
+        <div className="col !w-[100%] flex-none col xl:!w-[58.333333333333336%] xl:flex-none">
           <span className="explore-v7-kicker">Explore SoundWave</span>
           <h1>Find something that feels right.</h1>
           <p>Browse by country, genre, mood, or search. SoundWave loads only a compact page of results to keep phones fast.</p>
         </div>
         {featured ? (
-          <div className="col-12 col-xl-5">
+          <div className="col !w-[100%] flex-none col xl:!w-[41.666666666666664%] xl:flex-none">
             <article className="explore-feature-card">
               <img src={getSongCover(featured)} alt="" />
               <div><small>Featured now</small><strong>{featured.title}</strong><span>{getArtistName(featured)}</span></div>
@@ -112,19 +112,19 @@ const Explore = () => {
 
       <section className="explore-filter-shell" aria-label="Explore filters">
         <div className="explore-filter-title"><SlidersHorizontal size={16}/><span>Filter music</span><button type="button" onClick={reset}>Reset</button></div>
-        <div className="row g-2">
-          <div className="col-12 col-md-5 col-xl-4"><div className="explore-search-wrap"><Search size={16}/><input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Songs, artists, moods…" aria-label="Search music"/></div></div>
-          <div className="col-6 col-md"><PremiumSelect value={country} onChange={(e)=>setCountry(e.target.value)} aria-label="Country"><option>All</option>{(filters.countries||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
-          <div className="col-6 col-md"><PremiumSelect value={genre} onChange={(e)=>setGenre(e.target.value)} aria-label="Genre"><option>All</option>{(filters.genres||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
-          <div className="col-6 col-md"><PremiumSelect value={mood} onChange={(e)=>setMood(e.target.value)} aria-label="Mood"><option>All</option>{(filters.moods||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
-          <div className="col-6 col-md"><PremiumSelect value={sort} onChange={(e)=>setSort(e.target.value)} aria-label="Sort"><option value="popular">Popular</option><option value="newest">Newest</option><option value="liked">Most liked</option><option value="az">A–Z</option></PremiumSelect></div>
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem]">
+          <div className="col !w-[100%] flex-none col md:!w-[41.666666666666664%] md:flex-none col xl:!w-[33.333333333333336%] xl:flex-none"><div className="explore-search-wrap"><Search size={16}/><input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Songs, artists, moods…" aria-label="Search music"/></div></div>
+          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={country} onChange={(e)=>setCountry(e.target.value)} aria-label="Country"><option>All</option>{(filters.countries||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
+          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={genre} onChange={(e)=>setGenre(e.target.value)} aria-label="Genre"><option>All</option>{(filters.genres||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
+          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={mood} onChange={(e)=>setMood(e.target.value)} aria-label="Mood"><option>All</option>{(filters.moods||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
+          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={sort} onChange={(e)=>setSort(e.target.value)} aria-label="Sort"><option value="popular">Popular</option><option value="newest">Newest</option><option value="liked">Most liked</option><option value="az">A–Z</option></PremiumSelect></div>
         </div>
       </section>
 
       {loading && !songs.length ? <section className="explore-results"><CatalogSkeleton count={10} rows/></section> : error && !songs.length ? <section className="explore-results"><EmptyState title="Explore could not load" message={error}/></section> : songs.length ? <>
         <section className="explore-results">
           <div className="explore-section-heading"><div><span className="explore-v7-kicker">Top picks</span><h2>{country === "All" ? "Popular right now" : `Top in ${country}`}</h2></div><button type="button" onClick={()=>navigate("/songs")}>View all <ChevronRight size={15}/></button></div>
-          <div className="explore-top-list">{topTen.map((song,index)=><article key={song._id} className="explore-top-row"><span className="explore-rank">{String(index+1).padStart(2,"0")}</span><img src={getSongCover(song)} alt="" loading="lazy" decoding="async"/><button type="button" className="explore-title-btn" onClick={()=>openSong(song,topTen)}><strong>{song.title}</strong><small>{getArtistName(song)}</small></button><span className="explore-row-meta d-none d-md-block">{song.genre||"Music"}</span><button type="button" className="explore-play-btn" onClick={()=>playSong?.(song,topTen)} aria-label={`Play ${song.title}`}><Play size={15} fill="currentColor"/></button><SongActionMenu song={song} queue={topTen} triggerLabel={`More options for ${song.title}`} /></article>)}</div>
+          <div className="explore-top-list">{topTen.map((song,index)=><article key={song._id} className="explore-top-row"><span className="explore-rank">{String(index+1).padStart(2,"0")}</span><img src={getSongCover(song)} alt="" loading="lazy" decoding="async"/><button type="button" className="explore-title-btn" onClick={()=>openSong(song,topTen)}><strong>{song.title}</strong><small>{getArtistName(song)}</small></button><span className="explore-row-meta !hidden md:!block">{song.genre||"Music"}</span><button type="button" className="explore-play-btn" onClick={()=>playSong?.(song,topTen)} aria-label={`Play ${song.title}`}><Play size={15} fill="currentColor"/></button><SongActionMenu song={song} queue={topTen} triggerLabel={`More options for ${song.title}`} /></article>)}</div>
         </section>
         {moodGroups.map((group)=><section className="explore-mood-v7" key={group.name}><div className="explore-section-heading"><div><span className="explore-v7-kicker">Mood</span><h2>{group.name}</h2></div><button type="button" onClick={()=>navigate(`/songs?mood=${encodeURIComponent(group.name)}`)}>See all <ChevronRight size={15}/></button></div><div className="explore-art-grid">{group.items.map((song)=><article key={song._id}><button type="button" className="explore-art-button" onClick={()=>openSong(song,group.items)}><img src={getSongCover(song)} alt={song.title} loading="lazy" decoding="async"/></button><strong>{song.title}</strong><span>{getArtistName(song)}</span><SongActionMenu song={song} queue={group.items} triggerClassName="sw2324-overlay-more" triggerLabel={`More options for ${song.title}`} /></article>)}</div></section>)}
       </> : <section className="explore-results"><EmptyState title="No songs found" message="Change one of the filters or reset Explore."/></section>}

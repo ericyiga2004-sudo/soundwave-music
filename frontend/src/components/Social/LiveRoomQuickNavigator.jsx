@@ -7,8 +7,8 @@ import {
   clearActiveLiveRoomSession,
   readActiveLiveRoomSession,
 } from "../../utils/liveRoomSession";
-import "../../pages/CSS/LiveRoomQuickNavigator.css";
-import "../../pages/CSS/LiveRoomLifecycleV2322.css";
+import "../../pages/CSS/LiveRoomQuickNavigator.tailwind.css";
+import "../../pages/CSS/LiveRoomLifecycleV2322.tailwind.css";
 
 const normalizeCode = (value = "") => String(value || "").trim().toUpperCase();
 const DISMISSED_KEY = "soundwave:live-quick-nav-dismissed-room";

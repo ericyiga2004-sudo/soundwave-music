@@ -3,7 +3,7 @@ import SongActionMenu from "../SongActions/SongActionMenu";
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
-import "./FilterSongs.css";
+import "./FilterSongs.tailwind.css";
 import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 
@@ -222,14 +222,14 @@ const FilterSongs = () => {
 
   return (
     <section className="filter-section">
-      <div className="container-fluid px-0">
-        <div className="filter-header row g-3 align-items-center">
-          <div className="col-12 col-lg">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+        <div className="filter-header row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] !items-center">
+          <div className="col !w-[100%] flex-none col lg:flex-[1_0_0%]">
             <h2>🎧 Discover Music</h2>
           </div>
 
-          <div className="col-12 col-lg-auto">
-            <div className="tabs d-flex flex-wrap gap-2 justify-content-start justify-content-lg-end">
+          <div className="col !w-[100%] flex-none col lg:!w-auto lg:flex-none">
+            <div className="tabs !flex !flex-wrap gap-2 !justify-start lg:!justify-end">
               {tabs.map((tabName) => (
                 <button
                   type="button"
@@ -244,19 +244,19 @@ const FilterSongs = () => {
           </div>
         </div>
 
-        <div className="filters row g-2 g-md-3 align-items-center">
-          <div className="col-12 col-sm-6 col-md-4 col-lg-3">
+        <div className="filters row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] md:[--sw-gutter-x:1rem] md:[--sw-gutter-y:1rem] !items-center">
+          <div className="col !w-[100%] flex-none col sm:!w-[50%] sm:flex-none col md:!w-[33.333333333333336%] md:flex-none col lg:!w-[25%] lg:flex-none">
             <input
-              className="w-100"
+              className="!w-full"
               value={search}
               placeholder="Search song, artist, mood..."
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="col-12 col-sm-6 col-md-4 col-lg-3">
+          <div className="col !w-[100%] flex-none col sm:!w-[50%] sm:flex-none col md:!w-[33.333333333333336%] md:flex-none col lg:!w-[25%] lg:flex-none">
             <PremiumSelect
-              className="w-100"
+              className="!w-full"
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
             >
@@ -270,9 +270,9 @@ const FilterSongs = () => {
             </PremiumSelect>
           </div>
 
-          <div className="col-12 col-sm-8 col-md-4 col-lg-4">
+          <div className="col !w-[100%] flex-none col sm:!w-[66.66666666666667%] sm:flex-none col md:!w-[33.333333333333336%] md:flex-none col lg:!w-[33.333333333333336%] lg:flex-none">
             <input
-              className="w-100"
+              className="!w-full"
               value={country}
               placeholder="Country e.g. Uganda, Nigeria, United States"
               onChange={(e) => setCountry(e.target.value)}
@@ -280,7 +280,7 @@ const FilterSongs = () => {
           </div>
 
           {(genre || country || search) && (
-            <div className="col-12 col-md-auto">
+            <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none">
               <button
                 type="button"
                 className="clear-filters-btn"
@@ -308,7 +308,7 @@ const FilterSongs = () => {
                   onClick={() => playSong(song, songs)}
                 >
                   <Link
-                    className="text-decoration-none"
+                    className="!no-underline"
                     to={`/song/${song._id}`}
                     state={{ playlist: songs }}
                     onClick={(e) => {

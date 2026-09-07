@@ -7,7 +7,7 @@ import { useRealtime } from "../context/RealtimeContext";
 import { apiClient } from "../config/apiClient";
 import { getSongCover } from "../utils/catalog";
 import { getSongAudioUrl } from "../utils/audioSource";
-import "./CSS/NotificationBell.css";
+import "./CSS/NotificationBell.tailwind.css";
 
 const bad = new Set(["", "false", "null", "undefined", "none", "nan"]);
 const getValidToken = (token, getAuthToken) => {

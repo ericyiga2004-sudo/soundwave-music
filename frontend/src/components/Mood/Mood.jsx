@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSmile, FaFire, FaMoon, FaHeart, FaDumbbell, FaCloudRain, FaLeaf, FaBolt } from "react-icons/fa";
 import { getLowData, UI_PREFERENCES_EVENT } from "../../utils/uiPreferences";
-import "./Mood.css";
+import "./Mood.tailwind.css";
 
 const moods = [
   { name: "Happy", slug: "happy", subtitle: "Bright songs for good energy", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=520&q=72", icon: FaSmile },
@@ -35,14 +35,14 @@ const Mood = () => {
         <button type="button" onClick={() => navigate("/explore")}>See All</button>
       </div>
 
-      <div className="mood-grid row row-cols-2 row-cols-md-4 g-3 g-lg-4" role="list">
+      <div className="mood-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [&>*]:!w-[50%] [&>*]:flex-none md:[&>*]:!w-[25%] md:[&>*]:flex-none [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem]" role="list">
         {moods.map((mood) => {
           const Icon = mood.icon;
           return (
-            <div className="col" key={mood.slug} role="listitem">
+            <div className="col flex-[1_0_0%]" key={mood.slug} role="listitem">
               <button
                 type="button"
-                className="mood-card h-100"
+                className="mood-card !h-full"
                 onClick={() => {
                   navigate(`/mood/${mood.slug}`);
                   window.scrollTo(0, 0);

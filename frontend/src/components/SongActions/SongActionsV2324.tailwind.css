@@ -1,0 +1,150 @@
+.sw2324-song-more {
+  @apply [appearance:none];
+  @apply [width:34px];
+  @apply [height:34px];
+  @apply [flex:0_0_34px];
+  @apply [display:inline-grid];
+  @apply [place-items:center];
+  @apply [padding:0];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:10px];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:var(--sw-surface-2)];
+  @apply cursor-pointer;
+  @apply [transition:background_.12s_ease,_color_.12s_ease,_transform_.12s_ease];
+}
+.sw2324-song-more:hover { @apply [color:var(--sw-text)]; @apply [background:var(--sw-surface-3)]; }
+.sw2324-song-more:active { @apply [transform:scale(.94)]; }
+.sw2324-overlay-more {
+  @apply absolute !important;
+  @apply [z-index:12];
+  @apply [top:9px];
+  @apply [right:9px];
+  @apply [width:32px];
+  @apply [height:32px];
+  @apply [color:rgba(255,255,255,.94)];
+  @apply [border-color:rgba(255,255,255,.14)];
+  @apply [background:rgba(15,15,18,.74)];
+  @apply [backdrop-filter:blur(10px)];
+  @apply [-webkit-backdrop-filter:blur(10px)];
+}
+.song-carder { @apply relative; }
+.song-carder > .sw2324-song-more {
+  @apply absolute;
+  @apply [z-index:12];
+  @apply [top:10px];
+  @apply [right:10px];
+  @apply [color:rgba(255,255,255,.94)];
+  @apply [border-color:rgba(255,255,255,.14)];
+  @apply [background:rgba(15,15,18,.74)];
+}
+
+.sw2324-song-menu {
+  @apply fixed;
+  @apply [z-index:12100];
+  @apply [width:278px];
+  @apply [max-height:min(560px,_calc(100vh_-_20px))];
+  @apply overflow-auto;
+  @apply [padding:8px];
+  @apply [border:1px_solid_rgba(255,255,255,.11)];
+  @apply [border-radius:18px];
+  @apply [color:#f7f7f8];
+  @apply [background:rgba(24,24,27,.985)];
+  @apply [box-shadow:0_26px_72px_rgba(0,0,0,.48),_inset_0_1px_0_rgba(255,255,255,.05)];
+  @apply [backdrop-filter:blur(20px)_saturate(125%)];
+  @apply [-webkit-backdrop-filter:blur(20px)_saturate(125%)];
+  @apply [animation:sw2324MenuIn_.14s_ease-out_both];
+}
+.sw2324-song-menu-head {
+  @apply grid;
+  @apply [grid-template-columns:auto_minmax(0,1fr)];
+  @apply items-center;
+  @apply [gap:10px];
+  @apply [padding:5px_5px_9px];
+  @apply [border-bottom:1px_solid_rgba(255,255,255,.07)];
+}
+.sw2324-song-menu-head > button,
+.sw2324-song-menu-cover {
+  @apply [width:40px];
+  @apply [height:40px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply overflow-hidden;
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [border-radius:10px];
+  @apply [color:#fff];
+  @apply [background:rgba(255,255,255,.07)];
+}
+.sw2324-song-menu-cover img { @apply w-full; @apply h-full; @apply object-cover; }
+.sw2324-song-menu-head > span:last-child { @apply min-w-0; @apply grid; @apply [gap:2px]; }
+.sw2324-song-menu-head strong,
+.sw2324-song-menu-head small { @apply overflow-hidden; @apply [text-overflow:ellipsis]; @apply [white-space:nowrap]; }
+.sw2324-song-menu-head strong { @apply [font-size:12px]; }
+.sw2324-song-menu-head small { @apply [color:rgba(255,255,255,.48)]; @apply [font-size:10px]; }
+
+.sw2324-song-menu-status {
+  @apply flex;
+  @apply items-center;
+  @apply [gap:6px];
+  @apply [margin:7px_2px_2px];
+  @apply [padding:7px_9px];
+  @apply [border-radius:10px];
+  @apply [color:#7fe5a0];
+  @apply [background:rgba(57,213,111,.09)];
+  @apply [font-size:10px];
+  @apply [font-weight:650];
+}
+.sw2324-song-menu-actions,
+.sw2324-song-menu-playlists { @apply grid; @apply [gap:2px]; @apply [padding-top:6px]; }
+.sw2324-song-menu-actions > button,
+.sw2324-song-menu-playlists > button {
+  @apply [appearance:none];
+  @apply w-full;
+  @apply [min-height:45px];
+  @apply grid;
+  @apply [grid-template-columns:20px_minmax(0,1fr)];
+  @apply items-center;
+  @apply [gap:9px];
+  @apply [padding:7px_9px];
+  @apply [border:0];
+  @apply [border-radius:11px];
+  @apply [color:#f5f5f7];
+  @apply [background:transparent];
+  @apply [text-align:left];
+  @apply cursor-pointer;
+}
+.sw2324-song-menu-playlists > button { @apply [grid-template-columns:minmax(0,1fr)_20px]; }
+.sw2324-song-menu-actions > button:hover,
+.sw2324-song-menu-playlists > button:hover { @apply [background:rgba(255,255,255,.075)]; }
+.sw2324-song-menu-actions > button:disabled,
+.sw2324-song-menu-playlists > button:disabled { @apply [opacity:.5]; @apply [cursor:wait]; }
+.sw2324-song-menu-actions span,
+.sw2324-song-menu-playlists span { @apply min-w-0; @apply grid; @apply [gap:2px]; }
+.sw2324-song-menu-actions strong,
+.sw2324-song-menu-playlists strong { @apply [font-size:11px]; @apply [font-weight:700]; }
+.sw2324-song-menu-actions small,
+.sw2324-song-menu-playlists small { @apply [color:rgba(255,255,255,.45)]; @apply [font-size:9px]; }
+
+@keyframes sw2324MenuIn {
+  from { opacity: 0; transform: translateY(-4px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@screen query3 {
+  .sw2324-song-menu {
+    @apply [top:auto] !important;
+    @apply [left:10px] !important;
+    @apply [right:10px];
+    @apply [bottom:max(92px,_calc(env(safe-area-inset-bottom,_0px)_+_82px))];
+    @apply [width:auto];
+    @apply [max-height:66vh];
+    @apply [border-radius:22px];
+    @apply [padding:10px];
+  }
+}
+html[data-sw-battery-saver="true"] .sw2324-song-menu {
+  @apply [animation:none];
+  @apply [backdrop-filter:none];
+  @apply [-webkit-backdrop-filter:none];
+}

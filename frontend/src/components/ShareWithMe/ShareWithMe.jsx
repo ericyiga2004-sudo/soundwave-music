@@ -16,7 +16,7 @@ import {
 
 import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
-import "./ShareWithMe.css";
+import "./ShareWithMe.tailwind.css";
 
 const PLAYLISTS_PER_PAGE = 6;
 
@@ -322,11 +322,11 @@ const ShareWithMe = () => {
 
   return (
     <main className="playlist-page shared-page">
-      <div className="container-fluid px-2 px-sm-3 px-lg-4">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
         {notice && <div className="playlist-notice">{notice}</div>}
 
-        <section className="playlist-hero shared-hero row g-3 g-md-4 align-items-center mx-auto">
-          <div className="col-12 col-lg">
+        <section className="playlist-hero shared-hero row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem] !items-center !mx-auto">
+          <div className="col !w-[100%] flex-none col lg:flex-[1_0_0%]">
             <span className="playlist-badge">
               <FaInbox />
               Shared With Me
@@ -340,10 +340,10 @@ const ShareWithMe = () => {
             </p>
           </div>
 
-          <div className="col-12 col-lg-auto">
+          <div className="col !w-[100%] flex-none col lg:!w-auto lg:flex-none">
             <button
               type="button"
-              className="play-selected-btn w-100"
+              className="play-selected-btn !w-full"
               onClick={fetchShares}
               disabled={loading}
             >
@@ -354,9 +354,9 @@ const ShareWithMe = () => {
         </section>
 
         {(shares.length > 0 || searchQuery) && (
-          <section className="shared-toolbar mx-auto">
-            <div className="row g-3 align-items-center">
-              <div className="col-12 col-lg">
+          <section className="shared-toolbar !mx-auto">
+            <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] !items-center">
+              <div className="col !w-[100%] flex-none col lg:flex-[1_0_0%]">
                 <div className="shared-search-wrap">
                   <FaSearch />
 
@@ -369,7 +369,7 @@ const ShareWithMe = () => {
                 </div>
               </div>
 
-              <div className="col-12 col-lg-auto">
+              <div className="col !w-[100%] flex-none col lg:!w-auto lg:flex-none">
                 <div className="shared-count-pill">
                   {filteredShares.length}{" "}
                   {filteredShares.length === 1 ? "playlist" : "playlists"}
@@ -381,7 +381,7 @@ const ShareWithMe = () => {
 
         {filteredShares.length > 0 && (
           <>
-            <section className="playlist-layout shared-grid row g-3 g-lg-4 mx-auto">
+            <section className="playlist-layout shared-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem] !mx-auto">
               {visibleShares.map((share) => {
                 const playlist = share.playlist;
                 const playlistSongs = playlist?.songs || [];
@@ -390,15 +390,15 @@ const ShareWithMe = () => {
                 const previewSongs = playlistSongs.slice(0, 8);
 
                 return (
-                  <div className="col-12" key={share._id}>
+                  <div className="col !w-[100%] flex-none" key={share._id}>
                     <article
                       className={`shared-playlist-full-card ${
                         unread ? "unread" : ""
                       }`}
                     >
-                      <div className="row g-0">
-                        <div className="col-12 col-md-4 col-xl-3">
-                          <div className="shared-playlist-cover h-100">
+                      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0px] [--sw-gutter-y:0px]">
+                        <div className="col !w-[100%] flex-none col md:!w-[33.333333333333336%] md:flex-none col xl:!w-[25%] xl:flex-none">
+                          <div className="shared-playlist-cover !h-full">
                             {coverImages.length > 0 ? (
                               coverImages.map((image, index) => (
                                 <img
@@ -415,7 +415,7 @@ const ShareWithMe = () => {
                           </div>
                         </div>
 
-                        <div className="col-12 col-md-8 col-xl-9">
+                        <div className="col !w-[100%] flex-none col md:!w-[66.66666666666667%] md:flex-none col xl:!w-[75%] xl:flex-none">
                           <div className="shared-playlist-body">
                             <div className="shared-playlist-top">
                               <div className="min-w-0">
@@ -541,7 +541,7 @@ const ShareWithMe = () => {
             </section>
 
             {hasMore && (
-              <div className="text-center mt-4">
+              <div className="!text-center !mt-[1.5rem]">
                 <button
                   type="button"
                   className="play-selected-btn"

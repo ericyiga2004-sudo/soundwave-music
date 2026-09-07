@@ -1,0 +1,359 @@
+.sw-top-header {
+  @apply [position:sticky];
+  @apply [top:0];
+  @apply [z-index:1030];
+  @apply [min-height:64px];
+  @apply grid;
+  @apply [grid-template-columns:1fr_minmax(220px,_390px)_1fr];
+  @apply items-center;
+  @apply [gap:14px];
+  @apply [padding:10px_24px];
+  @apply [border-bottom:1px_solid_var(--sw-border)];
+  @apply [background:color-mix(in_srgb,_var(--sw-bg)_95%,_transparent)];
+  @apply [backdrop-filter:saturate(160%)_blur(18px)];
+  @apply [-webkit-backdrop-filter:saturate(160%)_blur(18px)];
+}
+
+.sw-top-left,
+.sw-top-actions {
+  @apply min-w-0;
+  @apply flex;
+  @apply items-center;
+}
+
+.sw-top-actions {
+  @apply [justify-content:flex-end];
+  @apply [gap:8px];
+}
+
+.sw-history-controls {
+  @apply [gap:5px];
+}
+
+.sw-history-controls button,
+.sw-icon-btn {
+  @apply [width:34px];
+  @apply [height:34px];
+  @apply [border:0];
+  @apply [border-radius:50%];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:transparent];
+  @apply [transition:background_0.16s_ease,_color_0.16s_ease];
+}
+
+.sw-history-controls button:hover,
+.sw-icon-btn:hover,
+.sw-icon-btn.active {
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.sw-icon-btn.active {
+  @apply [color:var(--sw-accent)];
+}
+
+.sw-search-btn {
+  @apply [height:38px];
+  @apply w-full;
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:11px];
+  @apply [padding:0_11px];
+  @apply flex;
+  @apply items-center;
+  @apply [gap:8px];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:var(--sw-surface-2)];
+  @apply [text-align:left];
+  @apply [transition:border-color_0.16s_ease,_background_0.16s_ease];
+}
+
+.sw-search-btn:hover,
+.sw-search-btn:focus-visible {
+  @apply [border-color:var(--sw-border-strong)];
+  @apply [background:var(--sw-surface)];
+  @apply [outline:none];
+}
+
+.sw-search-btn span {
+  @apply [flex:1];
+  @apply [font-size:0.86rem];
+}
+
+.sw-search-btn kbd {
+  @apply [min-width:22px];
+  @apply [padding:2px_6px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:6px];
+  @apply [background:var(--sw-surface)];
+  @apply [color:var(--sw-text-tertiary)];
+  @apply [font-size:0.68rem];
+  @apply [font-family:inherit];
+  @apply text-center;
+  @apply [box-shadow:none];
+}
+
+.sw-account-pill {
+  @apply [height:34px];
+  @apply [padding:0_10px];
+  @apply [border-radius:999px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:6px];
+  @apply no-underline;
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-surface-2)];
+  @apply [font-size:0.78rem];
+  @apply [font-weight:600];
+}
+
+.sw-mobile-brand {
+  @apply items-center;
+  @apply [gap:8px];
+  @apply min-w-0;
+}
+
+.sw-mobile-brand-icon {
+  @apply [width:30px];
+  @apply [height:30px];
+  @apply [border-radius:9px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [color:#fff];
+  @apply [background:var(--sw-accent)];
+  @apply [font-size:18px];
+  @apply [font-weight:800];
+}
+
+.sw-mobile-brand strong {
+  @apply [max-width:130px];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:1rem];
+  @apply [letter-spacing:-0.025em];
+}
+
+.sw-bottom-nav {
+  @apply fixed;
+  @apply [left:10px];
+  @apply [right:10px];
+  @apply [bottom:10px];
+  @apply [z-index:2000];
+  @apply [min-height:62px];
+  @apply [padding:5px_6px];
+  @apply grid;
+  @apply [grid-template-columns:repeat(5,_1fr)];
+  @apply items-center;
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:20px];
+  @apply [background:color-mix(in_srgb,_var(--sw-player-bg)_96%,_transparent)];
+  @apply [box-shadow:0_14px_38px_rgba(0,_0,_0,_0.12)];
+  @apply [backdrop-filter:saturate(160%)_blur(20px)];
+  @apply [-webkit-backdrop-filter:saturate(160%)_blur(20px)];
+}
+
+.sw-bottom-item {
+  @apply min-w-0;
+  @apply [min-height:49px];
+  @apply flex;
+  @apply flex-col;
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:2px];
+  @apply [border-radius:15px];
+  @apply [color:var(--sw-text-tertiary)];
+  @apply no-underline;
+  @apply [font-size:0.61rem];
+  @apply [font-weight:600];
+}
+
+.sw-bottom-item.active {
+  @apply [color:var(--sw-accent)];
+}
+
+@screen query2 {
+  .sw-top-header {
+    @apply [grid-template-columns:1fr_minmax(150px,_280px)_auto];
+    @apply [min-height:58px];
+    @apply [padding:9px_14px];
+  }
+}
+
+@screen query3 {
+  .sw-top-header {
+    @apply [grid-template-columns:minmax(105px,_1fr)_44px_auto];
+    @apply [gap:7px];
+    @apply [padding-inline:10px];
+  }
+
+  .sw-search-btn {
+    @apply [width:40px];
+    @apply justify-center;
+    @apply [padding:0];
+  }
+
+  .sw-search-btn span {
+    @apply hidden;
+  }
+
+  .sw-top-actions {
+    @apply [gap:4px];
+  }
+
+  .sw-account-pill {
+    @apply [width:34px];
+    @apply [padding:0];
+    @apply justify-center;
+  }
+}
+.sw-settings-wrap {
+  @apply relative;
+}
+
+.sw-settings-popover {
+  @apply absolute;
+  @apply [top:calc(100%_+_10px)];
+  @apply [right:0];
+  @apply [z-index:2100];
+  @apply [width:min(360px,_calc(100vw_-_24px))];
+  @apply [padding:10px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:16px];
+  @apply [background:var(--sw-surface)];
+  @apply [box-shadow:0_14px_34px_rgba(0,_0,_0,_0.11)];
+}
+
+.sw-settings-heading {
+  @apply [padding:8px_9px_10px];
+  @apply [border-bottom:1px_solid_var(--sw-border)];
+}
+
+.sw-settings-heading strong,
+.sw-settings-copy strong {
+  @apply block;
+  @apply [color:var(--sw-text)];
+}
+
+.sw-settings-heading strong {
+  @apply [font-size:0.92rem];
+}
+
+.sw-settings-heading small,
+.sw-settings-copy small {
+  @apply block;
+  @apply [color:var(--sw-text-secondary)];
+  @apply [line-height:1.35];
+}
+
+.sw-settings-heading small {
+  @apply [margin-top:2px];
+  @apply [font-size:0.72rem];
+}
+
+.sw-settings-row {
+  @apply w-full;
+  @apply [min-height:56px];
+  @apply [padding:8px_9px];
+  @apply [border:0];
+  @apply [border-radius:11px];
+  @apply grid;
+  @apply [grid-template-columns:30px_minmax(0,_1fr)_auto];
+  @apply items-center;
+  @apply [gap:9px];
+  @apply [background:transparent];
+  @apply [text-align:left];
+}
+
+.sw-settings-row:hover {
+  @apply [background:var(--sw-surface-2)];
+}
+
+.sw-settings-row-icon {
+  @apply [width:30px];
+  @apply [height:30px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [border-radius:8px];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.sw-settings-copy {
+  @apply min-w-0;
+}
+
+.sw-settings-copy strong {
+  @apply [font-size:0.78rem];
+  @apply [font-weight:650];
+}
+
+.sw-settings-copy small {
+  @apply [margin-top:2px];
+  @apply [font-size:0.67rem];
+}
+
+.sw-switch {
+  @apply [width:38px];
+  @apply [height:22px];
+  @apply [padding:2px];
+  @apply [border-radius:999px];
+  @apply [background:var(--sw-surface-3)];
+}
+
+.sw-switch i {
+  @apply [width:18px];
+  @apply [height:18px];
+  @apply block;
+  @apply [border-radius:50%];
+  @apply [background:var(--sw-surface)];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [transform:translateX(0)];
+}
+
+.sw-switch.on {
+  @apply [background:var(--sw-accent)];
+}
+
+.sw-switch.on i {
+  @apply [transform:translateX(16px)];
+  @apply [border-color:transparent];
+}
+
+.sw-settings-value {
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:650];
+}
+
+@screen query3 {
+  .sw-settings-popover {
+    @apply fixed;
+    @apply [top:62px];
+    @apply [right:8px];
+    @apply [left:8px];
+    @apply [width:auto];
+  }
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  @screen query2 {
+    .sw-bottom-nav { @apply [bottom:max(8px,_env(safe-area-inset-bottom))]; }
+  }
+}
+.sw-social-top-link {
+  @apply [flex:0_0_34px];
+  @apply no-underline;
+}
+
+.sw-social-top-link.active {
+  @apply [color:var(--sw-accent)];
+  @apply [background:var(--sw-accent-soft)];
+}
+
+@screen query6 {
+  .sw-bottom-item { @apply [font-size:0.56rem]; }
+  .sw-bottom-item svg { @apply [width:18px]; @apply [height:18px]; }
+}

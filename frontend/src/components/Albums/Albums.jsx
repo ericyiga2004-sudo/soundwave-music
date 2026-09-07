@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
-import "./Albums.css";
+import "./Albums.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../../config/api";
 
@@ -376,16 +376,16 @@ const Albums = () => {
 
   if (loading) {
     return (
-      <section className="albums-section container-fluid px-3 px-sm-4 px-xl-5">
-        <div className="albums-header d-flex align-items-end justify-content-between gap-3">
+      <section className="albums-section sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] xl:!px-[3rem]">
+        <div className="albums-header !flex !items-end !justify-between gap-3">
           <div>
             <span>Full collections</span>
             <h2>Albums</h2>
           </div>
         </div>
-        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3 g-lg-4">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [&>*]:!w-[50%] [&>*]:flex-none sm:[&>*]:!w-[33.333333333333336%] sm:[&>*]:flex-none md:[&>*]:!w-[25%] md:[&>*]:flex-none xl:[&>*]:!w-[16.666666666666668%] xl:[&>*]:flex-none [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem]">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div className="col" key={index}>
+            <div className="col flex-[1_0_0%]" key={index}>
               <div className="album-home-skeleton">
                 <span className="album-home-skeleton-cover" />
                 <span className="album-home-skeleton-line" />
@@ -405,8 +405,8 @@ const Albums = () => {
   const visibleAlbums = sortedAlbums.slice(0, 6);
 
   return (
-    <section className="albums-section container-fluid px-3 px-sm-4 px-xl-5">
-      <div className="albums-header d-flex align-items-end justify-content-between gap-3">
+    <section className="albums-section sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] xl:!px-[3rem]">
+      <div className="albums-header !flex !items-end !justify-between gap-3">
         <div>
           <span>Full collections</span>
           <h2>Albums</h2>
@@ -422,7 +422,7 @@ const Albums = () => {
         </button>
       </div>
 
-      <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3 g-lg-4">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [&>*]:!w-[50%] [&>*]:flex-none sm:[&>*]:!w-[33.333333333333336%] sm:[&>*]:flex-none md:[&>*]:!w-[25%] md:[&>*]:flex-none xl:[&>*]:!w-[16.666666666666668%] xl:[&>*]:flex-none [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem]">
         {visibleAlbums.map((album) => {
           const albumImage =
             album.coverImage ||
@@ -446,8 +446,8 @@ const Albums = () => {
           };
 
           return (
-            <div className="col" key={album._id}>
-              <article className="featured-album-card h-100">
+            <div className="col flex-[1_0_0%]" key={album._id}>
+              <article className="featured-album-card !h-full">
                 <button
                   type="button"
                   className="album-home-cover-button"

@@ -3,7 +3,7 @@ import { MusicContext } from "../../context/ShopContext";
 import { useRealtime } from "../../context/RealtimeContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
 import { ChevronDown, Heart } from "lucide-react";
-import "../../pages/CSS/RoomReactionsSharedLedger.css";
+import "../../pages/CSS/RoomReactionsSharedLedger.tailwind.css";
 
 const EMOJIS = ["❤️", "🔥", "😂", "👏", "🎵", "🙌"];
 const POLL_MS = 650;

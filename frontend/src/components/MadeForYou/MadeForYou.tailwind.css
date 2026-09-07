@@ -1,0 +1,748 @@
+.made-section {
+    @apply w-full;
+    @apply [margin-top:35px];
+    @apply [padding:0_10px];
+    @apply overflow-hidden;
+  }
+  
+  .made-header {
+    @apply flex;
+    @apply justify-between;
+    @apply [align-items:flex-end];
+    @apply [margin-bottom:18px];
+  }
+
+  .made-offline-card {
+    @apply w-full;
+    @apply [min-height:310px];
+    @apply [margin-top:18px];
+    @apply [border-radius:30px];
+    @apply [background:radial-gradient(circle_at_top_left,_rgba(29,_185,_84,_0.28),_transparent_34%),_radial-gradient(circle_at_bottom_right,_rgba(120,_80,_255,_0.22),_transparent_34%),_linear-gradient(135deg,_rgba(22,_22,_34,_0.98),_rgba(10,_10,_16,_0.98))];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply [gap:42px];
+    @apply [padding:40px_28px];
+    @apply overflow-hidden;
+    @apply relative;
+    @apply [box-shadow:0_24px_70px_rgba(0,_0,_0,_0.35)];
+  }
+  
+  .made-offline-card::after {
+    @apply [content:""];
+    @apply absolute;
+    @apply [inset:0];
+    @apply [background-image:linear-gradient(rgba(255,_255,_255,_0.035)_1px,_transparent_1px),_linear-gradient(90deg,_rgba(255,_255,_255,_0.035)_1px,_transparent_1px)];
+    @apply [background-size:34px_34px];
+    @apply [mask-image:linear-gradient(to_bottom,_rgba(0,_0,_0,_0.9),_transparent)];
+    @apply [pointer-events:none];
+  }
+  
+  .made-offline-bg span {
+    @apply absolute;
+    @apply [border-radius:50%];
+    @apply [filter:blur(6px)];
+    @apply [opacity:0.7];
+    @apply [animation:madeBlobFloat_7s_ease-in-out_infinite];
+  }
+  
+  .made-offline-bg span:nth-child(1) {
+    @apply [width:170px];
+    @apply [height:170px];
+    @apply [background:rgba(29,_185,_84,_0.2)];
+    @apply [top:-50px];
+    @apply [left:8%];
+  }
+  
+  .made-offline-bg span:nth-child(2) {
+    @apply [width:130px];
+    @apply [height:130px];
+    @apply [background:rgba(255,_209,_102,_0.16)];
+    @apply [bottom:-45px];
+    @apply [left:38%];
+    @apply [animation-delay:1s];
+  }
+  
+  .made-offline-bg span:nth-child(3) {
+    @apply [width:190px];
+    @apply [height:190px];
+    @apply [background:rgba(138,_92,_246,_0.18)];
+    @apply [top:35px];
+    @apply [right:-55px];
+    @apply [animation-delay:1.8s];
+  }
+  
+  .made-music-note {
+    @apply absolute;
+    @apply [color:rgba(255,_255,_255,_0.8)];
+    @apply [font-weight:900];
+    @apply [z-index:1];
+    @apply [text-shadow:0_0_18px_rgba(29,_185,_84,_0.7)];
+    @apply [animation:madeNoteFloat_4s_ease-in-out_infinite];
+  }
+  
+  .note-1 {
+    @apply [font-size:32px];
+    @apply [left:10%];
+    @apply [top:18%];
+  }
+  
+  .note-2 {
+    @apply [font-size:26px];
+    @apply [right:18%];
+    @apply [top:16%];
+    @apply [animation-delay:0.7s];
+  }
+  
+  .note-3 {
+    @apply [font-size:30px];
+    @apply [left:45%];
+    @apply [bottom:15%];
+    @apply [animation-delay:1.3s];
+  }
+  
+  .note-4 {
+    @apply [font-size:22px];
+    @apply [right:9%];
+    @apply [bottom:25%];
+    @apply [animation-delay:2s];
+  }
+  
+  .made-sparkle {
+    @apply absolute;
+    @apply [width:9px];
+    @apply [height:9px];
+    @apply [background:#ffffff];
+    @apply [border-radius:50%];
+    @apply [box-shadow:0_0_18px_rgba(255,_255,_255,_0.9)];
+    @apply [animation:madeSparkle_1.8s_ease-in-out_infinite];
+  }
+  
+  .sparkle-1 {
+    @apply [top:24%];
+    @apply [left:30%];
+  }
+  
+  .sparkle-2 {
+    @apply [right:30%];
+    @apply [bottom:24%];
+    @apply [animation-delay:0.5s];
+  }
+  
+  .sparkle-3 {
+    @apply [top:62%];
+    @apply [left:12%];
+    @apply [animation-delay:1s];
+  }
+  
+  .made-offline-character {
+    @apply [width:165px];
+    @apply [height:220px];
+    @apply relative;
+    @apply [z-index:2];
+    @apply [animation:madeCharacterBounce_2.2s_ease-in-out_infinite];
+  }
+  
+  .made-offline-antenna {
+    @apply [width:44px];
+    @apply [height:34px];
+    @apply absolute;
+    @apply [left:61px];
+    @apply [top:-18px];
+    @apply [z-index:3];
+  }
+  
+  .made-offline-antenna::before,
+  .made-offline-antenna::after {
+    @apply [content:""];
+    @apply absolute;
+    @apply [width:4px];
+    @apply [height:32px];
+    @apply [background:#fa233b];
+    @apply [border-radius:20px];
+    @apply [top:6px];
+  }
+  
+  .made-offline-antenna::before {
+    @apply [left:12px];
+    @apply [transform:rotate(-24deg)];
+  }
+  
+  .made-offline-antenna::after {
+    @apply [right:12px];
+    @apply [transform:rotate(24deg)];
+  }
+  
+  .made-offline-antenna span {
+    @apply [width:14px];
+    @apply [height:14px];
+    @apply [background:#ffd166];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [left:15px];
+    @apply [top:0];
+    @apply [box-shadow:0_0_18px_rgba(255,_209,_102,_0.9)];
+    @apply [animation:madeAntennaGlow_1.2s_ease-in-out_infinite];
+  }
+  
+  .made-offline-head {
+    @apply [width:118px];
+    @apply [height:108px];
+    @apply [background:linear-gradient(145deg,_#27e36d,_#fa233b_55%,_#10933d)];
+    @apply [border-radius:44%_44%_48%_48%];
+    @apply absolute;
+    @apply [left:24px];
+    @apply [top:10px];
+    @apply [box-shadow:0_18px_38px_rgba(29,_185,_84,_0.28),_inset_0_8px_14px_rgba(255,_255,_255,_0.24)];
+  }
+  
+  .made-offline-ear {
+    @apply [width:28px];
+    @apply [height:28px];
+    @apply [background:#fa233b];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [top:38px];
+    @apply [box-shadow:inset_0_4px_8px_rgba(255,_255,_255,_0.18)];
+  }
+  
+  .made-offline-ear.left {
+    @apply [left:-14px];
+  }
+  
+  .made-offline-ear.right {
+    @apply [right:-14px];
+  }
+  
+  .made-offline-face {
+    @apply [width:84px];
+    @apply [height:62px];
+    @apply [background:rgba(12,_12,_18,_0.96)];
+    @apply [border-radius:26px];
+    @apply absolute;
+    @apply [left:17px];
+    @apply [top:27px];
+    @apply [box-shadow:inset_0_-6px_12px_rgba(255,_255,_255,_0.05)];
+  }
+  
+  .made-offline-eye {
+    @apply [width:11px];
+    @apply [height:11px];
+    @apply [background:#ffffff];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [top:20px];
+    @apply [animation:madeBlink_3s_infinite];
+  }
+  
+  .made-offline-eye.left {
+    @apply [left:22px];
+  }
+  
+  .made-offline-eye.right {
+    @apply [right:22px];
+  }
+  
+  .made-offline-mouth {
+    @apply [width:26px];
+    @apply [height:13px];
+    @apply [border-bottom:3px_solid_#ffffff];
+    @apply [border-radius:0_0_20px_20px];
+    @apply absolute;
+    @apply [left:29px];
+    @apply [top:36px];
+    @apply [opacity:0.9];
+  }
+  
+  .made-offline-body {
+    @apply [width:98px];
+    @apply [height:86px];
+    @apply [background:linear-gradient(145deg,_#262638,_#171722)];
+    @apply [border-radius:32px_32px_40px_40px];
+    @apply absolute;
+    @apply [left:34px];
+    @apply [top:112px];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+    @apply [box-shadow:0_16px_30px_rgba(0,_0,_0,_0.25),_inset_0_8px_14px_rgba(255,_255,_255,_0.05)];
+  }
+  
+  .made-offline-arm {
+    @apply [width:20px];
+    @apply [height:64px];
+    @apply [background:linear-gradient(180deg,_#27e36d,_#fa233b)];
+    @apply [border-radius:22px];
+    @apply absolute;
+    @apply [top:8px];
+    @apply [transform-origin:top];
+  }
+  
+  .made-offline-arm.left {
+    @apply [left:-18px];
+    @apply [animation:madeWaveLeft_1.3s_ease-in-out_infinite];
+  }
+  
+  .made-offline-arm.right {
+    @apply [right:-18px];
+    @apply [animation:madeWaveRight_1.3s_ease-in-out_infinite];
+  }
+  
+  .made-offline-wifi {
+    @apply [width:56px];
+    @apply [height:44px];
+    @apply absolute;
+    @apply [left:21px];
+    @apply [top:21px];
+  }
+  
+  .made-offline-wifi span {
+    @apply absolute;
+    @apply [left:50%];
+    @apply [transform:translateX(-50%)];
+    @apply [border:3px_solid_rgba(255,_255,_255,_0.85)];
+    @apply [border-bottom:none];
+    @apply [border-radius:60px_60px_0_0];
+    @apply [opacity:0.32];
+    @apply [animation:madeWifiPulse_1.4s_infinite];
+  }
+  
+  .made-offline-wifi span:nth-child(1) {
+    @apply [width:52px];
+    @apply [height:28px];
+    @apply [top:0];
+  }
+  
+  .made-offline-wifi span:nth-child(2) {
+    @apply [width:34px];
+    @apply [height:18px];
+    @apply [top:11px];
+    @apply [animation-delay:0.15s];
+  }
+  
+  .made-offline-wifi span:nth-child(3) {
+    @apply [width:10px];
+    @apply [height:10px];
+    @apply [background:rgba(255,_255,_255,_0.88)];
+    @apply [border:none];
+    @apply [border-radius:50%];
+    @apply [top:34px];
+    @apply [animation-delay:0.3s];
+  }
+  
+  .made-wifi-slash {
+    @apply [width:4px];
+    @apply [height:58px];
+    @apply [background:#ff4d6d];
+    @apply [border-radius:20px];
+    @apply absolute;
+    @apply [left:27px];
+    @apply [top:-5px];
+    @apply [transform:rotate(42deg)];
+    @apply [box-shadow:0_0_14px_rgba(255,_77,_109,_0.8)];
+    @apply [animation:madeSlashPop_1.4s_ease-in-out_infinite];
+  }
+  
+  .made-offline-feet {
+    @apply absolute;
+    @apply [width:88px];
+    @apply [left:39px];
+    @apply [top:194px];
+    @apply flex;
+    @apply justify-between;
+  }
+  
+  .made-offline-feet span {
+    @apply [width:32px];
+    @apply [height:14px];
+    @apply [background:#fa233b];
+    @apply [border-radius:20px];
+    @apply [animation:madeFeetDance_1.1s_ease-in-out_infinite];
+  }
+  
+  .made-offline-feet span:nth-child(2) {
+    @apply [animation-delay:0.25s];
+  }
+  
+  .made-offline-shadow {
+    @apply [width:112px];
+    @apply [height:18px];
+    @apply [background:rgba(0,_0,_0,_0.36)];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [left:27px];
+    @apply [bottom:-5px];
+    @apply [filter:blur(2px)];
+    @apply [animation:madeShadow_2.2s_ease-in-out_infinite];
+  }
+  
+  .made-offline-content {
+    @apply relative;
+    @apply [z-index:2];
+    @apply [max-width:430px];
+  }
+  
+  .made-offline-badge {
+    @apply [width:fit-content];
+    @apply [padding:7px_13px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(255,_77,_109,_0.14)];
+    @apply [color:#ff8fa3];
+    @apply [font-size:12px];
+    @apply [font-weight:800];
+    @apply [letter-spacing:0.5px];
+    @apply [text-transform:uppercase];
+    @apply [margin-bottom:12px];
+    @apply [border:1px_solid_rgba(255,_77,_109,_0.28)];
+  }
+  
+  .made-offline-content h3 {
+    @apply [font-size:31px];
+    @apply [color:#ffffff];
+    @apply [margin-bottom:10px];
+    @apply [line-height:1.15];
+  }
+  
+  .made-offline-content p {
+    @apply [font-size:15px];
+    @apply [color:rgba(255,_255,_255,_0.7)];
+    @apply [line-height:1.6];
+    @apply [margin-bottom:20px];
+  }
+  
+  .made-retry-btn {
+    @apply [border:none];
+    @apply [outline:none];
+    @apply [border-radius:999px];
+    @apply [padding:13px_20px];
+    @apply [background:linear-gradient(135deg,_#fa233b,_#27e36d)];
+    @apply [color:#08100b];
+    @apply [font-weight:900];
+    @apply cursor-pointer;
+    @apply [box-shadow:0_12px_28px_rgba(29,_185,_84,_0.28)];
+    @apply [transition:transform_0.2s_ease,_box-shadow_0.2s_ease];
+  }
+  
+  .made-retry-btn:hover {
+    @apply [transform:translateY(-3px)_scale(1.03)];
+    @apply [box-shadow:0_16px_34px_rgba(29,_185,_84,_0.38)];
+  }
+  
+  .made-retry-btn:active {
+    @apply [transform:scale(0.98)];
+  }
+  
+  @keyframes madeCharacterBounce {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-1deg);
+    }
+  
+    50% {
+      transform: translateY(-15px) rotate(1deg);
+    }
+  }
+  
+  @keyframes madeShadow {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.38;
+    }
+  
+    50% {
+      transform: scale(0.78);
+      opacity: 0.2;
+    }
+  }
+  
+  @keyframes madeBlink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+  
+    95% {
+      transform: scaleY(0.12);
+    }
+  }
+  
+  @keyframes madeWifiPulse {
+    0%,
+    100% {
+      opacity: 0.22;
+      transform: translateX(-50%) scale(0.96);
+    }
+  
+    50% {
+      opacity: 0.9;
+      transform: translateX(-50%) scale(1.06);
+    }
+  }
+  
+  @keyframes madeSlashPop {
+    0%,
+    100% {
+      transform: rotate(42deg) scale(1);
+    }
+  
+    50% {
+      transform: rotate(42deg) scale(1.12);
+    }
+  }
+  
+  @keyframes madeWaveLeft {
+    0%,
+    100% {
+      transform: rotate(18deg);
+    }
+  
+    50% {
+      transform: rotate(-16deg);
+    }
+  }
+  
+  @keyframes madeWaveRight {
+    0%,
+    100% {
+      transform: rotate(-18deg);
+    }
+  
+    50% {
+      transform: rotate(16deg);
+    }
+  }
+  
+  @keyframes madeFeetDance {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+  
+    50% {
+      transform: translateY(-5px) rotate(6deg);
+    }
+  }
+  
+  @keyframes madeAntennaGlow {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+  
+    50% {
+      opacity: 1;
+      transform: scale(1.25);
+    }
+  }
+  
+  @keyframes madeNoteFloat {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0.45;
+    }
+  
+    50% {
+      transform: translateY(-22px) rotate(10deg);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes madeSparkle {
+    0%,
+    100% {
+      transform: scale(0.4);
+      opacity: 0.25;
+    }
+  
+    50% {
+      transform: scale(1.4);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes madeBlobFloat {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+  
+    50% {
+      transform: translate(18px, -18px) scale(1.08);
+    }
+  }
+  
+  @screen query10 {
+    .made-offline-card {
+      @apply flex-col;
+      @apply [gap:20px];
+      @apply text-center;
+      @apply [padding:34px_18px];
+    }
+  
+    .made-offline-badge {
+      @apply [margin-left:auto];
+      @apply [margin-right:auto];
+    }
+  
+    .made-offline-content h3 {
+      @apply [font-size:25px];
+    }
+  
+    .made-offline-content p {
+      @apply [font-size:14px];
+    }
+  
+    .made-offline-character {
+      @apply [transform:scale(0.92)];
+    }
+  }
+  
+  .made-title {
+    @apply [color:#ffffff];
+    @apply [font-size:26px];
+    @apply [font-weight:800];
+    @apply [margin:0];
+  }
+  
+  .made-subtitle {
+    @apply [color:#a7a7a7];
+    @apply [font-size:14px];
+    @apply [margin-top:6px];
+  }
+  
+  .made-empty {
+    @apply [color:#b3b3b3];
+    @apply [font-size:15px];
+    @apply [margin-top:14px];
+  }
+  
+  .made-slider {
+    @apply flex;
+    @apply [gap:18px];
+    @apply [overflow-x:auto];
+    @apply [overflow-y:hidden];
+    @apply [scroll-behavior:smooth];
+    @apply [padding:4px_0_14px];
+  }
+  
+  .made-slider::-webkit-scrollbar {
+    @apply [height:8px];
+  }
+  
+  .made-slider::-webkit-scrollbar-track {
+    @apply [background:transparent];
+  }
+  
+  .made-slider::-webkit-scrollbar-thumb {
+    @apply [background:#333];
+    @apply [border-radius:20px];
+  }
+  
+  .made-slider::-webkit-scrollbar-thumb:hover {
+    @apply [background:#555];
+  }
+  
+  .made-slide-item {
+    @apply [flex:0_0_170px];
+    @apply [min-width:170px];
+    @apply [border:1px_solid_rgba(233,_144,_144,_0.157)];
+    @apply [border-radius:16px];
+  }
+  
+  .made-slide-item > * {
+    @apply w-full;
+  }
+  
+  .made-skeleton-card {
+    @apply [flex:0_0_170px];
+    @apply [min-width:170px];
+    @apply [padding:12px];
+    @apply [border-radius:12px];
+    @apply [background:#181818];
+  }
+  
+  .made-skeleton-cover,
+  .made-skeleton-line {
+    @apply [background:linear-gradient(_90deg,_#202020_0%,_#2a2a2a_50%,_#202020_100%_)];
+    @apply [background-size:200%_100%];
+    @apply [animation:madeSkeleton_1.3s_infinite_linear];
+  }
+  
+  .made-skeleton-cover {
+    @apply w-full;
+    @apply [aspect-ratio:1_/_1];
+    @apply [border-radius:10px];
+    @apply [margin-bottom:14px];
+  }
+  
+  .made-skeleton-line {
+    @apply [height:12px];
+    @apply [border-radius:20px];
+  }
+  
+  .made-skeleton-title {
+    @apply [width:85%];
+    @apply [margin-bottom:10px];
+  }
+  
+  .made-skeleton-text {
+    @apply [width:60%];
+  }
+  
+  @keyframes madeSkeleton {
+    0% {
+      background-position: 200% 0;
+    }
+  
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  @screen query7 {
+    .made-section {
+      @apply [padding:0_6px];
+    }
+  
+    .made-title {
+      @apply [font-size:22px];
+    }
+  
+    .made-slider {
+      @apply [gap:14px];
+    }
+  
+    .made-slide-item,
+    .made-skeleton-card {
+      @apply [flex-basis:145px];
+      @apply [min-width:145px];
+    }
+  }
+
+  .made-section .song-title,
+.made-section .song-name,
+.made-section h3,
+.made-section h4 {
+  @apply [color:#ffffff] !important;
+}
+
+.made-section .song-artist,
+.made-section .artist-name,
+.made-section p {
+  @apply [color:#b3b3b3];
+}
+  
+  @screen query8 {
+    .made-slide-item,
+    .made-skeleton-card {
+      @apply [flex-basis:135px];
+      @apply [min-width:135px];
+    }
+  
+    .made-subtitle {
+      @apply [font-size:13px];
+    }
+  }

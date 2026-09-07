@@ -14,10 +14,10 @@ import SocialSongPicker from "../components/Social/SocialSongPicker";
 import SocialNav from "../components/Social/SocialNav";
 import RoomReactionSharedLedger from "../components/Social/RoomReactionSharedLedger";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
-import "./CSS/LiveRoomPremiumV2318.css";
-import "./CSS/LiveRoomLifecycleV2322.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
+import "./CSS/LiveRoomPremiumV2318.tailwind.css";
+import "./CSS/LiveRoomLifecycleV2322.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 const formatClock = (seconds = 0) => {

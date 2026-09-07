@@ -1,0 +1,114 @@
+.sw2515-reaction-overlay {
+  @apply fixed;
+  @apply [inset:0];
+  @apply [z-index:1400];
+  @apply [pointer-events:none];
+  @apply overflow-hidden;
+}
+
+.sw2515-reaction-bubble {
+  @apply absolute;
+  @apply [left:50%];
+  @apply [bottom:max(108px,_calc(env(safe-area-inset-bottom,_0px)_+_98px))];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [width:48px];
+  @apply [height:48px];
+  @apply [margin-left:-24px];
+  @apply [border-radius:999px];
+  @apply [font-size:28px];
+  @apply [line-height:1];
+  @apply [background:rgba(20,_20,_22,_0.82)];
+  @apply [border:1px_solid_rgba(255,255,255,.13)];
+  @apply [box-shadow:0_12px_32px_rgba(0,0,0,.28)];
+  @apply [backdrop-filter:blur(10px)];
+  @apply [opacity:0];
+  @apply [transform:translate3d(0,_12px,_0)_scale(.82)_rotate(0deg)];
+  @apply [animation-name:sw2515ReactionRise];
+  @apply [animation-duration:var(--sw2515-duration,_3600ms)];
+  @apply [animation-timing-function:cubic-bezier(.16,.78,.22,1)];
+  @apply [animation-fill-mode:forwards];
+  @apply [will-change:transform,_opacity];
+}
+
+@keyframes sw2515ReactionRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(.82) rotate(0deg);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  68% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(var(--sw2515-drift, 0px), -82vh, 0)
+      scale(1.14)
+      rotate(var(--sw2515-rotate, 0deg));
+  }
+}
+
+.sw2515-reaction-controls {
+  @apply fixed;
+  @apply [z-index:1401];
+  @apply [left:50%];
+  @apply [bottom:max(118px,_calc(env(safe-area-inset-bottom,_0px)_+_108px))];
+  @apply [transform:translateX(-50%)];
+  @apply flex;
+  @apply items-center;
+  @apply [gap:7px];
+  @apply [padding:7px];
+  @apply [border:1px_solid_rgba(255,255,255,.12)];
+  @apply [border-radius:999px];
+  @apply [background:rgba(18,18,20,.91)];
+  @apply [box-shadow:0_16px_38px_rgba(0,0,0,.32)];
+  @apply [backdrop-filter:blur(14px)];
+}
+
+.sw2515-reaction-controls button {
+  @apply [appearance:none];
+  @apply [width:36px];
+  @apply [height:36px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [padding:0];
+  @apply [border:1px_solid_rgba(255,255,255,.10)];
+  @apply [border-radius:999px];
+  @apply [background:rgba(255,255,255,.045)];
+  @apply [color:inherit];
+  @apply [font:inherit];
+  @apply [font-size:19px];
+  @apply cursor-pointer;
+  @apply [transition:transform_.12s_ease,_background_.12s_ease];
+}
+
+.sw2515-reaction-controls button:hover {
+  @apply [background:rgba(255,255,255,.09)];
+  @apply [transform:translateY(-2px)_scale(1.06)];
+}
+
+.sw2515-reaction-controls button:active {
+  @apply [transform:scale(.88)];
+}
+
+@screen query41 {
+  .sw2515-reaction-controls {
+    @apply [bottom:max(128px,_calc(env(safe-area-inset-bottom,_0px)_+_118px))];
+  }
+
+  .sw2515-reaction-bubble {
+    @apply [bottom:max(118px,_calc(env(safe-area-inset-bottom,_0px)_+_108px))];
+  }
+}
+
+@screen query9 {
+  .sw2515-reaction-bubble {
+    @apply [animation-duration:1800ms];
+  }
+}

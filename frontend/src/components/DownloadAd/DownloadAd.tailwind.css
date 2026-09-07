@@ -1,0 +1,327 @@
+.download-ad {
+    @apply [color:#fff];
+  }
+  
+  .download-ad-box {
+    @apply relative;
+    @apply overflow-hidden;
+    @apply [border-radius:26px];
+    @apply [padding:clamp(22px,_3vw,_34px)];
+    @apply [background:radial-gradient(circle_at_top_left,_rgba(29,_185,_84,_0.2),_transparent_32%),_linear-gradient(135deg,_#0b0b0b,_#181818)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  }
+  
+  .download-ad-content {
+    @apply [max-width:560px];
+  }
+
+  .download-status {
+    @apply [max-width:360px];
+    @apply [margin-top:16px];
+    @apply [padding:12px_14px];
+    @apply [border-radius:16px];
+    @apply [background:rgba(10,_10,_10,_0.7)];
+    @apply [border:1px_solid_rgba(29,_185,_84,_0.22)];
+  }
+  
+  .download-status-top {
+    @apply flex;
+    @apply items-center;
+    @apply justify-between;
+    @apply [gap:12px];
+    @apply [margin-bottom:9px];
+  }
+  
+  .download-status-top span {
+    @apply [color:rgba(255,_255,_255,_0.72)];
+    @apply [font-size:12px];
+    @apply [font-weight:700];
+  }
+  
+  .download-status-top strong {
+    @apply [color:#ff375f];
+    @apply [font-size:12px];
+    @apply [font-weight:900];
+  }
+  
+  .download-status-bar {
+    @apply w-full;
+    @apply [height:5px];
+    @apply [border-radius:999px];
+    @apply overflow-hidden;
+    @apply [background:rgba(255,_255,_255,_0.12)];
+  }
+  
+  .download-status-bar span {
+    @apply block;
+    @apply [width:42%];
+    @apply h-full;
+    @apply [border-radius:inherit];
+    @apply [background:#fa233b];
+    @apply [animation:downloadStatusMove_1.2s_infinite_ease-in-out];
+  }
+  
+  @keyframes downloadStatusMove {
+    0% {
+      transform: translateX(-115%);
+    }
+  
+    100% {
+      transform: translateX(245%);
+    }
+  }
+  
+  .download-ad-badge {
+    @apply [display:inline-flex];
+    @apply [width:fit-content];
+    @apply [padding:6px_12px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(29,_185,_84,_0.14)];
+    @apply [color:#ff375f];
+    @apply [font-size:12px];
+    @apply [font-weight:800];
+    @apply [margin-bottom:12px];
+  }
+  
+  .download-ad h2 {
+    @apply [margin:0];
+    @apply [font-size:clamp(26px,_4vw,_42px)];
+    @apply [line-height:1.05];
+    @apply [font-weight:900];
+    @apply [letter-spacing:-1px];
+  }
+  
+  .download-ad p {
+    @apply [margin:12px_0_0];
+    @apply [max-width:500px];
+    @apply [color:rgba(255,_255,_255,_0.74)];
+    @apply [font-size:15px];
+    @apply [line-height:1.6];
+  }
+  
+  .download-ad-btn {
+    @apply [display:inline-flex];
+    @apply items-center;
+    @apply justify-center;
+    @apply [min-height:46px];
+    @apply [padding:0_22px];
+    @apply [border-radius:999px];
+    @apply [background:#fa233b];
+    @apply [color:#07110b];
+    @apply [font-weight:900];
+    @apply no-underline;
+    @apply [box-shadow:0_14px_32px_rgba(29,_185,_84,_0.24)];
+    @apply [transition:transform_0.2s_ease,_opacity_0.2s_ease];
+  }
+  
+  .download-ad-btn:hover {
+    @apply [color:#07110b];
+    @apply [transform:translateY(-2px)];
+    @apply [opacity:0.92];
+  }
+  
+  .download-ad-btn-dark {
+    @apply [background:#242424];
+    @apply [color:#ffffff];
+    @apply [box-shadow:none];
+  }
+  
+  .download-ad-btn-dark:hover {
+    @apply [color:#ffffff];
+  }
+  
+  .download-ad-meta {
+    @apply flex;
+    @apply flex-wrap;
+    @apply [gap:10px];
+    @apply [margin-top:14px];
+  }
+  
+  .download-ad-meta span {
+    @apply [padding:6px_11px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(255,_255,_255,_0.08)];
+    @apply [color:rgba(255,_255,_255,_0.68)];
+    @apply [font-size:12px];
+    @apply [font-weight:700];
+  }
+  
+  .download-ad-note {
+    @apply block;
+    @apply [margin-top:12px];
+    @apply [color:rgba(255,_255,_255,_0.46)];
+    @apply [font-size:12px];
+    @apply [line-height:1.5];
+  }
+  
+  .download-devices {
+    @apply [min-height:210px];
+    @apply relative;
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+  }
+  
+  .download-laptop {
+    @apply [width:min(330px,_88vw)];
+    @apply relative;
+  }
+  
+  .download-laptop-top {
+    @apply [height:20px];
+    @apply [border-radius:16px_16px_0_0];
+    @apply [background:#202020];
+    @apply flex;
+    @apply items-center;
+    @apply [gap:5px];
+    @apply [padding-left:12px];
+  }
+  
+  .download-laptop-top span {
+    @apply [width:7px];
+    @apply [height:7px];
+    @apply [border-radius:50%];
+    @apply [background:rgba(255,_255,_255,_0.25)];
+  }
+  
+  .download-laptop-screen {
+    @apply [height:170px];
+    @apply flex;
+    @apply [gap:12px];
+    @apply [padding:14px];
+    @apply [border-radius:0_0_16px_16px];
+    @apply [background:radial-gradient(circle_at_top_right,_rgba(29,_185,_84,_0.26),_transparent_40%),_#080808];
+    @apply [border:8px_solid_#2b2b2b];
+    @apply [border-top:none];
+    @apply [box-shadow:0_26px_60px_rgba(0,_0,_0,_0.45)];
+  }
+  
+  .download-laptop-base {
+    @apply [width:72%];
+    @apply [height:10px];
+    @apply [margin:0_auto];
+    @apply [border-radius:0_0_18px_18px];
+    @apply [background:#2a2a2a];
+  }
+  
+  .download-mini-sidebar {
+    @apply [width:42px];
+    @apply [border-radius:12px];
+    @apply [background:linear-gradient(#fa233b_0_18px,_transparent_18px),_rgba(255,_255,_255,_0.08)];
+  }
+  
+  .download-mini-content {
+    @apply [flex:1];
+  }
+  
+  .download-mini-title {
+    @apply [width:65%];
+    @apply [height:13px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(255,_255,_255,_0.75)];
+    @apply [margin-bottom:13px];
+  }
+  
+  .download-mini-card {
+    @apply w-full;
+    @apply [height:70px];
+    @apply [border-radius:16px];
+    @apply [background:radial-gradient(circle_at_top_left,_#fa233b,_transparent_45%),_linear-gradient(135deg,_#2a2a2a,_#111)];
+    @apply [margin-bottom:12px];
+  }
+  
+  .download-mini-bars {
+    @apply flex;
+    @apply [gap:7px];
+  }
+  
+  .download-mini-bars span {
+    @apply [flex:1];
+    @apply [height:10px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(255,_255,_255,_0.14)];
+  }
+  
+  .download-phone-mini {
+    @apply absolute;
+    @apply [right:4%];
+    @apply [bottom:0];
+    @apply [width:92px];
+    @apply [height:158px];
+    @apply [border-radius:24px];
+    @apply [background:#090909];
+    @apply [border:6px_solid_#303030];
+    @apply [box-shadow:0_18px_45px_rgba(0,_0,_0,_0.55)];
+    @apply flex;
+    @apply flex-col;
+    @apply items-center;
+    @apply justify-center;
+  }
+  
+  .download-phone-notch {
+    @apply absolute;
+    @apply [top:8px];
+    @apply [width:34px];
+    @apply [height:5px];
+    @apply [border-radius:999px];
+    @apply [background:#333];
+  }
+  
+  .download-phone-logo {
+    @apply [width:44px];
+    @apply [height:44px];
+    @apply [border-radius:14px];
+    @apply [background:linear-gradient(145deg,_#fa233b,_#d70b2e)];
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply [color:white];
+    @apply [font-size:25px];
+    @apply [font-weight:900];
+    @apply [margin-bottom:9px];
+  }
+  
+  .download-phone-mini strong {
+    @apply [font-size:10px];
+  }
+  
+  .download-phone-mini span {
+    @apply [margin-top:3px];
+    @apply [color:rgba(255,_255,_255,_0.5)];
+    @apply [font-size:9px];
+  }
+  
+  @screen query2 {
+    .download-devices {
+      @apply [min-height:190px];
+    }
+  
+    .download-laptop {
+      @apply [width:min(310px,_88vw)];
+    }
+  
+    .download-laptop-screen {
+      @apply [height:150px];
+    }
+  }
+  
+  @screen query3 {
+    .download-ad-box {
+      @apply [border-radius:22px];
+    }
+  
+    .download-devices {
+      @apply [min-height:175px];
+    }
+  
+    .download-phone-mini {
+      @apply [right:0];
+      @apply [width:82px];
+      @apply [height:140px];
+    }
+  
+    .download-laptop-screen {
+      @apply [height:135px];
+      @apply [padding:12px];
+    }
+  }

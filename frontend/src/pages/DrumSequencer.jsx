@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import "./CSS/DrumSequencer.css";
+import "./CSS/DrumSequencer.tailwind.css";
 
 const STEPS = 16;
 const STEPS_PER_BAR = 4;

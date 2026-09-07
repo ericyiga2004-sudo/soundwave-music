@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import Hero from "../components/Hero/Hero";
-import "./CSS/Home.css";
+import "./CSS/Home.tailwind.css";
 import DeferredSection from "../components/DeferredSection/DeferredSection";
 import HomeSidebarToggle from "../components/HomeSidebarToggle/HomeSidebarToggle";
 

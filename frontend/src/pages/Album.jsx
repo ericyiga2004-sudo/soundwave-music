@@ -10,7 +10,7 @@ import {
   FaCompactDisc,
 } from "react-icons/fa";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import "./CSS/Album.css";
+import "./CSS/Album.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../config/api";
 import { trackTasteEvent } from "../utils/personalization";
@@ -48,14 +48,14 @@ const getYear = (date) => {
 const AlbumSkeleton = () => {
   return (
     <main className="album-page">
-      <section className="container-fluid album-container">
+      <section className="sw-container-fluid w-full mx-auto px-3 album-container">
         <div className="album-skeleton-card">
-          <div className="row g-4 align-items-end">
-            <div className="col-12 col-md-5 col-lg-4">
+          <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] !items-end">
+            <div className="col !w-[100%] flex-none col md:!w-[41.666666666666664%] md:flex-none col lg:!w-[33.333333333333336%] lg:flex-none">
               <div className="album-skeleton album-skeleton-cover"></div>
             </div>
 
-            <div className="col-12 col-md-7 col-lg-8">
+            <div className="col !w-[100%] flex-none col md:!w-[58.333333333333336%] md:flex-none col lg:!w-[66.66666666666667%] lg:flex-none">
               <div className="album-skeleton album-skeleton-label"></div>
               <div className="album-skeleton album-skeleton-title"></div>
               <div className="album-skeleton album-skeleton-text"></div>
@@ -205,7 +205,7 @@ const Album = () => {
   if (!album) {
     return (
       <main className="album-page">
-        <section className="container-fluid album-container">
+        <section className="sw-container-fluid w-full mx-auto px-3 album-container">
           <div className="album-empty-state">
             <FaCompactDisc />
             <h2>Album not found</h2>
@@ -218,10 +218,10 @@ const Album = () => {
 
   return (
     <main className="album-page">
-      <section className="container-fluid album-container">
+      <section className="sw-container-fluid w-full mx-auto px-3 album-container">
         <div className="album-hero">
-          <div className="row g-4 g-lg-5 align-items-end">
-            <div className="col-12 col-md-5 col-lg-4">
+          <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] lg:[--sw-gutter-x:3rem] lg:[--sw-gutter-y:3rem] !items-end">
+            <div className="col !w-[100%] flex-none col md:!w-[41.666666666666664%] md:flex-none col lg:!w-[33.333333333333336%] lg:flex-none">
               <div className="album-cover-wrap">
                 <img
                   src={albumImage}
@@ -232,7 +232,7 @@ const Album = () => {
               </div>
             </div>
 
-            <div className="col-12 col-md-7 col-lg-8">
+            <div className="col !w-[100%] flex-none col md:!w-[58.333333333333336%] md:flex-none col lg:!w-[66.66666666666667%] lg:flex-none">
               <div className="album-info">
                 <span className="album-label">
                   <FaCompactDisc />

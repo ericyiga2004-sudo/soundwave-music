@@ -1,0 +1,1102 @@
+.music-studio,
+.music-studio * {
+  @apply box-border;
+}
+
+.music-studio {
+  @apply [min-height:100vh];
+  @apply [background:radial-gradient(circle_at_12%_0%,_rgba(255,_47,_109,_0.16),_transparent_32%),_radial-gradient(circle_at_90%_5%,_rgba(0,_200,_255,_0.12),_transparent_34%),_#05070c];
+  @apply [color:#fff];
+  @apply overflow-hidden;
+}
+
+.timeline-wrap,
+.timeline-grid,
+.track-lane,
+.clip-block,
+.piano-roll-modal,
+.note-grid,
+.note-block,
+.library-item,
+.drum-dock {
+  @apply [user-select:none];
+}
+
+body.is-dragging,
+body.is-dragging * {
+  @apply [user-select:none] !important;
+  @apply [cursor:grabbing] !important;
+}
+
+.studio-top {
+  @apply [z-index:90];
+  @apply [padding:10px_14px];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [background:rgba(6,_8,_14,_0.96)];
+  @apply [backdrop-filter:blur(18px)];
+}
+
+.studio-top button,
+.studio-left button,
+.studio-right button,
+.studio-bottom button,
+.piano-roll-modal button,
+.drum-dock button,
+.panel-float {
+  @apply [min-height:38px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.12)];
+  @apply [border-radius:8px];
+  @apply [background:rgba(255,_255,_255,_0.065)];
+  @apply [color:#fff];
+  @apply [font-weight:850];
+}
+
+.studio-top button {
+  @apply [min-width:40px];
+}
+
+.studio-top button:disabled,
+.studio-right button:disabled,
+.studio-left button:disabled {
+  @apply [opacity:0.42];
+  @apply [cursor:not-allowed];
+}
+
+.studio-top input {
+  @apply [min-height:38px];
+  @apply [width:min(230px,_48vw)];
+  @apply [border:0];
+  @apply [outline:0];
+  @apply [border-radius:8px];
+  @apply [background:transparent];
+  @apply [color:#fff];
+  @apply [font-weight:950];
+}
+
+.studio-transport button:first-child {
+  @apply [border:0];
+  @apply [background:linear-gradient(135deg,_#ff7a1a,_#ff2f6d)];
+  @apply [box-shadow:0_12px_26px_rgba(255,_47,_109,_0.25)];
+}
+
+.studio-transport .record {
+  @apply [color:#ff4b67];
+}
+
+.studio-transport .active,
+.studio-status .active,
+.track-head button.active,
+.inspector-actions button:hover {
+  @apply [border-color:rgba(255,_180,_107,_0.62)];
+  @apply [background:rgba(255,_122,_26,_0.2)];
+}
+
+.studio-status label {
+  @apply [min-height:38px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:6px];
+  @apply [padding:0_10px];
+  @apply [border-radius:8px];
+  @apply [background:rgba(255,_255,_255,_0.06)];
+  @apply [color:rgba(255,_255,_255,_0.6)];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:900];
+}
+
+.studio-status label input {
+  @apply [width:56px];
+  @apply [padding:0];
+}
+
+.timer-popover {
+  @apply absolute;
+  @apply [right:14px];
+  @apply [top:64px];
+  @apply [z-index:1200];
+  @apply flex;
+  @apply [gap:8px];
+  @apply [padding:10px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.12)];
+  @apply [border-radius:8px];
+  @apply [background:#10131b];
+  @apply [box-shadow:0_20px_50px_rgba(0,_0,_0,_0.45)];
+}
+
+.timer-popover input {
+  @apply [width:150px];
+  @apply [padding:0_10px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+  @apply [background:rgba(0,_0,_0,_0.25)];
+}
+
+.studio-shell {
+  @apply min-h-0;
+}
+
+.studio-left,
+.studio-right {
+  @apply [width:260px];
+  @apply [min-width:260px];
+  @apply h-full;
+  @apply overflow-auto;
+  @apply [background:rgba(9,_12,_20,_0.94)];
+}
+
+.studio-left {
+  @apply [border-right:1px_solid_rgba(255,_255,_255,_0.08)];
+}
+
+.studio-right {
+  @apply [padding:0_12px_14px];
+  @apply [border-left:1px_solid_rgba(255,_255,_255,_0.08)];
+}
+
+.panel-head {
+  @apply [min-height:52px];
+  @apply flex;
+  @apply items-center;
+  @apply justify-between;
+  @apply [padding:12px];
+}
+
+.panel-head span,
+.mini-section > span {
+  @apply [color:rgba(255,_255,_255,_0.58)];
+  @apply [font-size:0.75rem];
+  @apply [font-weight:950];
+  @apply [text-transform:uppercase];
+}
+
+.library-item {
+  @apply w-full;
+  @apply [min-height:76px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [gap:4px];
+  @apply [cursor:grab];
+}
+
+.library-item strong {
+  @apply [width:36px];
+  @apply [height:36px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [border-radius:8px];
+  @apply [background:rgba(255,_255,_255,_0.1)];
+  @apply [font-size:1.15rem];
+}
+
+.library-item span {
+  @apply [font-size:0.74rem];
+}
+
+.mini-section {
+  @apply grid;
+  @apply [gap:8px];
+  @apply [padding:12px];
+}
+
+.timeline-wrap {
+  @apply min-w-0;
+  @apply h-full;
+  @apply overflow-auto;
+  @apply [background:#0c1018];
+}
+
+.timeline-inner {
+  @apply [min-height:100%];
+}
+
+.timeline-ruler {
+  @apply [position:sticky];
+  @apply [top:0];
+  @apply [z-index:5];
+  @apply [height:44px];
+  @apply grid;
+  @apply [grid-template-columns:190px_1fr];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [background:rgba(10,_13,_20,_0.99)];
+}
+
+.timeline-minimap {
+  @apply [position:sticky];
+  @apply [top:0];
+  @apply [z-index:6];
+  @apply [height:28px];
+  @apply grid;
+  @apply [grid-template-columns:190px_1fr];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.07)];
+  @apply [background:rgba(6,_8,_14,_0.98)];
+}
+
+.minimap-lane {
+  @apply relative;
+  @apply [height:28px];
+  @apply overflow-hidden;
+  @apply cursor-pointer;
+}
+
+.mini-clip {
+  @apply absolute;
+  @apply [top:7px];
+  @apply [height:14px];
+  @apply [min-width:4px];
+  @apply [border-radius:999px];
+  @apply [opacity:0.75];
+}
+
+.track-spacer {
+  @apply flex;
+  @apply items-center;
+  @apply [padding-left:14px];
+  @apply [border-right:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [color:rgba(255,_255,_255,_0.52)];
+  @apply [font-size:0.74rem];
+  @apply [font-weight:950];
+  @apply [text-transform:uppercase];
+}
+
+.ruler-grid {
+  @apply relative;
+  @apply [height:44px];
+  @apply [background:rgba(255,_255,_255,_0.018)];
+}
+
+.ruler-grid button {
+  @apply absolute;
+  @apply [top:0];
+  @apply [height:44px];
+  @apply flex;
+  @apply items-center;
+  @apply [padding-left:10px];
+  @apply [border:0];
+  @apply [border-left:1px_solid_rgba(255,_180,_107,_0.2)];
+  @apply [border-radius:0];
+  @apply [background:transparent];
+  @apply [color:rgba(255,_255,_255,_0.55)];
+  @apply [font-size:0.8rem];
+  @apply [z-index:3];
+}
+
+.ruler-grid button.active {
+  @apply [color:#ffb46b];
+  @apply [background:rgba(255,_122,_26,_0.08)];
+}
+
+.timeline-grid {
+  @apply relative;
+}
+
+.grid-lines {
+  @apply absolute;
+  @apply [inset:0];
+  @apply [pointer-events:none];
+  @apply [z-index:0];
+}
+
+.grid-line {
+  @apply absolute;
+  @apply [top:0];
+  @apply [bottom:0];
+  @apply [width:1px];
+}
+
+.grid-line.step {
+  @apply [background:rgba(255,_255,_255,_0.035)];
+}
+
+.grid-line.beat {
+  @apply [background:rgba(255,_255,_255,_0.065)];
+}
+
+.grid-line.bar {
+  @apply [background:rgba(255,_255,_255,_0.12)];
+}
+
+.grid-line.four-bar {
+  @apply [width:2px];
+  @apply [background:rgba(255,_255,_255,_0.18)];
+}
+
+.grid-line.eight-bar {
+  @apply [width:2px];
+  @apply [background:rgba(255,_180,_80,_0.25)];
+}
+
+.grid-line.sixteen-bar {
+  @apply [width:3px];
+  @apply [background:rgba(255,_120,_60,_0.35)];
+}
+
+.timeline-row {
+  @apply grid;
+  @apply [grid-template-columns:190px_1fr];
+  @apply [min-height:72px];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.06)];
+}
+
+.track-head {
+  @apply min-w-0;
+  @apply grid;
+  @apply [grid-template-columns:22px_minmax(0,_1fr)_30px_30px_30px];
+  @apply items-center;
+  @apply [gap:6px];
+  @apply [padding:8px];
+  @apply [border-right:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [background:rgba(255,_255,_255,_0.035)];
+}
+
+.track-head > svg {
+  @apply [font-size:1.05rem];
+}
+
+.track-head div {
+  @apply min-w-0;
+}
+
+.track-head strong,
+.track-head span {
+  @apply block;
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+
+.track-head strong {
+  @apply [font-size:0.8rem];
+}
+
+.track-head span {
+  @apply [color:rgba(255,_255,_255,_0.5)];
+  @apply [font-size:0.68rem];
+}
+
+.track-head button {
+  @apply min-w-0;
+  @apply [min-height:30px];
+  @apply [padding:0];
+  @apply [font-size:0.7rem];
+}
+
+.track-lane {
+  @apply relative;
+  @apply [min-height:72px];
+}
+
+.lane-grid {
+  @apply absolute;
+  @apply [inset:0];
+  @apply [background-image:linear-gradient(to_right,_rgba(255,_255,_255,_0.045)_1px,_transparent_1px),_linear-gradient(to_right,_rgba(255,_180,_107,_0.18)_2px,_transparent_2px)];
+}
+
+.track-lane:hover {
+  @apply [background:rgba(255,_255,_255,_0.025)];
+}
+
+.playhead {
+  @apply absolute;
+  @apply [top:0];
+  @apply [bottom:0];
+  @apply [z-index:6];
+  @apply [width:2px];
+  @apply [background:#fff];
+  @apply [cursor:ew-resize];
+  @apply [pointer-events:auto];
+}
+
+.playhead span {
+  @apply absolute;
+  @apply [top:-10px];
+  @apply [left:-7px];
+  @apply [width:16px];
+  @apply [height:16px];
+  @apply [border-radius:5px];
+  @apply [background:#ff2f6d];
+  @apply [box-shadow:0_0_0_4px_rgba(255,_47,_109,_0.15)];
+}
+
+.playhead.pattern-ghost {
+  @apply [width:2px];
+  @apply [background:transparent];
+  @apply [border-left:2px_dashed_rgba(255,_180,_107,_0.8)];
+  @apply [pointer-events:none];
+}
+
+.clip-block {
+  @apply absolute;
+  @apply [top:10px];
+  @apply [height:52px];
+  @apply [min-width:34px];
+  @apply overflow-hidden;
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.18)];
+  @apply [border-radius:8px];
+  @apply [cursor:grab];
+  @apply [box-shadow:0_14px_30px_rgba(0,_0,_0,_0.2)];
+}
+
+.clip-block:active {
+  @apply [cursor:grabbing];
+}
+
+.clip-block.selected {
+  @apply [outline:2px_solid_#fff];
+  @apply [outline-offset:2px];
+}
+
+.clip-body {
+  @apply relative;
+  @apply [z-index:2];
+  @apply [height:20px];
+  @apply [cursor:grab];
+}
+
+.clip-body > span {
+  @apply block;
+  @apply [padding:5px_8px_0];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:950];
+}
+
+.clip-resize-left,
+.clip-resize-right,
+.resize-handle {
+  @apply absolute;
+  @apply [top:0];
+  @apply [z-index:5];
+  @apply [width:14px];
+  @apply h-full;
+  @apply min-h-0 !important;
+  @apply [border:0] !important;
+  @apply [border-radius:0] !important;
+  @apply [background:rgba(0,_0,_0,_0.18)] !important;
+  @apply [cursor:ew-resize];
+}
+
+.clip-resize-left {
+  @apply [left:0];
+}
+
+.clip-resize-right,
+.resize-handle {
+  @apply [right:0];
+}
+
+.midi-preview,
+.drum-preview,
+.audio-preview {
+  @apply absolute;
+  @apply [inset:18px_8px_6px];
+  @apply overflow-hidden;
+}
+
+.midi-preview-note {
+  @apply absolute;
+  @apply [height:4px];
+  @apply [border-radius:999px];
+  @apply [background:rgba(255,_255,_255,_0.75)];
+}
+
+.drum-preview span {
+  @apply absolute;
+  @apply [width:7px];
+  @apply [height:7px];
+  @apply [border-radius:2px];
+  @apply [background:rgba(255,_255,_255,_0.78)];
+}
+
+.audio-preview {
+  @apply flex;
+  @apply items-center;
+  @apply [gap:8px];
+}
+
+.audio-preview span {
+  @apply [flex:1];
+  @apply [height:16px];
+  @apply [border-radius:999px];
+  @apply [background:rgba(255,_255,_255,_0.28)];
+}
+
+.red,
+.library-item.red strong,
+.clip-block.red {
+  @apply [background:linear-gradient(135deg,_#ff244c,_#d90a37)];
+}
+
+.blue,
+.library-item.blue strong,
+.clip-block.blue,
+.note-block {
+  @apply [background:linear-gradient(135deg,_#00bfff,_#315bff)];
+}
+
+.green,
+.library-item.green strong,
+.clip-block.green {
+  @apply [background:linear-gradient(135deg,_#25d879,_#0c9b55)];
+}
+
+.purple,
+.library-item.purple strong,
+.clip-block.purple {
+  @apply [background:linear-gradient(135deg,_#bf25ff,_#7435ff)];
+}
+
+.pink,
+.library-item.pink strong,
+.clip-block.pink {
+  @apply [background:linear-gradient(135deg,_#ff2f6d,_#ba1bff)];
+}
+
+.orange,
+.library-item.orange strong,
+.clip-block.orange {
+  @apply [background:linear-gradient(135deg,_#ff7a1a,_#ffb000)];
+}
+
+.track-head.red > svg { @apply [color:#ff4768]; }
+.track-head.blue > svg { @apply [color:#41c9ff]; }
+.track-head.green > svg { @apply [color:#38dd84]; }
+.track-head.purple > svg { @apply [color:#c864ff]; }
+.track-head.pink > svg { @apply [color:#ff5f91]; }
+.track-head.orange > svg { @apply [color:#ffb46b]; }
+
+.studio-right .inspector-card,
+.range-line {
+  @apply block;
+  @apply [margin-bottom:12px];
+  @apply [padding:14px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.09)];
+  @apply [border-radius:8px];
+  @apply [background:rgba(255,_255,_255,_0.045)];
+}
+
+.inspector-card small,
+.range-line {
+  @apply [color:rgba(255,_255,_255,_0.55)];
+  @apply [font-size:0.76rem];
+  @apply [font-weight:900];
+  @apply [text-transform:uppercase];
+}
+
+.inspector-card input {
+  @apply w-full;
+  @apply [margin:8px_0];
+  @apply [padding:10px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+  @apply [border-radius:8px];
+  @apply [background:rgba(0,_0,_0,_0.22)];
+  @apply [color:#fff];
+  @apply [font-weight:900];
+}
+
+.inspector-card p {
+  @apply [margin:0];
+  @apply [color:rgba(255,_255,_255,_0.58)];
+  @apply [line-height:1.5];
+  @apply [text-transform:none];
+}
+
+.range-line strong {
+  @apply [float:right];
+  @apply [color:#ffb46b];
+}
+
+.range-line input {
+  @apply w-full;
+  @apply [margin-top:12px];
+  @apply [accent-color:#ff7a1a];
+}
+
+.inspector-actions {
+  @apply grid;
+  @apply [grid-template-columns:repeat(3,_minmax(0,_1fr))];
+  @apply [gap:8px];
+}
+
+.studio-bottom {
+  @apply [padding:8px_12px];
+  @apply [border-top:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [background:rgba(7,_9,_15,_0.97)];
+}
+
+.studio-bottom span {
+  @apply [min-width:54px];
+  @apply text-center;
+  @apply [color:rgba(255,_255,_255,_0.62)];
+  @apply [font-weight:900];
+}
+
+.keyboard-scroll {
+  @apply [overflow-x:auto];
+}
+
+.keyboard {
+  @apply [min-width:max-content];
+  @apply flex;
+  @apply [align-items:flex-end];
+  @apply [gap:2px];
+}
+
+.keyboard button {
+  @apply [width:58px];
+  @apply [height:68px];
+  @apply [color:#111];
+  @apply [background:#f7f7f7];
+}
+
+.keyboard button.black {
+  @apply [width:42px];
+  @apply [height:46px];
+  @apply [margin-left:-21px];
+  @apply [margin-right:-21px];
+  @apply [z-index:2];
+  @apply [color:#fff];
+  @apply [background:#111827];
+}
+
+.keyboard button.active {
+  @apply [border-color:#ffb46b];
+  @apply [box-shadow:inset_0_0_0_3px_rgba(255,_122,_26,_0.35)];
+}
+
+.piano-roll-modal {
+  @apply fixed;
+  @apply [z-index:1000];
+  @apply [background:#10131b];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.12)];
+  @apply [border-radius:12px];
+  @apply [box-shadow:0_24px_70px_rgba(0,_0,_0,_0.55)];
+  @apply overflow-hidden;
+}
+
+.piano-roll-modal.maximized {
+  @apply [border-radius:10px];
+}
+
+.piano-roll-modal-header {
+  @apply [height:46px];
+  @apply flex;
+  @apply items-center;
+  @apply justify-between;
+  @apply [gap:10px];
+  @apply [padding:0_10px_0_12px];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [background:rgba(255,_255,_255,_0.04)];
+}
+
+.piano-roll-modal-header > div {
+  @apply flex;
+  @apply items-center;
+  @apply [gap:8px];
+  @apply min-w-0;
+}
+
+.piano-roll-drag-handle {
+  @apply [flex:1];
+  @apply h-full;
+  @apply [cursor:grab];
+}
+
+.piano-roll-window-actions {
+  @apply [flex:0_0_auto];
+}
+
+.piano-roll-window-actions button {
+  @apply [pointer-events:auto];
+}
+
+.piano-roll-window-actions span {
+  @apply [min-width:60px];
+  @apply text-center;
+}
+
+.piano-roll-window-actions input[type="range"] {
+  @apply [width:86px];
+  @apply [accent-color:#ff7a1a];
+}
+
+.piano-roll-modal-header span {
+  @apply overflow-hidden;
+  @apply [color:rgba(255,_255,_255,_0.55)];
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+  @apply [font-size:0.78rem];
+}
+
+.piano-roll-modal-body {
+  @apply [height:calc(100%_-_46px)];
+  @apply overflow-auto;
+  @apply [scroll-behavior:smooth];
+}
+
+.piano-roll {
+  @apply grid;
+  @apply [grid-template-columns:68px_minmax(0,_1fr)];
+  @apply [min-height:100%];
+}
+
+.piano-roll-editor {
+  @apply min-w-0;
+}
+
+.piano-roll-time-ruler {
+  @apply [position:sticky];
+  @apply [top:0];
+  @apply [z-index:20];
+  @apply [height:28px];
+  @apply [background:#111620];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.12)];
+}
+
+.piano-roll-time-ruler button {
+  @apply absolute;
+  @apply [top:0];
+  @apply h-full;
+  @apply min-h-0;
+  @apply [border:0];
+  @apply [border-right:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [border-radius:0];
+  @apply [background:transparent];
+  @apply [color:rgba(255,_255,_255,_0.72)];
+  @apply [text-align:left];
+  @apply [padding-left:6px];
+  @apply [font-size:11px];
+}
+
+.note-labels {
+  @apply grid;
+  @apply [grid-auto-rows:22px];
+  @apply [position:sticky];
+  @apply [left:0];
+  @apply [z-index:3];
+}
+
+.note-label-spacer {
+  @apply [height:28px];
+  @apply [background:#111620];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.12)];
+}
+
+.note-labels button {
+  @apply [min-height:22px];
+  @apply [border:0];
+  @apply [border-radius:0];
+  @apply [font-size:0.66rem];
+}
+
+.note-labels .white {
+  @apply [background:#f2f2f2];
+  @apply [color:#10131b];
+}
+
+.note-labels .black {
+  @apply [background:#121722];
+  @apply [color:#dfe6ff];
+}
+
+.note-labels .root {
+  @apply [color:#ff7a1a];
+  @apply [font-weight:950];
+}
+
+.note-grid {
+  @apply relative;
+}
+
+.piano-roll-playhead {
+  @apply absolute;
+  @apply [top:0];
+  @apply [bottom:0];
+  @apply [width:2px];
+  @apply [background:#ff3b6b];
+  @apply [z-index:18];
+  @apply [pointer-events:none];
+  @apply [box-shadow:0_0_14px_rgba(255,_59,_107,_0.7)];
+}
+
+.piano-roll-playhead button {
+  @apply absolute;
+  @apply [top:-7px];
+  @apply [left:-7px];
+  @apply [z-index:3];
+  @apply [width:16px];
+  @apply [height:16px];
+  @apply min-h-0;
+  @apply [border:0];
+  @apply [border-radius:50%];
+  @apply [background:#ff3b6b];
+  @apply [cursor:ew-resize];
+  @apply [pointer-events:auto];
+}
+
+.piano-roll-playhead::before {
+  @apply [content:""];
+  @apply absolute;
+  @apply [top:-6px];
+  @apply [left:-5px];
+  @apply [width:12px];
+  @apply [height:12px];
+  @apply [background:#ff3b6b];
+  @apply [border-radius:50%];
+}
+
+.note-row {
+  @apply grid;
+  @apply [grid-auto-flow:column];
+  @apply [grid-auto-columns:34px];
+  @apply [height:22px];
+}
+
+.note-row button {
+  @apply [min-height:22px];
+  @apply [border:0];
+  @apply [border-left:1px_solid_rgba(255,_255,_255,_0.04)];
+  @apply [border-bottom:1px_solid_rgba(255,_255,_255,_0.045)];
+  @apply [border-radius:0];
+  @apply [background:transparent];
+}
+
+.note-row.black {
+  @apply [background:rgba(255,_255,_255,_0.035)];
+}
+
+.note-row.white {
+  @apply [background:rgba(255,_255,_255,_0.015)];
+}
+
+.note-row.root {
+  @apply [background:rgba(255,_122,_26,_0.06)];
+}
+
+.note-row button.bar-start,
+.drum-edit-row div button.bar-start {
+  @apply [box-shadow:inset_2px_0_0_rgba(255,_180,_107,_0.28)];
+}
+
+.note-block {
+  @apply absolute;
+  @apply [height:16px];
+  @apply flex;
+  @apply items-center;
+  @apply [justify-content:stretch];
+  @apply [gap:0];
+  @apply [border-radius:5px];
+  @apply [color:#fff];
+  @apply [font-size:0.66rem];
+  @apply [font-weight:900];
+  @apply [cursor:grab];
+  @apply [z-index:22];
+}
+
+.note-block.selected {
+  @apply [outline:2px_solid_#fff];
+}
+
+.note-body {
+  @apply [flex:1];
+  @apply [padding:0_4px];
+  @apply min-w-0;
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+  @apply [cursor:grab];
+}
+
+.note-block button {
+  @apply [width:14px];
+  @apply h-full;
+  @apply min-h-0;
+  @apply [border:0];
+  @apply [border-radius:4px];
+  @apply [background:rgba(0,_0,_0,_0.18)];
+  @apply [color:#fff];
+}
+
+.note-resize-left,
+.note-resize-right,
+.clip-resize-left,
+.clip-resize-right {
+  @apply [cursor:ew-resize];
+}
+
+.note-delete {
+  @apply [width:18px] !important;
+  @apply [background:rgba(0,_0,_0,_0.26)] !important;
+}
+
+.modal-resize {
+  @apply absolute;
+  @apply [right:0];
+  @apply [bottom:0];
+  @apply [width:22px];
+  @apply [height:22px];
+  @apply min-h-0 !important;
+  @apply [border:0] !important;
+  @apply [border-radius:0] !important;
+  @apply [background:linear-gradient(135deg,_transparent_45%,_rgba(255,_255,_255,_0.5)_46%)] !important;
+  @apply [cursor:nwse-resize];
+}
+
+.empty-midi-state {
+  @apply h-full;
+  @apply grid;
+  @apply [place-items:center];
+  @apply [align-content:center];
+  @apply [gap:8px];
+  @apply [padding:32px];
+  @apply text-center;
+  @apply [color:rgba(255,_255,_255,_0.65)];
+}
+
+.empty-midi-state svg {
+  @apply [font-size:2rem];
+  @apply [color:#ffb46b];
+}
+
+.drum-dock {
+  @apply [max-height:182px];
+  @apply overflow-auto;
+  @apply [padding:8px_12px];
+  @apply [border-top:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [background:rgba(7,_9,_15,_0.97)];
+}
+
+.drum-edit-row {
+  @apply grid;
+  @apply [grid-template-columns:48px_minmax(544px,_1fr)];
+  @apply [gap:6px];
+  @apply [margin-bottom:6px];
+}
+
+.drum-edit-row > button {
+  @apply [min-height:28px];
+}
+
+.drum-edit-row div {
+  @apply grid;
+  @apply [grid-template-columns:repeat(16,_34px)];
+  @apply [gap:4px];
+}
+
+.drum-edit-row div button {
+  @apply [min-height:28px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [border-radius:6px];
+  @apply [background:rgba(255,_255,_255,_0.05)];
+}
+
+.drum-edit-row div button.active {
+  @apply [border-color:rgba(255,_180,_107,_0.75)];
+  @apply [background:linear-gradient(135deg,_#ff7a1a,_#ff2f6d)];
+}
+
+.drum-edit-row button.playing,
+.drum-edit-row .playing {
+  @apply [outline:2px_solid_#fff];
+  @apply [box-shadow:0_0_14px_rgba(255,_255,_255,_0.4)];
+}
+
+.panel-float {
+  @apply fixed;
+  @apply [z-index:950];
+  @apply [width:44px];
+  @apply [height:44px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [box-shadow:0_16px_40px_rgba(0,_0,_0,_0.35)];
+}
+
+.panel-float.left {
+  @apply [left:14px];
+  @apply [top:88px];
+}
+
+.panel-float.right {
+  @apply [right:14px];
+  @apply [top:88px];
+}
+
+.panel-float.bottom {
+  @apply [right:14px];
+  @apply [bottom:18px];
+}
+
+.studio-toast {
+  @apply fixed;
+  @apply [left:50%];
+  @apply [bottom:18px];
+  @apply [z-index:1400];
+  @apply [transform:translateX(-50%)];
+  @apply [padding:10px_14px];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+  @apply [border-radius:8px];
+  @apply [background:#10131b];
+  @apply [color:#fff];
+  @apply [box-shadow:0_20px_60px_rgba(0,_0,_0,_0.45)];
+}
+
+@screen query26 {
+  .studio-right {
+    @apply fixed;
+    @apply [z-index:940];
+    @apply [top:74px];
+    @apply [right:0];
+    @apply [bottom:0];
+    @apply [width:min(300px,_92vw)];
+    @apply [box-shadow:-24px_0_70px_rgba(0,_0,_0,_0.55)];
+  }
+}
+
+@screen query2 {
+  .music-studio {
+    @apply overflow-auto;
+  }
+
+  .studio-left {
+    @apply fixed;
+    @apply [z-index:940];
+    @apply [top:74px];
+    @apply [left:0];
+    @apply [bottom:0];
+    @apply [width:min(300px,_92vw)];
+    @apply [box-shadow:24px_0_70px_rgba(0,_0,_0,_0.55)];
+  }
+
+  .timeline-ruler,
+  .timeline-row {
+    @apply [grid-template-columns:112px_1fr];
+  }
+
+  .track-spacer,
+  .track-head {
+    @apply [width:112px];
+  }
+
+  .track-head {
+    @apply [grid-template-columns:24px_1fr];
+  }
+
+  .track-head div,
+  .track-head button {
+    @apply hidden;
+  }
+
+  .piano-roll-modal {
+    @apply [left:0] !important;
+    @apply [right:0] !important;
+    @apply [top:auto] !important;
+    @apply [bottom:0] !important;
+    @apply [width:100vw] !important;
+    @apply [height:min(72vh,_620px)] !important;
+    @apply [border-radius:14px_14px_0_0];
+  }
+
+  .modal-resize {
+    @apply hidden;
+  }
+}

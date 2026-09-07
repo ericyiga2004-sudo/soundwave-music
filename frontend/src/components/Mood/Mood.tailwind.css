@@ -1,0 +1,115 @@
+.mood-section {
+  @apply [padding:28px_clamp(14px,_3vw,_48px)_12px];
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-bg)];
+}
+
+.mood-header {
+  @apply [margin-bottom:16px];
+  @apply flex;
+  @apply [align-items:flex-end];
+  @apply justify-between;
+  @apply [gap:16px];
+}
+
+.mood-header span {
+  @apply block;
+  @apply [margin-bottom:3px];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:700];
+}
+
+.mood-header h2 {
+  @apply [margin:0];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:clamp(1.35rem,_1.5vw_+_0.85rem,_1.75rem)];
+  @apply [line-height:1.08];
+  @apply [font-weight:750];
+  @apply [letter-spacing:-0.04em];
+}
+
+.mood-header button {
+  @apply [border:0];
+  @apply [padding:6px_0];
+  @apply [background:transparent];
+  @apply [color:var(--sw-accent)];
+  @apply [font-size:0.8rem];
+  @apply [font-weight:680];
+}
+
+.mood-grid {
+  @apply [margin-top:0];
+}
+
+.mood-card {
+  @apply w-full;
+  @apply min-w-0;
+  @apply [padding:0];
+  @apply [border:0];
+  @apply block;
+  @apply [background:transparent];
+  @apply [color:var(--sw-text)];
+  @apply [text-align:left];
+}
+
+.mood-artwork {
+  @apply w-full;
+  @apply [aspect-ratio:16_/_10];
+  @apply block;
+  @apply overflow-hidden;
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:13px];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.mood-artwork img,
+.mood-low-data-art {
+  @apply w-full;
+  @apply h-full;
+}
+
+.mood-artwork img {
+  @apply block;
+  @apply object-cover;
+  @apply [object-position:center];
+}
+
+.mood-low-data-art {
+  @apply grid;
+  @apply [place-items:center];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:var(--sw-surface-2)];
+  @apply [font-size:1.8rem];
+}
+
+.mood-copy {
+  @apply block;
+  @apply [padding-top:9px];
+}
+
+.mood-copy strong,
+.mood-copy small {
+  @apply block;
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+
+.mood-copy strong {
+  @apply [color:var(--sw-text)];
+  @apply [font-size:clamp(0.78rem,_0.35vw_+_0.7rem,_0.93rem)];
+  @apply [font-weight:700];
+}
+
+.mood-copy small {
+  @apply [margin-top:3px];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:clamp(0.65rem,_0.24vw_+_0.61rem,_0.75rem)];
+  @apply [line-height:1.25];
+}
+
+@screen query3 {
+  .mood-section { @apply [padding-top:22px]; }
+  .mood-header button { @apply [font-size:0.73rem]; }
+}

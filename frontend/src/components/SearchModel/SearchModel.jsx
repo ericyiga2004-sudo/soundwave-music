@@ -17,7 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
-import "./SearchModel.css";
+import "./SearchModel.tailwind.css";
 
 import { API_BASE_URL } from "../../config/api";
 import { trackTasteEvent } from "../../utils/personalization";

@@ -10,8 +10,8 @@ import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 
@@ -142,7 +142,7 @@ const SocialMix = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page container-fluid px-0">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
       <SocialPageHero
         kicker="Friend Mix"
         title="A mix where everybody gets a say."
@@ -171,16 +171,16 @@ const SocialMix = () => {
           {!following.length ? <div className="sw20-empty-card"><UsersRound size={24} /><strong>Follow someone first.</strong><p>Your saved Following network becomes available here automatically.</p><button type="button" className="sw-secondary-btn" onClick={() => navigate("/social/people")}>Find people</button></div> : null}
         </div>
 
-        <div className="sw22-mix-actions mt-3">
+        <div className="sw22-mix-actions !mt-[1rem]">
           <button type="button" className="sw-primary-btn" onClick={() => build()} disabled={busy || !selected.length}><WandSparkles size={16} /> {busy ? "Mixing…" : `Build Friend Mix${selected.length ? ` (${selected.length + 1} people)` : ""}`}</button>
           {mix.length ? <button type="button" className="sw-secondary-btn" onClick={playMix}><Play size={15} fill="currentColor" /> Play mix</button> : null}
           {mix.length ? <button type="button" className="sw-secondary-btn" onClick={() => build({ quiet: true })} disabled={busy}><RefreshCw size={15} /> Refresh</button> : null}
         </div>
-        {status ? <div className="sw-social-message mt-3">{status}</div> : null}
+        {status ? <div className="sw-social-message !mt-[1rem]">{status}</div> : null}
       </section>
 
       {mix.length ? (
-        <section className="sw-social-panel sw20-panel mt-3 mt-xl-4">
+        <section className="sw-social-panel sw20-panel !mt-[1rem] xl:!mt-[1.5rem]">
           <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Your live mix</span><h2>Play the overlap</h2></div><Play size={19} /></div>
 
           <div className="sw22-mix-summary">

@@ -20,7 +20,7 @@ import { GiDrumKit, GiGuitarBassHead } from "react-icons/gi";
 import { IoClose, IoSettingsSharp } from "react-icons/io5";
 import { MdGraphicEq, MdPiano } from "react-icons/md";
 import { TbPiano, TbWaveSine } from "react-icons/tb";
-import "./CSS/MusicStudio.css";
+import "./CSS/MusicStudio.tailwind.css";
 
 const TOTAL_BARS = 32;
 const STEPS_PER_BAR = 4;
@@ -1231,15 +1231,15 @@ const MusicStudio = () => {
   const patternGhostStep = playMode === "pattern" && selectedClip ? selectedClip.start + patternStep : null;
 
   return (
-    <main className="music-studio d-flex flex-column text-white">
-      <header className="studio-top sticky-top container-fluid">
-        <div className="row g-2 align-items-center">
-          <div className="col-12 col-lg-3 d-flex align-items-center gap-2">
+    <main className="music-studio !flex !flex-col text-white">
+      <header className="studio-top sticky-top sw-container-fluid w-full mx-auto px-3">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] !items-center">
+          <div className="col !w-[100%] flex-none col lg:!w-[25%] lg:flex-none !flex !items-center gap-2">
             <button type="button" title="Toggle library" onClick={() => setLeftOpen((value) => !value)}><FaBars /></button>
             <input value={projectName} onChange={(event) => setProjectName(event.target.value)} title="Project name" />
           </div>
 
-          <div className="col-12 col-lg-4 d-flex justify-content-lg-center gap-2 studio-transport">
+          <div className="col !w-[100%] flex-none col lg:!w-[33.333333333333336%] lg:flex-none !flex lg:!justify-center gap-2 studio-transport">
             <button type="button" title="Play / Pause" onClick={togglePlay}>{isPlaying ? <FaPause /> : <FaPlay />}</button>
             <button type="button" title="Stop" onClick={stopPlayback}><FaStop /></button>
             <button type="button" title="Record" className={isRecording ? "active record" : "record"} onClick={recordClip}><FaCircle /></button>
@@ -1247,7 +1247,7 @@ const MusicStudio = () => {
             <button type="button" title="Metronome" className={metronomeEnabled ? "active" : ""} onClick={() => setMetronomeEnabled((value) => !value)}><MdGraphicEq /></button>
           </div>
 
-          <div className="col-12 col-lg-5 d-flex justify-content-lg-end flex-wrap gap-2 studio-status">
+          <div className="col !w-[100%] flex-none col lg:!w-[41.666666666666664%] lg:flex-none !flex lg:!justify-end !flex-wrap gap-2 studio-status">
             <label title="BPM">BPM<input type="number" min="60" max="180" value={bpm} onChange={(event) => setBpm(Number(event.target.value))} /></label>
             <button type="button" title="Timer / Seek" onClick={() => setTimerOpen((value) => !value)}>{timeText(projectSeconds)} · {playMode === "pattern" ? `P${patternStep + 1}` : stepToBars(currentStep)}</button>
             <button type="button" title="Follow playhead" className={followPlayhead ? "active" : ""} onClick={() => setFollowPlayhead((value) => !value)}><FaArrowRight /></button>
@@ -1273,16 +1273,16 @@ const MusicStudio = () => {
         )}
       </header>
 
-      <section className="studio-shell container-fluid flex-grow-1 overflow-hidden">
-        <div className="row g-0 h-100">
+      <section className="studio-shell sw-container-fluid w-full mx-auto px-3 !grow overflow-hidden">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0px] [--sw-gutter-y:0px] !h-full">
           {leftOpen && (
-            <aside className="studio-left col-12 col-lg-auto">
+            <aside className="studio-left col !w-[100%] flex-none col lg:!w-auto lg:flex-none">
               <div className="panel-head"><span>Library</span><button type="button" title="Close library" onClick={() => setLeftOpen(false)}><IoClose /></button></div>
-              <div className="row g-2 p-2">
+              <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] !p-[0.5rem]">
                 {libraryItems.map((item) => {
                   const Icon = item.Icon;
                   return (
-                    <div className="col-4 col-lg-6" key={`${item.trackId}-${item.type}`}>
+                    <div className="col !w-[33.333333333333336%] flex-none col lg:!w-[50%] lg:flex-none" key={`${item.trackId}-${item.type}`}>
                       <button
                         draggable
                         type="button"
@@ -1306,7 +1306,7 @@ const MusicStudio = () => {
             </aside>
           )}
 
-          <section className="timeline-wrap col min-w-0" ref={timelineScrollRef} onClick={handleTimelineClick} onScroll={pauseAutoFollow}>
+          <section className="timeline-wrap col flex-[1_0_0%] min-w-0" ref={timelineScrollRef} onClick={handleTimelineClick} onScroll={pauseAutoFollow}>
             <div className="timeline-inner" style={{ width: `${190 + timelineWidth}px` }}>
               <div className="timeline-minimap" style={{ width: `${190 + timelineWidth}px` }}>
                 <div className="track-spacer">Map</div>
@@ -1397,7 +1397,7 @@ const MusicStudio = () => {
           </section>
 
           {rightOpen && (
-            <aside className="studio-right col-12 col-xl-auto">
+            <aside className="studio-right col !w-[100%] flex-none col xl:!w-auto xl:flex-none">
               <div className="panel-head"><span>Inspector</span><button type="button" title="Close inspector" onClick={() => setRightOpen(false)}><IoClose /></button></div>
               <div className="inspector-card">
                 <small>Selected Clip</small>
@@ -1416,14 +1416,14 @@ const MusicStudio = () => {
         </div>
       </section>
 
-      <section className="studio-bottom container-fluid">
-        <div className="row g-2 align-items-center">
-          <div className="col-12 col-lg-auto d-flex gap-2 align-items-center">
+      <section className="studio-bottom sw-container-fluid w-full mx-auto px-3">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] !items-center">
+          <div className="col !w-[100%] flex-none col lg:!w-auto lg:flex-none !flex gap-2 !items-center">
             <button type="button" title="Octave down" onClick={() => setKeyboardOctave((value) => clamp(value - 1, 1, 7))}>−</button>
             <span>Oct {keyboardOctave}</span>
             <button type="button" title="Octave up" onClick={() => setKeyboardOctave((value) => clamp(value + 1, 1, 7))}>+</button>
           </div>
-          <div className="col keyboard-scroll">
+          <div className="col flex-[1_0_0%] keyboard-scroll">
             <div className="keyboard">
               {keyboardNotes.map((note) => (
                 <button
@@ -1556,7 +1556,7 @@ const MusicStudio = () => {
       )}
 
       {selectedClip?.type === "drums" && (
-        <section className="drum-dock container-fluid">
+        <section className="drum-dock sw-container-fluid w-full mx-auto px-3">
           {drumRows.map((row) => (
             <div className="drum-edit-row" key={row.id}>
               <button type="button" title={row.label} onClick={() => playDrum(row.id)}>{row.short}</button>

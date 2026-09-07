@@ -8,7 +8,7 @@ import { apiClient, authHeaders } from "../config/apiClient";
 import { getArtistName, getSongCover } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
-import "./CSS/CatalogPages.css";
+import "./CSS/CatalogPages.tailwind.css";
 
 const PlaylistDetails = () => {
   const { playlistId } = useParams();

@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaHeart, FaMusic, FaPlay, FaTrash, FaWifi } from "react-icons/fa";
 
-import "./CSS/Liked.css";
+import "./CSS/Liked.tailwind.css";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 
@@ -255,8 +255,8 @@ const Liked = () => {
   if (!token) {
     return (
       <main className="liked-page">
-        <div className="container-fluid px-2 px-sm-3 px-lg-4">
-          <section className="liked-empty-state mx-auto">
+        <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
+          <section className="liked-empty-state !mx-auto">
             <div className="liked-empty-icon">
               <FaHeart />
             </div>
@@ -279,8 +279,8 @@ const Liked = () => {
   if (loading) {
     return (
       <main className="liked-page">
-        <div className="container-fluid px-2 px-sm-3 px-lg-4">
-          <div className="liked-loading mx-auto">
+        <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
+          <div className="liked-loading !mx-auto">
             <span></span>
             Loading liked songs...
           </div>
@@ -291,15 +291,15 @@ const Liked = () => {
 
   return (
     <main className="liked-page">
-      <div className="container-fluid px-2 px-sm-3 px-lg-4">
-        <section className="liked-hero row g-3 g-md-4 align-items-center mx-auto">
-          <div className="col-12 col-sm-auto text-center text-sm-start">
-            <div className="liked-hero-cover mx-auto mx-sm-0">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
+        <section className="liked-hero row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem] !items-center !mx-auto">
+          <div className="col !w-[100%] flex-none col sm:!w-auto sm:flex-none !text-center sm:!text-left">
+            <div className="liked-hero-cover !mx-auto sm:!mx-[0px]">
               <FaHeart />
             </div>
           </div>
 
-          <div className="liked-hero-copy col-12 col-sm text-center text-sm-start">
+          <div className="liked-hero-copy col !w-[100%] flex-none col sm:flex-[1_0_0%] !text-center sm:!text-left">
             <span>Your Library</span>
 
             <h1>Liked Songs</h1>
@@ -310,7 +310,7 @@ const Liked = () => {
             </p>
           </div>
 
-          <div className="col-12 col-lg-auto text-center text-lg-end">
+          <div className="col !w-[100%] flex-none col lg:!w-auto lg:flex-none !text-center lg:!text-right">
             <button
               type="button"
               className="liked-play-all-btn"
@@ -324,8 +324,8 @@ const Liked = () => {
         </section>
 
         {likedSongs.length > 0 ? (
-          <section className="liked-table-card mx-auto">
-            <div className="liked-table-head d-none d-xl-grid">
+          <section className="liked-table-card !mx-auto">
+            <div className="liked-table-head !hidden xl:!grid">
               <span>#</span>
               <span>Title</span>
               <span>Album</span>
@@ -337,7 +337,7 @@ const Liked = () => {
             <div className="liked-list">
               {likedSongs.map((song, index) => (
                 <article className="liked-row" key={song._id}>
-                  <span className="liked-index d-none d-md-flex">
+                  <span className="liked-index !hidden md:!flex">
                     {index + 1}
                   </span>
 
@@ -359,7 +359,7 @@ const Liked = () => {
                       <h3>{song.title || "Unknown Song"}</h3>
                       <p>{getArtistName(song)}</p>
 
-                      <div className="liked-mobile-meta d-xl-none">
+                      <div className="liked-mobile-meta xl:!hidden">
                         <span>{getAlbumName(song)}</span>
                         <span>{song.genre || "Unknown"}</span>
                         <span>{formatDuration(song.duration)}</span>
@@ -367,15 +367,15 @@ const Liked = () => {
                     </div>
                   </div>
 
-                  <span className="liked-album d-none d-xl-inline">
+                  <span className="liked-album !hidden xl:!inline">
                     {getAlbumName(song)}
                   </span>
 
-                  <span className="liked-genre d-none d-xl-inline">
+                  <span className="liked-genre !hidden xl:!inline">
                     {song.genre || "Unknown"}
                   </span>
 
-                  <span className="liked-duration d-none d-xl-inline">
+                  <span className="liked-duration !hidden xl:!inline">
                     {formatDuration(song.duration)}
                   </span>
 
@@ -405,7 +405,7 @@ const Liked = () => {
             </div>
           </section>
         ) : (
-          <section className="liked-empty-state mx-auto">
+          <section className="liked-empty-state !mx-auto">
             <div className="liked-empty-icon">
               <FaMusic />
             </div>

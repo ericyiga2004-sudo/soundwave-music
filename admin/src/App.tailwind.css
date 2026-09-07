@@ -1,0 +1,80 @@
+* { @apply box-border; }
+html { @apply [background:#f5f5f7]; @apply [color:#1d1d1f]; @apply [font-family:-apple-system,_BlinkMacSystemFont,_"SF_Pro_Text",_Inter,_system-ui,_sans-serif]; }
+body { @apply [margin:0]; @apply [background:#f5f5f7]; @apply [color:#1d1d1f]; }
+button, input, select, textarea { @apply [font:inherit]; }
+.admin-app { @apply [min-height:100vh]; }
+.admin-header {
+  @apply [position:sticky]; @apply [top:0]; @apply [z-index:20];
+  @apply [min-height:64px]; @apply [padding:10px_clamp(14px,_3vw,_36px)];
+  @apply flex; @apply items-center; @apply justify-between; @apply [gap:16px];
+  @apply [border-bottom:1px_solid_#dedee3]; @apply [background:#fff];
+}
+.admin-header > div { @apply flex; @apply items-center; @apply [gap:10px]; }
+.admin-mark { @apply [width:36px]; @apply [height:36px]; @apply grid; @apply [place-items:center]; @apply [border-radius:10px]; @apply [background:#fa233b]; @apply [color:#fff]; @apply [font-weight:800]; }
+.admin-header strong, .admin-header small { @apply block; }
+.admin-header small { @apply [margin-top:1px]; @apply [color:#6e6e73]; @apply [font-size:.72rem]; }
+.admin-header nav { @apply flex; @apply flex-wrap; @apply [gap:5px]; }
+.admin-header nav button { @apply [min-height:34px]; @apply [padding:0_11px]; @apply [border:0]; @apply [border-radius:999px]; @apply [background:#f2f2f7]; @apply [color:#3a3a3c]; @apply [font-size:.78rem]; @apply [font-weight:650]; @apply cursor-pointer; }
+.admin-header nav button.active { @apply [background:#1d1d1f]; @apply [color:#fff]; }
+.admin-content { @apply [width:min(100%,_1100px)]; @apply [margin:0_auto]; @apply [padding:clamp(18px,_4vw,_44px)]; }
+.admin-content > * { @apply w-full; }
+.admin-panel { @apply [padding:clamp(16px,_3vw,_28px)]; @apply [border:1px_solid_#dedee3]; @apply [border-radius:18px]; @apply [background:#fff]; }
+.admin-panel-head { @apply flex; @apply [align-items:flex-start]; @apply justify-between; @apply [gap:15px]; @apply [margin-bottom:18px]; }
+.admin-panel-head span { @apply [color:#fa233b]; @apply [font-size:.68rem]; @apply [font-weight:800]; @apply [letter-spacing:.12em]; @apply [text-transform:uppercase]; }
+.admin-panel-head h2 { @apply [margin:4px_0]; @apply [font-size:clamp(1.45rem,_3vw,_2.2rem)]; @apply [letter-spacing:-.04em]; }
+.admin-panel-head p, .admin-muted { @apply [color:#6e6e73]; @apply [font-size:.82rem]; }
+.admin-search { @apply w-full; @apply [min-height:42px]; @apply [padding:0_12px]; @apply [border:1px_solid_#d2d2d7]; @apply [border-radius:10px]; @apply [background:#f5f5f7]; @apply [color:#1d1d1f]; @apply [outline:none]; }
+.admin-secondary, .admin-danger { @apply [min-height:34px]; @apply [border-radius:999px]; @apply [padding:0_12px]; @apply cursor-pointer; @apply [font-weight:650]; @apply [font-size:.74rem]; }
+.admin-secondary { @apply [border:1px_solid_#d2d2d7]; @apply [background:#fff]; @apply [color:#1d1d1f]; }
+.admin-danger { @apply [border:0]; @apply [background:#fff0f1]; @apply [color:#d70015]; }
+.admin-message { @apply [padding:10px_12px]; @apply [border-radius:9px]; @apply [font-size:.78rem]; }
+.admin-message.error { @apply [background:#fff0f1]; @apply [color:#a50011]; }
+.admin-song-list { @apply [margin-top:16px]; @apply grid; }
+.admin-song-row { @apply min-w-0; @apply [padding:9px_0]; @apply grid; @apply [grid-template-columns:46px_minmax(0,1fr)_110px_90px_auto]; @apply items-center; @apply [gap:11px]; @apply [border-bottom:1px_solid_#ececf0]; }
+.admin-song-row img { @apply [width:46px]; @apply [height:46px]; @apply [border-radius:8px]; @apply object-cover; @apply [background:#f2f2f7]; }
+.admin-song-row strong,.admin-song-row span { @apply block; @apply overflow-hidden; @apply [text-overflow:ellipsis]; @apply [white-space:nowrap]; }
+.admin-song-row strong { @apply [font-size:.82rem]; }
+.admin-song-row span,.admin-song-row small { @apply [color:#6e6e73]; @apply [font-size:.7rem]; }
+@screen query1 {
+  .admin-header { @apply [align-items:flex-start]; @apply flex-col; }
+  .admin-header nav { @apply w-full; @apply [overflow-x:auto]; @apply [flex-wrap:nowrap]; @apply [padding-bottom:2px]; }
+  .admin-header nav button { @apply [flex:0_0_auto]; }
+  .admin-content { @apply [padding:14px]; }
+  .admin-song-row { @apply [grid-template-columns:44px_minmax(0,1fr)_auto]; }
+  .admin-song-row > small { @apply hidden; }
+}
+.admin-app *, .admin-app *::before, .admin-app *::after {
+  @apply [box-shadow:none] !important;
+  @apply [text-shadow:none] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+  @apply [background-image:none] !important;
+  @apply [animation:none] !important;
+  @apply [transition-duration:0s] !important;
+}
+.admin-app :where(.admin-form,.artist-card,.add-song-container,.add-song-header,.lyrics-admin-section,.song-form-section) {
+  @apply [color:#1d1d1f] !important;
+  @apply [background:#fff] !important;
+  @apply [border:1px_solid_#dedee3] !important;
+  @apply [border-radius:16px] !important;
+}
+.admin-app .artist-page { @apply [min-height:auto] !important; @apply [height:auto] !important; @apply [background:transparent] !important; @apply [color:#1d1d1f] !important; }
+.admin-app :where(.admin-form,.artist-card,.add-song-container) { @apply w-full !important; @apply [max-width:980px] !important; @apply [margin:0_auto] !important; @apply [padding:clamp(16px,3vw,28px)] !important; }
+.admin-app :where(.admin-form,.artist-card,.add-song-container) h2 { @apply [color:#1d1d1f] !important; @apply [text-align:left] !important; @apply [font-size:clamp(1.4rem,3vw,2rem)] !important; }
+.admin-app :where(input,textarea,select) {
+  @apply [color:#1d1d1f] !important;
+  @apply [background:#f5f5f7] !important;
+  @apply [border:1px_solid_#d2d2d7] !important;
+  @apply [border-radius:10px] !important;
+}
+.admin-app :where(input,textarea)::placeholder { @apply [color:#8e8e93] !important; }
+.admin-app :where(.helper-text,.msg,p,small) { @apply [color:#6e6e73] !important; }
+.admin-app :where(.admin-form button,.artist-card button,.song-form button) {
+  @apply [border:0] !important;
+  @apply [border-radius:999px] !important;
+  @apply [background:#fa233b] !important;
+  @apply [color:#fff] !important;
+  @apply [transform:none] !important;
+}
+.admin-app .upload-progress-bar { @apply [background:#e5e5ea] !important; }
+.admin-app .upload-progress-fill { @apply [background:#fa233b] !important; }

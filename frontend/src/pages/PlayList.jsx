@@ -18,7 +18,7 @@ import {
 
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import "./CSS/PlayList.css";
+import "./CSS/PlayList.tailwind.css";
 
 const MAX_PLAYLIST_SONGS = 50;
 const SONGS_PER_PAGE = 24;
@@ -974,11 +974,11 @@ const PlayList = () => {
 
   return (
     <main className="playlist-page">
-      <div className="container-fluid px-2 px-sm-3 px-lg-4">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
         {notice && <div className="playlist-notice">{notice}</div>}
 
-        <section className="playlist-hero row g-3 g-md-4 align-items-center mx-auto">
-          <div className="col-12 col-lg">
+        <section className="playlist-hero row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem] !items-center !mx-auto">
+          <div className="col !w-[100%] flex-none col lg:flex-[1_0_0%]">
             <span className="playlist-badge">Your Library</span>
 
             <h1>Create & Share Playlists</h1>
@@ -990,7 +990,7 @@ const PlayList = () => {
           </div>
 
           {hasSelectedContent && (
-            <div className="col-12 col-lg-auto text-start text-lg-end">
+            <div className="col !w-[100%] flex-none col lg:!w-auto lg:flex-none !text-left lg:!text-right">
               <button
                 type="button"
                 className="play-selected-btn"
@@ -1010,8 +1010,8 @@ const PlayList = () => {
           )}
         </section>
 
-        <section className="playlist-layout row g-3 g-lg-4 mx-auto">
-          <aside className="playlist-sidebar col-12 col-lg-4 col-xl-3">
+        <section className="playlist-layout row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem] !mx-auto">
+          <aside className="playlist-sidebar col !w-[100%] flex-none col lg:!w-[33.333333333333336%] lg:flex-none col xl:!w-[25%] xl:flex-none">
             <div className="create-playlist-card">
               <h2>Create Playlist</h2>
 
@@ -1036,7 +1036,7 @@ const PlayList = () => {
               </form>
             </div>
 
-            <div className="user-playlists-card mt-3 mt-lg-4">
+            <div className="user-playlists-card !mt-[1rem] lg:!mt-[1.5rem]">
               <h2>Your Playlists</h2>
 
               {hasOwnPlaylists ? (
@@ -1065,13 +1065,13 @@ const PlayList = () => {
                   ))}
                 </div>
               ) : (
-                <p className="playlist-empty-text mb-0">
+                <p className="playlist-empty-text !mb-[0px]">
                   No playlists yet. Create your first one.
                 </p>
               )}
             </div>
 
-            <div className="user-playlists-card mt-3 mt-lg-4">
+            <div className="user-playlists-card !mt-[1rem] lg:!mt-[1.5rem]">
               <h2>
                 <FaInbox /> Shared With Me
               </h2>
@@ -1102,7 +1102,7 @@ const PlayList = () => {
                   ))}
                 </div>
               ) : (
-                <p className="playlist-empty-text mb-0">
+                <p className="playlist-empty-text !mb-[0px]">
                   No playlists shared with you yet.
                 </p>
               )}
@@ -1110,11 +1110,11 @@ const PlayList = () => {
           </aside>
 
           {hasSelectedContent && (
-            <section className="playlist-main col-12 col-lg-8 col-xl-9">
+            <section className="playlist-main col !w-[100%] flex-none col lg:!w-[66.66666666666667%] lg:flex-none col xl:!w-[75%] xl:flex-none">
               {selectedSharedPlaylist ? (
                 <>
-                  <div className="selected-playlist-header row g-3 align-items-center">
-                    <div className="col-12 col-md">
+                  <div className="selected-playlist-header row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] !items-center">
+                    <div className="col !w-[100%] flex-none col md:flex-[1_0_0%]">
                       <h2>{selectedSharedPlaylist.name}</h2>
 
                       <p>
@@ -1134,7 +1134,7 @@ const PlayList = () => {
                       )}
                     </div>
 
-                    <div className="col-12 col-md-auto">
+                    <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none">
                       <div className="playlist-header-actions">
                         <button
                           type="button"
@@ -1189,8 +1189,8 @@ const PlayList = () => {
                 </>
               ) : (
                 <>
-                  <div className="selected-playlist-header row g-3 align-items-center">
-                    <div className="col-12 col-md">
+                  <div className="selected-playlist-header row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] !items-center">
+                    <div className="col !w-[100%] flex-none col md:flex-[1_0_0%]">
                       <h2>{selectedPlaylist.name}</h2>
 
                       <p>
@@ -1203,7 +1203,7 @@ const PlayList = () => {
                       </span>
                     </div>
 
-                    <div className="col-12 col-md-auto">
+                    <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none">
                       <div className="playlist-header-actions">
                         <button
                           type="button"
@@ -1339,10 +1339,10 @@ const PlayList = () => {
                   {playlistSongs.length < MAX_PLAYLIST_SONGS &&
                     availableSongs.length > 0 && (
                       <section className="add-songs-section">
-                        <div className="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+                        <div className="!flex !flex-col xl:!flex-row !justify-between gap-3 !mb-[1rem]">
                           <div>
-                            <h3 className="mb-1">Add Songs</h3>
-                            <p className="playlist-empty-text mb-0">
+                            <h3 className="!mb-[0.25rem]">Add Songs</h3>
+                            <p className="playlist-empty-text !mb-[0px]">
                               Songs are ranked by your country, genre, mood,
                               language, artist, likes, and plays.
                             </p>
@@ -1354,18 +1354,11 @@ const PlayList = () => {
                           </div>
                         </div>
 
-                        <div className="row g-2 g-md-3 mb-3">
-                          <div className="col-12 col-lg-6">
-                            <div className="position-relative">
+                        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] md:[--sw-gutter-x:1rem] md:[--sw-gutter-y:1rem] !mb-[1rem]">
+                          <div className="col !w-[100%] flex-none col lg:!w-[50%] lg:flex-none">
+                            <div className="relative">
                               <FaSearch
-                                style={{
-                                  position: "absolute",
-                                  left: "14px",
-                                  top: "50%",
-                                  transform: "translateY(-50%)",
-                                  opacity: 0.6,
-                                  pointerEvents: "none",
-                                }}
+                                className="![position:absolute] ![left:14px] ![top:50%] ![transform:translateY(-50%)] ![opacity:0.6] ![pointer-events:none]"
                               />
 
                               <input
@@ -1373,12 +1366,12 @@ const PlayList = () => {
                                 placeholder="Search songs, artists, genre, mood..."
                                 value={songSearch}
                                 onChange={(e) => setSongSearch(e.target.value)}
-                                style={{ paddingLeft: "42px" }}
+                                className="![padding-left:42px]"
                               />
                             </div>
                           </div>
 
-                          <div className="col-12 col-sm-4 col-lg-2">
+                          <div className="col !w-[100%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col lg:!w-[16.666666666666668%] lg:flex-none">
                             <PremiumSelect
                               value={selectedCountry}
                               onChange={(e) =>
@@ -1395,7 +1388,7 @@ const PlayList = () => {
                             </PremiumSelect>
                           </div>
 
-                          <div className="col-12 col-sm-4 col-lg-2">
+                          <div className="col !w-[100%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col lg:!w-[16.666666666666668%] lg:flex-none">
                             <PremiumSelect
                               value={selectedGenre}
                               onChange={(e) =>
@@ -1410,7 +1403,7 @@ const PlayList = () => {
                             </PremiumSelect>
                           </div>
 
-                          <div className="col-12 col-sm-4 col-lg-2">
+                          <div className="col !w-[100%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col lg:!w-[16.666666666666668%] lg:flex-none">
                             <PremiumSelect
                               value={selectedMood}
                               onChange={(e) => setSelectedMood(e.target.value)}
@@ -1427,7 +1420,7 @@ const PlayList = () => {
                             selectedCountry !== "All" ||
                             selectedGenre !== "All" ||
                             selectedMood !== "All") && (
-                            <div className="col-12">
+                            <div className="col !w-[100%] flex-none">
                               <button
                                 type="button"
                                 className="playlist-tab"
@@ -1442,10 +1435,10 @@ const PlayList = () => {
                           )}
                         </div>
 
-                        <div className="available-song-grid row g-3">
+                        <div className="available-song-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem]">
                           {visibleAvailableSongs.map((song) => (
                             <div
-                              className="available-song-col col-12 col-sm-6 col-xl-4"
+                              className="available-song-col col !w-[100%] flex-none col sm:!w-[50%] sm:flex-none col xl:!w-[33.333333333333336%] xl:flex-none"
                               key={song._id}
                             >
                               <div className="available-song-card">
@@ -1479,7 +1472,7 @@ const PlayList = () => {
                         </div>
 
                         {hasMoreSongs && (
-                          <div className="text-center mt-4">
+                          <div className="!text-center !mt-[1.5rem]">
                             <button
                               type="button"
                               className="play-selected-btn"

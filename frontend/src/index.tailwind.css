@@ -1,0 +1,92 @@
+:root {
+  --sw-accent: #fa233b;
+  --sw-accent-strong: #e80b2c;
+  --sw-accent-soft: #f2f2f4;
+  --sw-bg: #ffffff;
+  --sw-bg-elevated: #f5f5f7;
+  --sw-surface: #ffffff;
+  --sw-surface-2: #f5f5f7;
+  --sw-surface-3: #ececef;
+  --sw-text: #1d1d1f;
+  --sw-text-secondary: #6e6e73;
+  --sw-text-tertiary: #9a9aa1;
+  --sw-border: rgba(29, 29, 31, 0.1);
+  --sw-border-strong: rgba(29, 29, 31, 0.16);
+  --sw-shadow-sm: none;
+  --sw-shadow-md: none;
+  --sw-shadow-lg: none;
+  --sw-radius-sm: 10px;
+  --sw-radius-md: 14px;
+  --sw-radius-lg: 20px;
+  --sw-sidebar: #f6f6f8;
+  --sw-player-bg: rgba(249, 249, 250, 0.97);
+  --sw-control: #e9e9ed;
+}
+
+html[data-sw-theme="dark"] {
+  --sw-bg: #111113;
+  --sw-bg-elevated: #18181b;
+  --sw-surface: #1c1c1f;
+  --sw-surface-2: #232327;
+  --sw-surface-3: #2c2c31;
+  --sw-text: #f5f5f7;
+  --sw-text-secondary: #b2b2b8;
+  --sw-text-tertiary: #85858c;
+  --sw-border: rgba(255, 255, 255, 0.09);
+  --sw-border-strong: rgba(255, 255, 255, 0.16);
+  --sw-shadow-sm: none;
+  --sw-shadow-md: none;
+  --sw-shadow-lg: none;
+  --sw-sidebar: #18181b;
+  --sw-player-bg: rgba(28, 28, 31, 0.97);
+  --sw-control: #34343a;
+}
+
+html {
+  @apply [background:var(--sw-bg)];
+  @apply [scroll-behavior:smooth];
+}
+
+body {
+  @apply [background:var(--sw-bg)];
+}
+
+::selection {
+  @apply [background:rgba(250,_35,_59,_0.16)];
+  @apply [color:var(--sw-text)];
+}
+
+::-webkit-scrollbar {
+  @apply [width:9px];
+  @apply [height:9px];
+}
+
+::-webkit-scrollbar-thumb {
+  @apply [background:rgba(120,_120,_128,_0.26)];
+  @apply [border-radius:999px];
+  @apply [border:2px_solid_transparent];
+  @apply [background-clip:padding-box];
+}
+
+::-webkit-scrollbar-track {
+  @apply [background:transparent];
+}
+body {
+  @apply [margin:0];
+  @apply [color:var(--sw-text)];
+  @apply [font-family:-apple-system,_BlinkMacSystemFont,_"SF_Pro_Text",_"SF_Pro_Display",_Inter,_system-ui,_sans-serif];
+  @apply [font-size:16px];
+  @apply [line-height:1.4];
+  @apply [-webkit-font-smoothing:antialiased];
+  @apply [text-rendering:optimizeLegibility];
+}
+button, input, select, textarea { @apply [font:inherit]; }
+img { @apply [max-width:100%]; }
+
+@screen query4 { body { @apply [font-size:14.5px]; } }
+@screen query17 { body { @apply [font-size:14px]; } }
+@screen query6 { body { @apply [font-size:13px]; } }
+.sw-app-shell .main-content :where(h1,h2,h3,h4,h5,h6,strong,label,dt) { @apply [color:var(--sw-text)]; }
+.sw-app-shell .main-content :where(p,small,dd,figcaption) { @apply [color:var(--sw-text-secondary)]; }
+.sw-app-shell input::placeholder,
+.sw-app-shell textarea::placeholder { @apply [color:var(--sw-text-tertiary)]; @apply [opacity:1]; }

@@ -5,7 +5,7 @@ import { FaArrowLeft, FaMusic, FaPlay } from "react-icons/fa";
 
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import "./CSS/MoodPage.css";
+import "./CSS/MoodPage.tailwind.css";
 
 const moodLabels = {
   happy: "Happy",
@@ -96,8 +96,8 @@ const MoodPage = () => {
 
   return (
     <main className="mood-page">
-      <div className="container-fluid px-2 px-sm-3 px-lg-4">
-        <section className="mood-page-hero mx-auto">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
+        <section className="mood-page-hero !mx-auto">
           <button
             type="button"
             className="mood-back-btn"
@@ -132,9 +132,9 @@ const MoodPage = () => {
         </section>
 
         {moodSongs.length > 0 ? (
-          <section className="mood-songs-grid row row-cols-2 row-cols-md-3 row-cols-lg-5 row-cols-xxl-7 g-2 g-sm-3 mx-auto">
+          <section className="mood-songs-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [&>*]:!w-[50%] [&>*]:flex-none md:[&>*]:!w-[33.333333333333336%] md:[&>*]:flex-none lg:[&>*]:!w-[20%] lg:[&>*]:flex-none xxl:[&>*]:!w-[14.285714285714286%] xxl:[&>*]:flex-none [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] sm:[--sw-gutter-x:1rem] sm:[--sw-gutter-y:1rem] !mx-auto">
             {moodSongs.map((song) => (
-              <div className="col" key={song._id}>
+              <div className="col flex-[1_0_0%]" key={song._id}>
                 <article className="mood-song-card">
                   <img src={getSongImage(song)} alt={song.title} />
 
@@ -164,7 +164,7 @@ const MoodPage = () => {
             ))}
           </section>
         ) : (
-          <section className="mood-empty mx-auto">
+          <section className="mood-empty !mx-auto">
             <FaMusic />
 
             <h2>No songs found for {moodName}</h2>

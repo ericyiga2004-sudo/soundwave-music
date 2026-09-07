@@ -1,0 +1,610 @@
+.album-page {
+  @apply w-full;
+  @apply [min-height:100vh];
+  @apply [background:radial-gradient(circle_at_top_left,_rgba(29,_185,_84,_0.18),_transparent_30%),_linear-gradient(180deg,_#050505_0%,_#0a0a0a_45%,_#000000_100%)];
+  @apply [color:#ffffff];
+  @apply [padding:2rem_0_6rem];
+}
+
+.album-container {
+  @apply [width:min(100%,_1320px)];
+  @apply [margin:0_auto];
+  @apply [padding-inline:5%];
+}
+
+.album-hero {
+  @apply relative;
+  @apply overflow-hidden;
+  @apply [border-radius:30px];
+  @apply [padding:2rem];
+  @apply [background:linear-gradient(135deg,_rgba(255,_255,_255,_0.1),_rgba(255,_255,_255,_0.03)),_rgba(18,_18,_18,_0.92)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [box-shadow:0_30px_80px_rgba(0,_0,_0,_0.45)];
+}
+
+.album-hero::before {
+  @apply [content:""];
+  @apply absolute;
+  @apply [inset:0];
+  @apply [background:radial-gradient(circle_at_top_right,_rgba(29,_185,_84,_0.2),_transparent_35%),_radial-gradient(circle_at_bottom_left,_rgba(255,_255,_255,_0.08),_transparent_30%)];
+  @apply [pointer-events:none];
+}
+
+.album-hero > .row {
+  @apply relative;
+  @apply [z-index:2];
+}
+
+.album-cover-wrap {
+  @apply w-full;
+  @apply [max-width:360px];
+  @apply [margin:0_auto];
+  @apply [aspect-ratio:1_/_1];
+  @apply [border-radius:26px];
+  @apply overflow-hidden;
+  @apply [background:#202020];
+  @apply [box-shadow:0_28px_55px_rgba(0,_0,_0,_0.55)];
+}
+
+.album-cover {
+  @apply w-full;
+  @apply h-full;
+  @apply object-cover;
+  @apply [object-position:center];
+  @apply block;
+}
+
+.album-info {
+  @apply [max-width:760px];
+}
+
+.album-label {
+  @apply [width:fit-content];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:0.45rem];
+  @apply [padding:0.45rem_0.85rem];
+  @apply [margin-bottom:1rem];
+  @apply [border-radius:999px];
+  @apply [color:#ff375f];
+  @apply [background:rgba(29,_185,_84,_0.12)];
+  @apply [border:1px_solid_rgba(29,_185,_84,_0.24)];
+  @apply [font-size:0.75rem];
+  @apply [font-weight:800];
+  @apply [text-transform:uppercase];
+  @apply [letter-spacing:0.08em];
+}
+
+.album-info h1 {
+  @apply [margin:0];
+  @apply [color:#ffffff];
+  @apply [font-size:clamp(2.3rem,_7vw,_5.5rem)];
+  @apply [line-height:0.95];
+  @apply [font-weight:900];
+  @apply [letter-spacing:-0.07em];
+}
+
+.album-artist {
+  @apply [margin:1rem_0_0];
+  @apply [color:#ffffff];
+  @apply [font-size:1.08rem];
+  @apply [font-weight:700];
+}
+
+.album-description {
+  @apply [max-width:650px];
+  @apply [margin:1rem_0_0];
+  @apply [color:#b7b7b7];
+  @apply [font-size:0.98rem];
+  @apply [line-height:1.7];
+}
+
+.album-meta {
+  @apply flex;
+  @apply flex-wrap;
+  @apply items-center;
+  @apply [gap:0.75rem];
+  @apply [margin-top:1.35rem];
+}
+
+.album-meta span {
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:0.45rem];
+  @apply [color:#d5d5d5];
+  @apply [background:rgba(255,_255,_255,_0.07)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  @apply [border-radius:999px];
+  @apply [padding:0.55rem_0.85rem];
+  @apply [font-size:0.86rem];
+  @apply [font-weight:700];
+}
+
+.album-play-button {
+  @apply [margin-top:1.7rem];
+  @apply [border:none];
+  @apply [outline:none];
+  @apply [min-height:52px];
+  @apply [padding:0_1.45rem];
+  @apply [border-radius:999px];
+  @apply [background:#fa233b];
+  @apply [color:#000000];
+  @apply [font-size:0.96rem];
+  @apply [font-weight:900];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:0.65rem];
+  @apply [transition:transform_0.25s_ease,_background_0.25s_ease,_opacity_0.25s_ease];
+}
+
+.album-play-button:hover {
+  @apply [background:#ff375f];
+  @apply [transform:scale(1.04)];
+}
+
+.album-play-button:disabled {
+  @apply [opacity:0.5];
+  @apply [cursor:not-allowed];
+  @apply [transform:none];
+}
+
+.album-tracks-header {
+  @apply flex;
+  @apply [align-items:end];
+  @apply justify-between;
+  @apply [gap:1rem];
+  @apply [margin:2.3rem_0_1rem];
+}
+
+.album-tracks-header span {
+  @apply [color:#ff375f];
+  @apply [font-size:0.75rem];
+  @apply [font-weight:900];
+  @apply [text-transform:uppercase];
+  @apply [letter-spacing:0.08em];
+}
+
+.album-tracks-header h2 {
+  @apply [margin:0.25rem_0_0];
+  @apply [color:#ffffff];
+  @apply [font-size:1.8rem];
+  @apply [font-weight:900];
+  @apply [letter-spacing:-0.04em];
+}
+
+.album-tracks-header p {
+  @apply [margin:0];
+  @apply [color:#a7a7a7];
+  @apply [font-size:0.9rem];
+  @apply [font-weight:700];
+}
+
+.album-track-list {
+  @apply flex;
+  @apply flex-col;
+  @apply [gap:0.7rem];
+}
+
+.album-track {
+  @apply w-full;
+  @apply [min-height:76px];
+  @apply grid;
+  @apply [grid-template-columns:44px_56px_minmax(0,_1fr)_70px_46px];
+  @apply items-center;
+  @apply [gap:1rem];
+  @apply [padding:0.75rem_1rem];
+  @apply [border-radius:18px];
+  @apply [background:rgba(18,_18,_18,_0.86)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.06)];
+  @apply cursor-pointer;
+  @apply [transition:transform_0.22s_ease,_background_0.22s_ease,_border-color_0.22s_ease];
+}
+
+.album-track:hover {
+  @apply [transform:translateY(-2px)];
+  @apply [background:rgba(255,_255,_255,_0.08)];
+  @apply [border-color:rgba(29,_185,_84,_0.28)];
+}
+
+.album-track.active {
+  @apply [background:rgba(29,_185,_84,_0.11)];
+  @apply [border-color:rgba(29,_185,_84,_0.35)];
+}
+
+.album-track-number {
+  @apply [color:#9f9f9f];
+  @apply [font-size:0.95rem];
+  @apply [font-weight:800];
+  @apply text-center;
+}
+
+.album-track-image {
+  @apply [width:56px];
+  @apply [height:56px];
+  @apply [border-radius:12px];
+  @apply object-cover;
+  @apply [object-position:center];
+  @apply block;
+  @apply [background:#282828];
+}
+
+.album-track-info {
+  @apply min-w-0;
+}
+
+.album-track-info h3 {
+  @apply [margin:0];
+  @apply [color:#ffffff];
+  @apply [font-size:0.98rem];
+  @apply [font-weight:800];
+  @apply [line-height:1.3];
+  @apply flex;
+  @apply items-center;
+  @apply [gap:0.6rem];
+  @apply [white-space:nowrap];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+}
+
+.album-track-info p {
+  @apply [margin:0.25rem_0_0];
+  @apply [color:#a7a7a7];
+  @apply [font-size:0.83rem];
+  @apply [line-height:1.35];
+  @apply [white-space:nowrap];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+}
+
+.album-playing-badge {
+  @apply [flex-shrink:0];
+  @apply [color:#ff375f];
+  @apply [background:rgba(29,_185,_84,_0.12)];
+  @apply [border-radius:999px];
+  @apply [padding:0.25rem_0.55rem];
+  @apply [font-size:0.67rem];
+  @apply [font-weight:900];
+}
+
+.album-track-duration {
+  @apply [color:#bdbdbd];
+  @apply [font-size:0.86rem];
+  @apply [font-weight:700];
+  @apply [text-align:right];
+}
+
+.album-track-play {
+  @apply [width:42px];
+  @apply [height:42px];
+  @apply [border:none];
+  @apply [border-radius:50%];
+  @apply [background:#fa233b];
+  @apply [color:#000000];
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+  @apply [opacity:0];
+  @apply [transform:scale(0.9)];
+  @apply [transition:opacity_0.2s_ease,_transform_0.2s_ease,_background_0.2s_ease];
+}
+
+.album-track:hover .album-track-play,
+.album-track.active .album-track-play {
+  @apply [opacity:1];
+  @apply [transform:scale(1)];
+}
+
+.album-track-play:hover {
+  @apply [background:#ff375f];
+  @apply [transform:scale(1.08)];
+}
+
+.album-equalizer {
+  @apply [width:18px];
+  @apply [height:18px];
+  @apply [display:inline-flex];
+  @apply [align-items:end];
+  @apply justify-center;
+  @apply [gap:3px];
+}
+
+.album-equalizer i {
+  @apply [width:3px];
+  @apply [height:7px];
+  @apply [border-radius:99px];
+  @apply [background:#ff375f];
+  @apply [animation:albumEqualizer_0.8s_infinite_ease-in-out];
+}
+
+.album-equalizer i:nth-child(2) {
+  @apply [animation-delay:0.15s];
+}
+
+.album-equalizer i:nth-child(3) {
+  @apply [animation-delay:0.3s];
+}
+
+@keyframes albumEqualizer {
+  0%,
+  100% {
+    height: 6px;
+  }
+
+  50% {
+    height: 17px;
+  }
+}
+
+.album-empty-state {
+  @apply [min-height:340px];
+  @apply flex;
+  @apply flex-col;
+  @apply items-center;
+  @apply justify-center;
+  @apply text-center;
+  @apply [padding:2rem];
+  @apply [border-radius:26px];
+  @apply [background:rgba(18,_18,_18,_0.9)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+}
+
+.album-empty-state.small {
+  @apply [min-height:230px];
+}
+
+.album-empty-state svg {
+  @apply [color:#ff375f];
+  @apply [font-size:2.8rem];
+  @apply [margin-bottom:1rem];
+}
+
+.album-empty-state h2 {
+  @apply [margin:0];
+  @apply [color:#ffffff];
+  @apply [font-size:1.5rem];
+  @apply [font-weight:900];
+}
+
+.album-empty-state p {
+  @apply [margin:0.6rem_0_0];
+  @apply [color:#a7a7a7];
+}
+
+.album-skeleton-card {
+  @apply [border-radius:30px];
+  @apply [padding:2rem];
+  @apply [background:rgba(18,_18,_18,_0.92)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+}
+
+.album-skeleton {
+  @apply relative;
+  @apply overflow-hidden;
+  @apply [background:#1c1c1c];
+}
+
+.album-skeleton::after {
+  @apply [content:""];
+  @apply absolute;
+  @apply [inset:0];
+  @apply [transform:translateX(-100%)];
+  @apply [background:linear-gradient(_90deg,_transparent,_rgba(255,_255,_255,_0.12),_transparent_)];
+  @apply [animation:albumSkeletonWave_1.35s_infinite];
+}
+
+.album-skeleton-cover {
+  @apply w-full;
+  @apply [max-width:360px];
+  @apply [margin:0_auto];
+  @apply [aspect-ratio:1_/_1];
+  @apply [border-radius:26px];
+}
+
+.album-skeleton-label {
+  @apply [width:110px];
+  @apply [height:30px];
+  @apply [border-radius:999px];
+  @apply [margin-bottom:1rem];
+}
+
+.album-skeleton-title {
+  @apply [width:min(100%,_520px)];
+  @apply [height:72px];
+  @apply [border-radius:20px];
+  @apply [margin-bottom:1rem];
+}
+
+.album-skeleton-text {
+  @apply [width:min(100%,_620px)];
+  @apply [height:18px];
+  @apply [border-radius:999px];
+  @apply [margin-bottom:0.75rem];
+}
+
+.album-skeleton-text.short {
+  @apply [width:min(65%,_430px)];
+}
+
+.album-skeleton-button {
+  @apply [width:150px];
+  @apply [height:52px];
+  @apply [border-radius:999px];
+  @apply [margin-top:1.5rem];
+}
+
+.album-track-loading {
+  @apply [pointer-events:none];
+}
+
+.album-skeleton-number {
+  @apply [width:22px];
+  @apply [height:18px];
+  @apply [border-radius:6px];
+  @apply [margin-inline:auto];
+}
+
+.album-skeleton-thumb {
+  @apply [width:56px];
+  @apply [height:56px];
+  @apply [border-radius:12px];
+}
+
+.album-skeleton-track-title {
+  @apply [width:60%];
+  @apply [height:16px];
+  @apply [border-radius:999px];
+  @apply [margin-bottom:0.55rem];
+}
+
+.album-skeleton-track-subtitle {
+  @apply [width:38%];
+  @apply [height:13px];
+  @apply [border-radius:999px];
+}
+
+.album-skeleton-duration {
+  @apply [width:45px];
+  @apply [height:14px];
+  @apply [border-radius:999px];
+}
+
+@keyframes albumSkeletonWave {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@screen query13 {
+  .album-page {
+    @apply [padding-top:1.5rem];
+  }
+
+  .album-hero,
+  .album-skeleton-card {
+    @apply [padding:1.5rem];
+    @apply [border-radius:24px];
+  }
+
+  .album-info h1 {
+    @apply [letter-spacing:-0.05em];
+  }
+}
+
+@screen query7 {
+  .album-container {
+    @apply [padding-inline:1rem];
+  }
+
+  .album-cover-wrap {
+    @apply [max-width:280px];
+  }
+
+  .album-info {
+    @apply text-center;
+  }
+
+  .album-label,
+  .album-play-button {
+    @apply [margin-left:auto];
+    @apply [margin-right:auto];
+  }
+
+  .album-meta {
+    @apply justify-center;
+  }
+
+  .album-track {
+    @apply [grid-template-columns:32px_50px_minmax(0,_1fr)_42px];
+    @apply [gap:0.75rem];
+    @apply [padding:0.7rem];
+    @apply [border-radius:15px];
+  }
+
+  .album-track-image {
+    @apply [width:50px];
+    @apply [height:50px];
+    @apply [border-radius:10px];
+  }
+
+  .album-track-duration {
+    @apply hidden;
+  }
+
+  .album-track-play {
+    @apply [width:38px];
+    @apply [height:38px];
+    @apply [opacity:1];
+    @apply [transform:scale(1)];
+  }
+
+  .album-playing-badge {
+    @apply hidden;
+  }
+
+  .album-tracks-header h2 {
+    @apply [font-size:1.45rem];
+  }
+}
+
+@screen query8 {
+  .album-page {
+    @apply [padding-top:1rem];
+  }
+
+  .album-hero,
+  .album-skeleton-card {
+    @apply [padding:1rem];
+    @apply [border-radius:20px];
+  }
+
+  .album-cover-wrap {
+    @apply [max-width:230px];
+    @apply [border-radius:20px];
+  }
+
+  .album-info h1 {
+    @apply [font-size:2.35rem];
+  }
+
+  .album-description {
+    @apply [font-size:0.9rem];
+  }
+
+  .album-meta span {
+    @apply [font-size:0.78rem];
+    @apply [padding:0.48rem_0.7rem];
+  }
+
+  .album-play-button {
+    @apply w-full;
+  }
+
+  .album-track {
+    @apply [grid-template-columns:26px_46px_minmax(0,_1fr)_36px];
+    @apply [gap:0.6rem];
+  }
+
+  .album-track-number {
+    @apply [font-size:0.8rem];
+  }
+
+  .album-track-image {
+    @apply [width:46px];
+    @apply [height:46px];
+  }
+
+  .album-track-info h3 {
+    @apply [font-size:0.86rem];
+  }
+
+  .album-track-info p {
+    @apply [font-size:0.75rem];
+  }
+
+  .album-track-play {
+    @apply [width:34px];
+    @apply [height:34px];
+    @apply [font-size:0.8rem];
+  }
+}

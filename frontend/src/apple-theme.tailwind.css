@@ -1,0 +1,1439 @@
+:root {
+  --apple-red: var(--sw-accent);
+}
+
+body,
+#root,
+.app,
+.main-content,
+.home-page,
+.explore-page,
+.boom-library-page,
+.liked-page,
+.playlist-page,
+.shared-page,
+.account-dashboard,
+.auth-page,
+.album-page,
+.artist-page,
+.mood-page,
+.years-page,
+.yearly-page,
+.song-details {
+  @apply [background:var(--sw-bg)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+.main-content > :not(.song-details):not(.auth-page):not(.account-dashboard) {
+  @apply [max-width:1660px];
+  @apply [margin-left:auto];
+  @apply [margin-right:auto];
+}
+
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  @apply [color:var(--sw-text)];
+  @apply [letter-spacing:-0.035em];
+}
+
+.main-content p,
+.main-content small,
+.main-content .subtitle,
+.main-content .subtext {
+  @apply [color:var(--sw-text-secondary)];
+}
+
+.main-content a {
+  @apply [color:inherit];
+}
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section,
+.trending-section,
+.related,
+.download-ad,
+.yearly-page {
+  @apply [background:transparent] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section,
+.trending-section,
+.related {
+  @apply [padding-left:clamp(14px,_3vw,_48px)] !important;
+  @apply [padding-right:clamp(14px,_3vw,_48px)] !important;
+}
+
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section {
+  @apply [padding-top:30px] !important;
+  @apply [padding-bottom:8px] !important;
+}
+
+.section-header,
+.made-header,
+.continue-header,
+.you-liked-header,
+.mood-header,
+.country-header,
+.followed-header,
+.popular-artists-header,
+.albums-header,
+.filter-header {
+  @apply [margin-bottom:14px] !important;
+}
+
+.section-header h2,
+.made-title,
+.continue-header h2,
+.you-liked-title,
+.mood-header h2,
+.country-title,
+.followed-title,
+.popular-artists-header h2,
+.albums-header h2,
+.filter-header h2 {
+  @apply [color:var(--sw-text)] !important;
+  @apply [font-size:clamp(1.25rem,_2vw,_1.65rem)] !important;
+  @apply [font-weight:720] !important;
+  @apply [letter-spacing:-0.04em] !important;
+}
+
+.made-subtitle,
+.you-liked-subtitle,
+.country-subtitle,
+.followed-subtitle,
+.popular-artists-subtitle {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.made-header > span,
+.you-liked-badge,
+.country-badge,
+.followed-badge,
+.popular-artists-tag,
+.continue-header span,
+.yearly-kicker,
+.explore-kicker,
+.album-label,
+.artist-kicker,
+.playlist-badge,
+.account-history-badge {
+  @apply [color:var(--sw-accent)] !important;
+}
+.release-grid,
+.albums-grid,
+.continue-grid,
+.made-slider,
+.you-liked-slider,
+.country-slider,
+.followed-slider,
+.popular-artists-grid,
+.artist-song-slider,
+.artist-album-slider,
+.account-history-slider {
+  @apply [scrollbar-width:none];
+  @apply [scroll-snap-type:x_proximity];
+}
+
+.release-grid::-webkit-scrollbar,
+.albums-grid::-webkit-scrollbar,
+.continue-grid::-webkit-scrollbar,
+.made-slider::-webkit-scrollbar,
+.you-liked-slider::-webkit-scrollbar,
+.country-slider::-webkit-scrollbar,
+.followed-slider::-webkit-scrollbar,
+.popular-artists-grid::-webkit-scrollbar,
+.artist-song-slider::-webkit-scrollbar,
+.artist-album-slider::-webkit-scrollbar,
+.account-history-slider::-webkit-scrollbar {
+  @apply hidden;
+}
+
+.release-card,
+.continue-card,
+.featured-album-card,
+.filter-release-card,
+.year-song-card,
+.years-song-card,
+.song-carder,
+.mood-card,
+.popular-artist-card,
+.artist-album-card,
+.account-history-slide,
+.made-slide-item,
+.you-liked-slide-item,
+.country-slide-item,
+.followed-slide-item {
+  @apply [border-color:transparent] !important;
+  @apply [background:transparent] !important;
+  @apply [box-shadow:none] !important;
+  @apply [scroll-snap-align:start];
+}
+
+.release-card:hover,
+.continue-card:hover,
+.featured-album-card:hover,
+.filter-release-card:hover,
+.song-carder:hover,
+.popular-artist-card:hover,
+.artist-album-card:hover {
+  @apply [background:transparent] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.release-image,
+.continue-cover,
+.album-cover,
+.song-carder .card-img-container,
+.filter-release-image,
+.year-song-img-wrap,
+.years-song-img-wrap,
+.popular-artist-image-wrap,
+.artist-album-card img,
+.mood-song-card img {
+  @apply overflow-hidden;
+  @apply [border-radius:10px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [box-shadow:var(--sw-shadow-sm)] !important;
+}
+
+.release-image img,
+.continue-cover img,
+.song-carder img,
+.filter-release-image img,
+.year-song-img,
+.years-song-img,
+.popular-artist-image,
+.artist-album-card img {
+  @apply [transform:none] !important;
+  @apply [filter:none] !important;
+  @apply [transition:transform_0.18s_ease] !important;
+}
+
+.release-card:hover img,
+.continue-card:hover img,
+.song-carder:hover img,
+.filter-release-card:hover img,
+.artist-album-card:hover img {
+  @apply [transform:scale(1.018)] !important;
+}
+
+.release-content h3,
+.release-content .text-white,
+.continue-body h3,
+.album-details h3,
+.filter-release-content h3,
+.song-carder .card-title,
+.year-song-info h3,
+.years-song-info h3,
+.popular-artist-content h3,
+.artist-album-card h3 {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.release-content p,
+.continue-body p,
+.album-details p,
+.filter-release-content p,
+.song-carder .card-artist,
+.year-song-info p,
+.years-song-info p,
+.popular-artist-content p,
+.artist-album-card p {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.play-btn,
+.continue-play-floating,
+.filter-play-btn,
+.year-play-btn,
+.years-play-btn,
+.song-carder .play-overlay,
+.album-play-button,
+.artist-play-btn,
+.liked-play-all-btn,
+.boom-primary-action,
+.play-selected-btn,
+.song-play-btn,
+.liked-row-play,
+.mood-play-btn,
+.hero-play-button {
+  @apply [border-color:transparent] !important;
+  @apply [background:var(--sw-accent)] !important;
+  @apply [color:#fff] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.release-card .play-btn,
+.continue-card .continue-play-floating {
+  @apply [opacity:1] !important;
+  @apply [transform:none] !important;
+}
+.panel-card,
+.now-exploring-card,
+.recommend-card,
+.explore-main,
+.explore-sticky-stack,
+.boom-hero,
+.boom-section,
+.boom-stat-card,
+.liked-table-card,
+.liked-empty-state,
+.playlist-hero,
+.create-playlist-card,
+.user-playlists-card,
+.selected-playlist-header,
+.available-song-card,
+.shared-playlist-full-card,
+.dashboard-card,
+.account-history-section,
+.album-skeleton-card,
+.album-hero,
+.album-track-list,
+.artist-hero,
+.artist-content,
+.song-panel,
+.glass-card,
+.mobile-detail-panel,
+.player-dock,
+.queue-card,
+.modal-card,
+.mood-page-hero,
+.mood-song-card,
+.years-hero,
+.home-offline-card,
+.made-offline-card,
+.liked-offline-card {
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [background:var(--sw-surface)] !important;
+  @apply [color:var(--sw-text)] !important;
+  @apply [box-shadow:none] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+}
+.explore-page {
+  @apply [padding-top:24px] !important;
+  @apply [padding-bottom:34px] !important;
+}
+
+.explore-hero {
+  @apply [border:0] !important;
+  @apply [border-radius:0] !important;
+  @apply [background:transparent] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.hero-bg-glow,
+.hero-bg-one,
+.hero-bg-two,
+.country-glow,
+.followed-glow,
+.you-liked-glow {
+  @apply hidden !important;
+}
+
+.hero-copy h1,
+.explore-page h1 {
+  @apply [color:var(--sw-text)] !important;
+  @apply [font-weight:750] !important;
+}
+
+.explore-control-label,
+.hero-copy p,
+.hero-stats,
+.top-song-meta,
+.recommend-card p,
+.now-exploring-card p {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.explore-page input,
+.explore-page select,
+.boom-search input,
+.shared-search-wrap input,
+.playlist-page input,
+.playlist-page select,
+.auth-page input,
+.account-dashboard input,
+.filter-section input,
+.filter-section select {
+  @apply [min-height:40px] !important;
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [border-radius:10px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.explore-page input:focus,
+.explore-page select:focus,
+.boom-search input:focus,
+.playlist-page input:focus,
+.filter-section input:focus,
+.filter-section select:focus,
+.auth-page input:focus {
+  @apply [border-color:color-mix(in_srgb,_var(--sw-accent)_45%,_var(--sw-border))] !important;
+  @apply [outline:0] !important;
+  @apply [box-shadow:0_0_0_3px_rgba(250,_35,_59,_0.08)] !important;
+}
+
+.top-ten-row,
+.boom-song-row,
+.playlist-song-row,
+.shared-playlist-song-preview,
+.liked-row,
+.album-track,
+.artist-liked-row,
+.recommended-song,
+.mobile-recommended-song {
+  @apply [border-color:var(--sw-border)] !important;
+  @apply [background:transparent] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.top-ten-row:hover,
+.boom-song-row:hover,
+.playlist-song-row:hover,
+.liked-row:hover,
+.album-track:hover,
+.artist-liked-row:hover,
+.recommended-song:hover,
+.mobile-recommended-song:hover {
+  @apply [background:var(--sw-surface-2)] !important;
+}
+.boom-library-shell {
+  @apply [max-width:1500px] !important;
+}
+
+.boom-hero {
+  @apply [margin-top:20px] !important;
+  @apply [border-radius:22px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+html[data-sw-theme="dark"] .boom-hero {
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+.boom-hero-disc {
+  @apply [background:var(--sw-accent)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.boom-secondary-action,
+.boom-delete-btn,
+.clear-filters-btn,
+.shared-secondary-btn,
+.artist-follow-btn,
+.view-albums-btn,
+.mini-status,
+.offline-file-button,
+.liked-row-remove,
+.song-remove-btn {
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text-secondary)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.boom-tab,
+.playlist-tab,
+.tabs button,
+.recommend-tags button {
+  @apply [border:0] !important;
+  @apply [border-radius:999px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.boom-tab.active,
+.playlist-tab.active,
+.tabs button.active,
+.recommend-tags button.active {
+  @apply [background:var(--sw-surface-3,_#ebebed)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+.liked-hero-cover {
+  @apply [border-radius:22px] !important;
+  @apply [background:var(--sw-accent)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.liked-table-card {
+  @apply [border-radius:16px] !important;
+  @apply overflow-hidden;
+}
+
+.liked-table-head {
+  @apply [color:var(--sw-text-tertiary)] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+}
+.playlist-page,
+.shared-page {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.playlist-hero,
+.shared-hero {
+  @apply [margin-top:20px] !important;
+  @apply [border-radius:22px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+html[data-sw-theme="dark"] .playlist-hero,
+html[data-sw-theme="dark"] .shared-hero {
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+.playlist-sidebar,
+.playlist-main {
+  @apply [color:var(--sw-text)] !important;
+}
+.album-page,
+.artist-page {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.album-hero,
+.artist-hero {
+  @apply [border:0] !important;
+  @apply [border-bottom:1px_solid_var(--sw-border)] !important;
+  @apply [border-radius:0] !important;
+  @apply [background:var(--sw-bg)] !important;
+}
+
+.album-cover,
+.artist-hero-image {
+  @apply [box-shadow:var(--sw-shadow-md)] !important;
+}
+
+.album-info h1,
+.artist-hero h1,
+.artist-page h1,
+.album-page h1 {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.album-description,
+.album-meta,
+.artist-meta,
+.artist-bio,
+.album-track-duration {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.artist-verified,
+.album-playing-badge,
+.artist-liked-likes {
+  @apply [color:var(--sw-accent)] !important;
+}
+.auth-page {
+  @apply [min-height:calc(100vh_-_64px)] !important;
+}
+
+.auth-container {
+  @apply overflow-hidden;
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [border-radius:24px] !important;
+  @apply [background:var(--sw-surface)] !important;
+  @apply [box-shadow:var(--sw-shadow-md)] !important;
+}
+
+.auth-left {
+  @apply [background:var(--sw-accent)] !important;
+  @apply [color:#fff] !important;
+}
+
+.auth-right {
+  @apply [background:var(--sw-surface)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.logo-circle,
+.submit-btn,
+.logout-btn {
+  @apply [border-color:transparent] !important;
+  @apply [background:var(--sw-accent)] !important;
+  @apply [color:#fff] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.dashboard-avatar {
+  @apply [border-color:var(--sw-border)] !important;
+  @apply [box-shadow:none] !important;
+}
+.sw-search-overlay {
+  @apply [background:rgba(0,_0,_0,_0.28)] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+}
+
+.sw-search-modal {
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [border-radius:20px] !important;
+  @apply [background:var(--sw-surface)] !important;
+  @apply [color:var(--sw-text)] !important;
+  @apply [box-shadow:var(--sw-shadow-lg)] !important;
+}
+
+.sw-search-input {
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [border-radius:11px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.sw-search-item {
+  @apply [border-color:var(--sw-border)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.sw-search-item:hover {
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+.sw-search-empty {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+.notification-bell-wrap > button {
+  @apply [color:var(--sw-text-secondary)] !important;
+  @apply [background:transparent] !important;
+  @apply [border-color:transparent] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.notification-badge,
+.notification-dot {
+  @apply [background:var(--sw-accent)] !important;
+}
+
+.notification-dropdown {
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [background:var(--sw-surface)] !important;
+  @apply [color:var(--sw-text)] !important;
+  @apply [box-shadow:var(--sw-shadow-lg)] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+}
+
+.notification-dropdown-header,
+.notification-main {
+  @apply [border-color:var(--sw-border)] !important;
+}
+
+.notification-empty,
+.notification-main p,
+.notification-main small {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+.song-details {
+  --song-accent: var(--sw-accent);
+}
+
+.song-details-bg,
+.mobile-hero-bg,
+.visualizer-route-loader-bg {
+  @apply [opacity:0.08] !important;
+  @apply [filter:saturate(0.8)] !important;
+}
+
+.song-details::before,
+.song-details::after,
+.mobile-hero-shade {
+  @apply [background:none] !important;
+}
+
+.song-panel,
+.glass-card,
+.mobile-detail-panel,
+.player-dock,
+.queue-card,
+.modal-card {
+  @apply [border-radius:18px] !important;
+}
+
+.song-title-block h1,
+.mobile-hero-song-copy h1,
+.lyrics-header h2,
+.recommendations-header h2 {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.song-title-block p,
+.mobile-hero-song-copy p,
+.lyric-words,
+.no-lyrics,
+.dock-song p,
+.recommended-song p {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.icon-button,
+.mobile-icon-control,
+.mobile-pill-action,
+.mobile-action-btn,
+.show-lyrics-dock-btn,
+.favorite-button,
+.song-back-button {
+  @apply [border-color:var(--sw-border)] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.play-button,
+.mobile-main-play {
+  @apply [background:var(--sw-text)] !important;
+  @apply [color:var(--sw-bg)] !important;
+  @apply [box-shadow:none] !important;
+}
+.mood-card,
+.mood-song-card {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.mood-card::before,
+.mood-card::after,
+.mood-overlay {
+  @apply [opacity:0.14] !important;
+}
+.download-ad-box {
+  @apply overflow-hidden;
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [border-radius:22px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.download-ad-content h2,
+.download-ad-content h3,
+.download-ad-content strong {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.download-ad-content p,
+.download-ad-meta,
+.download-ad-note {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+
+.download-ad-btn {
+  @apply [box-shadow:none] !important;
+}
+
+.download-ad-btn:not(.download-ad-btn-dark) {
+  @apply [background:var(--sw-accent)] !important;
+  @apply [color:#fff] !important;
+}
+
+.download-ad-btn-dark {
+  @apply [background:var(--sw-text)] !important;
+  @apply [color:var(--sw-bg)] !important;
+}
+.home-network-error,
+.liked-network-error {
+  @apply [background:var(--sw-bg)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.home-offline-bg,
+.home-note,
+.made-offline-bg,
+.made-music-note,
+.made-sparkle,
+.liked-offline-bg,
+.liked-note,
+.home-offline-character,
+.made-offline-character,
+.liked-offline-character {
+  @apply hidden !important;
+}
+
+.home-offline-card,
+.made-offline-card,
+.liked-offline-card {
+  @apply [max-width:520px] !important;
+  @apply [margin-inline:auto] !important;
+  @apply [padding:34px] !important;
+  @apply [border-radius:22px] !important;
+  @apply text-center !important;
+}
+
+.home-offline-badge,
+.made-offline-badge,
+.liked-offline-badge {
+  @apply [color:var(--sw-accent)] !important;
+  @apply [background:var(--sw-accent-soft)] !important;
+}
+
+.home-retry-btn,
+.made-retry-btn,
+.liked-retry-btn {
+  @apply [background:var(--sw-accent)] !important;
+  @apply [color:#fff] !important;
+  @apply [box-shadow:none] !important;
+}
+.nr-skeleton,
+.release-skeleton-card,
+.filter-skeleton,
+.filter-skeleton-card,
+.album-skeleton,
+.explore-skeleton-row,
+.explore-skeleton-card,
+.country-skeleton-cover,
+.followed-skeleton-cover,
+.made-skeleton-cover,
+.you-liked-skeleton-cover,
+.account-history-skeleton,
+.year-song-skeleton {
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+.nr-skeleton::after,
+.filter-skeleton::after,
+.album-skeleton::after {
+  @apply [background:transparent] !important;
+}
+.main-content button {
+  @apply [transition:transform_0.14s_ease,_background_0.14s_ease,_color_0.14s_ease,_border-color_0.14s_ease];
+}
+
+.main-content button:active {
+  @apply [transform:scale(0.985)];
+}
+
+.main-content button:focus-visible,
+.sw-top-header button:focus-visible,
+.sw-sidebar a:focus-visible,
+.sw-bottom-nav a:focus-visible {
+  @apply [outline:3px_solid_rgba(250,_35,_59,_0.18)] !important;
+  @apply [outline-offset:2px];
+}
+.dj-page-pro,
+.music-studio,
+.sw-daw,
+.dj-studio-page {
+  --accent: var(--sw-accent);
+}
+html[data-sw-battery-saver="true"] .sw-top-header,
+html[data-sw-battery-saver="true"] .sw-bottom-nav,
+html[data-sw-battery-saver="true"] .sw-player {
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+  @apply [background:var(--sw-surface)] !important;
+}
+
+html[data-sw-battery-saver="true"] .release-card:hover img,
+html[data-sw-battery-saver="true"] .continue-card:hover img,
+html[data-sw-battery-saver="true"] .song-carder:hover img,
+html[data-sw-battery-saver="true"] .filter-release-card:hover img {
+  @apply [transform:none] !important;
+}
+
+@screen query2 {
+  .new-release,
+  .albums-section,
+  .made-section,
+  .continue-section,
+  .you-liked-section,
+  .mood-section,
+  .country-section,
+  .followed-section,
+  .popular-artists-section,
+  .filter-section {
+    @apply [padding-left:14px] !important;
+    @apply [padding-right:14px] !important;
+  }
+
+  .release-card,
+  .continue-card,
+  .filter-release-card {
+    @apply [border-radius:0] !important;
+  }
+
+  .release-grid,
+  .continue-grid,
+  .filter-results {
+    @apply [gap:14px] !important;
+  }
+}
+
+@screen query3 {
+  .new-release,
+  .albums-section,
+  .made-section,
+  .continue-section,
+  .you-liked-section,
+  .mood-section,
+  .country-section,
+  .followed-section,
+  .popular-artists-section,
+  .filter-section {
+    @apply [padding-top:22px] !important;
+  }
+
+  .release-card,
+  .continue-card,
+  .filter-release-card,
+  .song-carder {
+    @apply [width:146px] !important;
+    @apply [min-width:146px] !important;
+    @apply [padding:0] !important;
+    @apply [height:auto] !important;
+  }
+
+  .release-image,
+  .continue-cover,
+  .filter-release-image,
+  .song-carder .card-img-container {
+    @apply [width:146px] !important;
+    @apply [height:146px] !important;
+    @apply [min-height:146px] !important;
+    @apply [margin-bottom:9px] !important;
+  }
+}
+.sw-workspace *,
+.music-play-shell * {
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+  @apply [text-shadow:none] !important;
+}
+
+.sw-workspace .home-page,
+.sw-workspace .explore-page,
+.sw-workspace .boom-library-page,
+.sw-workspace .liked-page,
+.sw-workspace .playlist-page,
+.sw-workspace .shared-page,
+.sw-workspace .account-dashboard,
+.sw-workspace .auth-page,
+.sw-workspace .album-page,
+.sw-workspace .artist-page,
+.sw-workspace .mood-page,
+.sw-workspace .years-page,
+.sw-workspace .yearly-page,
+.sw-workspace .song-details,
+.sw-workspace .hero-feature-card,
+.sw-workspace .boom-hero,
+.sw-workspace .playlist-hero,
+.sw-workspace .shared-hero,
+.sw-workspace .liked-hero-cover,
+.sw-workspace .album-hero,
+.sw-workspace .artist-hero,
+.sw-workspace .auth-left,
+.sw-workspace .dashboard-card,
+.sw-workspace .year-banner,
+.sw-workspace .year-block {
+  @apply [background-image:none] !important;
+}
+.sw-workspace .dashboard-card::before,
+.sw-workspace .dashboard-card::after,
+.sw-workspace .album-hero::before,
+.sw-workspace .album-hero::after,
+.sw-workspace .artist-hero::before,
+.sw-workspace .artist-hero::after,
+.sw-workspace .liked-hero-cover::before,
+.sw-workspace .liked-hero-cover::after,
+.sw-workspace .boom-hero::before,
+.sw-workspace .boom-hero::after {
+  @apply hidden !important;
+}
+.made-header > span,
+.you-liked-badge,
+.country-badge,
+.followed-badge,
+.popular-artists-tag,
+.continue-header span,
+.yearly-kicker,
+.explore-kicker,
+.album-label,
+.artist-kicker,
+.playlist-badge,
+.account-history-badge,
+.year-song-info span,
+.years-song-info span,
+.album-meta,
+.artist-meta {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+.boom-tab.active,
+.playlist-tab.active,
+.tabs button.active,
+.recommend-tags button.active {
+  @apply [background:var(--sw-surface-3)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+.sw-workspace img,
+.music-play-shell img {
+  @apply [filter:none] !important;
+}
+.sw-workspace h1,
+.sw-workspace h2,
+.sw-workspace h3,
+.sw-workspace h4,
+.sw-workspace strong {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.sw-workspace p,
+.sw-workspace small,
+.sw-workspace dd,
+.sw-workspace .text-muted,
+.sw-workspace .playlist-empty-text {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+.nr-skeleton::after,
+.filter-skeleton::after,
+.album-skeleton::after {
+  @apply hidden !important;
+}
+
+.nr-skeleton,
+.release-skeleton-card,
+.filter-skeleton,
+.filter-skeleton-card,
+.album-skeleton,
+.explore-skeleton-row,
+.explore-skeleton-card,
+.country-skeleton-cover,
+.followed-skeleton-cover,
+.made-skeleton-cover,
+.you-liked-skeleton-cover,
+.account-history-skeleton,
+.year-song-skeleton {
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [background-image:none] !important;
+}
+.new-release,
+.albums-section,
+.made-section,
+.continue-section,
+.you-liked-section,
+.mood-section,
+.country-section,
+.followed-section,
+.popular-artists-section,
+.filter-section,
+.yearly-page,
+.download-ad {
+  @apply [content-visibility:auto];
+  @apply [contain-intrinsic-size:1px_360px];
+}
+html[data-sw-low-data="true"] .download-ad,
+html[data-sw-low-data="true"] .hero-mini-stack {
+  @apply hidden !important;
+}
+
+html[data-sw-low-data="true"] .hero .sw-col-wide {
+  @apply w-full !important;
+}
+
+html[data-sw-low-data="true"] img[loading="lazy"] {
+  @apply [content-visibility:auto];
+}
+html[data-sw-battery-saver="true"] *,
+html[data-sw-low-data="true"] .sw-deferred-section * {
+  @apply [scroll-behavior:auto] !important;
+}
+
+html[data-sw-battery-saver="true"] .visualizer,
+html[data-sw-battery-saver="true"] .mobile-cover-visualizer,
+html[data-sw-battery-saver="true"] .hero-bg-glow,
+html[data-sw-battery-saver="true"] .country-glow,
+html[data-sw-battery-saver="true"] .followed-glow,
+html[data-sw-battery-saver="true"] .you-liked-glow {
+  @apply hidden !important;
+}
+.sw-workspace * {
+  @apply [background-image:none] !important;
+}
+
+.main-content > * {
+  @apply w-full;
+}
+
+.main-content .sw-container {
+  @apply [max-width:1660px] !important;
+}
+
+.boom-hero,
+.liked-hero-cover,
+.album-hero,
+.artist-hero,
+.dashboard-card,
+.account-history-section,
+.auth-container,
+.auth-right,
+.year-block,
+.playlist-hero,
+.shared-hero {
+  @apply [background:var(--sw-surface)] !important;
+}
+
+.boom-hero,
+.liked-hero-cover,
+.album-hero,
+.artist-hero,
+.dashboard-card,
+.account-history-section,
+.auth-container {
+  @apply [border-color:var(--sw-border)] !important;
+  @apply [box-shadow:none] !important;
+}
+.auth-page,
+.account-dashboard {
+  @apply [background:var(--sw-bg)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.auth-left {
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+
+.auth-left h1,
+.auth-left p {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.auth-left p { @apply [color:var(--sw-text-secondary)] !important; }
+.auth-left::before { @apply hidden !important; }
+.auth-right { @apply [border-color:var(--sw-border)] !important; }
+.auth-switch { @apply [background:var(--sw-surface-2)] !important; }
+.auth-switch button { @apply [color:var(--sw-text-secondary)] !important; }
+.auth-switch button.active { @apply [background:var(--sw-surface)] !important; @apply [color:var(--sw-text)] !important; @apply [border:1px_solid_var(--sw-border)] !important; }
+.input-group svg { @apply [color:var(--sw-text-tertiary)] !important; }
+.input-group input { @apply [background:var(--sw-surface-2)] !important; @apply [color:var(--sw-text)] !important; @apply [border-color:var(--sw-border)] !important; }
+.input-group input::placeholder { @apply [color:var(--sw-text-tertiary)] !important; }
+.dashboard-avatar { @apply [background:var(--sw-surface-2)] !important; @apply [color:var(--sw-accent)] !important; }
+.dashboard-badge { @apply [color:var(--sw-text-secondary)] !important; }
+.liked-hero-cover,
+.boom-hero {
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [color:var(--sw-text)] !important;
+}
+.sw-workspace .release-card:hover img,
+.sw-workspace .continue-card:hover img,
+.sw-workspace .song-carder:hover img,
+.sw-workspace .filter-release-card:hover img,
+.sw-workspace .artist-album-card:hover img,
+.sw-workspace button:hover,
+.sw-workspace a:hover {
+  @apply [transform:none] !important;
+}
+
+.sw-top-header,
+.sw-bottom-nav,
+.sw-settings-popover,
+.sw-player,
+.notification-dropdown,
+.sw-search-modal {
+  @apply [background:var(--sw-surface)] !important;
+  @apply [box-shadow:none] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+}
+.sw-workspace *::before,
+.sw-workspace *::after,
+.music-play-shell *::before,
+.music-play-shell *::after {
+  @apply [background-image:none] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+}
+.music-play-shell * { @apply [background-image:none] !important; }
+.sw-workspace *,
+.music-play-shell * {
+  @apply [box-shadow:none] !important;
+}
+.sw-workspace *,
+.music-play-shell * {
+  @apply [transition-duration:0s] !important;
+}
+.sw-skeleton,
+.sw-skeleton-card,
+.account-history-skeleton,
+.year-song-skeleton,
+.popular-artist-skeleton {
+  @apply [transition:none] !important;
+}
+
+html[data-sw-battery-saver="true"] .sw-skeleton,
+html[data-sw-battery-saver="true"] .sw-skeleton-card,
+html[data-sw-battery-saver="true"] .account-history-skeleton,
+html[data-sw-battery-saver="true"] .year-song-skeleton,
+html[data-sw-battery-saver="true"] .popular-artist-skeleton,
+html[data-sw-low-data="true"] .sw-skeleton,
+html[data-sw-low-data="true"] .sw-skeleton-card {
+  @apply [animation:none] !important;
+}
+.sw-workspace .year-song-info span,
+.sw-workspace .years-song-info span,
+.sw-workspace .album-meta,
+.sw-workspace .artist-meta,
+.sw-workspace .dashboard-badge,
+.sw-workspace .account-history-badge,
+.sw-workspace .playlist-badge,
+.sw-workspace .explore-kicker,
+.sw-workspace .yearly-kicker,
+.sw-workspace .popular-artists-tag,
+.sw-workspace .made-header > span,
+.sw-workspace .continue-header > span,
+.sw-workspace .you-liked-badge,
+.sw-workspace .country-badge,
+.sw-workspace .followed-badge {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+.sw-workspace .filter-empty-state,
+.sw-workspace .popular-artists-empty,
+.sw-workspace .year-empty,
+.sw-workspace .year-loading,
+.sw-workspace .year-section-error,
+.sw-workspace .explore-empty,
+.sw-workspace .album-empty,
+.sw-workspace .artist-empty,
+.sw-workspace .playlist-empty,
+.sw-workspace .library-empty,
+.sw-workspace .liked-empty-state,
+.sw-workspace .search-empty,
+.sw-workspace .empty-state {
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+  @apply [background-image:none] !important;
+  @apply [color:var(--sw-text-secondary)] !important;
+  @apply [box-shadow:none] !important;
+}
+
+.sw-workspace .filter-empty-state *,
+.sw-workspace .popular-artists-empty *,
+.sw-workspace .year-empty *,
+.sw-workspace .explore-empty * {
+  @apply [color:inherit] !important;
+}
+.sw-workspace .text-white:not(.sw-accent-button-text),
+.sw-workspace .text-light:not(.sw-accent-button-text) {
+  @apply [color:var(--sw-text)] !important;
+}
+.sw-workspace .play-btn,
+.sw-workspace .continue-play-floating,
+.sw-workspace .filter-play-btn,
+.sw-workspace .year-play-btn,
+.sw-workspace .years-play-btn,
+.sw-workspace .song-carder .play-overlay,
+.sw-workspace .album-play-button,
+.sw-workspace .artist-play-btn,
+.sw-workspace .liked-play-all-btn,
+.sw-workspace .boom-primary-action,
+.sw-workspace .play-selected-btn,
+.sw-workspace .song-play-btn,
+.sw-workspace .liked-row-play,
+.sw-workspace .mood-play-btn,
+.sw-workspace .hero-play-button,
+.sw-workspace .submit-btn,
+.sw-workspace .logout-btn,
+.sw-workspace .home-retry-btn,
+.sw-workspace .made-retry-btn,
+.sw-workspace .liked-retry-btn {
+  @apply [color:#fff] !important;
+}
+.sw-workspace img[loading="lazy"] {
+  @apply [content-visibility:auto];
+}
+
+.sw-workspace .filter-section,
+.sw-workspace .popular-artists-section,
+.sw-workspace .yearly-page,
+.sw-workspace .albums-section,
+.sw-workspace .new-release,
+.sw-workspace .made-section,
+.sw-workspace .continue-section,
+.sw-workspace .you-liked-section,
+.sw-workspace .country-section,
+.sw-workspace .followed-section {
+  @apply [background:var(--sw-bg)] !important;
+  @apply [background-image:none] !important;
+}
+.sw-workspace,
+.sw-workspace *,
+.music-play-shell,
+.music-play-shell * {
+  @apply [background-image:none] !important;
+}
+html[data-sw-battery-saver="true"] .sw-workspace *,
+html[data-sw-battery-saver="true"] .music-play-shell *,
+html[data-sw-low-data="true"] .sw-workspace *,
+html[data-sw-low-data="true"] .music-play-shell * {
+  @apply [animation:none] !important;
+  @apply [transition:none] !important;
+  @apply [filter:none] !important;
+  @apply [box-shadow:none] !important;
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+}
+.sw-app-shell *,
+.sw-app-shell *::before,
+.sw-app-shell *::after {
+  @apply [backdrop-filter:none] !important;
+  @apply [-webkit-backdrop-filter:none] !important;
+  @apply [box-shadow:none] !important;
+  @apply [text-shadow:none] !important;
+}
+
+.sw-app-shell *:not(img):not(video):not(canvas),
+.sw-app-shell *::before,
+.sw-app-shell *::after {
+  @apply [background-image:none] !important;
+}
+
+.sw-app-shell .main-content > div,
+.sw-app-shell .main-content > section {
+  @apply min-w-0;
+}
+
+.sw-app-shell .main-content section {
+  @apply [contain:layout_style];
+}
+
+@supports (content-visibility: auto) {
+  .sw-app-shell .main-content section:not(:first-child) {
+    @apply [content-visibility:auto];
+    @apply [contain-intrinsic-size:1px_420px];
+  }
+}
+
+html[data-sw-low-data="true"] .sw-app-shell img[loading="lazy"] {
+  @apply [content-visibility:auto];
+}
+
+html[data-sw-low-data="true"] .download-ad,
+html[data-sw-low-data="true"] .home-offline-bg,
+html[data-sw-low-data="true"] .home-note {
+  @apply hidden !important;
+}
+.sw-app-shell .main-content :where(
+  .liked-page,
+  .boom-library-page,
+  .playlist-page,
+  .explore-page,
+  .album-page,
+  .artist-page,
+  .mood-page,
+  .years-page,
+  .yearly-page,
+  .account-dashboard,
+  .auth-page
+) :where(h1,h2,h3,h4,h5,h6,strong,label,dt) {
+  @apply [color:var(--sw-text)] !important;
+}
+
+.sw-app-shell .main-content :where(
+  .liked-page,
+  .boom-library-page,
+  .playlist-page,
+  .explore-page,
+  .album-page,
+  .artist-page,
+  .mood-page,
+  .years-page,
+  .yearly-page,
+  .account-dashboard,
+  .auth-page
+) :where(p,small,dd) {
+  @apply [color:var(--sw-text-secondary)] !important;
+}
+@screen query4 {
+  .sw-app-shell .main-content h1 { @apply [font-size:clamp(1.7rem,_8.8vw,_2.65rem)] !important; @apply [line-height:1.02] !important; }
+  .sw-app-shell .main-content h2 { @apply [font-size:clamp(1.3rem,_6vw,_1.85rem)] !important; @apply [line-height:1.08] !important; }
+  .sw-app-shell .main-content h3 { @apply [font-size:clamp(1rem,_4.6vw,_1.28rem)] !important; @apply [line-height:1.15] !important; }
+  .sw-app-shell .main-content :where(p,li,button,input,select,textarea) { @apply [font-size:min(1em,_.92rem)]; }
+}
+@screen query5 {
+  .sw-app-shell .main-content h1 { @apply [font-size:clamp(1.55rem,_8.4vw,_2.05rem)] !important; }
+  .sw-app-shell .main-content h2 { @apply [font-size:clamp(1.18rem,_5.8vw,_1.48rem)] !important; }
+  .sw-app-shell .main-content h3 { @apply [font-size:clamp(.96rem,_4.8vw,_1.12rem)] !important; }
+  .sw-app-shell .main-content :where(p,li,button,input,select,textarea) { @apply [font-size:.86rem]; }
+}
+.sw-app-shell .main-content :where(.sw-container,.sw-container-fluid,[class*="container"]) {
+  @apply min-w-0;
+  @apply [max-width:100%];
+}
+.sw-app-shell .main-content :where(.row,[class*="grid"],[class*="layout"],[class*="content"]) > * {
+  @apply min-w-0;
+}
+.sw-app-shell .main-content :where(input,select,textarea,button) {
+  @apply [max-width:100%];
+}
+.sw-app-shell .main-content :where(table) {
+  @apply w-full;
+  @apply [max-width:100%];
+}
+.sw-app-shell .main-content :where(.table-responsive,[class*="table-wrap"],[class*="table-container"]) {
+  @apply [max-width:100%];
+  @apply [overflow-x:auto];
+  @apply [-webkit-overflow-scrolling:touch];
+}
+.sw-app-shell .main-content :where(img,video) {
+  @apply [height:auto];
+}
+
+@screen query2 {
+  .sw-app-shell .main-content {
+    @apply w-full;
+  }
+  .sw-app-shell .main-content :where([class*="hero"],[class*="header"],[class*="filters"],[class*="toolbar"]) {
+    @apply [max-width:100%];
+  }
+}
+
+@screen query3 {
+  .sw-app-shell .main-content :where(section,article) {
+    @apply [max-width:100%];
+  }
+  .sw-app-shell .main-content :where(button,.btn,a[role="button"]) {
+    @apply [min-height:36px];
+  }
+  .sw-app-shell .main-content :where(input,select,textarea) {
+    @apply [font-size:.86rem] !important;
+  }
+  .sw-app-shell .main-content :where(.form-control,.form-select) {
+    @apply [min-height:40px];
+  }
+}
+
+@screen query6 {
+  .sw-app-shell .main-content :where(p,li,button,input,select,textarea,label,small) {
+    @apply [font-size:.8rem] !important;
+  }
+  .sw-app-shell .main-content :where(h1) { @apply [font-size:1.48rem] !important; }
+  .sw-app-shell .main-content :where(h2) { @apply [font-size:1.16rem] !important; }
+  .sw-app-shell .main-content :where(h3) { @apply [font-size:.98rem] !important; }
+}

@@ -1,0 +1,356 @@
+.dj-studio-page {
+    @apply [min-height:100vh];
+    @apply [padding:22px];
+    @apply [background:radial-gradient(circle_at_top_left,_rgba(255,_97,_35,_0.18),_transparent_34%),_radial-gradient(circle_at_top_right,_rgba(0,_212,_255,_0.16),_transparent_32%),_#07080d];
+    @apply [color:#fff];
+  }
+
+  .studio-main-btn,
+.studio-outline-btn,
+.studio-card-link {
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-center;
+  @apply no-underline;
+}
+
+.studio-card-link {
+  @apply [margin-top:14px];
+  @apply w-full;
+  @apply [min-height:48px];
+  @apply [border-radius:8px];
+  @apply [background:rgba(255,_255,_255,_0.08)];
+  @apply [color:#fff];
+  @apply [font-weight:800];
+}
+
+.studio-mode-card button:disabled {
+  @apply [opacity:0.55];
+  @apply [cursor:not-allowed];
+}
+  
+  .dj-studio-hero {
+    @apply [min-height:72vh];
+    @apply [padding:34px_18px];
+    @apply flex;
+    @apply items-center;
+  }
+  
+  .studio-kicker,
+  .studio-section-header span,
+  .studio-panel-label {
+    @apply [display:inline-flex];
+    @apply items-center;
+    @apply [width:fit-content];
+    @apply [padding:8px_12px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(255,_255,_255,_0.08)];
+    @apply [color:#ffb46b];
+    @apply [font-size:0.78rem];
+    @apply [font-weight:800];
+    @apply [letter-spacing:0.08em];
+    @apply [text-transform:uppercase];
+  }
+  
+  .dj-studio-hero h1 {
+    @apply [max-width:760px];
+    @apply [margin:18px_0_16px];
+    @apply [font-size:clamp(2.3rem,_6vw,_5.8rem)];
+    @apply [line-height:0.95];
+    @apply [font-weight:900];
+    @apply [letter-spacing:0];
+  }
+  
+  .studio-hero-text {
+    @apply [max-width:620px];
+    @apply [margin:0];
+    @apply [color:rgba(255,_255,_255,_0.72)];
+    @apply [font-size:1.05rem];
+    @apply [line-height:1.7];
+  }
+  
+  .studio-hero-actions {
+    @apply flex;
+    @apply flex-wrap;
+    @apply [gap:12px];
+    @apply [margin-top:28px];
+  }
+  
+  .studio-main-btn,
+  .studio-outline-btn,
+  .studio-mode-card button,
+  .studio-preview-top button {
+    @apply [border:0];
+    @apply [border-radius:8px];
+    @apply [min-height:48px];
+    @apply [padding:0_20px];
+    @apply [font-weight:800];
+  }
+  
+  .studio-main-btn {
+    @apply [background:linear-gradient(135deg,_#ff7a1a,_#ff2f6d)];
+    @apply [color:#fff];
+    @apply [box-shadow:0_16px_40px_rgba(255,_76,_40,_0.28)];
+  }
+  
+  .studio-outline-btn {
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.18)];
+    @apply [background:rgba(255,_255,_255,_0.06)];
+    @apply [color:#fff];
+  }
+  
+  .studio-mini-stats {
+    @apply flex;
+    @apply flex-wrap;
+    @apply [gap:12px];
+    @apply [margin-top:30px];
+  }
+  
+  .studio-mini-stats div {
+    @apply [min-width:118px];
+    @apply [padding:14px_16px];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+    @apply [border-radius:8px];
+    @apply [background:rgba(255,_255,_255,_0.05)];
+  }
+  
+  .studio-mini-stats strong,
+  .studio-mini-stats span {
+    @apply block;
+  }
+  
+  .studio-mini-stats strong {
+    @apply [font-size:1.2rem];
+  }
+  
+  .studio-mini-stats span {
+    @apply [margin-top:3px];
+    @apply [color:rgba(255,_255,_255,_0.58)];
+    @apply [font-size:0.82rem];
+  }
+  
+  .studio-preview,
+  .studio-panel,
+  .studio-mode-card {
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.11)];
+    @apply [border-radius:8px];
+    @apply [background:rgba(15,_17,_26,_0.86)];
+    @apply [box-shadow:0_22px_70px_rgba(0,_0,_0,_0.35)];
+  }
+  
+  .studio-preview {
+    @apply [padding:18px];
+  }
+  
+  .studio-preview-top,
+  .studio-preview-footer {
+    @apply flex;
+    @apply items-center;
+    @apply justify-between;
+    @apply [gap:12px];
+  }
+  
+  .studio-preview-top span,
+  .studio-preview-footer span {
+    @apply [color:rgba(255,_255,_255,_0.58)];
+    @apply [font-size:0.8rem];
+    @apply [font-weight:700];
+  }
+  
+  .studio-preview-top h2 {
+    @apply [margin:4px_0_0];
+    @apply [font-size:1.25rem];
+    @apply [font-weight:900];
+  }
+  
+  .studio-preview-top button {
+    @apply [min-height:38px];
+    @apply [background:rgba(255,_122,_26,_0.16)];
+    @apply [color:#ffb46b];
+  }
+  
+  .studio-grid-demo {
+    @apply grid;
+    @apply [gap:12px];
+    @apply [margin:24px_0];
+  }
+  
+  .studio-demo-row {
+    @apply grid;
+    @apply [grid-template-columns:72px_1fr];
+    @apply items-center;
+    @apply [gap:10px];
+  }
+  
+  .studio-demo-row > span {
+    @apply [color:rgba(255,_255,_255,_0.72)];
+    @apply [font-size:0.82rem];
+    @apply [font-weight:800];
+  }
+  
+  .studio-demo-cells {
+    @apply grid;
+    @apply [grid-template-columns:repeat(16,_minmax(12px,_1fr))];
+    @apply [gap:5px];
+  }
+  
+  .studio-demo-cells span {
+    @apply [aspect-ratio:1];
+    @apply [border-radius:5px];
+    @apply [background:rgba(255,_255,_255,_0.08)];
+  }
+  
+  .studio-demo-cells span.active {
+    @apply [background:linear-gradient(135deg,_#ff7a1a,_#ff2f6d)];
+    @apply [box-shadow:0_0_18px_rgba(255,_91,_55,_0.42)];
+  }
+  
+  .studio-section {
+    @apply [padding:18px];
+    @apply [margin-top:16px];
+  }
+  
+  .studio-section-header {
+    @apply [margin-bottom:18px];
+  }
+  
+  .studio-section-header h2,
+  .studio-panel h2 {
+    @apply [margin:12px_0_0];
+    @apply [font-size:clamp(1.6rem,_3vw,_2.6rem)];
+    @apply [font-weight:900];
+  }
+  
+  .studio-mode-card {
+    @apply [padding:22px];
+  }
+  
+  .studio-mode-card span {
+    @apply [color:#ffb46b];
+    @apply [font-size:0.76rem];
+    @apply [font-weight:900];
+    @apply [text-transform:uppercase];
+  }
+  
+  .studio-mode-card h3 {
+    @apply [margin:14px_0_10px];
+    @apply [font-size:1.25rem];
+    @apply [font-weight:900];
+  }
+  
+  .studio-mode-card p,
+  .studio-panel p {
+    @apply [color:rgba(255,_255,_255,_0.66)];
+    @apply [line-height:1.65];
+  }
+  
+  .studio-mode-card button {
+    @apply [margin-top:14px];
+    @apply w-full;
+    @apply [background:rgba(255,_255,_255,_0.08)];
+    @apply [color:#fff];
+  }
+  
+  .studio-panel {
+    @apply [padding:24px];
+  }
+  
+  .studio-roadmap {
+    @apply grid;
+    @apply [gap:12px];
+    @apply [margin-top:22px];
+  }
+  
+  .studio-roadmap div,
+  .studio-feature-item {
+    @apply flex;
+    @apply items-center;
+    @apply [gap:12px];
+    @apply [padding:14px];
+    @apply [border-radius:8px];
+    @apply [background:rgba(255,_255,_255,_0.055)];
+  }
+  
+  .studio-roadmap strong {
+    @apply [color:#ffb46b];
+  }
+  
+  .studio-feature-list {
+    @apply grid;
+    @apply [grid-template-columns:repeat(2,_minmax(0,_1fr))];
+    @apply [gap:12px];
+    @apply [margin-top:18px];
+  }
+  
+  .studio-feature-item span {
+    @apply [width:10px];
+    @apply [height:10px];
+    @apply [flex:0_0_auto];
+    @apply [border-radius:999px];
+    @apply [background:#ff7a1a];
+    @apply [box-shadow:0_0_18px_rgba(255,_122,_26,_0.65)];
+  }
+  
+  .studio-feature-item p {
+    @apply [margin:0];
+    @apply [color:#fff];
+    @apply [font-weight:700];
+  }
+  
+  .studio-bottom-note {
+    @apply [margin-top:18px];
+    @apply [padding:16px];
+    @apply [border-radius:8px];
+    @apply [background:rgba(255,_122,_26,_0.12)];
+    @apply [color:#ffca9a];
+    @apply [font-weight:700];
+  }
+  
+  @screen query14 {
+    .dj-studio-page {
+      @apply [padding:12px];
+    }
+  
+    .dj-studio-hero,
+    .studio-section {
+      @apply [padding:12px_4px];
+    }
+  
+    .dj-studio-hero {
+      @apply [min-height:auto];
+    }
+  
+    .studio-hero-actions,
+    .studio-mini-stats {
+      @apply grid;
+      @apply [grid-template-columns:1fr];
+    }
+  
+    .studio-main-btn,
+    .studio-outline-btn {
+      @apply w-full;
+    }
+  
+    .studio-demo-row {
+      @apply [grid-template-columns:58px_1fr];
+    }
+  
+    .studio-demo-cells {
+      @apply [gap:4px];
+    }
+  
+    .studio-feature-list {
+      @apply [grid-template-columns:1fr];
+    }
+  }
+.studio-bpm-badge {
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [min-height:32px];
+  @apply [padding:0_10px];
+  @apply [border-radius:999px];
+  @apply [color:inherit];
+  @apply [background:rgba(255,255,255,.08)];
+  @apply [font-size:.78rem];
+  @apply [font-weight:700];
+}

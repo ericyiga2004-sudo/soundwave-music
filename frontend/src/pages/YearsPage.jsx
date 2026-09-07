@@ -3,7 +3,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaMusic, FaPlay } from "react-icons/fa";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import "./CSS/YearsPage.css";
+import "./CSS/YearsPage.tailwind.css";
 
 import { API_BASE_URL } from "../config/api";
 
@@ -291,13 +291,13 @@ const YearsPage = () => {
   if (!collection) {
     return (
       <main className="years-page">
-        <div className="container py-5">
+        <div className="sw-container w-full mx-auto px-3 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] xxl:max-w-[1320px] !py-[3rem]">
           <button
             type="button"
-            className="btn btn-light mb-4"
+            className="inline-flex items-center justify-center rounded-md border border-transparent px-3 py-1.5 text-base cursor-pointer disabled:opacity-60 bg-[#f8f9fa] text-[#000] hover:bg-[#d3d4d5] !mb-[1.5rem]"
             onClick={() => navigate(-1)}
           >
-            <FaArrowLeft className="me-2" />
+            <FaArrowLeft className="!me-[0.5rem]" />
             Back
           </button>
 
@@ -306,7 +306,7 @@ const YearsPage = () => {
             <h2>Collection not found</h2>
             <p>The yearly music collection you are looking for does not exist.</p>
 
-            <Link to="/" className="btn btn-light">
+            <Link to="/" className="inline-flex items-center justify-center rounded-md border border-transparent px-3 py-1.5 text-base cursor-pointer disabled:opacity-60 bg-[#f8f9fa] text-[#000] hover:bg-[#d3d4d5]">
               Go Home
             </Link>
           </div>
@@ -318,7 +318,7 @@ const YearsPage = () => {
   return (
     <main className="years-page">
       <div className="years-hero">
-        <div className="container">
+        <div className="sw-container w-full mx-auto px-3 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] xxl:max-w-[1320px]">
           <button type="button" className="years-back-btn" onClick={() => navigate(-1)}>
             <FaArrowLeft />
             Back
@@ -336,7 +336,7 @@ const YearsPage = () => {
         </div>
       </div>
 
-      <div className="container py-4 py-lg-5">
+      <div className="sw-container w-full mx-auto px-3 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] xxl:max-w-[1320px] !py-[1.5rem] lg:!py-[3rem]">
         {loading ? (
           <div className="years-loading">Loading songs...</div>
         ) : error ? (
@@ -346,16 +346,16 @@ const YearsPage = () => {
             <p>{error}</p>
           </div>
         ) : playlist.length > 0 ? (
-          <div className="row g-3 g-md-4">
+          <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem]">
             {playlist.map((song) => (
-              <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={song._id}>
+              <div className="col !w-[50%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col md:!w-[25%] md:flex-none col lg:!w-[16.666666666666668%] lg:flex-none" key={song._id}>
                 <div className="years-song-card">
                   <Link
                     to={`/song/${song._id}`}
                     state={{
                       playlist,
                     }}
-                    className="years-song-link text-decoration-none"
+                    className="years-song-link !no-underline"
                     onClick={() => window.scrollTo(0, 0)}
                   >
                     <div className="years-song-img-wrap">

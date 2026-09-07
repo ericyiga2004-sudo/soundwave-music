@@ -22,8 +22,8 @@ import {
   getTheme,
   UI_PREFERENCES_EVENT,
 } from "./utils/uiPreferences";
-import "./App.css";
-import "./pages/CSS/PremiumControlsV2324.css";
+import "./App.tailwind.css";
+import "./pages/CSS/PremiumControlsV2324.tailwind.css";
 
 const Explore = lazy(() => import("./pages/Explore"));
 const Library = lazy(() => import("./pages/Library"));
@@ -145,9 +145,9 @@ const App = () => {
     <div className={`app ${isImmersivePage ? "app-immersive" : ""} ${isSongDetailPage ? "app-song-detail" : ""}`}>
       {!isImmersivePage ? (
         <div className="sw-app-shell">
-          <Sidebar />
+          <Sidebar hidden={sidebarHidden} />
 
-          <div className="sw-workspace">
+          <div className={`sw-workspace min-w-0 min-h-screen ml-0 motion-safe:transition-[margin] motion-safe:duration-200 ${sidebarHidden ? "" : "lg:ml-[86px] xl:ml-[258px]"}`}>
             <Navbar />
 
             <main className="main-content">
@@ -193,7 +193,7 @@ const App = () => {
           </div>
 
           <div className="music-play-shell">
-            <MusicPlay />
+            <MusicPlay sidebarHidden={sidebarHidden} />
           </div>
         </div>
       ) : (

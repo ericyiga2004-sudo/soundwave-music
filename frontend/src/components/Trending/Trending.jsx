@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import SongItem from "../SongItem/SongItem";
 import { MusicContext } from "../../context/ShopContext";
-import "./Trending.css";
+import "./Trending.tailwind.css";
 
 const Trending = () => {
   const { songs } = useContext(MusicContext);

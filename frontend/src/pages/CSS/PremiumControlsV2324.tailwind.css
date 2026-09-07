@@ -1,0 +1,50 @@
+.sw-workspace .hero-mini-card {
+  @apply relative !important;
+  @apply [grid-template-columns:86px_minmax(0,1fr)_38px] !important;
+}
+.sw-workspace .hero-mini-card img,
+.sw-workspace .hero-mini-placeholder {
+  @apply block !important;
+  @apply [width:86px] !important;
+  @apply [min-width:86px] !important;
+  @apply [max-width:86px] !important;
+  @apply [height:86px] !important;
+  @apply [min-height:86px] !important;
+  @apply [max-height:86px] !important;
+  @apply [aspect-ratio:1_/_1] !important;
+  @apply [border-radius:12px] !important;
+  @apply object-cover !important;
+  @apply [object-position:center] !important;
+}
+.sw-workspace .hero-feature-card,
+.continue-card,
+.release-card,
+.filter-release-card,
+.years-song-card,
+.year-song-card,
+.mood-song-card,
+.explore-art-grid > article,
+.album-track,
+.liked-row,
+.boom-song-row,
+.playlist-song-row,
+.available-song-card,
+.sw-search-item,
+.song-recommendation-row {
+  @apply relative;
+}
+
+@screen query3 {
+  .sw-workspace .hero-mini-card {
+    @apply [grid-template-columns:68px_minmax(0,1fr)_34px] !important;
+  }
+  .sw-workspace .hero-mini-card img,
+  .sw-workspace .hero-mini-placeholder {
+    @apply [width:68px] !important;
+    @apply [min-width:68px] !important;
+    @apply [max-width:68px] !important;
+    @apply [height:68px] !important;
+    @apply [min-height:68px] !important;
+    @apply [max-height:68px] !important;
+  }
+}

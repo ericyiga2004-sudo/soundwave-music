@@ -4,7 +4,7 @@ import AddAlbum from "./components/AddAlbum";
 import AddSong from "./components/AddSong";
 import ListSongs from "./components/ListSongs";
 import { ADMIN_API_BASE_URL } from "./config/api";
-import "./App.css";
+import "./App.tailwind.css";
 
 export const backendUrl = ADMIN_API_BASE_URL;
 

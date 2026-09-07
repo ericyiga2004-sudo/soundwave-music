@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { MusicContext } from "../../context/ShopContext";
 import { useRealtime } from "../../context/RealtimeContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
-import "../../pages/CSS/RoomReactionsReliable.css";
+import "../../pages/CSS/RoomReactionsReliable.tailwind.css";
 
 const EMOJIS = ["❤️", "🔥", "😂", "👏", "🎵", "🙌"];
 const BUBBLE_MS = 3900;

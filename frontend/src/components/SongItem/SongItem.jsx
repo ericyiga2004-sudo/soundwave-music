@@ -4,7 +4,7 @@ import { FaPlay } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
-import "./SongItem.css";
+import "./SongItem.tailwind.css";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();

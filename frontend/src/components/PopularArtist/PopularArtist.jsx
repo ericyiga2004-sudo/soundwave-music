@@ -9,7 +9,7 @@ import {
   FaUserPlus,
   FaUserCheck,
 } from "react-icons/fa";
-import "./PopularArtist.css";
+import "./PopularArtist.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../../config/api";
 
@@ -355,10 +355,10 @@ const PopularArtist = () => {
     return (
       <section className="popular-artists-section">
         <div className="popular-artists-header"><div><span className="popular-artists-tag">Artists</span><h2>Popular Artists</h2></div></div>
-        <div className="popular-artists-grid row row-cols-2 row-cols-sm-3 row-cols-lg-4 row-cols-xl-6 g-3 g-lg-4" aria-label="Loading artists">
+        <div className="popular-artists-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [&>*]:!w-[50%] [&>*]:flex-none sm:[&>*]:!w-[33.333333333333336%] sm:[&>*]:flex-none lg:[&>*]:!w-[25%] lg:[&>*]:flex-none xl:[&>*]:!w-[16.666666666666668%] xl:[&>*]:flex-none [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem]" aria-label="Loading artists">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div className="col" key={index}>
-              <div className="popular-artist-skeleton h-100">
+            <div className="col flex-[1_0_0%]" key={index}>
+              <div className="popular-artist-skeleton !h-full">
                 <span className="popular-artist-skeleton-image" />
                 <span className="popular-artist-skeleton-line" />
                 <span className="popular-artist-skeleton-line short" />
@@ -390,14 +390,14 @@ const PopularArtist = () => {
       </div>
 
       {sortedArtists.length > 0 ? (
-        <div className="popular-artists-grid row row-cols-2 row-cols-sm-3 row-cols-lg-4 row-cols-xl-6 g-3 g-lg-4">
+        <div className="popular-artists-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [&>*]:!w-[50%] [&>*]:flex-none sm:[&>*]:!w-[33.333333333333336%] sm:[&>*]:flex-none lg:[&>*]:!w-[25%] lg:[&>*]:flex-none xl:[&>*]:!w-[16.666666666666668%] xl:[&>*]:flex-none [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem]">
           {sortedArtists.slice(0, 6).map((artist) => {
             const following = isFollowingArtist(artist._id);
             const buttonLoading = followLoadingId === artist._id;
 
             return (
-              <div className="col" key={artist._id}>
-              <article className="popular-artist-card h-100">
+              <div className="col flex-[1_0_0%]" key={artist._id}>
+              <article className="popular-artist-card !h-full">
                 <div
                   className="popular-artist-image-wrap"
                   onClick={() => handleViewArtist(artist._id)}

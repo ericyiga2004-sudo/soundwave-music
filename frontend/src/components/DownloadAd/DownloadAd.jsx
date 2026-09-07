@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { isWebsite } from "../../utils/platform";
-import "./DownloadAd.css";
+import "./DownloadAd.tailwind.css";
 
 const ANDROID_APK_URL =
   "https://github.com/ericyiga2004-sudo/soundwave-music/releases/download/V2.0.0/SoundWave";
@@ -30,10 +30,10 @@ const DownloadAd = () => {
   };
 
   return (
-    <section className="download-ad my-4">
-      <div className="container-fluid px-3 px-sm-4 px-lg-5">
-        <div className="download-ad-box row align-items-center g-4">
-          <div className="col-12 col-lg-7">
+    <section className="download-ad !my-[1.5rem]">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] lg:!px-[3rem]">
+        <div className="download-ad-box row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full !items-center [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem]">
+          <div className="col !w-[100%] flex-none col lg:!w-[58.333333333333336%] lg:flex-none">
             <div className="download-ad-content">
               <span className="download-ad-badge">
                 SoundWave app available
@@ -46,7 +46,7 @@ const DownloadAd = () => {
                 app-like music experience.
               </p>
 
-              <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-3 mt-4">
+              <div className="!flex !flex-col sm:!flex-row !items-stretch sm:!items-center gap-3 !mt-[1.5rem]">
                 <a
                   href={ANDROID_APK_URL}
                   className="download-ad-btn"
@@ -88,7 +88,7 @@ const DownloadAd = () => {
             </div>
           </div>
 
-          <div className="col-12 col-lg-5">
+          <div className="col !w-[100%] flex-none col lg:!w-[41.666666666666664%] lg:flex-none">
             <div className="download-devices">
               <div className="download-laptop" aria-hidden="true">
                 <div className="download-laptop-top">

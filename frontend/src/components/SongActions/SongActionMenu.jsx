@@ -17,7 +17,7 @@ import {
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
-import "./SongActionsV2324.css";
+import "./SongActionsV2324.tailwind.css";
 
 const compactQueue = (song, queue = []) => {
   const values = [song, ...(Array.isArray(queue) ? queue : [])].filter(Boolean);

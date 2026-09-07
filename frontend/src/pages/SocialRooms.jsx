@@ -8,9 +8,9 @@ import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
-import "./CSS/LiveRoomLifecycleV2322.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
+import "./CSS/LiveRoomLifecycleV2322.tailwind.css";
 
 const SocialRooms = () => {
   const navigate = useNavigate();
@@ -107,7 +107,7 @@ const SocialRooms = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page container-fluid px-0">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
       <SocialPageHero
         kicker="Pass the Aux"
         title="A room that changes the moment someone taps."
@@ -116,8 +116,8 @@ const SocialRooms = () => {
         live={realtimeConnected}
       />
 
-      <div className="row g-3 g-xl-4">
-        <div className="col-12 col-xl-8">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
+        <div className="col !w-[100%] flex-none col sw-col-wide xl:!w-[66.66666666666667%] xl:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Your rooms</span><h2>Jump back in</h2></div><RadioTower size={20} /></div>
             <div className="sw20-room-grid">
@@ -161,7 +161,7 @@ const SocialRooms = () => {
           </section>
         </div>
 
-        <div className="col-12 col-xl-4">
+        <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw20-form-title"><RadioTower size={18} /><div><strong>Start a room</strong><small>Host a lightweight shared queue.</small></div></div>
             <div className="sw20-stack-form">
@@ -170,7 +170,7 @@ const SocialRooms = () => {
             </div>
           </section>
 
-          <section className="sw-social-panel sw20-panel mt-3">
+          <section className="sw-social-panel sw20-panel !mt-[1rem]">
             <div className="sw20-form-title"><Headphones size={18} /><div><strong>Join by code</strong><small>Room codes are quick to type and share.</small></div></div>
             <form className="sw20-inline-code" onSubmit={join}>
               <input value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="Room code" />
@@ -179,7 +179,7 @@ const SocialRooms = () => {
           </section>
         </div>
       </div>
-      {status ? <div className="sw-social-message mt-3">{status}</div> : null}
+      {status ? <div className="sw-social-message !mt-[1rem]">{status}</div> : null}
     </div>
   );
 };

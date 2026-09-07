@@ -9,8 +9,8 @@ import { getArtistName, getSongCover } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import SocialNav from "../components/Social/SocialNav";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const personName = (user) => user?.username || user?.name || "SoundWave listener";
 
@@ -133,18 +133,18 @@ const SocialProfile = () => {
         </div>
       </header>
 
-      <div className="row g-3 g-xl-4 mt-1">
-        <div className="col-12 col-lg-4">
-          <section className="sw-social-panel h-100"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Compatibility</span><h2>Taste Match</h2></div><HeartHandshake size={20} /></div>
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem] !mt-[0.25rem]">
+        <div className="col !w-[100%] flex-none col lg:!w-[33.333333333333336%] lg:flex-none">
+          <section className="sw-social-panel !h-full"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Compatibility</span><h2>Taste Match</h2></div><HeartHandshake size={20} /></div>
             {authToken ? match ? <div className="sw-match-score"><strong>{match.score}%</strong><span>music match</span><p>{[...(match.overlap?.genres || []), ...(match.overlap?.languages || [])].slice(0, 5).join(" · ") || "Keep listening to reveal more overlap."}</p></div> : <p className="sw-social-muted">Taste Match is still learning or this listener keeps it private.</p> : <p className="sw-social-muted">Create an account to compare your music taste.</p>}
           </section>
         </div>
-        <div className="col-12 col-lg-8">
-          <section className="sw-social-panel h-100"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Identity</span><h2>Top taste</h2></div></div><div className="sw-tag-group">{(profile.topGenres || []).map((tag) => <span key={`g-${tag}`}>{tag}</span>)}{(profile.topLanguages || []).map((tag) => <span key={`l-${tag}`}>{tag}</span>)}</div><div className="sw-profile-artists">{(profile.topArtists || []).map((artist) => <button type="button" key={artist._id} onClick={() => navigate(`/artist/${artist._id}`)}><span className="sw-social-avatar small">{artist.image ? <img src={artist.image} alt="" /> : String(artist.name || "A").slice(0, 1)}</span><span>{artist.name}</span></button>)}</div></section>
+        <div className="col !w-[100%] flex-none col lg:!w-[66.66666666666667%] lg:flex-none">
+          <section className="sw-social-panel !h-full"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Identity</span><h2>Top taste</h2></div></div><div className="sw-tag-group">{(profile.topGenres || []).map((tag) => <span key={`g-${tag}`}>{tag}</span>)}{(profile.topLanguages || []).map((tag) => <span key={`l-${tag}`}>{tag}</span>)}</div><div className="sw-profile-artists">{(profile.topArtists || []).map((artist) => <button type="button" key={artist._id} onClick={() => navigate(`/artist/${artist._id}`)}><span className="sw-social-avatar small">{artist.image ? <img src={artist.image} alt="" /> : String(artist.name || "A").slice(0, 1)}</span><span>{artist.name}</span></button>)}</div></section>
         </div>
       </div>
 
-      <section className="sw-social-panel mt-3 mt-xl-4">
+      <section className="sw-social-panel !mt-[1rem] xl:!mt-[1.5rem]">
         <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Recent listening</span><h2>{user.socialSettings?.listeningActivity === false ? "Listening activity is private" : "Recently played"}</h2></div></div>
         {(profile.recentlyPlayed || []).length ? <div className="sw-profile-recent">{profile.recentlyPlayed.map((song, index) => <button type="button" key={`${song._id}-${index}`} onClick={() => { player?.playSong?.(song, profile.recentlyPlayed); navigate(`/song/${song._id}`, { state: { song, playlist: profile.recentlyPlayed } }); }}><img src={getSongCover(song)} alt="" /><span><strong>{song.title}</strong><small>{getArtistName(song)}</small></span><Play size={16} /></button>)}</div> : <p className="sw-social-muted">No public listening activity to show.</p>}
       </section>

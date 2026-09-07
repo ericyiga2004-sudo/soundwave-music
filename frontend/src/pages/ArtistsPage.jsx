@@ -7,7 +7,7 @@ import { apiClient, authHeaders, cachedGet, invalidateApiCache } from "../config
 import { formatCompactNumber, optimizeArtworkUrl } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
-import "./CSS/CatalogPages.css";
+import "./CSS/CatalogPages.tailwind.css";
 
 const PAGE_SIZE = 24;
 
@@ -95,7 +95,7 @@ const ArtistsPage = () => {
 
       <div className="sw-catalog-toolbar">
         <label className="visually-hidden" htmlFor="artist-search">Search artists</label>
-        <div style={{ position: "relative" }}><Search size={16} style={{ position: "absolute", left: 13, top: 14, color: "var(--sw-text-tertiary)" }} /><input id="artist-search" style={{ paddingLeft: 39 }} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search artists" /></div>
+        <div className="![position:relative]"><Search size={16} className="![position:absolute] ![left:13px] ![top:14px] ![color:var(--sw-text-tertiary)]" /><input id="artist-search" className="![padding-left:39px]" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search artists" /></div>
         <PremiumSelect value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort artists"><option value="followers">Most followed</option><option value="newest">Newest</option><option value="name">A–Z</option></PremiumSelect>
         <button className="sw-secondary-btn" type="button" onClick={() => { setQuery(""); setSort("followers"); }}>Reset</button>
       </div>

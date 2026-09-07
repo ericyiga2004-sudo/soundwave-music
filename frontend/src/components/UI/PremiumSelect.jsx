@@ -1,7 +1,7 @@
 import { Children, cloneElement, isValidElement, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
-import "./PremiumSelect.css";
+import "./PremiumSelect.tailwind.css";
 
 const flattenOptions = (children) => {
   const items = [];

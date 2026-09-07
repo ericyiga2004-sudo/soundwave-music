@@ -1,0 +1,294 @@
+.radio-page {
+  @apply [width:min(100%,_1480px)];
+  @apply [margin-inline:auto];
+  @apply [color:var(--sw-text)];
+}
+
+.radio-page-header {
+  @apply [max-width:680px];
+  @apply [margin-bottom:18px];
+}
+
+.radio-page-header > span,
+.radio-section-heading small {
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.7rem];
+  @apply [font-weight:700];
+}
+
+.radio-page-header h1 {
+  @apply [margin:3px_0_7px];
+  @apply [font-size:clamp(1.85rem,_3.2vw,_2.8rem)];
+  @apply [line-height:1];
+  @apply [font-weight:760];
+  @apply [letter-spacing:-0.05em];
+}
+
+.radio-page-header p,
+.radio-featured-card p,
+.radio-station-body p {
+  @apply [color:var(--sw-text-secondary)];
+}
+.radio-featured-card {
+  @apply min-h-0;
+  @apply [margin-bottom:28px];
+  @apply [padding:20px_clamp(18px,_3vw,_30px)];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:18px];
+  @apply flex;
+  @apply items-center;
+  @apply justify-between;
+  @apply [gap:20px];
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-surface-2)];
+  @apply overflow-hidden;
+}
+
+.radio-live-pill {
+  @apply [display:inline-flex];
+  @apply [padding:3px_7px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:999px];
+  @apply [background:var(--sw-surface)];
+  @apply [color:var(--sw-accent)];
+  @apply [font-size:0.62rem];
+  @apply [font-weight:800];
+  @apply [letter-spacing:0.08em];
+}
+
+.radio-featured-card h2 {
+  @apply [margin:7px_0_5px];
+  @apply [font-size:clamp(1.35rem,_2.4vw,_2rem)];
+  @apply [font-weight:740];
+  @apply [letter-spacing:-0.045em];
+}
+
+.radio-featured-card p {
+  @apply [max-width:650px];
+  @apply [margin:0];
+  @apply [font-size:0.82rem];
+  @apply [line-height:1.45];
+}
+
+.radio-featured-card button {
+  @apply [min-width:92px];
+  @apply [min-height:38px];
+  @apply [padding-inline:14px];
+  @apply [flex:0_0_auto];
+  @apply [border:0];
+  @apply [border-radius:999px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:7px];
+  @apply [background:var(--sw-accent)];
+  @apply [color:#fff];
+  @apply [font-size:0.76rem];
+  @apply [font-weight:700];
+}
+
+.radio-section-heading {
+  @apply [margin-bottom:13px];
+}
+
+.radio-section-heading h2 {
+  @apply [max-width:720px];
+  @apply [margin:2px_0_0];
+  @apply [font-size:clamp(1.2rem,_2.2vw,_1.55rem)];
+  @apply [font-weight:720];
+  @apply [letter-spacing:-0.035em];
+}
+
+.radio-station-card {
+  @apply w-full;
+  @apply min-w-0;
+  @apply [min-height:122px];
+  @apply overflow-hidden;
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:16px];
+  @apply grid;
+  @apply [grid-template-columns:122px_minmax(0,_1fr)];
+  @apply [background:var(--sw-surface)];
+}
+
+.radio-station-art {
+  @apply [width:122px];
+  @apply [height:122px];
+  @apply [aspect-ratio:1_/_1];
+  @apply relative;
+  @apply grid;
+  @apply [place-items:center];
+  @apply overflow-hidden;
+  @apply [color:#fff];
+  @apply [background:var(--sw-accent)];
+}
+
+.radio-station-art-2,
+.radio-station-art-3,
+.radio-station-art-4 {
+  @apply [background:var(--sw-surface-3)];
+  @apply [color:var(--sw-text-secondary)];
+}
+
+.radio-station-art img {
+  @apply w-full;
+  @apply h-full;
+  @apply block;
+  @apply object-cover;
+  @apply [object-position:center];
+}
+
+.radio-station-overlay {
+  @apply hidden;
+}
+
+.radio-station-icon {
+  @apply absolute;
+  @apply [left:9px];
+  @apply [bottom:9px];
+  @apply [width:24px];
+  @apply [height:24px];
+  @apply [padding:5px];
+  @apply [border-radius:50%];
+  @apply [color:#fff];
+  @apply [background:rgba(0,_0,_0,_0.48)];
+}
+
+.radio-station-body {
+  @apply min-w-0;
+  @apply [min-height:122px];
+  @apply [padding:13px];
+  @apply flex;
+  @apply items-center;
+  @apply [gap:10px];
+}
+
+.radio-station-copy {
+  @apply min-w-0;
+  @apply [flex:1];
+}
+
+.radio-station-body h3 {
+  @apply [margin:0_0_4px];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:0.88rem];
+  @apply [font-weight:700];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+
+.radio-station-body p {
+  @apply [margin:0];
+  @apply [font-size:0.71rem];
+  @apply [line-height:1.35];
+  @apply [display:-webkit-box];
+  @apply [-webkit-line-clamp:2];
+  @apply [-webkit-box-orient:vertical];
+  @apply overflow-hidden;
+}
+
+.radio-station-body small {
+  @apply block;
+  @apply [margin-top:7px];
+  @apply [color:var(--sw-text-tertiary)];
+  @apply [font-size:0.62rem];
+  @apply [line-height:1.35];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+
+.radio-station-body > button {
+  @apply [width:34px];
+  @apply [height:34px];
+  @apply [flex:0_0_34px];
+  @apply [border:0];
+  @apply [border-radius:50%];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [color:#fff];
+  @apply [background:var(--sw-accent)];
+}
+
+@screen query2 {
+  .radio-page {
+    @apply [padding-bottom:34px] !important;
+  }
+
+  .radio-featured-card {
+    @apply [margin-bottom:22px];
+  }
+}
+
+@screen query3 {
+  .radio-page {
+    @apply [padding-inline:12px] !important;
+    @apply [padding-top:18px] !important;
+  }
+
+  .radio-page-header {
+    @apply [margin-bottom:14px];
+  }
+
+  .radio-page-header h1 {
+    @apply [font-size:1.8rem];
+  }
+
+  .radio-featured-card {
+    @apply [padding:15px];
+    @apply [align-items:flex-start];
+    @apply flex-col;
+    @apply [gap:13px];
+  }
+
+  .radio-featured-card button {
+    @apply min-w-0;
+    @apply [min-height:35px];
+  }
+
+  .radio-section-heading h2 {
+    @apply [font-size:1.18rem];
+  }
+
+  .radio-station-card {
+    @apply [grid-template-columns:100px_minmax(0,_1fr)];
+    @apply [min-height:100px];
+    @apply [border-radius:14px];
+  }
+
+  .radio-station-art {
+    @apply [width:100px];
+    @apply [height:100px];
+  }
+
+  .radio-station-body {
+    @apply [min-height:100px];
+    @apply [padding:10px];
+  }
+
+  .radio-station-body small {
+    @apply hidden;
+  }
+}
+
+@screen query11 {
+  .radio-station-card {
+    @apply [grid-template-columns:88px_minmax(0,_1fr)];
+    @apply [min-height:88px];
+  }
+
+  .radio-station-art {
+    @apply [width:88px];
+    @apply [height:88px];
+  }
+
+  .radio-station-body {
+    @apply [min-height:88px];
+    @apply [padding:8px];
+  }
+
+  .radio-station-body h3 { @apply [font-size:0.8rem]; }
+  .radio-station-body p { @apply [font-size:0.66rem]; }
+  .radio-station-body > button { @apply [width:31px]; @apply [height:31px]; @apply [flex-basis:31px]; }
+}

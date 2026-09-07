@@ -1,0 +1,3 @@
+:root { @apply [font-synthesis:none]; @apply [text-rendering:optimizeLegibility]; }
+html, body, #root { @apply [min-height:100%]; }
+body { @apply [margin:0]; }

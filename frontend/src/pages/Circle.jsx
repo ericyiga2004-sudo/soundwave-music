@@ -12,8 +12,8 @@ import EmptyState from "../components/UI/EmptyState";
 import SocialSongPicker from "../components/Social/SocialSongPicker";
 import SocialNav from "../components/Social/SocialNav";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 
@@ -162,13 +162,13 @@ const Circle = () => {
 
       {message ? <div className="sw-social-message">{message}</div> : null}
 
-      <div className="row g-3 g-xl-4">
-        <div className="col-12 col-lg-8">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
+        <div className="col !w-[100%] flex-none col lg:!w-[66.66666666666667%] lg:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Shared queue</span><h2>Circle songs</h2></div></div>
             <form className="sw-circle-share-form" onSubmit={addSong}>
               <SocialSongPicker songs={songs} value={songId} onChange={setSongId} label="Choose a song to share" maxVisible={8} compact />
-              <div className="sw-social-compose-row mt-3"><input value={note} onChange={(event) => setNote(event.target.value.slice(0, 220))} placeholder="Add a note" /><button className="sw-primary-btn" type="submit" disabled={!songId}><Plus size={15} /> Share</button></div>
+              <div className="sw-social-compose-row !mt-[1rem]"><input value={note} onChange={(event) => setNote(event.target.value.slice(0, 220))} placeholder="Add a note" /><button className="sw-primary-btn" type="submit" disabled={!songId}><Plus size={15} /> Share</button></div>
             </form>
             {(circle.songs || []).length ? (
               <div className="sw-circle-song-list">
@@ -189,7 +189,7 @@ const Circle = () => {
           </section>
         </div>
 
-        <div className="col-12 col-lg-4">
+        <div className="col !w-[100%] flex-none col lg:!w-[33.333333333333336%] lg:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Members</span><h2>{circle.members?.length || 1} people</h2></div></div>
             <div className="sw-members-list">{(circle.members || []).map((member) => <button type="button" key={member.user?._id || member._id} onClick={() => member.user?._id && navigate(`/u/${member.user._id}`)}><span className="sw-social-avatar small">{member.user?.image ? <img src={member.user.image} alt="" /> : nameOf(member.user).slice(0, 1).toUpperCase()}</span><span><strong>{nameOf(member.user)}</strong><small>{member.role}</small></span></button>)}</div>

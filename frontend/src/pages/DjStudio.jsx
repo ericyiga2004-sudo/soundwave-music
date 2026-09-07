@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./CSS/DjStudio.css";
+import "./CSS/DjStudio.tailwind.css";
 
 const DjStudio = () => {
   const studioModes = [
@@ -41,9 +41,9 @@ const DjStudio = () => {
 
   return (
     <main className="dj-studio-page text-white">
-      <section className="dj-studio-hero container-fluid">
-        <div className="row align-items-center g-4">
-          <div className="col-12 col-lg-6">
+      <section className="dj-studio-hero sw-container-fluid w-full mx-auto px-3">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full !items-center [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem]">
+          <div className="col !w-[100%] flex-none col lg:!w-[50%] lg:flex-none">
             <span className="studio-kicker">Soundwave Advanced</span>
 
             <h1>Build beats, melodies, and loops inside Soundwave Studio.</h1>
@@ -81,7 +81,7 @@ const DjStudio = () => {
             </div>
           </div>
 
-          <div className="col-12 col-lg-6">
+          <div className="col !w-[100%] flex-none col lg:!w-[50%] lg:flex-none">
             <div className="studio-preview">
               <div className="studio-preview-top">
                 <div>
@@ -130,16 +130,16 @@ const DjStudio = () => {
         </div>
       </section>
 
-      <section className="studio-section container-fluid">
+      <section className="studio-section sw-container-fluid w-full mx-auto px-3">
         <div className="studio-section-header">
           <span>Choose Your Workflow</span>
           <h2>What do you want to create?</h2>
         </div>
 
-        <div className="row g-3 g-lg-4">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem]">
           {studioModes.map((mode) => (
-            <div className="col-12 col-md-4" key={mode.title}>
-              <article className="studio-mode-card h-100">
+            <div className="col !w-[100%] flex-none col md:!w-[33.333333333333336%] md:flex-none" key={mode.title}>
+              <article className="studio-mode-card !h-full">
                 <span>{mode.badge}</span>
                 <h3>{mode.title}</h3>
                 <p>{mode.text}</p>
@@ -159,10 +159,10 @@ const DjStudio = () => {
         </div>
       </section>
 
-      <section className="studio-section container-fluid">
-        <div className="row g-3 g-lg-4 align-items-stretch">
-          <div className="col-12 col-lg-5">
-            <div className="studio-panel h-100">
+      <section className="studio-section sw-container-fluid w-full mx-auto px-3">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] lg:[--sw-gutter-x:1.5rem] lg:[--sw-gutter-y:1.5rem] !items-stretch">
+          <div className="col !w-[100%] flex-none col lg:!w-[41.666666666666664%] lg:flex-none">
+            <div className="studio-panel !h-full">
               <span className="studio-panel-label">Studio Plan</span>
               <h2>First version should stay simple.</h2>
               <p>
@@ -189,8 +189,8 @@ const DjStudio = () => {
             </div>
           </div>
 
-          <div className="col-12 col-lg-7">
-            <div className="studio-panel h-100">
+          <div className="col !w-[100%] flex-none col lg:!w-[58.333333333333336%] lg:flex-none">
+            <div className="studio-panel !h-full">
               <span className="studio-panel-label">Core Features</span>
 
               <div className="studio-feature-list">

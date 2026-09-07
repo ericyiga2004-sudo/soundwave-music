@@ -1,0 +1,212 @@
+.you-liked-section {
+    @apply relative;
+    @apply w-full;
+    @apply [margin-top:38px];
+    @apply [padding:22px_18px_16px];
+    @apply [border-radius:18px];
+    @apply overflow-hidden;
+    @apply [background:radial-gradient(circle_at_top_left,_rgba(29,_185,_84,_0.28),_transparent_34%),_linear-gradient(135deg,_rgba(30,_30,_30,_0.95),_rgba(10,_10,_10,_0.98))];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  }
+  
+  .you-liked-glow {
+    @apply absolute;
+    @apply [inset:auto_-80px_-120px_auto];
+    @apply [width:260px];
+    @apply [height:260px];
+    @apply [background:rgba(29,_185,_84,_0.22)];
+    @apply [filter:blur(70px)];
+    @apply [pointer-events:none];
+  }
+  
+  .you-liked-header {
+    @apply relative;
+    @apply [z-index:1];
+    @apply flex;
+    @apply justify-between;
+    @apply [gap:20px];
+    @apply [align-items:flex-end];
+    @apply [margin-bottom:20px];
+  }
+  
+  .you-liked-badge {
+    @apply [display:inline-flex];
+    @apply [margin-bottom:8px];
+    @apply [padding:5px_10px];
+    @apply [border-radius:999px];
+    @apply [color:#ff375f];
+    @apply [background:rgba(30,_215,_96,_0.12)];
+    @apply [font-size:12px];
+    @apply [font-weight:800];
+    @apply [letter-spacing:0.4px];
+    @apply [text-transform:uppercase];
+  }
+  
+  .you-liked-title {
+    @apply [margin:0];
+    @apply [color:#ffffff];
+    @apply [font-size:28px];
+    @apply [font-weight:900];
+  }
+  
+  .you-liked-subtitle {
+    @apply [margin:7px_0_0];
+    @apply [color:#b3b3b3];
+    @apply [font-size:14px];
+  }
+  
+  .you-liked-seed {
+    @apply flex;
+    @apply items-center;
+    @apply [gap:12px];
+    @apply [min-width:210px];
+    @apply [padding:10px];
+    @apply [border-radius:14px];
+    @apply [background:rgba(255,_255,_255,_0.07)];
+    @apply [backdrop-filter:blur(16px)];
+  }
+  
+  .you-liked-seed img {
+    @apply [width:52px];
+    @apply [height:52px];
+    @apply [border-radius:10px];
+    @apply object-cover;
+  }
+  
+  .you-liked-seed small {
+    @apply block;
+    @apply [color:#9b9b9b];
+    @apply [font-size:11px];
+  }
+  
+  .you-liked-seed strong {
+    @apply [display:-webkit-box];
+    @apply [color:#ffffff];
+    @apply [font-size:13px];
+    @apply [line-height:1.2];
+    @apply [-webkit-line-clamp:2];
+    @apply [-webkit-box-orient:vertical];
+    @apply overflow-hidden;
+  }
+  
+  .you-liked-slider {
+    @apply relative;
+    @apply [z-index:1];
+    @apply flex;
+    @apply [gap:18px];
+    @apply [overflow-x:auto];
+    @apply [overflow-y:hidden];
+    @apply [scroll-behavior:smooth];
+    @apply [padding:4px_0_12px];
+  }
+  
+  .you-liked-slider::-webkit-scrollbar {
+    @apply [height:8px];
+  }
+  
+  .you-liked-slider::-webkit-scrollbar-track {
+    @apply [background:transparent];
+  }
+  
+  .you-liked-slider::-webkit-scrollbar-thumb {
+    @apply [background:rgba(255,_255,_255,_0.18)];
+    @apply [border-radius:999px];
+  }
+  
+  .you-liked-slider::-webkit-scrollbar-thumb:hover {
+    @apply [background:rgba(255,_255,_255,_0.32)];
+  }
+  
+  .you-liked-slide-item,
+  .you-liked-skeleton-card {
+    @apply [flex:0_0_170px];
+    @apply [min-width:170px];
+  }
+  
+  .you-liked-slide-item > * {
+    @apply w-full;
+  }
+  
+  .you-liked-skeleton-card {
+    @apply [padding:12px];
+    @apply [border-radius:14px];
+    @apply [background:rgba(255,_255,_255,_0.07)];
+  }
+  
+  .you-liked-skeleton-cover,
+  .you-liked-skeleton-line {
+    @apply [background:linear-gradient(_90deg,_#202020_0%,_#303030_50%,_#202020_100%_)];
+    @apply [background-size:200%_100%];
+    @apply [animation:youLikedSkeleton_1.3s_infinite_linear];
+  }
+  
+  .you-liked-skeleton-cover {
+    @apply w-full;
+    @apply [aspect-ratio:1_/_1];
+    @apply [border-radius:12px];
+    @apply [margin-bottom:14px];
+  }
+  
+  .you-liked-skeleton-line {
+    @apply [height:12px];
+    @apply [border-radius:20px];
+  }
+  
+  .you-liked-skeleton-title {
+    @apply [width:85%];
+    @apply [margin-bottom:10px];
+  }
+  
+  .you-liked-skeleton-text {
+    @apply [width:58%];
+  }
+  
+  @keyframes youLikedSkeleton {
+    0% {
+      background-position: 200% 0;
+    }
+  
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  @screen query7 {
+    .you-liked-section {
+      @apply [padding:18px_12px_14px];
+      @apply [border-radius:15px];
+    }
+  
+    .you-liked-header {
+      @apply [align-items:flex-start];
+      @apply flex-col;
+    }
+  
+    .you-liked-title {
+      @apply [font-size:23px];
+    }
+  
+    .you-liked-slide-item,
+    .you-liked-skeleton-card {
+      @apply [flex-basis:145px];
+      @apply [min-width:145px];
+    }
+  
+    .you-liked-seed {
+      @apply w-full;
+    }
+  }
+
+  .you-liked-section .card-title,
+.you-liked-section .song-title,
+.you-liked-section .song-name,
+.you-liked-section h4 {
+  @apply [color:#ffffff] !important;
+}
+
+.you-liked-section .card-artist,
+.you-liked-section .song-artist,
+.you-liked-section .artist-name,
+.you-liked-section p {
+  @apply [color:#b3b3b3];
+}

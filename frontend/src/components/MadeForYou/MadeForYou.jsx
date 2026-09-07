@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SongItem from "../SongItem/SongItem";
-import "./MadeForYou.css";
+import "./MadeForYou.tailwind.css";
 import { API_BASE_URL } from "../../config/api";
 
 const MadeForYou = () => {

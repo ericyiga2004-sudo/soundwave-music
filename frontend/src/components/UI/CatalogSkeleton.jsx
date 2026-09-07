@@ -1,4 +1,4 @@
-import "./CatalogSkeleton.css";
+import "./CatalogSkeleton.tailwind.css";
 
 const CatalogSkeleton = ({ count = 8, round = false, rows = false }) => {
   if (rows) {

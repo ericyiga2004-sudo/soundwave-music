@@ -1,0 +1,124 @@
+.sw2324-premium-select {
+  @apply [appearance:none];
+  @apply [-webkit-appearance:none];
+  @apply w-full;
+  @apply min-w-0;
+  @apply [min-height:42px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-between;
+  @apply [gap:10px];
+  @apply [padding:9px_11px_9px_13px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:12px];
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-surface-2)];
+  @apply [box-shadow:inset_0_1px_0_color-mix(in_srgb,_var(--sw-text)_4%,_transparent)];
+  @apply cursor-pointer;
+  @apply [font:inherit];
+  @apply [font-size:0.84rem];
+  @apply [line-height:1];
+  @apply [text-align:left];
+  @apply [transition:border-color_.12s_ease,_background_.12s_ease,_box-shadow_.12s_ease];
+}
+.sw2324-premium-select > span {
+  @apply min-w-0;
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+.sw2324-premium-select > svg {
+  @apply [flex:0_0_auto];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [transition:transform_.14s_ease];
+}
+.sw2324-premium-select > svg.open { @apply [transform:rotate(180deg)]; }
+.sw2324-premium-select:hover {
+  @apply [border-color:color-mix(in_srgb,_var(--sw-text-secondary)_34%,_var(--sw-border))];
+  @apply [background:var(--sw-surface-3)];
+}
+.sw2324-premium-select:focus-visible {
+  @apply [outline:none];
+  @apply [border-color:color-mix(in_srgb,_var(--sw-accent)_72%,_#fff_8%)];
+  @apply [box-shadow:0_0_0_3px_color-mix(in_srgb,_var(--sw-accent)_14%,_transparent)];
+}
+.sw2324-premium-select:disabled { @apply [opacity:.5]; @apply [cursor:not-allowed]; }
+
+.sw2324-select-menu {
+  @apply fixed;
+  @apply [z-index:12000];
+  @apply overflow-auto;
+  @apply [padding:6px];
+  @apply [border:1px_solid_rgba(255,255,255,.11)];
+  @apply [border-radius:15px];
+  @apply [color:#f7f7f8];
+  @apply [background:rgba(26,26,29,.98)];
+  @apply [box-shadow:0_24px_64px_rgba(0,0,0,.44),_inset_0_1px_0_rgba(255,255,255,.05)];
+  @apply [backdrop-filter:blur(18px)_saturate(125%)];
+  @apply [-webkit-backdrop-filter:blur(18px)_saturate(125%)];
+  @apply [animation:sw2324SelectIn_.13s_ease-out_both];
+}
+.sw2324-select-menu > button {
+  @apply [appearance:none];
+  @apply w-full;
+  @apply [min-height:38px];
+  @apply grid;
+  @apply [grid-template-columns:minmax(0,1fr)_18px];
+  @apply items-center;
+  @apply [gap:8px];
+  @apply [padding:8px_10px];
+  @apply [border:0];
+  @apply [border-radius:10px];
+  @apply [color:rgba(255,255,255,.88)];
+  @apply [background:transparent];
+  @apply [font:inherit];
+  @apply [font-size:0.82rem];
+  @apply [text-align:left];
+  @apply cursor-pointer;
+}
+.sw2324-select-menu > button:hover,
+.sw2324-select-menu > button.active { @apply [background:rgba(255,255,255,.075)]; }
+.sw2324-select-menu > button.selected {
+  @apply [color:#fff];
+  @apply [background:color-mix(in_srgb,_var(--sw-accent)_20%,_rgba(255,255,255,.055))];
+}
+.sw2324-select-menu > button > span {
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+.sw2324-select-menu > button > svg {
+  @apply [justify-self:end];
+  @apply [color:var(--sw-accent)];
+}
+.sw2324-select-menu > button:disabled { @apply [opacity:.35]; @apply [cursor:not-allowed]; }
+
+@keyframes sw2324SelectIn {
+  from { opacity: 0; transform: translateY(-4px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@screen query3 {
+  .sw2324-premium-select { @apply [min-height:44px]; @apply [font-size:16px]; }
+  .sw2324-select-menu {
+    @apply [top:auto] !important;
+    @apply [left:10px] !important;
+    @apply [right:10px];
+    @apply [bottom:max(92px,_calc(env(safe-area-inset-bottom,_0px)_+_82px))];
+    @apply [width:auto] !important;
+    @apply [max-height:52vh] !important;
+    @apply [border-radius:20px];
+    @apply [padding:8px];
+  }
+  .sw2324-select-menu > button { @apply [min-height:43px]; @apply [font-size:0.9rem]; }
+}
+
+@screen query9 {
+  .sw2324-premium-select > svg,
+  .sw2324-select-menu { @apply [transition:none]; @apply [animation:none]; }
+}
+html[data-sw-battery-saver="true"] .sw2324-select-menu {
+  @apply [animation:none];
+  @apply [backdrop-filter:none];
+  @apply [-webkit-backdrop-filter:none];
+}

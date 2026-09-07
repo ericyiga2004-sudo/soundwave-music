@@ -7,8 +7,8 @@ import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 const sameId = (a, b) => String(a || "") === String(b || "");
@@ -104,7 +104,7 @@ const SocialPeople = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page container-fluid px-0">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
       <SocialPageHero
         kicker="Taste Match"
         title="Find people through the music, not a popularity contest."
@@ -143,7 +143,7 @@ const SocialPeople = () => {
         )}
       </section>
 
-      <section className="sw-social-panel sw20-panel mt-3 mt-xl-4">
+      <section className="sw-social-panel sw20-panel !mt-[1rem] xl:!mt-[1.5rem]">
         <div className="sw-social-section-heading"><div><span className="sw-social-kicker">People</span><h2>{results.length ? "Search results" : "Discover listeners"}</h2></div><Search size={20} /></div>
         <form className="sw20-people-search sw20-people-search-wide" onSubmit={search}>
           <Search size={17} />
@@ -173,7 +173,7 @@ const SocialPeople = () => {
           {!users.length ? <div className="sw20-empty-card"><Search size={24} /><strong>No listeners found.</strong><p>Try another name or clear the search to return to suggestions.</p></div> : null}
         </div>
       </section>
-      {status ? <div className="sw-social-message mt-3">{status}</div> : null}
+      {status ? <div className="sw-social-message !mt-[1rem]">{status}</div> : null}
     </div>
   );
 };

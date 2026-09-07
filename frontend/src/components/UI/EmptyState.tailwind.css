@@ -1,0 +1,24 @@
+.sw-empty-state {
+  @apply [min-height:150px];
+  @apply [padding:24px];
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+  @apply flex-wrap;
+  @apply [gap:14px];
+  @apply [text-align:left];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:16px];
+  @apply [background:var(--sw-surface-2)];
+  @apply [color:var(--sw-text)];
+}
+.sw-empty-icon {
+  @apply [width:42px]; @apply [height:42px]; @apply [border-radius:50%]; @apply grid; @apply [place-items:center];
+  @apply [background:var(--sw-surface)]; @apply [color:var(--sw-accent)]; @apply [border:1px_solid_var(--sw-border)];
+}
+.sw-empty-state h3 { @apply [margin:0_0_3px]; @apply [font-size:.95rem]; }
+.sw-empty-state p { @apply [margin:0]; @apply [color:var(--sw-text-secondary)]; @apply [font-size:.82rem]; }
+.sw-empty-state button {
+  @apply [border:1px_solid_var(--sw-border)]; @apply [background:var(--sw-surface)]; @apply [color:var(--sw-text)];
+  @apply [border-radius:999px]; @apply [padding:8px_12px]; @apply [display:inline-flex]; @apply items-center; @apply [gap:6px]; @apply [font-size:.78rem]; @apply [font-weight:650];
+}

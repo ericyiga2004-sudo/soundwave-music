@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { BatteryMedium, Settings2, WifiOff, ChevronLeft, ChevronRight, Home, Library, Moon, Radio, Search, Sparkles, Sun, User, UsersRound, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import "./Navbar.css";
+import "./Navbar.tailwind.css";
 import SearchModal from "../SearchModel/SearchModel";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import NotificationBell from "../../pages/NotificationBell";
@@ -101,7 +101,8 @@ const Navbar = () => {
     <>
       <header className="sw-top-header">
         <div className="sw-top-left">
-          <div className="sw-history-controls d-none d-lg-flex">
+          <button type="button" className="sw-icon-btn !hidden lg:!grid" onClick={() => setSidebarHidden(!sidebarHidden)} aria-controls="soundwave-sidebar" aria-expanded={!sidebarHidden} aria-label={sidebarHidden ? "Show sidebar" : "Hide sidebar"}>{sidebarHidden ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}</button>
+          <div className="sw-history-controls !hidden lg:!flex">
             <button type="button" onClick={() => navigate(-1)} aria-label="Back">
               <ChevronLeft size={19} />
             </button>
@@ -110,7 +111,7 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="sw-mobile-brand d-lg-none">
+          <div className="sw-mobile-brand lg:!hidden">
             <span className="sw-mobile-brand-icon">♪</span>
             <strong>{title}</strong>
           </div>
@@ -119,7 +120,7 @@ const Navbar = () => {
         <button type="button" className="sw-search-btn" onClick={() => setOpenSearch(true)}>
           <Search size={17} />
           <span>Search</span>
-          <kbd className="d-none d-xl-inline">/</kbd>
+          <kbd className="!hidden xl:!inline">/</kbd>
         </button>
 
         <div className="sw-top-actions">
@@ -196,7 +197,7 @@ const Navbar = () => {
 
           <NavLink to="/account" className="sw-account-pill" aria-label="Account">
             <User size={17} />
-            <span className="d-none d-xl-inline">Account</span>
+            <span className="!hidden xl:!inline">Account</span>
           </NavLink>
         </div>
       </header>
@@ -208,7 +209,7 @@ const Navbar = () => {
         onPlaySong={playSongFromSearch}
       />
 
-      <nav className="sw-bottom-nav d-lg-none" aria-label="Main navigation">
+      <nav className="sw-bottom-nav lg:!hidden" aria-label="Main navigation">
         {mobileLinks.map((item) => {
           const Icon = item.icon;
           return (

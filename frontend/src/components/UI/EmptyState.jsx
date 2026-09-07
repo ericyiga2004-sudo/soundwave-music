@@ -1,5 +1,5 @@
 import { Music2, RefreshCw } from "lucide-react";
-import "./EmptyState.css";
+import "./EmptyState.tailwind.css";
 
 const EmptyState = ({ title = "Nothing here yet", message = "Try again in a moment.", onRetry }) => (
   <div className="sw-empty-state" role="status">

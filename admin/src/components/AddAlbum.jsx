@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ADMIN_API_BASE_URL } from "../config/api";
-import "./CSS/AddAlbum.css";
+import "./CSS/AddAlbum.tailwind.css";
 
 const backendUrl = ADMIN_API_BASE_URL;
 

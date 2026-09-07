@@ -1,0 +1,331 @@
+.shared-page {
+    @apply [padding-bottom:110px];
+  }
+  
+  .shared-hero {
+    @apply [margin-bottom:18px];
+  }
+  
+  .shared-toolbar {
+    @apply [max-width:1180px];
+    @apply [margin-bottom:18px];
+    @apply [padding:14px];
+    @apply [border-radius:22px];
+    @apply [background:rgba(255,_255,_255,_0.055)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  }
+  
+  .shared-search-wrap {
+    @apply relative;
+    @apply w-full;
+  }
+  
+  .shared-search-wrap svg {
+    @apply absolute;
+    @apply [left:15px];
+    @apply [top:50%];
+    @apply [transform:translateY(-50%)];
+    @apply [opacity:0.65];
+    @apply [pointer-events:none];
+  }
+  
+  .shared-search-wrap input {
+    @apply w-full;
+    @apply [min-height:48px];
+    @apply [padding:12px_14px_12px_44px];
+    @apply [border-radius:16px];
+    @apply [outline:none];
+    @apply [color:#ffffff];
+    @apply [font-size:14px];
+    @apply [font-weight:600];
+    @apply [background:rgba(255,_255,_255,_0.075)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.12)];
+    @apply [transition:0.25s_ease];
+  }
+  
+  .shared-search-wrap input::placeholder {
+    @apply [color:rgba(255,_255,_255,_0.45)];
+  }
+  
+  .shared-search-wrap input:focus {
+    @apply [border-color:rgba(255,_255,_255,_0.35)];
+    @apply [background:rgba(255,_255,_255,_0.11)];
+    @apply [box-shadow:0_0_0_4px_rgba(255,_255,_255,_0.06)];
+  }
+  
+  .shared-count-pill {
+    @apply [display:inline-flex];
+    @apply items-center;
+    @apply justify-center;
+    @apply [min-height:48px];
+    @apply w-full;
+    @apply [padding:0_18px];
+    @apply [border-radius:999px];
+    @apply [font-size:14px];
+    @apply [font-weight:800];
+    @apply [color:#ffffff];
+    @apply [white-space:nowrap];
+    @apply [background:rgba(255,_255,_255,_0.085)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+  }
+  .shared-grid {
+    @apply [max-width:1180px];
+  }
+  
+  .shared-playlist-full-card {
+    @apply overflow-hidden;
+    @apply [border-radius:26px];
+    @apply [background:rgba(255,_255,_255,_0.065)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.09)];
+    @apply [box-shadow:0_22px_55px_rgba(0,_0,_0,_0.18)];
+  }
+  
+  .shared-playlist-full-card.unread {
+    @apply [border-color:rgba(255,_255,_255,_0.25)];
+    @apply [box-shadow:0_22px_55px_rgba(0,_0,_0,_0.22),_0_0_0_1px_rgba(255,_255,_255,_0.06)];
+  }
+  
+  .shared-playlist-cover {
+    @apply grid;
+    @apply [grid-template-columns:repeat(2,_1fr)];
+    @apply [min-height:240px];
+    @apply [background:rgba(255,_255,_255,_0.06)];
+  }
+  
+  .shared-playlist-cover img {
+    @apply w-full;
+    @apply h-full;
+    @apply [min-height:120px];
+    @apply object-cover;
+  }
+  
+  .shared-playlist-empty-cover {
+    @apply [grid-column:1_/_-1];
+    @apply grid;
+    @apply [place-items:center];
+    @apply [min-height:240px];
+    @apply [font-size:42px];
+    @apply [color:rgba(255,_255,_255,_0.6)];
+  }
+  
+  .shared-playlist-body {
+    @apply h-full;
+    @apply [padding:18px];
+  }
+  
+  .shared-playlist-top {
+    @apply flex;
+    @apply justify-between;
+    @apply [align-items:flex-start];
+    @apply [gap:14px];
+    @apply [margin-bottom:12px];
+  }
+  
+  .shared-playlist-top h2 {
+    @apply [margin:8px_0_6px];
+    @apply [font-size:clamp(1.25rem,_2.6vw,_2rem)];
+    @apply [font-weight:900];
+    @apply [letter-spacing:-0.035em];
+    @apply [color:#ffffff];
+  }
+  
+  .shared-playlist-top p {
+    @apply [margin:0];
+    @apply [max-width:780px];
+    @apply [color:rgba(255,_255,_255,_0.66)];
+  }
+  
+  .shared-playlist-meta {
+    @apply flex;
+    @apply flex-wrap;
+    @apply [gap:10px];
+    @apply [margin:14px_0];
+  }
+  
+  .shared-playlist-meta span {
+    @apply [display:inline-flex];
+    @apply items-center;
+    @apply [gap:7px];
+    @apply [padding:7px_10px];
+    @apply [border-radius:999px];
+    @apply [font-size:12px];
+    @apply [font-weight:700];
+    @apply [color:rgba(255,_255,_255,_0.76)];
+    @apply [background:rgba(255,_255,_255,_0.07)];
+  }
+  
+  .shared-playlist-message {
+    @apply [width:fit-content];
+    @apply [max-width:100%];
+    @apply [margin:12px_0];
+    @apply [padding:12px_14px];
+    @apply [border-radius:16px];
+    @apply [color:rgba(255,_255,_255,_0.82)];
+    @apply [background:rgba(255,_255,_255,_0.075)];
+  }
+  
+  .shared-playlist-actions {
+    @apply flex;
+    @apply flex-wrap;
+    @apply [gap:10px];
+    @apply [margin:16px_0];
+  }
+  
+  .shared-secondary-btn {
+    @apply [display:inline-flex];
+    @apply items-center;
+    @apply justify-center;
+    @apply [gap:8px];
+    @apply [min-height:44px];
+    @apply [padding:0_16px];
+    @apply [border:0];
+    @apply [border-radius:999px];
+    @apply [color:#ffffff];
+    @apply [font-weight:800];
+    @apply [background:rgba(255,_255,_255,_0.1)];
+  }
+  
+  .shared-secondary-btn:hover {
+    @apply [background:rgba(255,_255,_255,_0.16)];
+  }
+  
+  .shared-playlist-song-preview {
+    @apply grid;
+    @apply [gap:8px];
+  }
+  
+  .shared-playlist-song-preview .playlist-song-row {
+    @apply w-full;
+    @apply [border:0];
+    @apply [text-align:left];
+    @apply cursor-pointer;
+  }
+  
+  .shared-playlist-song-preview .playlist-song-row:hover {
+    @apply [transform:translateY(-1px)];
+  }
+  
+  
+  .shared-skeleton-card {
+    @apply grid;
+    @apply [grid-template-columns:260px_1fr];
+    @apply [gap:18px];
+    @apply [padding:18px];
+    @apply [border-radius:26px];
+    @apply [background:rgba(255,_255,_255,_0.055)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.08)];
+  }
+  
+  .shared-skeleton-cover,
+  .shared-skeleton-lines span {
+    @apply relative;
+    @apply overflow-hidden;
+    @apply [background:rgba(255,_255,_255,_0.08)];
+  }
+  
+  .shared-skeleton-cover {
+    @apply [min-height:180px];
+    @apply [border-radius:20px];
+  }
+  
+  .shared-skeleton-lines {
+    @apply grid;
+    @apply [align-content:center];
+    @apply [gap:14px];
+  }
+  
+  .shared-skeleton-lines span {
+    @apply block;
+    @apply [height:18px];
+    @apply [border-radius:999px];
+  }
+  
+  .shared-skeleton-lines span:nth-child(1) {
+    @apply [width:55%];
+    @apply [height:30px];
+  }
+  
+  .shared-skeleton-lines span:nth-child(2) {
+    @apply [width:80%];
+  }
+  
+  .shared-skeleton-lines span:nth-child(3) {
+    @apply [width:42%];
+  }
+  
+  .shared-skeleton-cover::after,
+  .shared-skeleton-lines span::after {
+    @apply [content:""];
+    @apply absolute;
+    @apply [inset:0];
+    @apply [transform:translateX(-100%)];
+    @apply [background:linear-gradient(_90deg,_transparent,_rgba(255,_255,_255,_0.1),_transparent_)];
+    @apply [animation:sharedSkeleton_1.25s_infinite];
+  }
+  
+  @keyframes sharedSkeleton {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @screen query13 {
+    .shared-count-pill {
+      @apply [width:fit-content];
+    }
+  
+    .shared-playlist-body {
+      @apply [padding:16px];
+    }
+  }
+  @screen query14 {
+    .shared-toolbar {
+      @apply [border-radius:18px];
+    }
+  
+    .shared-playlist-full-card {
+      @apply [border-radius:22px];
+    }
+  
+    .shared-playlist-cover {
+      @apply [min-height:220px];
+    }
+  
+    .shared-playlist-cover img {
+      @apply [min-height:110px];
+    }
+  
+    .shared-playlist-top {
+      @apply [align-items:flex-start];
+    }
+  
+    .shared-playlist-actions .play-selected-btn,
+    .shared-playlist-actions .shared-secondary-btn {
+      @apply w-full;
+    }
+  
+    .shared-skeleton-card {
+      @apply [grid-template-columns:1fr];
+    }
+  }
+  
+  @screen query8 {
+    .shared-playlist-body {
+      @apply [padding:14px];
+    }
+  
+    .shared-playlist-cover {
+      @apply [min-height:190px];
+    }
+  
+    .shared-playlist-cover img {
+      @apply [min-height:95px];
+    }
+  
+    .shared-playlist-meta span {
+      @apply w-full;
+    }
+  
+    .shared-count-pill {
+      @apply w-full;
+    }
+  }

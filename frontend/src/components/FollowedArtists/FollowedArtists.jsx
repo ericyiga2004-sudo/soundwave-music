@@ -3,7 +3,7 @@ import axios from "axios";
 import { FaUserCheck } from "react-icons/fa";
 import SongItem from "../SongItem/SongItem";
 import { MusicContext } from "../../context/ShopContext";
-import "./FollowedArtists.css";
+import "./FollowedArtists.tailwind.css";
 
 const MAX_FOLLOWED_ARTIST_SONGS = 20;
 

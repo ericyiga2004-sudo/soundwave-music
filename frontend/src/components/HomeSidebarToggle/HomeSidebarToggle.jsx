@@ -4,7 +4,7 @@ import {
   getSidebarHidden,
   setSidebarHidden,
 } from "../../utils/uiPreferences";
-import "./HomeSidebarToggle.css";
+import "./HomeSidebarToggle.tailwind.css";
 
 const HomeSidebarToggle = () => {
   const [hidden, setHidden] = useState(getSidebarHidden);
@@ -34,11 +34,13 @@ const HomeSidebarToggle = () => {
   };
 
   return (
-    <div className="sw23242-home-sidebar-toggle-wrap">
+    <div className="sw23242-home-sidebar-toggle-wrap !hidden lg:!flex">
       <button
         type="button"
         className="sw23242-home-sidebar-toggle"
         onClick={toggle}
+        aria-controls="soundwave-sidebar"
+        aria-expanded={!hidden}
         aria-label={hidden ? "Show sidebar" : "Hide sidebar"}
         title={hidden ? "Show sidebar" : "Hide sidebar"}
       >

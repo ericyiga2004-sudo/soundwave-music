@@ -35,8 +35,7 @@ import {
 import { Howl, Howler } from "howler";
 import WaveSurfer from "wavesurfer.js";
 import { MusicContext } from "../context/ShopContext";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./CSS/Dj.css";
+import "./CSS/Dj.tailwind.css";
 
 const SFX_MAX_PLAY_MS = 12000;
 const sfx = (fileName) => `/sfx/${fileName}`;
@@ -2079,7 +2078,7 @@ const Dj = () => {
   const renderMiniClassic = () => {
     return (
       <div className="classic-dj-panel">
-        <div className="classic-mobile-pads d-md-none">
+        <div className="classic-mobile-pads md:!hidden">
           <span className="classic-mobile-label">Quick sound pads</span>
 
           <div className="classic-mobile-pad-grid">
@@ -2098,7 +2097,7 @@ const Dj = () => {
           </div>
         </div>
 
-        <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
+        <div className="classic-side-buttons classic-desktop-pads !hidden md:!grid">
           {classicLeftButtons.map((item) => (
             <button
               key={item.id}
@@ -2128,7 +2127,7 @@ const Dj = () => {
           ))}
         </div>
 
-        <div className="classic-side-buttons classic-desktop-pads d-none d-md-grid">
+        <div className="classic-side-buttons classic-desktop-pads !hidden md:!grid">
           {classicRightButtons.map((item) => (
             <button
               key={item.id}
@@ -2528,10 +2527,10 @@ const Dj = () => {
 
       {renderMiniClassic()}
 
-      <div className="container-fluid px-0">
-        <div className="row g-2 g-md-3 align-items-stretch dj-bootstrap-controller">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] md:[--sw-gutter-x:1rem] md:[--sw-gutter-y:1rem] !items-stretch dj-tailwind-controller">
           <div
-            className={`col-12 col-xl-5 mobile-panel ${
+            className={`col !w-[100%] flex-none col xl:!w-[41.666666666666664%] xl:flex-none mobile-panel ${
               mobileView === "A" ? "mobile-panel-active" : ""
             }`}
           >
@@ -2560,7 +2559,7 @@ const Dj = () => {
           </div>
 
           <div
-            className={`col-12 col-xl-2 mobile-panel ${
+            className={`col !w-[100%] flex-none col xl:!w-[16.666666666666668%] xl:flex-none mobile-panel ${
               mobileView === "M" ? "mobile-panel-active" : ""
             }`}
           >
@@ -2568,7 +2567,7 @@ const Dj = () => {
           </div>
 
           <div
-            className={`col-12 col-xl-5 mobile-panel ${
+            className={`col !w-[100%] flex-none col xl:!w-[41.666666666666664%] xl:flex-none mobile-panel ${
               mobileView === "B" ? "mobile-panel-active" : ""
             }`}
           >
@@ -2597,9 +2596,9 @@ const Dj = () => {
           </div>
         </div>
 
-        <div className="row g-2 g-md-3 mt-2 mt-md-3">
-          <div className="col-12 col-xl-4">
-            <div className="dj-panel-pro h-100">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] md:[--sw-gutter-x:1rem] md:[--sw-gutter-y:1rem] !mt-[0.5rem] md:!mt-[1rem]">
+          <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
+            <div className="dj-panel-pro !h-full">
               <div className="panel-title-pro">
                 <div>
                   <span>Neural Style</span>
@@ -2610,12 +2609,12 @@ const Dj = () => {
                 <FaSlidersH />
               </div>
 
-              <div className="row g-2">
+              <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem]">
                 {stemButtons.map((stem) => {
                   const StemIcon = stem.icon;
 
                   return (
-                    <div className="col-6" key={stem.id}>
+                    <div className="col !w-[50%] flex-none" key={stem.id}>
                       <button
                         type="button"
                         className={
@@ -2642,8 +2641,8 @@ const Dj = () => {
             </div>
           </div>
 
-          <div className="col-12 col-xl-4">
-            <div className="dj-panel-pro h-100">
+          <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
+            <div className="dj-panel-pro !h-full">
               <div className="panel-title-pro">
                 <div>
                   <span>FX Unit</span>
@@ -2654,12 +2653,12 @@ const Dj = () => {
                 <FaSlidersH />
               </div>
 
-              <div className="row g-2">
+              <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem]">
                 {fxButtons.map((fx) => {
                   const FxIcon = fx.icon;
 
                   return (
-                    <div className="col-4 col-md-4" key={fx.id}>
+                    <div className="col !w-[33.333333333333336%] flex-none col md:!w-[33.333333333333336%] md:flex-none" key={fx.id}>
                       <button
                         type="button"
                         className={
@@ -2687,8 +2686,8 @@ const Dj = () => {
             </div>
           </div>
 
-          <div className="col-12 col-xl-4">
-            <div className="dj-panel-pro h-100">
+          <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
+            <div className="dj-panel-pro !h-full">
               <div className="panel-title-pro">
                 <div>
                   <span>Sampler</span>
@@ -2699,12 +2698,12 @@ const Dj = () => {
                 <FaRecordVinyl />
               </div>
 
-              <div className="row g-2">
+              <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem]">
                 {djPads.map((pad) => {
                   const PadIcon = pad.icon;
 
                   return (
-                    <div className="col-6 col-sm-4 col-xl-4" key={pad.id}>
+                    <div className="col !w-[50%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col xl:!w-[33.333333333333336%] xl:flex-none" key={pad.id}>
                       <button
                         type="button"
                         className={activePad === pad.id ? "pad-pro active" : "pad-pro"}
@@ -2724,10 +2723,10 @@ const Dj = () => {
           </div>
         </div>
 
-        <div className="dj-panel-pro mt-2 mt-md-3">
-          <div className="row g-2 align-items-center mb-2">
-            <div className="col-12 col-md-6">
-              <div className="panel-title-pro mb-0">
+        <div className="dj-panel-pro !mt-[0.5rem] md:!mt-[1rem]">
+          <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] !items-center !mb-[0.5rem]">
+            <div className="col !w-[100%] flex-none col md:!w-[50%] md:flex-none">
+              <div className="panel-title-pro !mb-[0px]">
                 <div>
                   <span>Music Crate</span>
 
@@ -2736,7 +2735,7 @@ const Dj = () => {
               </div>
             </div>
 
-            <div className="col-12 col-md-6">
+            <div className="col !w-[100%] flex-none col md:!w-[50%] md:flex-none">
               <div className="dj-search-pro">
                 <FaSearch />
 
@@ -2768,14 +2767,14 @@ const Dj = () => {
                 {filteredSongs.length} songs
               </div>
 
-              <div className="row g-2">
+              <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem]">
                 {visibleSongs.map((song, index) => {
                   const loadedA = isSameSong(deckA, song);
                   const loadedB = isSameSong(deckB, song);
 
                   return (
                     <div
-                      className="col-12 col-md-6 col-xl-4"
+                      className="col !w-[100%] flex-none col md:!w-[50%] md:flex-none col xl:!w-[33.333333333333336%] xl:flex-none"
                       key={song._id || song.id || `${getSongTitle(song)}-${index}`}
                     >
                       <div
@@ -2861,7 +2860,7 @@ const Dj = () => {
             </p>
           </div>
 
-          <FaDownload className="d-none d-md-block" />
+          <FaDownload className="!hidden md:!block" />
         </div>
       </div>
     </div>

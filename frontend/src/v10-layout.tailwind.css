@@ -1,0 +1,395 @@
+.sw-workspace .hero,
+.sw-workspace .new-release,
+.sw-workspace .popular-artists-section,
+.sw-workspace .albums-section,
+.sw-workspace .mood-section,
+.sw-workspace .made-section,
+.sw-workspace .continue-section,
+.sw-workspace .you-liked-section,
+.sw-workspace .country-section,
+.sw-workspace .followed-section,
+.sw-workspace .filter-section,
+.sw-workspace .yearly-page,
+.sw-workspace .download-ad {
+  @apply w-full;
+  @apply [max-width:1660px];
+  @apply [margin-inline:auto];
+}
+.sw-workspace .hero-heading-row h1 {
+  @apply [font-size:clamp(1.85rem,_2.1vw_+_0.8rem,_2.75rem)] !important;
+  @apply [line-height:1.02] !important;
+}
+
+.sw-workspace .hero-feature-card h2 {
+  @apply [font-size:clamp(1.8rem,_2.35vw_+_0.75rem,_3rem)] !important;
+  @apply [line-height:1] !important;
+}
+
+.sw-workspace :is(
+  .section-header h2,
+  .new-release-heading h2,
+  .popular-artists-header h2,
+  .albums-header h2,
+  .mood-header h2,
+  .made-title,
+  .continue-header h2,
+  .you-liked-title,
+  .country-title,
+  .followed-title,
+  .filter-header h2
+) {
+  @apply [font-size:clamp(1.28rem,_1.15vw_+_0.86rem,_1.7rem)] !important;
+  @apply [line-height:1.08] !important;
+}
+.sw-workspace :is(
+  .release-image,
+  .album-home-cover,
+  .card-img-container,
+  .continue-cover,
+  .filter-release-image,
+  .year-song-img-wrap,
+  .years-song-img-wrap,
+  .artist-album-card .artist-album-image-wrap,
+  .account-history-cover
+) {
+  @apply w-full !important;
+  @apply [aspect-ratio:1_/_1] !important;
+  @apply [height:auto] !important;
+  @apply min-h-0 !important;
+  @apply overflow-hidden !important;
+  @apply [border-radius:13px] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+.sw-workspace :is(
+  .release-image img,
+  .album-home-cover img,
+  .card-img-container img,
+  .continue-cover img,
+  .filter-release-image img,
+  .year-song-img,
+  .years-song-img,
+  .artist-album-card img,
+  .account-history-cover img
+) {
+  @apply w-full !important;
+  @apply h-full !important;
+  @apply [min-width:100%] !important;
+  @apply [min-height:100%] !important;
+  @apply block !important;
+  @apply object-cover !important;
+  @apply [object-position:center] !important;
+}
+.sw-workspace .popular-artist-image-wrap {
+  @apply relative !important;
+  @apply w-full !important;
+  @apply [aspect-ratio:1_/_1] !important;
+  @apply [height:auto] !important;
+  @apply min-h-0 !important;
+  @apply [overflow:visible] !important;
+  @apply [border-radius:50%] !important;
+  @apply [background:transparent] !important;
+}
+
+.sw-workspace .popular-artist-image {
+  @apply w-full !important;
+  @apply h-full !important;
+  @apply [aspect-ratio:1_/_1] !important;
+  @apply block !important;
+  @apply object-cover !important;
+  @apply [object-position:center] !important;
+  @apply [border-radius:50%] !important;
+  @apply [border:1px_solid_var(--sw-border)] !important;
+  @apply [background:var(--sw-surface-2)] !important;
+}
+
+.sw-workspace .popular-artist-card {
+  @apply w-full;
+  @apply min-w-0;
+  @apply h-full;
+}
+
+.sw-workspace .popular-artists-grid {
+  @apply [align-items:start];
+}
+.sw-workspace img {
+  @apply [max-width:100%];
+}
+.sw-workspace .hero-artwork-wrap {
+  @apply [width:min(100%,_280px)] !important;
+  @apply [aspect-ratio:1_/_1] !important;
+  @apply [height:auto] !important;
+  @apply min-h-0 !important;
+  @apply overflow-hidden !important;
+  @apply [border-radius:16px] !important;
+  @apply [background:var(--sw-surface-3)] !important;
+}
+
+.sw-workspace .hero-artwork-wrap img {
+  @apply w-full !important;
+  @apply h-full !important;
+  @apply block !important;
+  @apply object-cover !important;
+  @apply [object-position:center] !important;
+}
+
+.sw-workspace .hero-mini-card {
+  @apply [min-height:132px] !important;
+  @apply h-full;
+}
+
+.sw-workspace .hero-mini-card img,
+.sw-workspace .hero-mini-placeholder {
+  @apply [width:82px] !important;
+  @apply [height:82px] !important;
+  @apply [aspect-ratio:1_/_1] !important;
+  @apply object-cover !important;
+  @apply [border-radius:11px] !important;
+}
+.sw-workspace .song-carder {
+  @apply min-h-0 !important;
+  @apply [height:auto] !important;
+  @apply [padding:0] !important;
+  @apply [overflow:visible] !important;
+  @apply [border-radius:0] !important;
+  @apply [background:transparent] !important;
+}
+
+.sw-workspace .song-linker {
+  @apply [height:auto] !important;
+}
+
+.sw-workspace .card-content {
+  @apply min-h-0 !important;
+  @apply [padding-top:9px] !important;
+}
+
+.sw-workspace .card-title {
+  @apply [font-size:clamp(0.78rem,_0.35vw_+_0.7rem,_0.93rem)] !important;
+}
+
+.sw-workspace .card-artist {
+  @apply [margin-top:4px] !important;
+  @apply [font-size:clamp(0.68rem,_0.24vw_+_0.63rem,_0.78rem)] !important;
+}
+.sw-workspace .mood-artwork {
+  @apply w-full !important;
+  @apply [aspect-ratio:16_/_10] !important;
+  @apply [height:auto] !important;
+  @apply min-h-0 !important;
+  @apply overflow-hidden !important;
+  @apply [border-radius:13px] !important;
+}
+
+.sw-workspace .mood-artwork img {
+  @apply w-full !important;
+  @apply h-full !important;
+  @apply object-cover !important;
+  @apply [object-position:center] !important;
+}
+.sw-workspace :is(.new-release, .albums-section) .row,
+.sw-workspace .popular-artists-grid {
+  --sw-gutter-x: 1rem;
+  --sw-gutter-y: 1rem;
+}
+
+.sw-workspace .release-card,
+.sw-workspace .featured-album-card {
+  @apply [max-width:100%];
+}
+.sw-workspace :is(
+  .new-release-view-all,
+  .view-albums-btn,
+  .popular-artists-view-all,
+  .mood-header button,
+  .hero-heading-row > button
+) {
+  @apply [color:var(--sw-accent)] !important;
+  @apply [background:transparent] !important;
+  @apply [border:0] !important;
+  @apply no-underline !important;
+  @apply [white-space:nowrap];
+}
+@screen query26 {
+  .sw-workspace .hero-feature-card {
+    @apply [min-height:320px] !important;
+  }
+
+  .sw-workspace .popular-artists-grid {
+    @apply [grid-template-columns:repeat(4,_minmax(0,_1fr))] !important;
+  }
+}
+
+@screen query2 {
+  .sw-workspace .hero-feature-card {
+    @apply [grid-template-columns:minmax(0,_1fr)_minmax(150px,_32%)] !important;
+    @apply [padding:24px] !important;
+  }
+
+  .sw-workspace .hero-mini-card {
+    @apply [min-height:112px] !important;
+  }
+
+  .sw-workspace .popular-artists-grid {
+    @apply [grid-template-columns:repeat(3,_minmax(0,_1fr))] !important;
+  }
+}
+
+@screen query4 {
+  .sw-workspace .hero-heading-row h1 {
+    @apply [font-size:clamp(1.65rem,_6.7vw,_2.15rem)] !important;
+  }
+
+  .sw-workspace .hero-feature-card h2 {
+    @apply [font-size:clamp(1.6rem,_7.4vw,_2.2rem)] !important;
+  }
+
+  .sw-workspace .popular-artists-grid {
+    @apply grid !important;
+    @apply [grid-template-columns:repeat(2,_minmax(0,_1fr))] !important;
+    @apply [overflow:visible] !important;
+  }
+
+  .sw-workspace .popular-artist-card,
+  .sw-workspace .popular-artist-skeleton {
+    @apply [width:auto] !important;
+    @apply [flex:initial] !important;
+  }
+
+  .sw-workspace .popular-artist-actions {
+    @apply [flex-direction:row] !important;
+  }
+
+  .sw-workspace .popular-artist-follow-btn,
+  .sw-workspace .popular-artist-button {
+    @apply [width:auto] !important;
+    @apply [flex:1_1_0];
+    @apply min-w-0;
+    @apply [padding-inline:7px] !important;
+  }
+}
+
+@screen query3 {
+  .sw-workspace .hero {
+    @apply [padding-top:18px] !important;
+  }
+
+  .sw-workspace .hero-heading-row {
+    @apply [margin-bottom:12px] !important;
+  }
+
+  .sw-workspace .hero-feature-card {
+    @apply [grid-template-columns:1fr] !important;
+    @apply min-h-0 !important;
+    @apply [padding:17px] !important;
+    @apply [border-radius:16px] !important;
+  }
+
+  .sw-workspace .hero-artwork-wrap {
+    @apply [grid-row:1];
+    @apply [width:126px] !important;
+    @apply [justify-self:start] !important;
+    @apply [border-radius:13px] !important;
+  }
+
+  .sw-workspace .hero-feature-card p {
+    @apply [font-size:0.78rem] !important;
+  }
+
+  .sw-workspace .hero-buttons {
+    @apply [margin-top:15px] !important;
+  }
+
+  .sw-workspace .hero-play-button,
+  .sw-workspace .hero-secondary-button {
+    @apply [min-height:36px] !important;
+    @apply [padding-inline:13px] !important;
+    @apply [font-size:0.74rem] !important;
+  }
+
+  .sw-workspace .hero-mini-card {
+    @apply [grid-template-columns:64px_minmax(0,_1fr)_32px] !important;
+    @apply [min-height:92px] !important;
+    @apply [padding:10px] !important;
+    @apply [gap:10px] !important;
+  }
+
+  .sw-workspace .hero-mini-card img,
+  .sw-workspace .hero-mini-placeholder {
+    @apply [width:64px] !important;
+    @apply [height:64px] !important;
+  }
+
+  .sw-workspace .hero-mini-card h3 {
+    @apply [font-size:0.86rem] !important;
+  }
+
+  .sw-workspace .hero-mini-card p,
+  .sw-workspace .hero-mini-card span {
+    @apply [font-size:0.67rem] !important;
+  }
+
+  .sw-workspace .popular-artist-content h3 {
+    @apply [font-size:0.82rem] !important;
+  }
+
+  .sw-workspace .popular-artist-country,
+  .sw-workspace .popular-artist-stats {
+    @apply [font-size:0.64rem] !important;
+  }
+
+  .sw-workspace .popular-artist-follow-btn,
+  .sw-workspace .popular-artist-button {
+    @apply [min-height:30px] !important;
+    @apply [font-size:0.64rem] !important;
+  }
+
+  .sw-workspace .mood-grid {
+    @apply grid !important;
+    @apply [grid-template-columns:repeat(2,_minmax(0,_1fr))] !important;
+    @apply [overflow:visible] !important;
+    @apply [gap:12px] !important;
+  }
+
+  .sw-workspace .mood-card {
+    @apply [width:auto] !important;
+    @apply [max-width:none] !important;
+    @apply [flex:initial] !important;
+  }
+
+  .sw-workspace .mood-copy strong {
+    @apply [font-size:0.82rem] !important;
+  }
+
+  .sw-workspace .mood-copy small {
+    @apply [font-size:0.66rem] !important;
+  }
+}
+
+@screen query11 {
+  .sw-workspace .popular-artist-actions {
+    @apply flex-col !important;
+  }
+
+  .sw-workspace .popular-artist-follow-btn,
+  .sw-workspace .popular-artist-button {
+    @apply w-full !important;
+  }
+}
+
+@screen query26 {
+  .sw-workspace .popular-artist-card:nth-child(n + 5),
+  .sw-workspace .popular-artist-skeleton:nth-child(n + 5) {
+    @apply block !important;
+  }
+}
+.sw-workspace .popular-artists-grid.row {
+  @apply flex !important;
+  @apply flex-wrap !important;
+  @apply [overflow:visible] !important;
+  @apply [grid-template-columns:none] !important;
+}
+
+.sw-workspace .popular-artists-grid.row > .col {
+  @apply min-w-0;
+}

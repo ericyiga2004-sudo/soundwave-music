@@ -1,0 +1,70 @@
+.artist-page {
+    @apply [height:100vh];
+    @apply flex;
+    @apply justify-center;
+    @apply items-center;
+  
+    @apply [background:#0b0b10];
+    @apply [color:white];
+  }
+  
+  .artist-card {
+    @apply [width:420px];
+    @apply [padding:25px];
+    @apply [border-radius:16px];
+  
+    @apply [background:rgba(20,_20,_28,_0.9)];
+    @apply [backdrop-filter:blur(15px)];
+  
+    @apply [border:1px_solid_rgba(255,255,255,0.08)];
+    @apply [box-shadow:0_20px_60px_rgba(0,0,0,0.6)];
+  }
+  
+  .artist-card h2 {
+    @apply text-center;
+    @apply [margin-bottom:20px];
+  }
+  
+  .artist-card input,
+  .artist-card textarea {
+    @apply w-full;
+    @apply [margin-bottom:12px];
+    @apply [padding:12px];
+  
+    @apply [border-radius:10px];
+    @apply [border:1px_solid_#2a2a35];
+    @apply [background:#111118];
+    @apply [color:white];
+  
+    @apply [outline:none];
+  }
+  
+  .artist-card textarea {
+    @apply [height:90px];
+    @apply [resize:none];
+  }
+  
+  .artist-card button {
+    @apply w-full;
+    @apply [padding:12px];
+  
+    @apply [border:none];
+    @apply [border-radius:10px];
+  
+    @apply [background:linear-gradient(135deg,_#8b5cf6,_#6366f1)];
+    @apply [color:white];
+  
+    @apply [font-weight:bold];
+    @apply cursor-pointer;
+    @apply [transition:0.3s];
+  }
+  
+  .artist-card button:hover {
+    @apply [transform:translateY(-2px)];
+  }
+  
+  .msg {
+    @apply [margin-top:12px];
+    @apply text-center;
+    @apply [color:#a1a1aa];
+  }

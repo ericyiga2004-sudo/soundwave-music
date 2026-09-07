@@ -1,0 +1,553 @@
+.home-network-error {
+    @apply [min-height:calc(100vh_-_80px)];
+    @apply w-full;
+    @apply relative;
+    @apply overflow-hidden;
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply [padding:45px_18px];
+    @apply [background:radial-gradient(circle_at_top_left,_rgba(29,_185,_84,_0.22),_transparent_35%),_radial-gradient(circle_at_bottom_right,_rgba(130,_85,_255,_0.22),_transparent_35%),_linear-gradient(135deg,_#111118,_#08080d)];
+  }
+  
+  .home-network-error::before {
+    @apply [content:""];
+    @apply absolute;
+    @apply [inset:0];
+    @apply [background-image:linear-gradient(rgba(255,_255,_255,_0.035)_1px,_transparent_1px),_linear-gradient(90deg,_rgba(255,_255,_255,_0.035)_1px,_transparent_1px)];
+    @apply [background-size:38px_38px];
+    @apply [mask-image:linear-gradient(to_bottom,_rgba(0,_0,_0,_0.9),_transparent)];
+  }
+  
+  .home-offline-bg span {
+    @apply absolute;
+    @apply [border-radius:50%];
+    @apply [filter:blur(8px)];
+    @apply [animation:homeBlobMove_7s_ease-in-out_infinite];
+  }
+  
+  .home-offline-bg span:nth-child(1) {
+    @apply [width:260px];
+    @apply [height:260px];
+    @apply [background:rgba(29,_185,_84,_0.2)];
+    @apply [top:-80px];
+    @apply [left:8%];
+  }
+  
+  .home-offline-bg span:nth-child(2) {
+    @apply [width:210px];
+    @apply [height:210px];
+    @apply [background:rgba(255,_209,_102,_0.15)];
+    @apply [bottom:-70px];
+    @apply [left:35%];
+    @apply [animation-delay:1.2s];
+  }
+  
+  .home-offline-bg span:nth-child(3) {
+    @apply [width:280px];
+    @apply [height:280px];
+    @apply [background:rgba(138,_92,_246,_0.18)];
+    @apply [right:-90px];
+    @apply [top:20%];
+    @apply [animation-delay:2s];
+  }
+  
+  .home-note {
+    @apply absolute;
+    @apply [color:rgba(255,_255,_255,_0.8)];
+    @apply [font-weight:900];
+    @apply [text-shadow:0_0_22px_rgba(29,_185,_84,_0.85)];
+    @apply [animation:homeNoteFloat_4s_ease-in-out_infinite];
+    @apply [z-index:1];
+  }
+  
+  .note-one {
+    @apply [top:14%];
+    @apply [left:12%];
+    @apply [font-size:42px];
+  }
+  
+  .note-two {
+    @apply [top:20%];
+    @apply [right:16%];
+    @apply [font-size:34px];
+    @apply [animation-delay:0.6s];
+  }
+  
+  .note-three {
+    @apply [bottom:18%];
+    @apply [left:18%];
+    @apply [font-size:36px];
+    @apply [animation-delay:1.2s];
+  }
+  
+  .note-four {
+    @apply [bottom:24%];
+    @apply [right:12%];
+    @apply [font-size:30px];
+    @apply [animation-delay:1.8s];
+  }
+  
+  .home-offline-card {
+    @apply [width:min(920px,_100%)];
+    @apply [min-height:390px];
+    @apply relative;
+    @apply [z-index:2];
+    @apply [border-radius:34px];
+    @apply [padding:48px];
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply [gap:58px];
+    @apply [background:rgba(18,_18,_28,_0.82)];
+    @apply [backdrop-filter:blur(18px)];
+    @apply [-webkit-backdrop-filter:blur(18px)];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.11)];
+    @apply [box-shadow:0_30px_90px_rgba(0,_0,_0,_0.45)];
+  }
+  
+  .home-offline-character {
+    @apply [width:180px];
+    @apply [height:245px];
+    @apply relative;
+    @apply [flex:0_0_auto];
+    @apply [animation:homeRobotBounce_2.1s_ease-in-out_infinite];
+  }
+  
+  .home-antenna {
+    @apply [width:50px];
+    @apply [height:38px];
+    @apply absolute;
+    @apply [left:65px];
+    @apply [top:-18px];
+    @apply [z-index:3];
+  }
+  
+  .home-antenna::before,
+  .home-antenna::after {
+    @apply [content:""];
+    @apply absolute;
+    @apply [width:4px];
+    @apply [height:34px];
+    @apply [background:#fa233b];
+    @apply [border-radius:20px];
+    @apply [top:7px];
+  }
+  
+  .home-antenna::before {
+    @apply [left:13px];
+    @apply [transform:rotate(-25deg)];
+  }
+  
+  .home-antenna::after {
+    @apply [right:13px];
+    @apply [transform:rotate(25deg)];
+  }
+  
+  .home-antenna span {
+    @apply [width:15px];
+    @apply [height:15px];
+    @apply [background:#ffd166];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [left:17px];
+    @apply [top:0];
+    @apply [box-shadow:0_0_20px_rgba(255,_209,_102,_0.95)];
+    @apply [animation:homeGlow_1.2s_ease-in-out_infinite];
+  }
+  
+  .home-robot-head {
+    @apply [width:130px];
+    @apply [height:118px];
+    @apply [background:linear-gradient(145deg,_#27e36d,_#fa233b_55%,_#10933d)];
+    @apply [border-radius:44%_44%_48%_48%];
+    @apply absolute;
+    @apply [left:25px];
+    @apply [top:12px];
+    @apply [box-shadow:0_20px_42px_rgba(29,_185,_84,_0.3),_inset_0_9px_15px_rgba(255,_255,_255,_0.25)];
+  }
+  
+  .home-robot-ear {
+    @apply [width:30px];
+    @apply [height:30px];
+    @apply [background:#fa233b];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [top:42px];
+  }
+  
+  .home-robot-ear.left {
+    @apply [left:-15px];
+  }
+  
+  .home-robot-ear.right {
+    @apply [right:-15px];
+  }
+  
+  .home-robot-face {
+    @apply [width:92px];
+    @apply [height:68px];
+    @apply [background:rgba(10,_10,_15,_0.96)];
+    @apply [border-radius:28px];
+    @apply absolute;
+    @apply [left:19px];
+    @apply [top:30px];
+  }
+  
+  .home-robot-eye {
+    @apply [width:12px];
+    @apply [height:12px];
+    @apply [background:#ffffff];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [top:22px];
+    @apply [animation:homeBlink_3s_infinite];
+  }
+  
+  .home-robot-eye.left {
+    @apply [left:24px];
+  }
+  
+  .home-robot-eye.right {
+    @apply [right:24px];
+  }
+  
+  .home-robot-mouth {
+    @apply [width:28px];
+    @apply [height:14px];
+    @apply [border-bottom:3px_solid_#ffffff];
+    @apply [border-radius:0_0_22px_22px];
+    @apply absolute;
+    @apply [left:32px];
+    @apply [top:40px];
+  }
+  
+  .home-robot-body {
+    @apply [width:108px];
+    @apply [height:94px];
+    @apply [background:linear-gradient(145deg,_#28283b,_#171722)];
+    @apply [border-radius:34px_34px_42px_42px];
+    @apply absolute;
+    @apply [left:36px];
+    @apply [top:124px];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+    @apply [box-shadow:0_18px_34px_rgba(0,_0,_0,_0.28),_inset_0_8px_14px_rgba(255,_255,_255,_0.05)];
+  }
+  
+  .home-robot-arm {
+    @apply [width:21px];
+    @apply [height:68px];
+    @apply [background:linear-gradient(180deg,_#27e36d,_#fa233b)];
+    @apply [border-radius:24px];
+    @apply absolute;
+    @apply [top:9px];
+    @apply [transform-origin:top];
+  }
+  
+  .home-robot-arm.left {
+    @apply [left:-20px];
+    @apply [animation:homeWaveLeft_1.2s_ease-in-out_infinite];
+  }
+  
+  .home-robot-arm.right {
+    @apply [right:-20px];
+    @apply [animation:homeWaveRight_1.2s_ease-in-out_infinite];
+  }
+  
+  .home-wifi-icon {
+    @apply [width:62px];
+    @apply [height:48px];
+    @apply absolute;
+    @apply [left:23px];
+    @apply [top:23px];
+  }
+  
+  .home-wifi-icon span {
+    @apply absolute;
+    @apply [left:50%];
+    @apply [transform:translateX(-50%)];
+    @apply [border:3px_solid_rgba(255,_255,_255,_0.85)];
+    @apply [border-bottom:none];
+    @apply [border-radius:70px_70px_0_0];
+    @apply [animation:homeWifiPulse_1.35s_infinite];
+  }
+  
+  .home-wifi-icon span:nth-child(1) {
+    @apply [width:58px];
+    @apply [height:30px];
+    @apply [top:0];
+  }
+  
+  .home-wifi-icon span:nth-child(2) {
+    @apply [width:38px];
+    @apply [height:20px];
+    @apply [top:12px];
+    @apply [animation-delay:0.15s];
+  }
+  
+  .home-wifi-icon span:nth-child(3) {
+    @apply [width:11px];
+    @apply [height:11px];
+    @apply [background:rgba(255,_255,_255,_0.9)];
+    @apply [border:none];
+    @apply [border-radius:50%];
+    @apply [top:38px];
+    @apply [animation-delay:0.3s];
+  }
+  
+  .home-wifi-slash {
+    @apply [width:5px];
+    @apply [height:64px];
+    @apply [background:#ff4d6d];
+    @apply [border-radius:20px];
+    @apply absolute;
+    @apply [left:30px];
+    @apply [top:-6px];
+    @apply [transform:rotate(42deg)];
+    @apply [box-shadow:0_0_16px_rgba(255,_77,_109,_0.85)];
+    @apply [animation:homeSlashPop_1.35s_ease-in-out_infinite];
+  }
+  
+  .home-robot-feet {
+    @apply absolute;
+    @apply [width:94px];
+    @apply [left:43px];
+    @apply [top:217px];
+    @apply flex;
+    @apply justify-between;
+  }
+  
+  .home-robot-feet span {
+    @apply [width:34px];
+    @apply [height:15px];
+    @apply [background:#fa233b];
+    @apply [border-radius:22px];
+    @apply [animation:homeFeetDance_1.05s_ease-in-out_infinite];
+  }
+  
+  .home-robot-feet span:nth-child(2) {
+    @apply [animation-delay:0.25s];
+  }
+  
+  .home-robot-shadow {
+    @apply [width:122px];
+    @apply [height:20px];
+    @apply [background:rgba(0,_0,_0,_0.38)];
+    @apply [border-radius:50%];
+    @apply absolute;
+    @apply [left:29px];
+    @apply [bottom:-5px];
+    @apply [filter:blur(2px)];
+    @apply [animation:homeShadow_2.1s_ease-in-out_infinite];
+  }
+  
+  .home-offline-content {
+    @apply [max-width:500px];
+  }
+  
+  .home-offline-badge {
+    @apply [display:inline-flex];
+    @apply [padding:8px_14px];
+    @apply [border-radius:999px];
+    @apply [background:rgba(255,_77,_109,_0.14)];
+    @apply [color:#ff8fa3];
+    @apply [font-size:12px];
+    @apply [font-weight:900];
+    @apply [letter-spacing:0.7px];
+    @apply [text-transform:uppercase];
+    @apply [margin-bottom:14px];
+    @apply [border:1px_solid_rgba(255,_77,_109,_0.3)];
+  }
+  
+  .home-offline-content h1 {
+    @apply [color:#ffffff];
+    @apply [font-size:clamp(32px,_5vw,_54px)];
+    @apply [line-height:1.05];
+    @apply [margin-bottom:14px];
+  }
+  
+  .home-offline-content p {
+    @apply [color:rgba(255,_255,_255,_0.72)];
+    @apply [font-size:16px];
+    @apply [line-height:1.7];
+    @apply [margin-bottom:24px];
+  }
+  
+  .home-retry-btn {
+    @apply [border:none];
+    @apply [outline:none];
+    @apply [border-radius:999px];
+    @apply [padding:14px_24px];
+    @apply [background:linear-gradient(135deg,_#fa233b,_#27e36d)];
+    @apply [color:#07110b];
+    @apply [font-weight:900];
+    @apply cursor-pointer;
+    @apply [box-shadow:0_14px_32px_rgba(29,_185,_84,_0.28)];
+    @apply [transition:transform_0.2s_ease,_box-shadow_0.2s_ease];
+  }
+  
+  .home-retry-btn:hover {
+    @apply [transform:translateY(-3px)_scale(1.03)];
+    @apply [box-shadow:0_18px_38px_rgba(29,_185,_84,_0.4)];
+  }
+  
+  .home-retry-btn:active {
+    @apply [transform:scale(0.97)];
+  }
+  
+  @keyframes homeRobotBounce {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-1deg);
+    }
+  
+    50% {
+      transform: translateY(-17px) rotate(1deg);
+    }
+  }
+  
+  @keyframes homeShadow {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.38;
+    }
+  
+    50% {
+      transform: scale(0.76);
+      opacity: 0.2;
+    }
+  }
+  
+  @keyframes homeBlink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+  
+    95% {
+      transform: scaleY(0.12);
+    }
+  }
+  
+  @keyframes homeWifiPulse {
+    0%,
+    100% {
+      opacity: 0.23;
+      transform: translateX(-50%) scale(0.95);
+    }
+  
+    50% {
+      opacity: 0.95;
+      transform: translateX(-50%) scale(1.06);
+    }
+  }
+  
+  @keyframes homeSlashPop {
+    0%,
+    100% {
+      transform: rotate(42deg) scale(1);
+    }
+  
+    50% {
+      transform: rotate(42deg) scale(1.12);
+    }
+  }
+  
+  @keyframes homeWaveLeft {
+    0%,
+    100% {
+      transform: rotate(19deg);
+    }
+  
+    50% {
+      transform: rotate(-16deg);
+    }
+  }
+  
+  @keyframes homeWaveRight {
+    0%,
+    100% {
+      transform: rotate(-19deg);
+    }
+  
+    50% {
+      transform: rotate(16deg);
+    }
+  }
+  
+  @keyframes homeFeetDance {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+  
+    50% {
+      transform: translateY(-6px) rotate(6deg);
+    }
+  }
+  
+  @keyframes homeGlow {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+  
+    50% {
+      opacity: 1;
+      transform: scale(1.28);
+    }
+  }
+  
+  @keyframes homeNoteFloat {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0.42;
+    }
+  
+    50% {
+      transform: translateY(-26px) rotate(10deg);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes homeBlobMove {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+  
+    50% {
+      transform: translate(22px, -20px) scale(1.08);
+    }
+  }
+  
+  @screen query27 {
+    .home-offline-card {
+      @apply flex-col;
+      @apply text-center;
+      @apply [gap:28px];
+      @apply [padding:38px_22px];
+    }
+  
+    .home-offline-content p {
+      @apply [font-size:14px];
+    }
+  
+    .home-offline-character {
+      @apply [transform:scale(0.9)];
+    }
+  
+    .home-note {
+      @apply [opacity:0.55];
+    }
+  }
+.home-section-lazy-fallback {
+  @apply [min-height:120px];
+  @apply [border-radius:16px];
+  @apply [background:var(--sw-surface-2,_#f2f2f7)];
+  @apply [opacity:.58];
+}

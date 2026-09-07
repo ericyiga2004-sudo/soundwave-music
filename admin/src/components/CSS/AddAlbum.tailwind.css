@@ -1,0 +1,90 @@
+.admin-form {
+    @apply [max-width:520px];
+    @apply [margin:40px_auto];
+    @apply [padding:25px];
+    @apply [background:rgba(20,_20,_30,_0.95)];
+    @apply [border-radius:18px];
+    @apply [color:white];
+    @apply [box-shadow:0_15px_40px_rgba(0,_0,_0,_0.5)];
+    @apply [backdrop-filter:blur(10px)];
+    @apply [animation:fadeIn_0.4s_ease];
+  }
+  .admin-form h2 {
+    @apply text-center;
+    @apply [margin-bottom:20px];
+    @apply [font-size:1.5rem];
+    @apply [font-weight:700];
+    @apply [color:#a78bfa];
+  }
+  .admin-form form {
+    @apply flex;
+    @apply flex-col;
+    @apply [gap:14px];
+  }
+  .admin-form input,
+  .admin-form textarea,
+  .admin-form select {
+    @apply w-full;
+    @apply [padding:12px_14px];
+    @apply [border-radius:10px];
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+    @apply [background:rgba(255,_255,_255,_0.05)];
+    @apply [color:white];
+    @apply [outline:none];
+    @apply [font-size:0.95rem];
+    @apply [transition:0.3s];
+  }
+  .admin-form input:focus,
+  .admin-form textarea:focus,
+  .admin-form select:focus {
+    @apply [border-color:#8b5cf6];
+    @apply [box-shadow:0_0_0_2px_rgba(139,_92,_246,_0.3)];
+  }
+  .admin-form textarea {
+    @apply [min-height:100px];
+    @apply [resize:none];
+  }
+  .admin-form input[type="file"] {
+    @apply [padding:10px];
+    @apply [background:rgba(255,_255,_255,_0.03)];
+  }
+  .admin-form button {
+    @apply [padding:12px];
+    @apply [border:none];
+    @apply [border-radius:10px];
+    @apply [background:linear-gradient(135deg,_#8b5cf6,_#6366f1)];
+    @apply [color:white];
+    @apply [font-weight:600];
+    @apply cursor-pointer;
+    @apply [transition:0.3s];
+    @apply [margin-top:5px];
+  }
+  .admin-form button:hover {
+    @apply [transform:translateY(-2px)];
+    @apply [box-shadow:0_10px_25px_rgba(139,_92,_246,_0.3)];
+  }
+  .admin-form button:disabled {
+    @apply [opacity:0.6];
+    @apply [cursor:not-allowed];
+  }
+  .loading {
+    @apply text-center;
+    @apply [color:#a1a1aa];
+    @apply [margin-top:10px];
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @screen query2 {
+    .admin-form {
+      @apply [margin:20px];
+      @apply [padding:18px];
+    }
+  }

@@ -1,11 +1,10 @@
+import "./tailwind.css";
 import { createRoot } from "react-dom/client";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "./index.css";
+import "./index.tailwind.css";
 import App from "./App.jsx";
-import "./apple-theme.css";
-import "./v10-layout.css";
-import "./v12-compact-media.css";
+import "./apple-theme.tailwind.css";
+import "./v10-layout.tailwind.css";
+import "./v12-compact-media.tailwind.css";
 import { BrowserRouter } from "react-router-dom";
 import MusicContextProvider from "./context/ShopContext";
 import { MusicPlayerProvider } from "./context/MainPlayerContext.jsx";

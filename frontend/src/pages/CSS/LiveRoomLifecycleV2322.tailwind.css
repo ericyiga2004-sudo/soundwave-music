@@ -1,0 +1,147 @@
+.sw2322-live-jump-wrap {
+  @apply fixed;
+  @apply [z-index:1450];
+  @apply [right:clamp(14px,_2vw,_28px)];
+  @apply [top:50%];
+  @apply [transform:translateY(-50%)];
+  @apply [display:inline-flex];
+  @apply [align-items:flex-start];
+}
+
+.sw2322-live-jump-wrap .sw2321-live-jump {
+  @apply relative;
+  @apply [inset:auto];
+  @apply [right:auto];
+  @apply [top:auto];
+  @apply [transform:none];
+  @apply [z-index:1];
+  @apply [padding-right:34px];
+}
+
+.sw2322-live-jump-wrap .sw2321-live-jump:hover { @apply [transform:translateX(-3px)]; }
+.sw2322-live-jump-wrap .sw2321-live-jump:active { @apply [transform:scale(0.97)]; }
+
+.sw2322-live-jump-close {
+  @apply absolute;
+  @apply [z-index:2];
+  @apply [top:6px];
+  @apply [right:6px];
+  @apply [width:24px];
+  @apply [height:24px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [border-radius:999px];
+  @apply [color:rgba(255,255,255,.62)];
+  @apply [background:rgba(255,255,255,.055)];
+  @apply cursor-pointer;
+  @apply [transition:background_120ms_ease,_color_120ms_ease,_transform_120ms_ease];
+}
+
+.sw2322-live-jump-close:hover { @apply [color:#fff]; @apply [background:rgba(255,255,255,.12)]; }
+.sw2322-live-jump-close:active { @apply [transform:scale(.9)]; }
+
+.sw2322-room-header-side {
+  @apply grid;
+  @apply [gap:9px];
+  @apply [justify-items:end];
+}
+
+.sw2322-room-lifecycle-actions {
+  @apply flex;
+  @apply items-center;
+  @apply [justify-content:flex-end];
+  @apply [gap:8px];
+  @apply flex-wrap;
+}
+
+.sw2322-room-exit,
+.sw2322-room-delete {
+  @apply [min-height:36px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:7px];
+  @apply [padding:8px_11px];
+  @apply [border-radius:11px];
+  @apply [font-size:12px];
+  @apply [font-weight:700];
+  @apply [line-height:1];
+  @apply cursor-pointer;
+  @apply [transition:transform_120ms_ease,_background_120ms_ease,_border-color_120ms_ease];
+}
+
+.sw2322-room-exit {
+  @apply [color:rgba(255,255,255,.82)];
+  @apply [border:1px_solid_rgba(255,255,255,.11)];
+  @apply [background:rgba(255,255,255,.055)];
+}
+.sw2322-room-exit:hover { @apply [background:rgba(255,255,255,.09)]; @apply [border-color:rgba(255,255,255,.17)]; }
+
+.sw2322-room-delete {
+  @apply [color:#ff8c95];
+  @apply [border:1px_solid_rgba(255,87,99,.20)];
+  @apply [background:rgba(255,67,82,.075)];
+}
+.sw2322-room-delete:hover { @apply [color:#ffabb2]; @apply [border-color:rgba(255,87,99,.32)]; @apply [background:rgba(255,67,82,.12)]; }
+
+.sw2322-room-exit:active,
+.sw2322-room-delete:active { @apply [transform:scale(.97)]; }
+.sw2322-room-exit:disabled,
+.sw2322-room-delete:disabled { @apply [opacity:.5]; @apply [cursor:wait]; }
+
+.sw2322-room-card {
+  @apply relative;
+  @apply grid;
+  @apply [grid-template-columns:minmax(0,_1fr)_auto];
+  @apply [gap:8px];
+  @apply [align-items:stretch];
+}
+
+.sw2322-room-card-main {
+  @apply w-full;
+  @apply min-w-0;
+  @apply grid;
+  @apply [grid-template-columns:auto_minmax(0,_1fr)_auto];
+  @apply items-center;
+  @apply [gap:12px];
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [color:inherit];
+  @apply [background:transparent];
+  @apply [text-align:left];
+  @apply cursor-pointer;
+}
+
+.sw2322-room-card-action {
+  @apply [align-self:center];
+  @apply [width:34px];
+  @apply [height:34px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [padding:0];
+  @apply [border-radius:10px];
+  @apply cursor-pointer;
+  @apply [color:rgba(255,255,255,.58)];
+  @apply [border:1px_solid_rgba(255,255,255,.08)];
+  @apply [background:rgba(255,255,255,.04)];
+}
+.sw2322-room-card-action:hover { @apply [color:#fff]; @apply [background:rgba(255,255,255,.08)]; }
+.sw2322-room-card-action.delete:hover { @apply [color:#ff929b]; @apply [border-color:rgba(255,87,99,.24)]; @apply [background:rgba(255,67,82,.09)]; }
+.sw2322-room-card-action:disabled { @apply [opacity:.45]; @apply [cursor:wait]; }
+
+@screen query4 {
+  .sw2322-live-jump-wrap { @apply [right:10px]; @apply [top:48%]; }
+  .sw2322-live-jump-wrap .sw2321-live-jump { @apply [max-width:152px]; }
+  .sw2322-room-header-side { @apply w-full; @apply [justify-items:stretch]; }
+  .sw2322-room-lifecycle-actions { @apply [justify-content:stretch]; }
+  .sw2322-room-exit,
+  .sw2322-room-delete { @apply [flex:1_1_130px]; }
+}
+
+@screen query9 {
+  .sw2322-live-jump-close,
+  .sw2322-room-exit,
+  .sw2322-room-delete { @apply [transition:none]; }
+}

@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import "./CSS/MusicPlay.css";
+import "./CSS/MusicPlay.tailwind.css";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { getLowData, UI_PREFERENCES_EVENT } from "../utils/uiPreferences";
 
@@ -34,7 +34,7 @@ const getCover = (song) =>
 
 const VOLUME_KEY = "soundwave_player_volume";
 
-const MusicPlayer = () => {
+const MusicPlayer = ({ sidebarHidden = false }) => {
   const hiddenAudioRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,7 +42,8 @@ const MusicPlayer = () => {
   const [queueOpen, setQueueOpen] = useState(false);
   const [lowData, setLowData] = useState(getLowData);
   const [volume, setVolume] = useState(() => {
-    const stored = Number(localStorage.getItem(VOLUME_KEY));
+    const saved = localStorage.getItem(VOLUME_KEY);
+    const stored = saved === null || saved.trim() === "" ? NaN : Number(saved);
     return Number.isFinite(stored) && stored >= 0 && stored <= 1 ? stored : 0.82;
   });
 
@@ -148,12 +149,18 @@ const MusicPlayer = () => {
         ref={hiddenAudioRef}
         preload={lowData ? "metadata" : "auto"}
         playsInline
-        style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none", left: -9999 }}
+        className="![position:fixed] ![width:1px] ![height:1px] ![opacity:0] ![pointer-events:none] ![left:-9999px]"
       />
+
+      {currentSong && volume <= 0.001 && location.pathname.startsWith("/song/") && (
+        <button type="button" onClick={toggleMute} className="fixed right-3 top-[max(12px,env(safe-area-inset-top))] z-[2400] flex min-h-11 items-center gap-2 rounded-full border border-solid border-[var(--sw-border)] bg-[var(--sw-surface)] px-4 text-sm text-[var(--sw-text)] shadow-lg md:hidden" aria-label="Unmute audio">
+          <VolumeX size={18} /> Audio muted · Unmute
+        </button>
+      )}
 
       {currentSong && (
         <>
-          <div className={`sw-player ${isBuffering ? "is-buffering" : ""}`}>
+          <div className={`sw-player ${sidebarHidden ? "lg:!left-0" : ""} ${isBuffering ? "is-buffering" : ""}`}>
             <div className="sw-player-song">
               <button type="button" className="sw-player-cover" onClick={openSong} aria-label="Open current song">
                 <img src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
@@ -168,7 +175,7 @@ const MusicPlayer = () => {
               <div className="sw-player-controls">
                 <button
                   type="button"
-                  className={`sw-player-icon-control d-none d-md-grid ${shuffle ? "active" : ""}`}
+                  className={`sw-player-icon-control !hidden md:!grid ${shuffle ? "active" : ""}`}
                   onClick={() => setShuffle?.(!shuffle)}
                   aria-label="Toggle shuffle"
                   title="Shuffle"
@@ -186,7 +193,7 @@ const MusicPlayer = () => {
                 </button>
                 <button
                   type="button"
-                  className={`sw-player-icon-control d-none d-md-grid ${repeat !== repeatModes?.OFF ? "active" : ""}`}
+                  className={`sw-player-icon-control !hidden md:!grid ${repeat !== repeatModes?.OFF ? "active" : ""}`}
                   onClick={cycleRepeat}
                   aria-label={repeatLabel}
                   title={repeatLabel}
@@ -213,8 +220,8 @@ const MusicPlayer = () => {
             </div>
 
             <div className="sw-player-actions">
-              <div className="sw-volume-control d-none d-xl-flex">
-                {volumeIcon}
+              <div className="sw-volume-control !hidden xl:!flex">
+                <button type="button" onClick={toggleMute} aria-label={volume <= 0.001 ? "Unmute audio" : "Mute audio"} aria-pressed={volume <= 0.001} className="sw-player-icon-control">{volumeIcon}</button>
                 <input
                   type="range"
                   min="0"
@@ -227,7 +234,7 @@ const MusicPlayer = () => {
               </div>
               <button
                 type="button"
-                className={`sw-player-icon-control d-xl-none ${volume <= 0.001 ? "active" : ""}`}
+                className={`sw-player-icon-control xl:!hidden ${volume <= 0.001 ? "active" : ""}`}
                 onClick={toggleMute}
                 aria-label={volume <= 0.001 ? "Unmute" : "Mute"}
                 title={volume <= 0.001 ? "Unmute" : "Mute"}

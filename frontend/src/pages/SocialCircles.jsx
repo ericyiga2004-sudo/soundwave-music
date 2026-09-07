@@ -7,8 +7,8 @@ import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const SocialCircles = () => {
   const navigate = useNavigate();
@@ -64,7 +64,7 @@ const SocialCircles = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page container-fluid px-0">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
       <SocialPageHero
         kicker="Private groups"
         title="Small music groups, without the noise."
@@ -73,8 +73,8 @@ const SocialCircles = () => {
         live={realtimeConnected}
       />
 
-      <div className="row g-3 g-xl-4">
-        <div className="col-12 col-xl-8">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
+        <div className="col !w-[100%] flex-none col sw-col-wide xl:!w-[66.66666666666667%] xl:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Your Circles</span><h2>Private spaces</h2></div><UsersRound size={20} /></div>
             <div className="sw20-circle-grid">
@@ -93,7 +93,7 @@ const SocialCircles = () => {
           </section>
         </div>
 
-        <div className="col-12 col-xl-4">
+        <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
           <section className="sw-social-panel sw20-panel">
             <div className="sw20-form-title"><CirclePlus size={18} /><div><strong>Create a Circle</strong><small>Private by default.</small></div></div>
             <form className="sw20-stack-form" onSubmit={create}>
@@ -103,7 +103,7 @@ const SocialCircles = () => {
             </form>
           </section>
 
-          <section className="sw-social-panel sw20-panel mt-3">
+          <section className="sw-social-panel sw20-panel !mt-[1rem]">
             <div className="sw20-form-title"><UserPlus size={18} /><div><strong>Join a Circle</strong><small>Use the invite code a friend sent you.</small></div></div>
             <form className="sw20-inline-code" onSubmit={join}>
               <input value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="Invite code" />
@@ -112,7 +112,7 @@ const SocialCircles = () => {
           </section>
         </div>
       </div>
-      {status ? <div className="sw-social-message mt-3">{status}</div> : null}
+      {status ? <div className="sw-social-message !mt-[1rem]">{status}</div> : null}
     </div>
   );
 };

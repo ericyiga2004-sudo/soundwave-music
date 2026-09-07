@@ -424,7 +424,11 @@ export const MusicPlayerProvider = ({ children }) => {
       try {
         setBufferingState(true, "Loading song...");
 
-        const audioSource = await resolvePlayableAudioUrl(song);
+        // Keep the online path synchronous until play(): iOS requires the tap.
+        const audioSource = navigator.onLine === false
+          ? await resolvePlayableAudioUrl(song)
+          : directAudioUrl;
+        if (navigator.onLine !== false) releaseOfflineAudioObjectUrl();
         if (requestId !== playbackRequestRef.current) return false;
 
         if (!audioSource) {
@@ -494,8 +498,7 @@ export const MusicPlayerProvider = ({ children }) => {
         // during that network wait. If the browser accepts the play request but
         // has not started within the short window below, leave it buffering;
         // the normal playing/canplay events will finish the transition.
-        const playAttempt = Promise.resolve()
-          .then(() => audio.play())
+        const playAttempt = Promise.resolve(audio.play())
           .then(() => ({ started: true }))
           .catch((playError) => ({ error: playError }));
 
@@ -514,7 +517,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
         if (playResult?.pending) {
           setIsPlaying(false);
-          setBufferingState(true, "Joining live audio...");
+          setBufferingState(true, roomControl?.active ? "Joining live audio..." : "Buffering song...");
           setPlaybackError("");
 
           // The race above deliberately releases room sync quickly, but the
@@ -524,11 +527,12 @@ export const MusicPlayerProvider = ({ children }) => {
           playAttempt.then((lateResult) => {
             if (requestId !== playbackRequestRef.current) return;
             if (lateResult?.error) {
+              userWantedPlayRef.current = false;
               setIsPlaying(false);
               setBufferingState(false);
               setPlaybackError(
                 lateResult.error?.name === "NotAllowedError"
-                  ? "Tap Play once to enable live room audio."
+                  ? "Tap Play to enable audio."
                   : "Could not start this audio. Tap Play to retry."
               );
               return;
@@ -572,6 +576,7 @@ export const MusicPlayerProvider = ({ children }) => {
             ? "Playback was blocked by the browser. Tap Play to start audio."
             : "Could not start this audio. Tap Play to retry.";
 
+        userWantedPlayRef.current = false;
         setPlaybackError(message);
         console.error("Unable to play song:", error);
         return false;
@@ -585,6 +590,7 @@ export const MusicPlayerProvider = ({ children }) => {
       addSongToHistory,
       clearRecoveryTimer,
       resolvePlayableAudioUrl,
+      releaseOfflineAudioObjectUrl,
       setBufferingState,
       syncTrackState,
     ]
@@ -759,7 +765,9 @@ export const MusicPlayerProvider = ({ children }) => {
       audio.setAttribute("x-webkit-airplay", "allow");
 
       if (!audio.src) {
-        const audioSource = await resolvePlayableAudioUrl(activeSong);
+        const audioSource = navigator.onLine === false
+          ? await resolvePlayableAudioUrl(activeSong)
+          : getSongAudioUrl(activeSong);
 
         if (!audioSource) return;
 
@@ -792,6 +800,7 @@ export const MusicPlayerProvider = ({ children }) => {
       if (requestId !== playbackRequestRef.current) return;
       setIsPlaying(false);
       setBufferingState(false);
+      userWantedPlayRef.current = false;
       setPlaybackError(error?.name === "NotAllowedError" ? "Tap Play to start audio." : "Could not resume this audio. Tap Play to retry.");
       console.error("Unable to resume song:", error);
       return false;

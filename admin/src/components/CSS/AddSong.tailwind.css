@@ -1,0 +1,335 @@
+.add-song-container {
+    @apply [max-width:600px];
+    @apply [margin:40px_auto];
+    @apply [padding:25px];
+    @apply [background:rgba(20,_20,_30,_0.95)];
+    @apply [border-radius:16px];
+    @apply [color:white];
+    @apply [box-shadow:0_10px_40px_rgba(0,0,0,0.5)];
+  }
+
+  .lyrics-admin-section {
+    @apply [border-color:rgba(92,_246,_128,_0.18)];
+    @apply [background:radial-gradient(circle_at_top_left,_rgba(92,_246,_128,_0.08),_transparent_34%),_rgba(255,_255,_255,_0.045)];
+  }
+  
+  .upload-progress-wrap {
+    @apply [margin:16px_0];
+  }
+  
+  .upload-progress-bar {
+    @apply w-full;
+    @apply [height:10px];
+    @apply [background:#e5e5e5];
+    @apply [border-radius:999px];
+    @apply overflow-hidden;
+  }
+  
+  .upload-progress-fill {
+    @apply h-full;
+    @apply [background:#111];
+    @apply [border-radius:999px];
+    @apply [transition:width_0.25s_ease];
+  }
+  .song-form textarea {
+    @apply w-full;
+    @apply [min-height:150px];
+    @apply [resize:vertical];
+  
+    @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+    @apply [outline:none];
+    @apply [border-radius:16px];
+  
+    @apply [padding:14px_16px];
+  
+    @apply [background:rgba(255,_255,_255,_0.08)];
+    @apply [color:#ffffff];
+  
+    @apply [font:inherit];
+    @apply [line-height:1.6];
+  
+    @apply [transition:border-color_0.2s_ease,_background_0.2s_ease,_box-shadow_0.2s_ease];
+  }
+  
+  .song-form textarea:focus {
+    @apply [border-color:rgba(92,_246,_128,_0.48)];
+    @apply [background:rgba(255,_255,_255,_0.11)];
+    @apply [box-shadow:0_0_0_4px_rgba(92,_246,_128,_0.08)];
+  }
+  
+  .song-form textarea::placeholder {
+    @apply [color:rgba(255,_255,_255,_0.42)];
+  }
+  
+  .lyrics-admin-section .input-block {
+    @apply [margin-top:16px];
+  }
+  
+  .lyrics-admin-section .input-block:first-of-type {
+    @apply [margin-top:0];
+  }
+  
+  .helper-text {
+    @apply [margin:8px_0_0];
+    @apply [color:rgba(255,_255,_255,_0.58)];
+    @apply [font-size:0.86rem];
+    @apply [line-height:1.5];
+  }
+  
+  .lyrics-admin-section textarea[name="syncedLyrics"] {
+    @apply [min-height:260px];
+    @apply [font-family:ui-monospace,_SFMono-Regular,_Menlo,_Monaco,_Consolas,_"Liberation_Mono",_"Courier_New",_monospace];
+    @apply [font-size:0.9rem];
+  }
+  
+  @screen query3 {
+    .song-form textarea {
+      @apply [min-height:130px];
+    }
+  
+    .lyrics-admin-section textarea[name="syncedLyrics"] {
+      @apply [min-height:220px];
+    }
+  }
+  
+  .add-song-container h2 {
+    @apply text-center;
+    @apply [margin-bottom:20px];
+    @apply [color:#a78bfa];
+  }
+  
+  .song-form {
+    @apply flex;
+    @apply flex-col;
+    @apply [gap:12px];
+  }
+
+  .add-song-container {
+  @apply [max-width:980px];
+  @apply [margin:0_auto];
+  @apply [padding:34px_20px_80px];
+  @apply [color:#fff];
+}
+
+.add-song-header {
+  @apply [margin-bottom:24px];
+  @apply [padding:30px];
+  @apply [border-radius:28px];
+  @apply [background:linear-gradient(135deg,_rgba(92,_246,_128,_0.14),_rgba(255,_255,_255,_0.055)),_rgba(255,_255,_255,_0.065)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.12)];
+}
+
+.add-song-header span {
+  @apply [color:#5cf680];
+  @apply [font-size:13px];
+  @apply [font-weight:900];
+  @apply [letter-spacing:1.5px];
+  @apply [text-transform:uppercase];
+}
+
+.add-song-header h2 {
+  @apply [margin:8px_0_10px];
+  @apply [font-size:clamp(32px,_5vw,_54px)];
+  @apply [letter-spacing:-1.5px];
+}
+
+.add-song-header p {
+  @apply [max-width:720px];
+  @apply [margin:0];
+  @apply [color:rgba(255,_255,_255,_0.68)];
+  @apply [line-height:1.7];
+}
+
+.msg {
+  @apply [margin-bottom:18px];
+  @apply [padding:14px_16px];
+  @apply [border-radius:16px];
+  @apply [background:rgba(92,_246,_128,_0.13)];
+  @apply [border:1px_solid_rgba(92,_246,_128,_0.28)];
+  @apply [color:#d8ffde];
+  @apply [font-weight:700];
+}
+
+.song-form {
+  @apply flex;
+  @apply flex-col;
+  @apply [gap:18px];
+}
+
+.form-section {
+  @apply [padding:24px];
+  @apply [border-radius:24px];
+  @apply [background:rgba(255,_255,_255,_0.065)];
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.1)];
+}
+
+.form-section h3 {
+  @apply [margin:0_0_16px];
+  @apply [font-size:20px];
+}
+
+.song-form input,
+.song-form select {
+  @apply w-full;
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.13)];
+  @apply [outline:none];
+  @apply [border-radius:16px];
+  @apply [padding:14px_15px];
+  @apply [background:rgba(255,_255,_255,_0.085)];
+  @apply [color:#fff];
+  @apply [font-size:15px];
+}
+
+.song-form select option {
+  @apply [color:#111];
+}
+
+.song-form input::placeholder {
+  @apply [color:rgba(255,_255,_255,_0.42)];
+}
+
+.song-form input:focus,
+.song-form select:focus {
+  @apply [border-color:rgba(92,_246,_128,_0.75)];
+  @apply [box-shadow:0_0_0_4px_rgba(92,_246,_128,_0.1)];
+}
+
+.form-grid,
+.file-grid {
+  @apply grid;
+  @apply [grid-template-columns:repeat(2,_minmax(0,_1fr))];
+  @apply [gap:14px];
+}
+
+.input-block {
+  @apply flex;
+  @apply flex-col;
+  @apply [gap:8px];
+}
+
+.input-block label {
+  @apply [color:rgba(255,_255,_255,_0.72)];
+  @apply [font-size:13px];
+  @apply [font-weight:800];
+}
+
+.featured-artist-grid {
+  @apply flex;
+  @apply flex-wrap;
+  @apply [gap:10px];
+}
+
+.featured-artist-chip {
+  @apply [border:1px_solid_rgba(255,_255,_255,_0.13)];
+  @apply [border-radius:999px];
+  @apply [padding:10px_14px];
+  @apply [background:rgba(255,_255,_255,_0.075)];
+  @apply [color:#fff];
+  @apply cursor-pointer;
+  @apply [font-weight:700];
+}
+
+.featured-artist-chip.selected {
+  @apply [background:#5cf680];
+  @apply [color:#061007];
+  @apply [border-color:#5cf680];
+}
+
+.selected-featured,
+.helper-text {
+  @apply [margin:14px_0_0];
+  @apply [color:rgba(255,_255,_255,_0.68)];
+}
+
+.checkbox-row {
+  @apply flex;
+  @apply flex-wrap;
+  @apply [gap:16px];
+}
+
+.checkbox-row label {
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:9px];
+  @apply [padding:12px_14px];
+  @apply [border-radius:16px];
+  @apply [background:rgba(255,_255,_255,_0.075)];
+  @apply cursor-pointer;
+}
+
+.checkbox-row input {
+  @apply [width:auto];
+}
+
+.submit-song-btn {
+  @apply [border:none];
+  @apply [border-radius:999px];
+  @apply [padding:16px_24px];
+  @apply [background:#5cf680];
+  @apply [color:#061007];
+  @apply [font-size:16px];
+  @apply [font-weight:900];
+  @apply cursor-pointer;
+  @apply [box-shadow:0_18px_42px_rgba(92,_246,_128,_0.28)];
+}
+
+.submit-song-btn:disabled {
+  @apply [opacity:0.6];
+  @apply [cursor:not-allowed];
+}
+
+@screen query4 {
+  .add-song-container {
+    @apply [padding:24px_12px_70px];
+  }
+
+  .form-grid,
+  .file-grid {
+    @apply [grid-template-columns:1fr];
+  }
+
+  .form-section {
+    @apply [padding:18px];
+    @apply [border-radius:20px];
+  }
+}
+  
+  .song-form input,
+  .song-form select {
+    @apply [padding:12px];
+    @apply [border-radius:10px];
+    @apply [border:none];
+    @apply [outline:none];
+    @apply [background:rgba(255,255,255,0.07)];
+    @apply [color:white];
+  }
+  
+  .song-form input:focus,
+  .song-form select:focus {
+    @apply [border:1px_solid_#8b5cf6];
+  }
+  
+  .song-form label {
+    @apply [font-size:0.85rem];
+    @apply [color:#aaa];
+  }
+  
+  .song-form button {
+    @apply [padding:12px];
+    @apply [border-radius:10px];
+    @apply [border:none];
+    @apply [background:linear-gradient(135deg,_#8b5cf6,_#6366f1)];
+    @apply [color:white];
+    @apply [font-weight:bold];
+    @apply cursor-pointer;
+    @apply [transition:0.2s];
+  }
+  
+  .song-form button:hover {
+    @apply [transform:translateY(-2px)];
+  }
+  
+  .song-form button:disabled {
+    @apply [opacity:0.6];
+    @apply [cursor:not-allowed];
+  }

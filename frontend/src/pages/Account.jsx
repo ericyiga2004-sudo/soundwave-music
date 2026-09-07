@@ -12,7 +12,7 @@ import {
   FaMagic,
 } from "react-icons/fa";
 
-import "./CSS/Account.css";
+import "./CSS/Account.tailwind.css";
 import { MusicContext } from "../context/ShopContext";
 import SongItem from "../components/SongItem/SongItem";
 import {
@@ -331,21 +331,21 @@ const Account = () => {
       <main className="account-dashboard">
         {noticeMarkup}
 
-        <div className="container-fluid px-2 px-sm-3 px-lg-4">
-          <section className="dashboard-card row g-3 g-md-4 align-items-center">
-            <div className="col-12 col-md-auto text-center text-md-start">
-              <div className="dashboard-avatar mx-auto mx-md-0">
+        <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
+          <section className="dashboard-card row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem] !items-center">
+            <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none !text-center md:!text-left">
+              <div className="dashboard-avatar !mx-auto md:!mx-[0px]">
                 <FaUser />
               </div>
             </div>
 
-            <div className="col-12 col-md text-center text-md-start">
+            <div className="col !w-[100%] flex-none col md:flex-[1_0_0%] !text-center md:!text-left">
               <span className="dashboard-badge">Your Account</span>
               <h1>Welcome Back</h1>
               <p>Your music, history, playlists, and personal mixes are ready.</p>
             </div>
 
-            <div className="col-12 col-md-auto text-center text-md-end">
+            <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none !text-center md:!text-right">
               <button
                 type="button"
                 className="logout-btn"
@@ -459,9 +459,9 @@ const Account = () => {
     <main className="auth-page">
       {noticeMarkup}
 
-      <div className="container-fluid px-2 px-sm-3 px-lg-4">
-        <section className="auth-container row g-0 mx-auto">
-          <div className="auth-left col-12 col-lg-7">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0.5rem] sm:!px-[1rem] lg:!px-[1.5rem]">
+        <section className="auth-container row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0px] [--sw-gutter-y:0px] !mx-auto">
+          <div className="auth-left col !w-[100%] flex-none col lg:!w-[58.333333333333336%] lg:flex-none">
             <div className="logo-circle">
               <FaMusic />
             </div>
@@ -478,7 +478,7 @@ const Account = () => {
             </p>
           </div>
 
-          <div className="auth-right col-12 col-lg-5">
+          <div className="auth-right col !w-[100%] flex-none col lg:!w-[41.666666666666664%] lg:flex-none">
             <div className="auth-switch">
               <button
                 type="button"

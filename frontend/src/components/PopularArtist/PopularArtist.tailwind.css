@@ -1,0 +1,255 @@
+.popular-artists-section {
+  @apply [padding:28px_clamp(14px,_3vw,_48px)_12px];
+  @apply [color:var(--sw-text)];
+  @apply [background:var(--sw-bg)];
+}
+
+.popular-artists-header {
+  @apply [margin-bottom:16px];
+  @apply flex;
+  @apply [align-items:flex-end];
+  @apply justify-between;
+  @apply [gap:18px];
+}
+
+.popular-artists-tag {
+  @apply block;
+  @apply [margin-bottom:3px];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:700];
+}
+
+.popular-artists-header h2 {
+  @apply [margin:0];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:clamp(1.35rem,_1.5vw_+_0.85rem,_1.75rem)];
+  @apply [line-height:1.08];
+  @apply [font-weight:750];
+  @apply [letter-spacing:-0.04em];
+}
+
+.popular-artists-header p {
+  @apply [max-width:540px];
+  @apply [margin:5px_0_0];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.78rem];
+}
+
+.popular-artists-view-all {
+  @apply [flex:0_0_auto];
+  @apply [border:0];
+  @apply [padding:6px_0];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:6px];
+  @apply [background:transparent];
+  @apply [color:var(--sw-accent)];
+  @apply [font-size:0.8rem];
+  @apply [font-weight:680];
+}
+
+.popular-artists-grid {
+  @apply [margin-top:0];
+}
+
+.popular-artist-card,
+.popular-artist-skeleton {
+  @apply w-full;
+  @apply min-w-0;
+  @apply [border:0];
+  @apply [background:transparent];
+}
+
+.popular-artist-image-wrap {
+  @apply relative;
+  @apply w-full;
+  @apply [aspect-ratio:1_/_1];
+  @apply [overflow:visible];
+  @apply cursor-pointer;
+}
+
+.popular-artist-image {
+  @apply w-full;
+  @apply h-full;
+  @apply [aspect-ratio:1_/_1];
+  @apply block;
+  @apply object-cover;
+  @apply [object-position:center];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:50%];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.popular-artist-verified-badge {
+  @apply absolute;
+  @apply [right:4%];
+  @apply [bottom:4%];
+  @apply [width:25px];
+  @apply [height:25px];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [border:3px_solid_var(--sw-bg)];
+  @apply [border-radius:50%];
+  @apply [background:var(--sw-accent)];
+  @apply [color:#fff];
+  @apply [font-size:0.72rem];
+}
+
+.popular-artist-content {
+  @apply min-w-0;
+  @apply [padding-top:9px];
+  @apply text-center;
+}
+
+.popular-artist-content h3 {
+  @apply [margin:0];
+  @apply overflow-hidden;
+  @apply [color:var(--sw-text)];
+  @apply [font-size:clamp(0.78rem,_0.35vw_+_0.7rem,_0.93rem)];
+  @apply [line-height:1.25];
+  @apply [font-weight:700];
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+
+.popular-artist-country,
+.popular-artist-stats {
+  @apply [margin:4px_0_0];
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:5px];
+  @apply overflow-hidden;
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:clamp(0.62rem,_0.2vw_+_0.59rem,_0.7rem)];
+  @apply [white-space:nowrap];
+}
+
+.popular-artist-country span,
+.popular-artist-stats span {
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+}
+
+.popular-artist-actions {
+  @apply [margin-top:8px];
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:6px];
+}
+
+.popular-artist-follow-btn,
+.popular-artist-button {
+  @apply min-w-0;
+  @apply [min-height:31px];
+  @apply [border-radius:999px];
+  @apply [padding:0_10px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-center;
+  @apply [gap:5px];
+  @apply [font-size:0.68rem];
+  @apply [font-weight:680];
+  @apply [white-space:nowrap];
+}
+
+.popular-artist-follow-btn {
+  @apply [border:0];
+  @apply [background:var(--sw-accent)];
+  @apply [color:#fff];
+}
+
+.popular-artist-follow-btn.following {
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [background:var(--sw-surface-2)];
+  @apply [color:var(--sw-text)];
+}
+
+.popular-artist-button {
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [background:var(--sw-surface)];
+  @apply [color:var(--sw-text-secondary)];
+}
+
+.popular-artists-empty {
+  @apply [min-height:120px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:14px];
+  @apply [padding:24px];
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:var(--sw-surface-2)];
+  @apply text-center;
+}
+
+.catalog-retry-btn {
+  @apply [min-height:34px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:999px];
+  @apply [margin-left:10px];
+  @apply [padding:0_14px];
+  @apply [background:var(--sw-surface)];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:0.74rem];
+  @apply [font-weight:680];
+}
+
+.popular-artist-skeleton-image,
+.popular-artist-skeleton-line {
+  @apply block;
+  @apply [background:var(--sw-surface-2)];
+  @apply [animation:swArtistPulse_1s_ease-in-out_infinite_alternate];
+}
+
+.popular-artist-skeleton-image {
+  @apply w-full;
+  @apply [aspect-ratio:1_/_1];
+  @apply [border-radius:50%];
+}
+
+.popular-artist-skeleton-line {
+  @apply [width:76%];
+  @apply [height:10px];
+  @apply [margin:10px_auto_0];
+  @apply [border-radius:5px];
+}
+
+.popular-artist-skeleton-line.short {
+  @apply [width:54%];
+  @apply [margin-top:7px];
+}
+
+@keyframes swArtistPulse {
+  from { opacity: 0.58; }
+  to { opacity: 1; }
+}
+
+html[data-sw-battery-saver="true"] .popular-artist-skeleton-image,
+html[data-sw-battery-saver="true"] .popular-artist-skeleton-line,
+html[data-sw-low-data="true"] .popular-artist-skeleton-image,
+html[data-sw-low-data="true"] .popular-artist-skeleton-line {
+  @apply [animation:none];
+}
+
+@screen query4 {
+  .popular-artists-section { @apply [padding-top:22px]; }
+  .popular-artists-header p { @apply hidden; }
+  .popular-artists-view-all { @apply [font-size:0.73rem]; }
+  .popular-artist-actions { @apply [gap:5px]; }
+  .popular-artist-follow-btn,
+  .popular-artist-button {
+    @apply [flex:1_1_0];
+    @apply [padding-inline:6px];
+    @apply [font-size:0.63rem];
+  }
+}
+
+@screen query11 {
+  .popular-artist-actions { @apply flex-col; }
+  .popular-artist-follow-btn,
+  .popular-artist-button { @apply w-full; }
+}

@@ -2,7 +2,7 @@ import { useContext, useMemo } from "react";
 import { Play, Radio as RadioIcon, Shuffle, Sparkles, Waves } from "lucide-react";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import "./CSS/Radio.css";
+import "./CSS/Radio.tailwind.css";
 
 const getArtist = (song) => song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
@@ -77,7 +77,7 @@ const Radio = () => {
   };
 
   return (
-    <div className="radio-page container-fluid px-3 px-sm-4 px-xl-5 py-4 py-xl-5">
+    <div className="radio-page sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] xl:!px-[3rem] !py-[1.5rem] xl:!py-[3rem]">
       <header className="radio-page-header">
         <span>Live & continuous</span>
         <h1>Radio</h1>
@@ -103,14 +103,14 @@ const Radio = () => {
         </div>
       </div>
 
-      <div className="row g-3 g-xl-4">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
         {stations.map((station, index) => {
           const Icon = station.icon;
           const image = station.queue?.find((song) => song?.imageUrl)?.imageUrl;
           const preview = station.queue?.slice(0, 2) || [];
           return (
-            <div className="col-12 col-sm-6 col-xl-4" key={station.id}>
-              <article className="radio-station-card h-100">
+            <div className="col !w-[100%] flex-none col sm:!w-[50%] sm:flex-none col xl:!w-[33.333333333333336%] xl:flex-none" key={station.id}>
+              <article className="radio-station-card !h-full">
                 <div className={`radio-station-art radio-station-art-${(index % 4) + 1}`}>
                   {image ? <img src={image} alt="" loading="lazy" /> : <Icon size={42} />}
                   <span className="radio-station-overlay" />

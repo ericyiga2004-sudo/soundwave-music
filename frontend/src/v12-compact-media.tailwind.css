@@ -1,0 +1,94 @@
+.sw-workspace :is(
+  .release-card,
+  .featured-album-card,
+  .song-carder,
+  .year-song-card,
+  .years-song-card
+) {
+  @apply w-full;
+  @apply [max-width:224px];
+  @apply [margin-inline:auto];
+}
+
+.sw-workspace .popular-artist-card {
+  @apply [max-width:190px];
+  @apply [margin-inline:auto];
+}
+
+.sw-workspace .popular-artist-image-wrap {
+  @apply [width:min(100%,_176px)] !important;
+  @apply [margin-inline:auto] !important;
+}
+
+.sw-workspace .mood-card {
+  @apply [max-width:280px];
+  @apply [margin-inline:auto];
+}
+.song-lyrics-column {
+  @apply overflow-hidden;
+}
+
+.song-lyrics-scroll {
+  @apply relative;
+  @apply [overflow-y:auto];
+  @apply [overflow-x:hidden];
+  @apply [overscroll-behavior-y:contain];
+  @apply [scroll-behavior:smooth];
+  @apply [scrollbar-gutter:stable];
+  @apply [contain:layout_paint];
+  @apply [touch-action:pan-y];
+}
+@screen query2 {
+  .song-lyric-line {
+    @apply [font-size:clamp(1.2rem,_3.5vw,_2rem)] !important;
+    @apply [line-height:1.08] !important;
+  }
+}
+
+@screen query4 {
+  .song-lyrics-scroll {
+    @apply [height:min(54svh,_500px)] !important;
+    @apply [padding-top:14svh] !important;
+    @apply [padding-bottom:16svh] !important;
+  }
+
+  .song-lyric-line {
+    @apply [font-size:clamp(1.08rem,_5.1vw,_1.72rem)] !important;
+    @apply [margin-bottom:16px] !important;
+  }
+}
+
+@screen query3 {
+  .sw-workspace :is(
+    .release-card,
+    .featured-album-card,
+    .song-carder,
+    .year-song-card,
+    .years-song-card
+  ) {
+    @apply [max-width:196px];
+  }
+
+  .sw-workspace .popular-artist-card {
+    @apply [max-width:166px];
+  }
+
+  .sw-workspace .popular-artist-image-wrap {
+    @apply [width:min(100%,_150px)] !important;
+  }
+
+  .song-lyrics-scroll {
+    @apply [height:min(50svh,_440px)] !important;
+  }
+}
+
+@screen query11 {
+  .song-lyric-line {
+    @apply [font-size:1.02rem] !important;
+  }
+}
+
+html[data-sw-battery-saver="true"] .song-lyrics-scroll,
+html[data-sw-low-data="true"] .song-lyrics-scroll {
+  @apply [scroll-behavior:auto] !important;
+}

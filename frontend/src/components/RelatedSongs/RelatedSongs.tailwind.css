@@ -1,0 +1,19 @@
+.related-container {
+    @apply [margin-top:30px];
+    @apply [padding:20px];
+    @apply [color:white];
+  }
+  
+  .related-container h3 {
+    @apply [font-size:1.3rem];
+    @apply [margin-bottom:15px];
+    @apply [color:#a78bfa];
+  }
+  .related-grid .song-card {
+    @apply [transform:scale(0.95)];
+    @apply [transition:0.2s_ease];
+  }
+  
+  .related-grid .song-card:hover {
+    @apply [transform:scale(1)];
+  }

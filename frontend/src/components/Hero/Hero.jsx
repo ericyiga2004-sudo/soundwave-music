@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
-import "./Hero.css";
+import "./Hero.tailwind.css";
 
 const getArtist = (song) => song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
@@ -48,7 +48,7 @@ const Hero = () => {
   const mainSong = featured[0];
 
   return (
-    <section className="hero container-fluid px-3 px-sm-4 px-xl-5 pt-4 pt-xl-5">
+    <section className="hero sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] xl:!px-[3rem] !pt-[1.5rem] xl:!pt-[3rem]">
       <div className="hero-heading-row">
         <div>
           <span>Listen Now</span>
@@ -57,8 +57,8 @@ const Hero = () => {
         <button type="button" onClick={() => navigate("/explore")}>See All</button>
       </div>
 
-      <div className="row g-3 g-xl-4">
-        <div className="col-12 col-xl-8">
+      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
+        <div className="col !w-[100%] flex-none col sw-col-wide xl:!w-[66.66666666666667%] xl:flex-none">
           <article className="hero-feature-card">
             <div className="hero-feature-copy">
               <span className="hero-kicker"><Sparkles size={14} /> {personalized.length ? "FOR YOU" : "FEATURED"}</span>
@@ -99,7 +99,7 @@ const Hero = () => {
           </article>
         </div>
 
-        <div className="col-12 col-xl-4">
+        <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
           <div className="hero-mini-stack">
             {(featured.length ? featured.slice(1, 3) : [null, null]).map((song, index) => (
               <article className="hero-mini-card" key={song?._id || index}>

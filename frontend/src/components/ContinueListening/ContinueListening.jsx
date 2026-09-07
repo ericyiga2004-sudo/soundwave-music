@@ -6,7 +6,7 @@ import { FaClock, FaPlay } from "react-icons/fa";
 
 import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
-import "./ContinueListening.css";
+import "./ContinueListening.tailwind.css";
 
 const MAX_HISTORY_ITEMS = 20;
 

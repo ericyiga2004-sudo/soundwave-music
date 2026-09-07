@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
-import "./Yearly.css";
+import "./Yearly.tailwind.css";
 
 import { API_BASE_URL } from "../../config/api";
 
@@ -193,7 +193,7 @@ const sortSongsByUserTaste = (songs = [], preferences = {}) => {
 
 const YearSongSkeleton = () => {
   return (
-    <div className="col-6 col-sm-4 col-md-3 col-lg-2">
+    <div className="col !w-[50%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col md:!w-[25%] md:flex-none col lg:!w-[16.666666666666668%] lg:flex-none">
       <div className="year-song-card year-song-skeleton" aria-hidden="true">
         <div className="year-song-img-wrap skeleton-img"></div>
 
@@ -335,8 +335,8 @@ const Yearly = () => {
 
   return (
     <main className="yearly-page">
-      <div className="container-fluid px-0">
-        <div className="yearly-header mb-4">
+      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+        <div className="yearly-header !mb-[1.5rem]">
           <span className="yearly-kicker">Browse by year</span>
 
           <h1>Yearly Music Collections</h1>
@@ -372,7 +372,7 @@ const Yearly = () => {
                 </div>
 
                 {section.loading ? (
-                  <div className="row g-3 mt-2">
+                  <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] !mt-[0.5rem]">
                     {skeletonCards.map((_, index) => (
                       <YearSongSkeleton
                         key={`${section.slug}-skeleton-${index}`}
@@ -382,16 +382,16 @@ const Yearly = () => {
                 ) : section.error ? (
                   <div className="year-section-error">{section.error}</div>
                 ) : playlist.length > 0 ? (
-                  <div className="row g-3 mt-2">
+                  <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] !mt-[0.5rem]">
                     {playlist.map((song) => (
-                      <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={song._id}>
+                      <div className="col !w-[50%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col md:!w-[25%] md:flex-none col lg:!w-[16.666666666666668%] lg:flex-none" key={song._id}>
                         <div className="year-song-card">
                           <Link
                             to={`/song/${song._id}`}
                             state={{
                               playlist,
                             }}
-                            className="year-song-link text-decoration-none"
+                            className="year-song-link !no-underline"
                             onClick={() => window.scrollTo(0, 0)}
                           >
                             <div className="year-song-img-wrap">

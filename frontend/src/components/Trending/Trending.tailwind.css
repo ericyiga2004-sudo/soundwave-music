@@ -1,0 +1,118 @@
+.trending-section {
+  @apply [padding:2rem_5%];
+  @apply [background-color:#0a0a0a];
+  @apply [color:#fff];
+}
+.trending-title {
+  @apply [font-size:1.8rem];
+  @apply [margin-bottom:1.5rem];
+  @apply [font-weight:700];
+}
+.song-grid {
+  @apply flex;
+  @apply [gap:1.5rem];
+  @apply [overflow-x:auto];
+  @apply [padding-bottom:1rem];
+
+  @apply [scrollbar-width:none];
+}
+
+.song-grid::-webkit-scrollbar {
+  @apply hidden;
+}
+.song-grid > * {
+  @apply [flex:0_0_170px];
+  @apply [transition:all_0.3s_ease];
+}
+
+.song-grid > *:hover {
+  @apply [transform:translateY(-6px)];
+}
+.song-card {
+  @apply [background:#121212];
+  @apply [border-radius:12px];
+  @apply overflow-hidden;
+  @apply flex;
+  @apply flex-col;
+  @apply cursor-pointer;
+}
+.song-image {
+  @apply w-full;
+  @apply [aspect-ratio:1_/_1];
+  @apply relative;
+  @apply overflow-hidden;
+  @apply [border-radius:10px];
+}
+
+.song-image img {
+  @apply w-full;
+  @apply h-full;
+  @apply object-cover;
+}
+.play-btn {
+  @apply absolute;
+  @apply [bottom:10px];
+  @apply [right:10px];
+
+  @apply [width:45px];
+  @apply [height:45px];
+
+  @apply [border-radius:50%];
+  @apply [border:none];
+
+  @apply [background:#fa233b];
+  @apply [color:black];
+
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+
+  @apply [opacity:0];
+  @apply [transform:translateY(10px)];
+  @apply [transition:0.3s_ease];
+
+  @apply [box-shadow:0_4px_12px_rgba(0,_0,_0,_0.4)];
+}
+
+.song-card:hover .play-btn {
+  @apply [opacity:1];
+  @apply [transform:translateY(0)];
+}
+.song-content {
+  @apply [padding:10px_4px_4px];
+}
+
+.song-content h3 {
+  @apply [font-size:0.95rem];
+  @apply [font-weight:600];
+
+  @apply [margin:0_0_4px_0];
+
+  @apply [white-space:nowrap];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+}
+
+.song-content p {
+  @apply [font-size:0.8rem];
+  @apply [color:#a7a7a7];
+  @apply [margin:0];
+}
+@screen query15 {
+  .song-grid > * {
+    @apply [flex:0_0_150px];
+  }
+}
+@screen query16 {
+  .song-grid > * {
+    @apply [flex:0_0_140px];
+  }
+
+  .trending-section {
+    @apply [padding:1.5rem];
+  }
+
+  .trending-title {
+    @apply [font-size:1.5rem];
+  }
+}

@@ -36,7 +36,7 @@ import {
   removeOfflineSong,
 } from "../utils/offlineDownload";
 
-import "./CSS/Library.css";
+import "./CSS/Library.tailwind.css";
 
 const FALLBACK_COVER = "/fallback-cover.svg";
 const PLAYLIST_COVER = "/playlist.png";

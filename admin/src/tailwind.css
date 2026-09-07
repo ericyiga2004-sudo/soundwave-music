@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal document defaults; SongDetails keeps its own stylesheet. */
+*,::before,::after { @apply box-border border-0 border-solid border-current; }
+body { @apply m-0; }
+a { @apply text-inherit; }
+button,input,select,textarea { font: inherit; }
+button { @apply cursor-pointer; }
+button:disabled { @apply cursor-default; }
+h1,h2,h3,h4,h5,h6 { @apply mt-0 mb-2 font-medium leading-[1.2]; }
+h1 { @apply text-[2.5rem]; } h2 { @apply text-[2rem]; } h3 { @apply text-[1.75rem]; }
+h4 { @apply text-[1.5rem]; } h5 { @apply text-[1.25rem]; } h6 { @apply text-base; }
+p { @apply mt-0 mb-4; }
+img,svg { @apply align-middle; }
+button:focus-visible,a:focus-visible { @apply outline outline-2 outline-offset-2 outline-[var(--sw-accent,#fa233b)]; }
+@media (prefers-reduced-motion: reduce) { html { @apply scroll-auto; } }

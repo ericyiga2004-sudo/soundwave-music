@@ -1,7 +1,7 @@
 import { RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { useRealtime } from "../../context/RealtimeContext";
 import SocialNav from "./SocialNav";
-import "../../pages/CSS/SocialV20.css";
+import "../../pages/CSS/SocialV20.tailwind.css";
 
 const SocialPageHero = ({ kicker = "SoundWave Social", title, description, image, children, live = false }) => {
   const { connected, mode } = useRealtime();

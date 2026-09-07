@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { MusicContext } from "../../context/ShopContext";
 import { useRealtime } from "../../context/RealtimeContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
-import "../../pages/CSS/RoomReactionsV3.css";
+import "../../pages/CSS/RoomReactionsV3.tailwind.css";
 
 const REACTIONS = ["❤️", "🔥", "😂", "👏", "🎵", "🙌"];
 const SAME_DEVICE_CHANNEL = "soundwave-room-reactions-v3";

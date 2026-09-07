@@ -789,7 +789,7 @@ const SongDetails = () => {
 
   return (
     <div className="song-premium-page" onTouchStart={handleMobileTouchStart} onTouchEnd={handleMobileTouchEnd}>
-      <div className="song-mobile-topbar d-md-none">
+      <div className="song-mobile-topbar md:!hidden">
         <button type="button" className="song-mobile-top-action" onClick={goBack} aria-label="Close now playing">
           <ChevronDown size={25} />
         </button>
@@ -799,7 +799,7 @@ const SongDetails = () => {
         </button>
       </div>
 
-      <button type="button" className="song-page-back d-none d-md-inline-flex" onClick={goBack}><ChevronLeft size={17}/> Back</button>
+      <button type="button" className="song-page-back !hidden md:!inline-flex" onClick={goBack}><ChevronLeft size={17}/> Back</button>
 
       <section className="song-premium-hero">
         <div className="song-premium-art-column">
@@ -833,19 +833,19 @@ const SongDetails = () => {
                 </div>
               ) : null}
               {lyrics.length ? (
-                <button type="button" className="song-mobile-lyrics-link d-md-none" onClick={openLyrics}>
+                <button type="button" className="song-mobile-lyrics-link md:!hidden" onClick={openLyrics}>
                   <span>Lyrics</span><strong>View lyrics</strong><ChevronRight size={16}/>
                 </button>
               ) : null}
             </div>
 
             <div className="song-premium-actions">
-              <button className="song-main-play d-none d-md-inline-flex" type="button" onClick={handlePlay}>{isPlaying?<Pause size={18} fill="currentColor"/>:<Play size={18} fill="currentColor"/>}<span>{isPlaying?"Pause":"Play"}</span></button>
+              <button className="song-main-play !hidden md:!inline-flex" type="button" onClick={handlePlay}>{isPlaying?<Pause size={18} fill="currentColor"/>:<Play size={18} fill="currentColor"/>}<span>{isPlaying?"Pause":"Play"}</span></button>
               <button className={`song-round-action ${liked?"active":""}`} type="button" onClick={toggleLike} disabled={likeBusy} aria-label="Favorite"><Heart size={18} fill={liked?"currentColor":"none"}/></button>
               <button className="song-round-action" type="button" onClick={addCurrentToQueue} aria-label="Add to queue" title="Add to Up Next"><ListMusic size={18}/></button>
               <button className="song-round-action" type="button" onClick={()=>{if(!token)navigate("/account");else{fetchPlaylists?.();setPlaylistOpen(true);}}} aria-label="Add to playlist"><ListPlus size={18}/></button>
               <button className={`song-round-action ${offlineSaved?"active":""}`} type="button" onClick={toggleOffline} disabled={offlineBusy} aria-label="Save offline">{offlineSaved?<Check size={18}/>:<Download size={18}/>}</button>
-              <button className="song-round-action song-action-share d-none d-md-grid" type="button" onClick={shareSong} aria-label="Share"><Share2 size={18}/></button>
+              <button className="song-round-action song-action-share !hidden md:!grid" type="button" onClick={shareSong} aria-label="Share"><Share2 size={18}/></button>
             </div>
 
             <div className="song-detail-transport" aria-label="Song position controls">
@@ -886,7 +886,7 @@ const SongDetails = () => {
             <div><dt>Likes</dt><dd>{formatCompactNumber(likes)}</dd></div>
           </dl>
 
-          <div className="song-mobile-relations d-md-none">
+          <div className="song-mobile-relations md:!hidden">
             {albumId ? (
               <button type="button" className="song-relation-card" onClick={() => navigate(`/album/${albumId}`)}>
                 <img src={song.album?.image || song.album?.coverImage || song.album?.imageUrl || getSongCover(song)} alt="" loading="lazy" decoding="async"/>
@@ -910,7 +910,7 @@ const SongDetails = () => {
             <div className="song-lyrics-heading-actions">
               <span>{isCurrent ? formatDuration(progress) : ""}</span>
               {lyrics.length ? (
-                <button type="button" className="song-lyrics-collapse d-md-none" onClick={() => setLyricsExpanded((expanded) => !expanded)} aria-expanded={lyricsExpanded} aria-label={lyricsExpanded ? "Collapse lyrics" : "Expand lyrics"} title={lyricsExpanded ? "Collapse lyrics" : "Expand lyrics"}>
+                <button type="button" className="song-lyrics-collapse md:!hidden" onClick={() => setLyricsExpanded((expanded) => !expanded)} aria-expanded={lyricsExpanded} aria-label={lyricsExpanded ? "Collapse lyrics" : "Expand lyrics"} title={lyricsExpanded ? "Collapse lyrics" : "Expand lyrics"}>
                   {lyricsExpanded ? <ChevronUp size={19} /> : <ChevronDown size={19} />}
                 </button>
               ) : null}

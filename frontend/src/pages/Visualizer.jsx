@@ -20,7 +20,7 @@ import {
   FaVolumeUp,
 } from "react-icons/fa";
 
-import "./CSS/Visualizer.css";
+import "./CSS/Visualizer.tailwind.css";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 

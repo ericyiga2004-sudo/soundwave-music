@@ -9,8 +9,8 @@ import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import SocialSongPicker from "../components/Social/SocialSongPicker";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
-import "./CSS/Social.css";
-import "./CSS/SocialV20.css";
+import "./CSS/Social.tailwind.css";
+import "./CSS/SocialV20.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
 const SHARE_ENDPOINTS = [
@@ -118,7 +118,7 @@ const SocialShare = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page container-fluid px-0">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
       <SocialPageHero
         kicker="Direct sharing"
         title="Send a song. They see it live."
@@ -164,7 +164,7 @@ const SocialShare = () => {
             <small>{message.length}/240</small>
             <button type="submit" className="sw-primary-btn" disabled={sending || !songId || !selectedPeople.length}><Send size={16} /> {sending ? "Sending…" : "Share song live"}</button>
           </div>
-          {status ? <div className="sw-social-message mt-3">{status}</div> : null}
+          {status ? <div className="sw-social-message !mt-[1rem]">{status}</div> : null}
         </form>
       </div>
     </div>

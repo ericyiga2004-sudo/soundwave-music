@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getLowData, UI_PREFERENCES_EVENT } from "../../utils/uiPreferences";
-import "./DeferredSection.css";
+import "./DeferredSection.tailwind.css";
 
 const DeferredSection = ({ children, minHeight = 280, label = "Loading music" }) => {
   const hostRef = useRef(null);

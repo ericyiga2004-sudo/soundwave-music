@@ -17,7 +17,7 @@ import {
 import SongItem from "../components/SongItem/SongItem";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import "./CSS/Artist.css";
+import "./CSS/Artist.tailwind.css";
 import { trackTasteEvent } from "../utils/personalization";
 
 const formatFollowers = (value = 0) => {
@@ -265,10 +265,10 @@ const Artist = () => {
         Back
       </button>
 
-      <section className="artist-hero container-fluid">
-        <div className="row g-4 align-items-end">
-          <div className="col-12 col-md-auto text-center text-md-start">
-            <div className="artist-hero-image mx-auto mx-md-0">
+      <section className="artist-hero sw-container-fluid w-full mx-auto px-3">
+        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] !items-end">
+          <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none !text-center md:!text-left">
+            <div className="artist-hero-image !mx-auto md:!mx-[0px]">
               <img src={artist.image || "/fallback-cover.svg"} alt={artist.name} />
 
               {artist.verified && (
@@ -279,7 +279,7 @@ const Artist = () => {
             </div>
           </div>
 
-          <div className="col-12 col-md">
+          <div className="col !w-[100%] flex-none col md:flex-[1_0_0%]">
             <span className="artist-kicker">
               {artist.verified ? "Verified Artist" : "Artist"}
             </span>
@@ -349,7 +349,7 @@ const Artist = () => {
         </div>
       </section>
 
-      <section className="artist-content container-fluid">
+      <section className="artist-content sw-container-fluid w-full mx-auto px-3">
         <div className="artist-section-header">
           <div>
             <span>Discography</span>
@@ -470,9 +470,9 @@ const Artist = () => {
               </div>
             </div>
 
-            <div className="artist-all-grid row g-3 g-md-4">
+            <div className="artist-all-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem]">
               {artistSongs.slice(8).map((song) => (
-                <div className="col-6 col-sm-4 col-lg-3 col-xl-2" key={song._id}>
+                <div className="col !w-[50%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col lg:!w-[25%] lg:flex-none col xl:!w-[16.666666666666668%] xl:flex-none" key={song._id}>
                   <SongItem song={song} queue={artistSongs} />
                 </div>
               ))}

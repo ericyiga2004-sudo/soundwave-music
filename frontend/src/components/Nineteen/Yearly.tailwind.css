@@ -1,0 +1,253 @@
+.yearly-page {
+  @apply min-h-0;
+  @apply [padding:34px_clamp(14px,_3vw,_48px)_24px];
+  @apply [background:var(--sw-bg)];
+  @apply [color:var(--sw-text)];
+}
+
+.yearly-header {
+  @apply [max-width:720px];
+  @apply [margin-bottom:20px] !important;
+}
+
+.yearly-kicker {
+  @apply block;
+  @apply [margin:0_0_4px];
+  @apply [padding:0];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [background:transparent];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:650];
+  @apply [letter-spacing:0];
+  @apply [text-transform:none];
+}
+
+.yearly-header h1 {
+  @apply [margin:0];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:clamp(1.45rem,_2.3vw,_1.9rem)];
+  @apply [font-weight:740];
+  @apply [letter-spacing:-0.045em];
+}
+
+.yearly-header p {
+  @apply [margin:6px_0_0];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.8rem];
+  @apply [line-height:1.45];
+}
+
+.yearly-sections {
+  @apply grid;
+  @apply [gap:28px];
+}
+
+.year-block {
+  @apply min-w-0;
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [background:transparent];
+}
+
+.year-banner {
+  @apply [min-height:160px];
+  @apply [padding:14px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:18px];
+  @apply grid;
+  @apply [grid-template-columns:132px_minmax(0,_1fr)_auto];
+  @apply items-center;
+  @apply [gap:18px];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.year-banner-art {
+  @apply [width:132px];
+  @apply [height:132px];
+  @apply block;
+  @apply object-cover;
+  @apply [border-radius:12px];
+  @apply [background:var(--sw-surface-3)];
+}
+
+.year-banner-content {
+  @apply min-w-0;
+}
+
+.year-range {
+  @apply [display:inline-block];
+  @apply [margin-bottom:6px];
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [background:transparent];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.72rem];
+  @apply [font-weight:650];
+}
+
+.year-banner h2 {
+  @apply [margin:0];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:clamp(1.5rem,_3vw,_2.35rem)];
+  @apply [font-weight:760];
+  @apply [letter-spacing:-0.05em];
+}
+
+.year-banner p {
+  @apply [max-width:620px];
+  @apply [margin:6px_0_0];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.82rem];
+  @apply [line-height:1.4];
+}
+
+.year-view-btn {
+  @apply [min-height:38px];
+  @apply [padding:0_14px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:999px];
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply justify-center;
+  @apply [color:var(--sw-accent)];
+  @apply [background:var(--sw-surface)];
+  @apply no-underline;
+  @apply [font-size:0.77rem];
+  @apply [font-weight:680];
+  @apply [white-space:nowrap];
+}
+
+.year-song-link {
+  @apply block;
+  @apply [color:inherit];
+}
+
+.year-song-card {
+  @apply h-full;
+  @apply [padding:0];
+  @apply [border:0];
+  @apply [background:transparent];
+  @apply cursor-pointer;
+}
+
+.year-song-img-wrap {
+  @apply relative;
+  @apply w-full;
+  @apply [aspect-ratio:1];
+  @apply overflow-hidden;
+  @apply [border-radius:12px];
+  @apply [background:var(--sw-surface-2)];
+  @apply [border:1px_solid_var(--sw-border)];
+}
+
+.year-song-img {
+  @apply w-full;
+  @apply h-full;
+  @apply block;
+  @apply object-cover;
+}
+
+.year-play-btn {
+  @apply absolute;
+  @apply [right:8px];
+  @apply [bottom:8px];
+  @apply [width:34px];
+  @apply [height:34px];
+  @apply [border:0];
+  @apply [border-radius:50%];
+  @apply grid;
+  @apply [place-items:center];
+  @apply [background:var(--sw-accent)];
+  @apply [color:#fff];
+  @apply [opacity:0];
+}
+
+.year-song-card:hover .year-play-btn,
+.year-song-card:focus-within .year-play-btn { @apply [opacity:1]; }
+
+.year-song-info {
+  @apply [padding:9px_1px_1px];
+}
+
+.year-song-info h3,
+.year-song-info p,
+.year-song-info span {
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+}
+
+.year-song-info h3 {
+  @apply [margin:0];
+  @apply [color:var(--sw-text)];
+  @apply [font-size:0.9rem];
+  @apply [font-weight:680];
+  @apply [white-space:nowrap];
+}
+
+.year-song-info p {
+  @apply [margin:3px_0_0];
+  @apply [color:var(--sw-text-secondary)];
+  @apply [font-size:0.76rem];
+  @apply [white-space:nowrap];
+}
+
+.year-song-info span {
+  @apply block;
+  @apply [margin-top:3px];
+  @apply [color:var(--sw-text-tertiary)];
+  @apply [font-size:0.7rem];
+  @apply [font-weight:550];
+  @apply [white-space:nowrap];
+}
+
+.year-section-error,
+.year-loading,
+.year-empty {
+  @apply [margin-top:14px];
+  @apply [padding:16px];
+  @apply [border:1px_solid_var(--sw-border)];
+  @apply [border-radius:12px];
+  @apply [background:var(--sw-surface-2)];
+  @apply [color:var(--sw-text-secondary)];
+}
+
+.skeleton-img,
+.skeleton-line {
+  @apply [background:var(--sw-surface-2)];
+  @apply [animation:swYearPulse_1.05s_ease-in-out_infinite_alternate];
+}
+
+.skeleton-img {
+  @apply w-full;
+  @apply [aspect-ratio:1];
+  @apply [border-radius:12px];
+}
+
+.skeleton-line {
+  @apply [height:10px];
+  @apply [border-radius:5px];
+  @apply [margin-top:9px];
+}
+.skeleton-title { @apply [width:85%]; @apply [height:12px]; }
+.skeleton-artist { @apply [width:64%]; }
+.skeleton-year { @apply [width:46%]; }
+
+@keyframes swYearPulse { from { opacity: .55; } to { opacity: 1; } }
+
+html[data-sw-battery-saver="true"] .skeleton-img,
+html[data-sw-battery-saver="true"] .skeleton-line,
+html[data-sw-low-data="true"] .skeleton-img,
+html[data-sw-low-data="true"] .skeleton-line { @apply [animation:none]; }
+
+@screen query4 {
+  .yearly-page { @apply [padding-top:26px]; }
+  .year-banner {
+    @apply [grid-template-columns:92px_minmax(0,_1fr)];
+    @apply min-h-0;
+  }
+  .year-banner-art { @apply [width:92px]; @apply [height:92px]; }
+  .year-view-btn {
+    @apply [grid-column:1_/_-1];
+    @apply w-full;
+  }
+}

@@ -1,0 +1,188 @@
+.song-carder {
+  @apply w-full;
+  @apply min-w-0;
+  @apply h-full;
+  @apply [min-height:305px];
+  @apply [background:linear-gradient(180deg,_#1b1b1b,_#121212)];
+  @apply [border-radius:18px];
+  @apply [padding:14px];
+  @apply cursor-pointer;
+  @apply relative;
+  @apply overflow-hidden;
+  
+  @apply [transition:transform_0.25s_ease,_background_0.25s_ease,_box-shadow_0.25s_ease];
+  @apply flex;
+  @apply flex-col;
+}
+
+.song-carder:hover {
+  @apply [transform:translateY(-6px)];
+  @apply [background:linear-gradient(180deg,_#252525,_#181818)];
+  @apply [box-shadow:0_18px_35px_rgba(0,_0,_0,_0.45)];
+}
+
+.song-carder::before {
+  @apply [content:""];
+  @apply absolute;
+  @apply [inset:0];
+  @apply [background:radial-gradient(_circle_at_top_right,_rgba(29,_185,_84,_0.18),_transparent_35%_)];
+  @apply [opacity:0];
+  @apply [transition:opacity_0.25s_ease];
+  @apply [pointer-events:none];
+}
+
+.song-carder:hover::before {
+  @apply [opacity:1];
+}
+
+.song-linker {
+  @apply w-full;
+  @apply h-full;
+  @apply no-underline;
+  @apply [color:inherit];
+  @apply flex;
+  @apply flex-col;
+  @apply relative;
+  @apply [z-index:2];
+}
+
+.card-img-container {
+  @apply w-full;
+  @apply [aspect-ratio:1_/_1];
+  @apply [border-radius:15px];
+  @apply overflow-hidden;
+  @apply relative;
+  @apply [background:#282828];
+  @apply [box-shadow:0_10px_24px_rgba(0,_0,_0,_0.35)];
+  @apply [flex-shrink:0];
+}
+
+.card-img-container img {
+  @apply w-full;
+  @apply h-full;
+  @apply object-cover;
+  @apply [object-position:center];
+  @apply block;
+  @apply [transition:transform_0.35s_ease,_filter_0.35s_ease];
+}
+
+.song-carder:hover .card-img-container img {
+  @apply [transform:scale(1.08)];
+  @apply [filter:brightness(0.75)];
+}
+
+.play-overlay {
+  @apply absolute;
+  @apply [right:12px];
+  @apply [bottom:12px];
+  @apply [width:48px];
+  @apply [height:48px];
+  @apply [border-radius:50%];
+  @apply [background:#fa233b];
+  @apply [color:#000];
+  @apply flex;
+  @apply items-center;
+  @apply justify-center;
+  @apply [opacity:0];
+  @apply [transform:translateY(12px)_scale(0.92)];
+  @apply [transition:opacity_0.25s_ease,_transform_0.25s_ease,_background_0.25s_ease];
+  @apply [box-shadow:0_10px_25px_rgba(0,_0,_0,_0.55)];
+}
+
+.play-overlay svg {
+  @apply [font-size:17px];
+  @apply [margin-left:3px];
+}
+
+.song-carder:hover .play-overlay {
+  @apply [opacity:1];
+  @apply [transform:translateY(0)_scale(1)];
+}
+
+.play-overlay:hover {
+  @apply [background:#ff375f];
+  @apply [transform:translateY(0)_scale(1.08)];
+}
+
+.card-content {
+  @apply [padding-top:13px];
+  @apply [min-height:58px];
+  @apply flex;
+  @apply flex-col;
+  @apply [justify-content:flex-start];
+}
+
+.card-title {
+  @apply [margin:0];
+  @apply [color:#ffffff];
+  @apply [font-size:16px];
+  @apply [font-weight:700];
+  @apply [line-height:1.3];
+  @apply [white-space:nowrap];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+}
+
+.card-artist {
+  @apply [margin:6px_0_0];
+  @apply [color:#b3b3b3];
+  @apply [font-size:14px];
+  @apply [line-height:1.4];
+  @apply [white-space:nowrap];
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [transition:color_0.25s_ease];
+}
+
+.song-carder:hover .card-artist {
+  @apply [color:#ffffff];
+}
+
+@screen query7 {
+  .song-carder {
+    @apply [min-height:255px];
+    @apply [padding:11px];
+    @apply [border-radius:15px];
+  }
+
+  .card-img-container {
+    @apply [border-radius:12px];
+  }
+
+  .play-overlay {
+    @apply [width:42px];
+    @apply [height:42px];
+    @apply [opacity:1];
+    @apply [transform:translateY(0)_scale(1)];
+  }
+
+  .card-title {
+    @apply [font-size:14px];
+  }
+
+  .card-artist {
+    @apply [font-size:13px];
+  }
+}
+
+@screen query8 {
+  .song-carder {
+    @apply [min-height:220px];
+    @apply [padding:10px];
+  }
+
+  .play-overlay {
+    @apply [width:38px];
+    @apply [height:38px];
+    @apply [right:9px];
+    @apply [bottom:9px];
+  }
+
+  .play-overlay svg {
+    @apply [font-size:14px];
+  }
+
+  .card-content {
+    @apply [min-height:52px];
+  }
+}

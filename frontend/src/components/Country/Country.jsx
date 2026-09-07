@@ -3,7 +3,7 @@ import axios from "axios";
 import { FaLocationDot } from "react-icons/fa6";
 import SongItem from "../SongItem/SongItem";
 import { MusicContext } from "../../context/ShopContext";
-import "./Country.css";
+import "./Country.tailwind.css";
 
 const MAX_COUNTRY_SONGS = 20;
 
