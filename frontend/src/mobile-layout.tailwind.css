@@ -1,0 +1,93 @@
+/* Mobile layout and touch controls. Compiled by Tailwind for Safari 15. */
+@screen query4 {
+  html .app.sw-mobile-ready .sw-top-header {
+    @apply grid min-w-0 w-full gap-1.5 px-2 py-2 min-h-[60px] bg-[var(--sw-bg)] !important;
+    @apply [grid-template-columns:minmax(0,1fr)_44px_auto] !important;
+  }
+  html .app.sw-mobile-ready .sw-top-left { @apply min-w-0 overflow-hidden !important; }
+  html .app.sw-mobile-ready .sw-mobile-brand { @apply flex min-w-0 items-center gap-2 !important; }
+  html .app.sw-mobile-ready .sw-mobile-brand strong { @apply truncate text-base leading-tight !important; }
+  html .app.sw-mobile-ready .sw-top-actions { @apply gap-1 !important; }
+  html .app.sw-mobile-ready .sw-social-top-link { @apply hidden !important; }
+  html .app.sw-mobile-ready .sw-search-btn,
+  html .app.sw-mobile-ready .sw-top-actions .sw-icon-btn,
+  html .app.sw-mobile-ready .sw-account-pill { @apply grid h-11 w-11 shrink-0 place-items-center p-0 !important; }
+  html .app.sw-mobile-ready .sw-search-btn span,
+  html .app.sw-mobile-ready .sw-search-btn kbd,
+  html .app.sw-mobile-ready .sw-account-pill > span { @apply hidden !important; }
+  html .app.sw-mobile-ready .sw-top-header button > svg,
+  html .app.sw-mobile-ready .sw-account-pill > svg { @apply h-[22px] w-[22px] min-w-[22px] shrink-0 !important; }
+  html .app.sw-mobile-ready .hero-feature-card { @apply grid grid-cols-1 min-w-0 gap-5 p-4 !important; }
+  html .app.sw-mobile-ready .hero-feature-copy { @apply min-w-0 w-full !important; }
+  html .app.sw-mobile-ready .hero-artwork-wrap { @apply row-start-1 h-auto w-[144px] max-w-full aspect-square !important; }
+  html .app.sw-mobile-ready .hero-buttons { @apply flex flex-wrap gap-2 !important; }
+  html .app.sw-mobile-ready .hero-buttons button { @apply min-h-11 whitespace-nowrap !important; }
+  html .app.sw-mobile-ready .hero-mini-card > button:not(.sw2324-overlay-more) { @apply h-11 w-11 shrink-0 !important; }
+  html .app.sw-mobile-ready .hero-mini-card > button svg,
+  html .app.sw-mobile-ready .hero-play-button svg { @apply h-5 w-5 min-w-[20px] shrink-0 !important; }
+
+  html .app.sw-mobile-ready .explore-art-grid { @apply grid grid-cols-2 gap-x-3 gap-y-5 !important; }
+  html .app.sw-mobile-ready .explore-art-grid article { @apply relative min-w-0 !important; }
+  html .app.sw-mobile-ready .explore-art-button { @apply block w-full aspect-square !important; }
+  html .app.sw-mobile-ready .explore-art-button img { @apply block w-full h-full object-cover !important; }
+  html .app.sw-mobile-ready .explore-art-grid article > strong { @apply text-sm leading-5 !important; }
+  html .app.sw-mobile-ready .explore-art-grid article > span { @apply text-xs leading-[18px] !important; }
+
+  html .app.sw-mobile-ready .sw-player {
+    @apply fixed left-2 right-2 w-auto max-w-none min-w-0 grid gap-1 rounded-2xl px-2 py-2 min-h-[64px] bg-[var(--sw-surface)] !important;
+    @apply [bottom:calc(82px_+_env(safe-area-inset-bottom,0px))] [grid-template-columns:minmax(0,1fr)_auto_auto] !important;
+  }
+  html .app.sw-mobile-ready .sw-player-song { @apply min-w-0 gap-2 !important; }
+  html .app.sw-mobile-ready .sw-player-song-copy { @apply min-w-0 !important; }
+  html .app.sw-mobile-ready .sw-player-song-copy strong,
+  html .app.sw-mobile-ready .sw-player-song-copy span { @apply block truncate !important; }
+  html .app.sw-mobile-ready .sw-player-cover { @apply h-10 w-10 min-w-[40px] basis-10 !important; }
+  html .app.sw-mobile-ready .sw-player-center { @apply contents !important; }
+  html .app.sw-mobile-ready .sw-player-controls,
+  html .app.sw-mobile-ready .sw-player-actions { @apply flex items-center gap-0 !important; }
+  html .app.sw-mobile-ready .sw-player-controls > button[aria-label="Previous song"],
+  html .app.sw-mobile-ready .sw-player-progress-row { @apply hidden !important; }
+  html .app.sw-mobile-ready .sw-player-main-control,
+  html .app.sw-mobile-ready .sw-player-icon-control { @apply h-11 w-11 min-w-[44px] shrink-0 !important; }
+  html .app.sw-mobile-ready .sw-player button svg { @apply h-[22px] w-[22px] min-w-[22px] shrink-0 !important; }
+  html .app.sw-mobile-ready .sw-queue-drawer { @apply left-2 right-2 w-auto max-w-none [bottom:calc(154px_+_env(safe-area-inset-bottom,0px))] !important; }
+  html .app.sw-mobile-ready .main-content { @apply [padding-bottom:calc(178px_+_env(safe-area-inset-bottom,0px))] !important; }
+
+  html .app.sw-mobile-ready .song-below-grid { @apply grid grid-cols-1 gap-8 min-w-0 w-full !important; }
+  html .app.sw-mobile-ready .song-below-grid > * { @apply min-w-0 w-full !important; }
+  html .app.sw-mobile-ready .song-section-title { @apply flex flex-wrap items-center gap-3 !important; }
+  html .app.sw-mobile-ready .song-comment-form { @apply w-full min-w-0 !important; }
+  html .app.sw-mobile-ready .song-comment-form textarea { @apply w-full min-w-0 text-base !important; }
+  html .app.sw-mobile-ready .song-comment-form-footer { @apply flex flex-wrap gap-2 !important; }
+  html .app.sw-mobile-ready .song-recommendation-row { @apply flex flex-col items-stretch gap-2 py-3 min-w-0 !important; }
+  html .app.sw-mobile-ready .song-recommendation-main { @apply grid w-full min-w-0 gap-3 [grid-template-columns:52px_minmax(0,1fr)] !important; }
+  html .app.sw-mobile-ready .song-recommendation-main img { @apply h-[52px] w-[52px] object-cover !important; }
+  html .app.sw-mobile-ready .song-recommendation-main strong { @apply text-sm leading-5 !important; }
+  html .app.sw-mobile-ready .song-recommendation-main small { @apply text-xs leading-[18px] !important; }
+  html .app.sw-mobile-ready .song-recommendation-actions { @apply flex flex-wrap justify-end gap-2 !important; }
+  html .app.sw-mobile-ready .song-recommendation-actions button { @apply min-h-11 min-w-[44px] !important; }
+  html .app.sw-mobile-ready .song-round-action { @apply h-11 w-11 min-w-[44px] !important; }
+  html .app.sw-mobile-ready .song-round-action svg,
+  html .app.sw-mobile-ready .song-recommendation-actions svg { @apply h-[22px] w-[22px] min-w-[22px] shrink-0 !important; }
+  html .app.sw-mobile-ready .song-detail-mini-play { @apply h-14 w-14 min-w-[56px] !important; }
+  html .app.sw-mobile-ready .song-detail-mini-play svg { @apply h-7 w-7 min-w-[28px] !important; }
+  html .app.sw-mobile-ready .song-detail-track-control,
+  html .app.sw-mobile-ready .song-detail-skip-control { @apply min-h-11 min-w-[44px] !important; }
+  html .app.sw-mobile-ready .song-detail-transport-controls button svg { @apply shrink-0 !important; }
+}
+@screen query4 {
+  html .app.sw-mobile-ready.app-song-detail .music-play-shell .sw-player,
+  html .app.sw-mobile-ready.app-song-detail .music-play-shell .sw-queue-drawer { @apply hidden !important; }
+  html .app.sw-mobile-ready.app-song-detail .main-content { @apply pb-0 !important; }
+  html .app.sw-mobile-ready .song-comment-heading-actions { @apply flex flex-wrap gap-2 !important; }
+  html .app.sw-mobile-ready .song-comment-heading-actions .sw2324-select { @apply min-w-[130px] !important; }
+}
+/* Keep card menus anchored to the card, including when cards load lazily. */
+html .app.sw-mobile-ready .explore-feature-card { @apply relative; }
+@screen query4 {
+  html .app.sw-mobile-ready .explore-feature-card { @apply pt-12 !important; }
+  html .app.sw-mobile-ready .explore-top-row { @apply [grid-template-columns:22px_42px_minmax(0,1fr)_44px_44px] gap-1 !important; }
+  html .app.sw-mobile-ready .explore-top-row > button { @apply min-h-11 !important; }
+  html .app.sw-mobile-ready .explore-top-row > button:not(.explore-title-btn) { @apply w-11 min-w-[44px] !important; }
+  html .app.sw-mobile-ready .explore-play-btn svg { @apply h-5 w-5 min-w-[20px] shrink-0 !important; }
+}

@@ -23,3 +23,5 @@ createRoot(document.getElementById("root")).render(
     </MusicContextProvider>
   </BrowserRouter>
 );
+
+import "./mobile-layout.tailwind.css";
