@@ -22,6 +22,14 @@ const SocialProfile = () => {
   const { socket, connected, mode } = useRealtime();
   const authToken = getAuthToken?.() || token || "";
   const headers = useMemo(() => authHeaders(authToken), [authToken]);
+  const [ownId, setOwnId] = useState("");
+  useEffect(() => {
+    let active = true;
+    setOwnId("");
+    if (authToken) apiClient.get("/api/user/profile", { headers, timeout: 15000 })
+      .then(({data})=>{if(active) setOwnId(String(data.user?._id || ""));}).catch(()=>{});
+    return ()=>{active=false;};
+  }, [authToken, headers]);
   const [profile, setProfile] = useState(null);
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -124,7 +132,7 @@ const SocialProfile = () => {
           <div className="sw-profile-counts"><span><strong>{user.followersCount || 0}</strong> followers</span><span><strong>{user.followingCount || 0}</strong> following</span></div>
         </div>
         <div className="sw-profile-actions">
-          {authToken ? (
+          {ownId === String(user._id) ? <button type="button" className="sw-secondary-btn" onClick={()=>navigate("/account")}>My account</button> : authToken ? (
             <button type="button" className={user.isFollowing ? "sw-secondary-btn" : "sw-primary-btn"} onClick={follow} disabled={busy}>
               {user.isFollowing ? <UserMinus size={16} /> : <UserPlus size={16} />}{busy ? "Updating…" : user.isFollowing ? "Unfollow" : "Follow"}
             </button>

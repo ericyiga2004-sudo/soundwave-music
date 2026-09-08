@@ -99,3 +99,33 @@ html .app.sw-mobile-ready .explore-feature-card { @apply relative; }
   html .app.sw-mobile-ready .auth-switch button,
   html .app.sw-mobile-ready .submit-btn { @apply min-h-[44px]; }
 }
+
+/* Shared theme-aware search and queue controls. */
+html .sw-search-modal { @apply bg-[var(--sw-bg)] text-[var(--sw-text)] !important; }
+html .sw-search-modal .sw-search-input { @apply bg-[var(--sw-surface)] min-w-0 !important; }
+html .sw-search-modal input,
+html .sw-search-modal h2, html .sw-search-modal h3, html .sw-search-modal h4,
+html .sw-search-modal .sw-search-empty, html .sw-search-modal button,
+html .sw-search-modal .sw-search-handle { @apply text-[var(--sw-text)] !important; }
+html .sw-search-modal p, html .sw-search-modal input::placeholder { @apply text-[var(--sw-text-secondary)] !important; }
+html .sw-search-modal input { @apply min-w-0 w-full; }
+html .sw-search-modal .sw-search-item:hover { @apply bg-[var(--sw-surface)] !important; }
+.sw-search-cancel { @apply flex items-center justify-end gap-2 ml-auto min-h-[44px] mb-1 px-2 font-semibold rounded-lg bg-transparent; }
+.sw-visible-queue-overlay { @apply fixed inset-0 z-[100000] flex items-end justify-center bg-black/60 p-2 sm:items-center; }
+.sw-visible-queue { @apply w-full max-w-lg flex flex-col rounded-2xl bg-[var(--sw-bg)] text-[var(--sw-text)] shadow-xl overflow-hidden; max-height:80vh; }
+.sw-visible-queue header { @apply flex items-start gap-3 p-4 border-b border-[var(--sw-border)]; }
+.sw-visible-queue h2 { @apply text-lg font-bold; }
+.sw-visible-queue p { @apply text-sm text-[var(--sw-text-secondary)]; }
+.sw-visible-queue header>button { @apply ml-auto shrink-0 grid place-items-center w-11 h-11; }
+.sw-visible-queue-list { @apply overflow-y-auto p-2; }
+.sw-visible-queue-list>button { @apply flex items-center gap-3 w-full min-h-[60px] text-left px-3 py-2 rounded-lg; }
+.sw-visible-queue-list>button[aria-current="true"] { @apply bg-[var(--sw-surface)] text-[var(--sw-accent)]; }
+.sw-visible-queue-list>button>span:last-child { @apply min-w-0; }
+.sw-visible-queue-list strong { @apply block truncate; }
+.sw-visible-queue-list small { @apply block truncate text-[var(--sw-text-secondary)]; }
+.sw-account-identity>strong { @apply block text-xl text-[var(--sw-text)]; }
+.sw-account-profile-link { @apply inline-flex items-center min-h-[44px] px-4 rounded-xl font-semibold bg-[var(--sw-surface)] text-[var(--sw-text)]; }
+@screen query4 {
+  html .app.sw-mobile-ready .sw-playback-actions { @apply grid gap-1 !important; grid-template-columns:repeat(6,minmax(0,1fr)) !important; }
+  html .app.sw-mobile-ready .sw-playback-actions .song-round-action { @apply w-11 h-11 min-w-0 p-0 justify-self-center !important; }
+}

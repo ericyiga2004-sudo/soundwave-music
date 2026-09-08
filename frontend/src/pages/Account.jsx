@@ -1,3 +1,4 @@
+import AccountIdentity from "../components/UI/AccountIdentity";
 import { safeLocalStorage, safeSessionStorage } from "../utils/safeStorage";
 import { useState, useContext, useEffect, useMemo } from "react";
 import axios from "axios";
@@ -301,6 +302,7 @@ const Account = () => {
             <div className="col !w-[100%] flex-none col md:flex-[1_0_0%] !text-center md:!text-left">
               <span className="dashboard-badge">Your Account</span>
               <h1>Welcome Back</h1>
+              <AccountIdentity token={validToken} backendUrl={backendUrl} />
               <p>Your music, history, playlists, and personal mixes are ready.</p>
             </div>
 
@@ -346,7 +348,7 @@ const Account = () => {
                 <span className="account-setting-icon"><FaWifi /></span>
                 <span className="account-setting-text">
                   <strong>Low Data Mode</strong>
-                  <small>Defers artwork, loads smaller catalog pages, and stops automatic next-track streaming unless Repeat All is on.</small>
+                  <small>Defers artwork, loads smaller catalog pages, and reduces audio preloading while keeping your queue playing.</small>
                 </span>
                 <span className="account-setting-state">{lowDataEnabled ? "On" : "Off"}</span>
               </button>

@@ -1,8 +1,10 @@
+import PlaybackQueue from "../components/UI/PlaybackQueue";
 import PremiumSelect from "../components/UI/PremiumSelect";
 import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
+  Shuffle, Repeat, Repeat1,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -208,7 +210,16 @@ const SongDetails = () => {
     () => (Array.isArray(routePlaylist) ? routePlaylist : []),
     [routePlaylist]
   );
-  const queue = useMemo(() => playlistFromRoute.length ? playlistFromRoute : (globalSongs.length ? globalSongs : song ? [song] : []), [playlistFromRoute, globalSongs, song]);
+  const queue = useMemo(() => playlistFromRoute.length ? playlistFromRoute : (song ? [song] : []), [playlistFromRoute, globalSongs, song]);
+  const [queueVisible, setQueueVisible] = useState(false);
+  const previousPlayingId = useRef(player?.currentSong?._id);
+  useEffect(() => {
+    const active = player?.currentSong;
+    if (active?._id && previousPlayingId.current === songId && active._id !== songId) {
+      navigate(`/song/${active._id}`, { replace: true, state: { song: active, playlist: player.playlist } });
+    }
+    previousPlayingId.current = active?._id;
+  }, [player?.currentSong?._id, songId, navigate]);
   const isCurrent = player?.currentSong?._id === song?._id;
   const isPlaying = isCurrent && player?.isPlaying;
   const playerProgress = isCurrent ? Number(player?.progress || 0) : 0;
@@ -839,10 +850,12 @@ const SongDetails = () => {
               ) : null}
             </div>
 
-            <div className="song-premium-actions">
+            <div className="song-premium-actions sw-playback-actions">
+              <button className={`song-round-action ${player?.shuffle ? "active" : ""}`} type="button" disabled={liveRoomSync.isLiveSong} onClick={()=>player?.setShuffle?.(!player.shuffle)} aria-label="Shuffle" aria-pressed={Boolean(player?.shuffle)}><Shuffle size={22}/></button>
+              <button className={`song-round-action ${player?.repeat !== "off" ? "active" : ""}`} type="button" disabled={liveRoomSync.isLiveSong} onClick={()=>player?.cycleRepeat?.()} aria-label={`Repeat: ${player?.repeat || "off"}`} title={`Repeat: ${player?.repeat || "off"}`}>{player?.repeat === "one" ? <Repeat1 size={22}/> : <Repeat size={22}/>}</button>
               <button className="song-main-play !hidden md:!inline-flex" type="button" onClick={handlePlay}>{isPlaying?<Pause size={18} fill="currentColor"/>:<Play size={18} fill="currentColor"/>}<span>{isPlaying?"Pause":"Play"}</span></button>
               <button className={`song-round-action ${liked?"active":""}`} type="button" onClick={toggleLike} disabled={likeBusy} aria-label="Favorite"><Heart size={18} fill={liked?"currentColor":"none"}/></button>
-              <button className="song-round-action" type="button" onClick={addCurrentToQueue} aria-label="Add to queue" title="Add to Up Next"><ListMusic size={18}/></button>
+              <button className="song-round-action" type="button" onClick={()=>setQueueVisible(true)} aria-label="View playback queue" title="View playback queue"><ListMusic size={18}/></button>
               <button className="song-round-action" type="button" onClick={()=>{if(!token)navigate("/account");else{fetchPlaylists?.();setPlaylistOpen(true);}}} aria-label="Add to playlist"><ListPlus size={18}/></button>
               <button className={`song-round-action ${offlineSaved?"active":""}`} type="button" onClick={toggleOffline} disabled={offlineBusy} aria-label="Save offline">{offlineSaved?<Check size={18}/>:<Download size={18}/>}</button>
               <button className="song-round-action song-action-share !hidden md:!grid" type="button" onClick={shareSong} aria-label="Share"><Share2 size={18}/></button>
@@ -990,6 +1003,7 @@ const SongDetails = () => {
         </aside>
       </section>
 
+      {queueVisible && <PlaybackQueue player={player} onClose={()=>setQueueVisible(false)} />}
       {playlistOpen?<div className="song-modal-backdrop" onMouseDown={()=>setPlaylistOpen(false)}><div className="song-playlist-sheet" role="dialog" aria-modal="true" aria-label="Add to playlist" onMouseDown={(e)=>e.stopPropagation()}><div className="song-section-title"><div><span className="song-premium-kicker">Library</span><h2>Add to playlist</h2></div><button className="song-round-action" type="button" onClick={()=>setPlaylistOpen(false)}>×</button></div>{playlists.length?<div className="song-playlist-options">{playlists.map((playlist)=><button type="button" key={playlist._id} onClick={()=>addToPlaylist(playlist._id)}><span><strong>{playlist.name}</strong><small>{playlist.songs?.length||0} songs</small></span><ListPlus size={17}/></button>)}</div>:<EmptyState title="No playlists yet" message="Create a playlist first from the Playlists page."/>}</div></div>:null}
     </div>
   );

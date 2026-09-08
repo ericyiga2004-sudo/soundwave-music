@@ -747,6 +747,7 @@ const SearchModal = ({
         </div>
 
         <div className="sw-search-header">
+          <button type="button" className="sw-search-cancel" onClick={onClose} aria-label="Close search">Cancel <X size={20}/></button>
           <div className="sw-search-input">
             <Search size={18} />
 
@@ -758,7 +759,7 @@ const SearchModal = ({
             />
 
             {query && (
-              <button type="button" onClick={() => setQuery("")}>
+              <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
                 <X size={18} />
               </button>
             )}

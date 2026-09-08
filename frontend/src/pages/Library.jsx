@@ -977,6 +977,7 @@ const Library = () => {
           </div>
 
           <div className="boom-hero-actions">
+            <Link to="/playlist" className="boom-secondary-action"><FaListUl />My Playlists</Link>
             <button
               type="button"
               className="boom-primary-action"
