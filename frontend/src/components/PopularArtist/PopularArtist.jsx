@@ -14,6 +14,7 @@ import "./PopularArtist.tailwind.css";
 import { API_BASE_URL as backendUrl } from "../../config/api";
 
 const MAX_ARTIST_STATS_SONGS = 80;
+const hasMongoId = (value) => /^[a-f0-9]{24}$/i.test(String(value || ""));
 
 const mixArtistSources = (local = [], external = []) => {
   const a = [...local];
@@ -314,7 +315,7 @@ const PopularArtist = () => {
 
   const handleFollowArtist = async (artistId) => {
     const sourceArtist = artists.find((artist) => String(artist?._id) === String(artistId));
-    if (sourceArtist?.isExternal || sourceArtist?.source === "audius") {
+    if (!hasMongoId(artistId)) {
       handleViewArtist(artistId);
       return;
     }
@@ -436,7 +437,7 @@ const PopularArtist = () => {
                   tabIndex={0}
                 >
                   <img
-                    src={artist.image || "/fallback-cover.svg"}
+                    src={artist.image || artist.imageUrl || "/fallback-artist.svg"}
                     alt={artist.name || "Artist"}
                     className="popular-artist-image"
                     loading="lazy"
@@ -472,7 +473,7 @@ const PopularArtist = () => {
                       onClick={() => handleFollowArtist(artist._id)}
                       disabled={buttonLoading}
                     >
-                      {artist.isExternal || artist.source === "audius" ? (
+                      {!hasMongoId(artist._id) ? (
                         "View"
                       ) : buttonLoading ? (
                         "..."

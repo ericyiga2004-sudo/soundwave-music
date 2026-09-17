@@ -14,7 +14,7 @@ import "./CSS/Album.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../config/api";
 import { trackTasteEvent } from "../utils/personalization";
-import { isExternalSong } from "../utils/songSource";
+import { canUseSoundwaveSongApi } from "../utils/songSource";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
@@ -113,6 +113,9 @@ const Album = () => {
 
         if (res.data?.success) {
           setAlbum(res.data.album || null);
+          if (isExternalAlbum && /^[a-f0-9]{24}$/i.test(String(res.data.album?._id || ""))) {
+            navigate(`/album/${res.data.album._id}`, { replace: true, state: { album: res.data.album } });
+          }
         } else {
           setAlbum(null);
         }
@@ -375,7 +378,7 @@ const Album = () => {
                   >
                     {playingNow ? <FaPause /> : <FaPlay />}
                   </button>
-                  {!isExternalSong(song) && (
+                  {canUseSoundwaveSongApi(song) && (
                     <SongActionMenu
                       song={song}
                       queue={albumQueue}

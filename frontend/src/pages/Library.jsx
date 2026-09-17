@@ -30,7 +30,7 @@ import {
 
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
-import { isExternalSong } from "../utils/songSource";
+import { canUseSoundwaveSongApi } from "../utils/songSource";
 import {
   getOfflineSongs,
   isSongOfflineAvailable,
@@ -793,7 +793,7 @@ const Library = () => {
     playSong?.(song, queue);
 
     try {
-      if (backendUrl && navigator.onLine && !isExternalSong(song)) {
+      if (backendUrl && navigator.onLine && canUseSoundwaveSongApi(song)) {
         await axios.patch(`${backendUrl}/api/songs/${songId}/play`);
       }
     } catch (error) {
@@ -802,12 +802,12 @@ const Library = () => {
 
     try {
       if (backendUrl && token && navigator.onLine) {
-        const external = isExternalSong(song);
+        const persistent = canUseSoundwaveSongApi(song);
         await axios.post(
           `${backendUrl}/api/history/add`,
-          external
-            ? { source: "audius", externalId: song.externalId || String(songId).replace(/^audius_/, ""), song }
-            : { songId, source: "soundwave" },
+          persistent
+            ? { songId, source: "soundwave" }
+            : { source: "audius", externalId: song.externalId || String(songId).replace(/^audius_/, ""), song },
           { headers: { token } }
         );
 

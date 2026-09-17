@@ -12,7 +12,7 @@ import { MusicContext } from "./ShopContext";
 import { getLowData } from "../utils/uiPreferences";
 import { trackTasteEvent } from "../utils/personalization";
 import { getSongAudioUrl } from "../utils/audioSource";
-import { isExternalSong } from "../utils/songSource";
+import { canUseSoundwaveSongApi } from "../utils/songSource";
 
 export const MusicPlayerContext = createContext(null);
 
@@ -347,16 +347,16 @@ export const MusicPlayerProvider = ({ children }) => {
       if (!token || !backendUrl || !song?._id) return;
 
       try {
-        const external = isExternalSong(song);
+        const persistent = canUseSoundwaveSongApi(song);
         await axios.post(
           `${backendUrl}/api/history/add`,
-          external
-            ? {
+          persistent
+            ? { songId: song._id, source: "soundwave" }
+            : {
                 source: "audius",
                 externalId: song.externalId || String(song._id).replace(/^audius_/, ""),
                 song,
-              }
-            : { songId: song._id, source: "soundwave" },
+              },
           { headers: { token } }
         );
 
@@ -412,7 +412,7 @@ export const MusicPlayerProvider = ({ children }) => {
       if (
         !isSameSong &&
         previousSong?._id &&
-        !isExternalSong(previousSong) &&
+        canUseSoundwaveSongApi(previousSong) &&
         audio.currentTime > 0 &&
         audio.currentTime < 12
       ) {
@@ -1070,7 +1070,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
       const activeSong = currentSongRef.current;
       const signals = tasteSignalsRef.current;
-      if (activeSong?._id && !isExternalSong(activeSong) && signals.songId === activeSong._id) {
+      if (activeSong?._id && canUseSoundwaveSongApi(activeSong) && signals.songId === activeSong._id) {
         if (currentTime >= 20 && !signals.sent20) {
           signals.sent20 = true;
           trackTasteEvent("play_20s", { songId: activeSong._id }, { cooldownMs: 0 });
@@ -1215,7 +1215,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
       const repeatMode = repeatRef.current;
       const activeSong = currentSongRef.current;
-      if (activeSong?._id && !isExternalSong(activeSong) && !tasteSignalsRef.current.completed) {
+      if (activeSong?._id && canUseSoundwaveSongApi(activeSong) && !tasteSignalsRef.current.completed) {
         tasteSignalsRef.current.completed = true;
         trackTasteEvent("complete", { songId: activeSong._id }, { cooldownMs: 0 });
       }
@@ -1226,7 +1226,7 @@ export const MusicPlayerProvider = ({ children }) => {
       }
 
       if (repeatMode === REPEAT_MODES.ONE) {
-        if (activeSong?._id && !isExternalSong(activeSong)) {
+        if (activeSong?._id && canUseSoundwaveSongApi(activeSong)) {
           trackTasteEvent("repeat", { songId: activeSong._id }, { cooldownMs: 5000 });
         }
         tasteSignalsRef.current = { songId: activeSong?._id || "", sent20: false, sent60: false, completed: false };

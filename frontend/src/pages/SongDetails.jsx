@@ -256,13 +256,23 @@ const SongDetails = () => {
   const fetchSong = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const data = await cachedGet(`/api/songs/${songId}`, { ttl: 20000 });
+      let data;
+      if (String(songId || "").startsWith("audius_")) {
+        const externalId = String(songId).replace(/^audius_/, "");
+        data = await cachedGet(`/api/audius/tracks/${encodeURIComponent(externalId)}`, { ttl: 20000 });
+      } else {
+        data = await cachedGet(`/api/songs/${songId}`, { ttl: 20000 });
+      }
       if (!data?.success || !data.song) throw new Error(data?.message || "Song not found");
-      setSong(data.song); setLikes(Number(data.song.likes || 0));
+      setSong(data.song);
+      setLikes(Number(data.song.likes || 0));
+      if (String(songId || "").startsWith("audius_") && data.song?._id) {
+        navigate(`/song/${data.song._id}`, { replace: true, state: { song: data.song } });
+      }
     } catch (err) {
       setError(err?.response?.data?.message || err.message || "Could not load this song");
     } finally { setLoading(false); }
-  }, [songId]);
+  }, [navigate, songId]);
 
   useEffect(() => { if (!song?._id || String(song._id) !== String(songId)) fetchSong(); else { setLoading(false); setLikes(Number(song.likes || 0)); } }, [fetchSong, song, songId]);
 

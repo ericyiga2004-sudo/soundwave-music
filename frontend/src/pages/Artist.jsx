@@ -100,6 +100,9 @@ const Artist = () => {
 
       if (res.data.success) {
         setArtist(res.data.artist);
+        if (isExternalArtist && /^[a-f0-9]{24}$/i.test(String(res.data.artist?._id || ""))) {
+          navigate(`/artist/${res.data.artist._id}`, { replace: true });
+        }
         if (isExternalArtist && Array.isArray(res.data.songs)) {
           setExternalArtistSongs(res.data.songs);
           const albums = new Map();
@@ -274,7 +277,7 @@ const Artist = () => {
   return (
     <main className="artist-page">
       <div className="artist-bg" aria-hidden="true">
-        <img src={artist.image || "/fallback-cover.svg"} alt="" />
+        <img src={artist.image || artist.imageUrl || "/fallback-artist.svg"} alt="" />
       </div>
 
       <button
@@ -290,7 +293,7 @@ const Artist = () => {
         <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] !items-end">
           <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none !text-center md:!text-left">
             <div className="artist-hero-image !mx-auto md:!mx-[0px]">
-              <img src={artist.image || "/fallback-cover.svg"} alt={artist.name} />
+              <img src={artist.image || artist.imageUrl || "/fallback-artist.svg"} alt={artist.name} />
 
               {artist.verified && (
                 <span className="artist-verified">

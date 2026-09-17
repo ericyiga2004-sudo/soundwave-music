@@ -196,11 +196,13 @@ const NewRelease = () => {
     window.addEventListener("music-history-updated", fetchNewReleases);
     window.addEventListener("music-liked-updated", fetchNewReleases);
     window.addEventListener("soundwave-personalization-updated", fetchNewReleases);
+    window.addEventListener("soundwave-catalog-synced", fetchNewReleases);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchNewReleases);
       window.removeEventListener("music-liked-updated", fetchNewReleases);
       window.removeEventListener("soundwave-personalization-updated", fetchNewReleases);
+      window.removeEventListener("soundwave-catalog-synced", fetchNewReleases);
     };
   }, []);
 

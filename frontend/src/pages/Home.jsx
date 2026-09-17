@@ -4,7 +4,6 @@ import "./CSS/Home.tailwind.css";
 import DeferredSection from "../components/DeferredSection/DeferredSection";
 import HomeSidebarToggle from "../components/HomeSidebarToggle/HomeSidebarToggle";
 
-const AudiusCatalog = lazy(() => import("../components/AudiusCatalog/AudiusCatalog"));
 const MadeForYou = lazy(() => import("../components/MadeForYou/MadeForYou"));
 const ContinueListening = lazy(() => import("../components/ContinueListening/ContinueListening"));
 const YouLiked = lazy(() => import("../components/YouLiked/YouLiked"));
@@ -122,7 +121,6 @@ const Home = () => {
   return (
     <div>
       <Hero />
-      <DeferredSection minHeight={420}><LazySection><AudiusCatalog /></LazySection></DeferredSection>
       <DeferredSection minHeight={260}><LazySection><MadeForYou /></LazySection></DeferredSection>
       <DeferredSection minHeight={250}><LazySection><ContinueListening /></LazySection></DeferredSection>
       <DeferredSection minHeight={260}><LazySection><YouLiked /></LazySection></DeferredSection>

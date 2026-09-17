@@ -69,9 +69,11 @@ const YouLiked = () => {
     fetchBecauseYouLiked();
 
     window.addEventListener("music-liked-updated", fetchBecauseYouLiked);
+    window.addEventListener("soundwave-catalog-synced", fetchBecauseYouLiked);
 
     return () => {
       window.removeEventListener("music-liked-updated", fetchBecauseYouLiked);
+      window.removeEventListener("soundwave-catalog-synced", fetchBecauseYouLiked);
     };
   }, []);
 

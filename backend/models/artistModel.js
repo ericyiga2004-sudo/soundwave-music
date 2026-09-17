@@ -34,8 +34,16 @@ const artistSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    source: { type: String, default: "soundwave", index: true },
+    externalSource: { type: String, default: undefined, index: true },
+    externalId: { type: String, default: undefined, trim: true },
+    isExternal: { type: Boolean, default: false, index: true },
+    handle: { type: String, default: "", trim: true },
   },
   { timestamps: true }
 );
+
+artistSchema.index({ externalSource: 1, externalId: 1 }, { unique: true, partialFilterExpression: { externalSource: "audius", externalId: { $type: "string" } } });
 
 export default mongoose.model("Artist", artistSchema);

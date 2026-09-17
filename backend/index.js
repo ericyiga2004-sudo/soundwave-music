@@ -19,6 +19,7 @@ import realtimeRouter from "./routes/realtimeRouter.js";
 import audiusRouter from "./routes/audiusRouter.js";
 import authUser from "./middleware/authUser.js";
 import { shareSongDirect } from "./controllers/socialController.js";
+import { startAudiusCatalogWarmup } from "./services/audiusWarmup.js";
 
 const port = process.env.PORT || 4000;
 const app = express();
@@ -27,7 +28,7 @@ app.use(cors({ exposedHeaders: ["X-SoundWave-Realtime", "X-SoundWave-Version"] }
 app.disable("x-powered-by");
 app.use((req, res, next) => {
   res.set("X-SoundWave-Realtime", "sse");
-  res.set("X-SoundWave-Version", "23.23.0-audius");
+  res.set("X-SoundWave-Version", "24.2.0-catalog-parity");
   next();
 });
 app.use(express.json({ limit: "1mb" }));
@@ -70,7 +71,7 @@ app.use("/api/social", socialRouter);
 app.use("/api/realtime", realtimeRouter);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.23.0-audius", realtime: "sse" });
+  res.json({ success: true, service: "soundwave-api", status: "ok", version: "24.2.0-catalog-parity", realtime: "sse" });
 });
 
 app.get("/", (_req, res) => {
@@ -83,6 +84,7 @@ app.use("/api", (_req, res) => {
 
 const startServer = async () => {
   await connectDB();
+  startAudiusCatalogWarmup();
   app.listen(port, () => {
     console.log(`Server is running on port ${port} with realtime social events`);
   });

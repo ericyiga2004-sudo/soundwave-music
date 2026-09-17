@@ -40,6 +40,11 @@ const albumSchema = new mongoose.Schema(
         ref: "Song",
       },
     ],
+
+    source: { type: String, default: "soundwave", index: true },
+    externalSource: { type: String, default: undefined, index: true },
+    externalId: { type: String, default: undefined, trim: true },
+    isExternal: { type: Boolean, default: false, index: true },
   },
   {
     timestamps: true,
@@ -47,5 +52,6 @@ const albumSchema = new mongoose.Schema(
 );
 
 albumSchema.index({ title: "text" });
+albumSchema.index({ externalSource: 1, externalId: 1 }, { unique: true, partialFilterExpression: { externalSource: "audius", externalId: { $type: "string" } } });
 
 export default mongoose.model("Album", albumSchema);

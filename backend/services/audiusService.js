@@ -148,11 +148,12 @@ export const normalizeAudiusUser = (user = {}) => {
     externalId: userId,
     name: clean(user?.name || user?.handle) || "Audius Artist",
     handle: clean(user?.handle),
-    imageUrl: pickArtistArtwork(user),
-    image: pickArtistArtwork(user),
+    imageUrl: pickArtistArtwork(user) || "/fallback-artist.svg",
+    image: pickArtistArtwork(user) || "/fallback-artist.svg",
     followers: numberOr(user?.followerCount ?? user?.follower_count),
     verified: Boolean(user?.isVerified || user?.is_verified || user?.verified),
     bio: clean(user?.bio),
+    country: clean(user?.country || user?.location) || "Unknown",
     source: "audius",
     externalSource: "audius",
     isExternal: true,
@@ -162,7 +163,7 @@ export const normalizeAudiusUser = (user = {}) => {
 export const normalizeAudiusTrack = (track = {}) => {
   const externalId = clean(track?.id || track?.trackId || track?.track_id);
   const artist = normalizeAudiusUser(track?.user || {});
-  const releaseDate = track?.releaseDate || track?.release_date || null;
+  const releaseDate = track?.releaseDate || track?.release_date || track?.createdAt || track?.created_at || null;
   const releaseYear = releaseDate ? Number(String(releaseDate).slice(0, 4)) || undefined : undefined;
   const album = extractAlbum(track, artist);
 
@@ -179,10 +180,12 @@ export const normalizeAudiusTrack = (track = {}) => {
     featuredArtists: [],
     album,
     audioUrl: externalId ? `/api/audius/stream/${encodeURIComponent(externalId)}` : "",
-    imageUrl: pickArtwork(track),
+    imageUrl: pickArtwork(track) || artist.imageUrl || "/fallback-cover.svg",
     genre: clean(track?.genre) || "Unknown",
     tags: normalizeTags(track?.tags),
     mood: clean(track?.mood) || "Unknown",
+    country: clean(track?.country || track?.user?.country || track?.user?.location) || "Unknown",
+    songLanguage: clean(track?.language || track?.songLanguage || track?.song_language) || "Unknown",
     duration: numberOr(track?.duration),
     plays: numberOr(track?.playCount ?? track?.play_count),
     likes: numberOr(track?.favoriteCount ?? track?.favorite_count),

@@ -10,6 +10,33 @@ const populateSong = (query) => {
     .populate("album");
 };
 
+const mixProviderOrder = (items = []) => {
+  const native = [];
+  const external = [];
+
+  for (const item of Array.isArray(items) ? items : []) {
+    const isExternal = Boolean(item?.isExternal || String(item?.externalSource || item?.source || "").toLowerCase() === "audius");
+    (isExternal ? external : native).push(item);
+  }
+
+  if (!native.length || !external.length) return [...native, ...external];
+
+  const mixed = [];
+  let nativeStreak = 0;
+  let externalStreak = 0;
+  while (native.length || external.length) {
+    const mustExternal = external.length && nativeStreak >= 2;
+    const mustNative = native.length && externalStreak >= 2;
+    const chooseExternal = external.length && !mustNative && (mustExternal || !native.length || Math.random() < 0.48);
+    const next = chooseExternal ? external.shift() : native.shift();
+    if (!next) continue;
+    mixed.push(next);
+    if (chooseExternal) { externalStreak += 1; nativeStreak = 0; }
+    else { nativeStreak += 1; externalStreak = 0; }
+  }
+  return mixed;
+};
+
 const normalizeArray = (value, lowercase = false) => {
   if (!value) return [];
 
@@ -565,7 +592,7 @@ export const getSongs = async (req, res) => {
         total,
         page: pageNumber,
         pages: Math.ceil(total / limitNumber),
-        songs,
+        songs: mixProviderOrder(songs),
       });
     }
 
@@ -573,7 +600,7 @@ export const getSongs = async (req, res) => {
 
     return res.json({
       success: true,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Get Songs Error:", error);
@@ -612,7 +639,7 @@ export const filterSongs = async (req, res) => {
       total,
       page: pageNumber,
       pages: Math.ceil(total / limitNumber),
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Filter Songs Error:", error);
@@ -743,7 +770,7 @@ export const searchSongs = async (req, res) => {
 
     return res.json({
       success: true,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Search Songs Error:", error);
@@ -988,7 +1015,7 @@ export const getTrendingSongs = async (req, res) => {
 
     return res.json({
       success: true,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Trending Songs Error:", error);
@@ -1038,7 +1065,7 @@ export const getNewReleases = async (req, res) => {
 
     return res.json({
       success: true,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("New Releases Error:", error);
@@ -1080,7 +1107,7 @@ export const getTopSongsByCountry = async (req, res) => {
     return res.json({
       success: true,
       country,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Top Songs By Country Error:", error);
@@ -1112,7 +1139,7 @@ export const getSongsByYear = async (req, res) => {
     return res.json({
       success: true,
       year: Number(year),
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Songs By Year Error:", error);
@@ -1156,7 +1183,7 @@ export const getOldSongs = async (req, res) => {
     return res.json({
       success: true,
       before: Number(before),
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Old Songs Error:", error);
@@ -1257,7 +1284,7 @@ export const getMonthlyRecap = async (req, res) => {
       success: true,
       month,
       country: country || "All",
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Monthly Recap Error:", error);
@@ -1295,7 +1322,7 @@ export const getSongsFeaturingArtist = async (req, res) => {
     return res.json({
       success: true,
       artistId,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Songs Featuring Artist Error:", error);
@@ -1359,7 +1386,7 @@ export const getMostLikedSongs = async (req, res) => {
 
     return res.json({
       success: true,
-      songs,
+      songs: mixProviderOrder(songs),
     });
   } catch (error) {
     console.error("Most Liked Songs Error:", error);

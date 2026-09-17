@@ -6,10 +6,12 @@ import {
   getAudiusTrendingMeta,
   getAudiusUser,
   getAudiusUserTracks,
+  getAudiusTrack,
   isAudiusConfigured,
   openAudiusStream,
   searchAudiusTracksMeta,
 } from "../services/audiusService.js";
+import { syncAudiusArtist, syncAudiusTrack, syncAudiusTracks } from "../services/externalCatalogSync.js";
 
 const clampLimit = (value, fallback = 60, max = 120) =>
   Math.min(Math.max(Number(value) || fallback, 1), max);
@@ -41,23 +43,60 @@ const fetchLocalSongs = async ({ limit = 60, query = "" } = {}) => {
 };
 
 export const getAudiusCatalog = async (req, res) => {
-  const limit = clampLimit(req.query.limit, 60, 100);
+  const limit = clampLimit(req.query.limit, 80, 100);
   const time = ["week", "month", "year", "allTime"].includes(req.query.time)
     ? req.query.time
     : "week";
+  const genres = String(req.query.genres || req.query.genre || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, 3);
 
   try {
     if (!isAudiusConfigured()) throw new Error("Audius credentials are not configured");
-    const result = await getAudiusTrendingMeta({ limit, time, genre: req.query.genre });
-    if (!result.value?.length) throw new Error("Audius returned no playable tracks");
+
+    const genericLimit = Math.min(70, limit);
+    const requests = [
+      getAudiusTrendingMeta({ limit: genericLimit, time, offset: Math.floor(Math.random() * 18) }),
+      ...genres.map((genre) => getAudiusTrendingMeta({ limit: 32, time: "month", genre, offset: Math.floor(Math.random() * 10) })),
+    ];
+    const settled = await Promise.allSettled(requests);
+    const raw = [];
+    let stale = false;
+    let cacheHit = false;
+    settled.forEach((result) => {
+      if (result.status !== "fulfilled") return;
+      stale = stale || Boolean(result.value?.stale);
+      cacheHit = cacheHit || Boolean(result.value?.cacheHit);
+      raw.push(...(result.value?.value || []));
+    });
+
+    const deduped = [];
+    const seen = new Set();
+    for (const song of raw) {
+      const id = String(song?.externalId || "");
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      deduped.push(song);
+    }
+    if (!deduped.length) throw new Error("Audius returned no playable tracks");
+
+    // Mirror metadata into the normal SoundWave catalog. The audio itself is
+    // still streamed from Audius, but the MongoDB ids make every existing
+    // SoundWave feature understand the track after reload.
+    const mirrored = await syncAudiusTracks(deduped);
+    const shuffled = [...mirrored].sort(() => Math.random() - 0.5).slice(0, limit);
 
     return res.json({
       success: true,
-      songs: result.value,
+      songs: shuffled,
       source: "audius",
       fallback: false,
-      cacheHit: Boolean(result.cacheHit),
-      stale: Boolean(result.stale),
+      cacheHit,
+      stale,
+      personalizedGenres: genres,
+      mirrored: true,
     });
   } catch (error) {
     console.warn("Audius catalog unavailable; using Soundwave fallback:", error?.message || error);
@@ -80,9 +119,10 @@ export const searchAudius = async (req, res) => {
   try {
     if (!isAudiusConfigured()) throw new Error("Audius credentials are not configured");
     const result = await searchAudiusTracksMeta({ query, limit, sortMethod: req.query.sort || "popular" });
+    const songs = await syncAudiusTracks(result.value || []);
     return res.json({
       success: true,
-      songs: result.value || [],
+      songs,
       source: "audius",
       fallback: false,
       cacheHit: Boolean(result.cacheHit),
@@ -105,9 +145,10 @@ export const getAudiusArtists = async (req, res) => {
   try {
     if (!isAudiusConfigured()) throw new Error("Audius credentials are not configured");
     const result = await getAudiusArtistsMeta({ limit, offset, query, sort });
+    const artists = (await Promise.all((result.value?.artists || []).map((artist) => syncAudiusArtist(artist).catch(() => null)))).filter(Boolean);
     return res.json({
       success: true,
-      artists: result.value?.artists || [],
+      artists,
       total: Number(result.value?.total || 0),
       hasMore: Boolean(result.value?.hasMore),
       source: "audius",
@@ -130,9 +171,11 @@ export const getAudiusArtists = async (req, res) => {
 
 export const getAudiusArtist = async (req, res) => {
   try {
-    const artist = await getAudiusUser(req.params.artistId);
-    const songs = await getAudiusUserTracks(req.params.artistId, { limit: clampLimit(req.query.limit, 100, 100) });
-    return res.json({ success: true, artist, songs, source: "audius" });
+    const audiusArtist = await getAudiusUser(req.params.artistId);
+    const artist = await syncAudiusArtist(audiusArtist);
+    const rawSongs = await getAudiusUserTracks(req.params.artistId, { limit: clampLimit(req.query.limit, 100, 100) });
+    const songs = await syncAudiusTracks(rawSongs);
+    return res.json({ success: true, artist, songs, source: "audius", mirrored: true });
   } catch (error) {
     console.error("Audius artist fetch failed:", error?.message || error);
     return res.status(502).json({ success: false, message: "Audius artist is temporarily unavailable" });
@@ -141,11 +184,26 @@ export const getAudiusArtist = async (req, res) => {
 
 export const getAudiusAlbumById = async (req, res) => {
   try {
-    const album = await getAudiusAlbum(req.params.albumId);
-    return res.json({ success: true, album, source: "audius" });
+    const rawAlbum = await getAudiusAlbum(req.params.albumId);
+    const songs = await syncAudiusTracks(rawAlbum?.songs || []);
+    const firstAlbum = songs.find((song) => song?.album)?._id ? songs.find((song) => song?.album)?.album : null;
+    const album = firstAlbum || { ...rawAlbum, songs };
+    return res.json({ success: true, album, songs, source: "audius", mirrored: true });
   } catch (error) {
     console.error("Audius album fetch failed:", error?.message || error);
     return res.status(502).json({ success: false, message: "Audius album is temporarily unavailable" });
+  }
+};
+
+export const getAudiusTrackById = async (req, res) => {
+  try {
+    const raw = await getAudiusTrack(req.params.trackId);
+    const song = await syncAudiusTrack(raw);
+    if (!song) return res.status(404).json({ success: false, message: "Song not found" });
+    return res.json({ success: true, song, source: "audius", mirrored: true });
+  } catch (error) {
+    console.error("Audius track fetch failed:", error?.message || error);
+    return res.status(502).json({ success: false, message: "Audius song is temporarily unavailable" });
   }
 };
 

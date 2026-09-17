@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import "./SongItem.tailwind.css";
-import { isExternalSong } from "../../utils/songSource";
+import { canUseSoundwaveSongApi } from "../../utils/songSource";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
@@ -32,7 +32,7 @@ const SongItem = ({ song, queue = [] }) => {
     ]);
   }, [queue, song, songs, catalogSongs]);
 
-  const external = isExternalSong(song);
+  const persistent = canUseSoundwaveSongApi(song);
 
   const handleCardClick = () => {
     if (!song?._id) return;
@@ -106,7 +106,7 @@ const SongItem = ({ song, queue = [] }) => {
 
   return (
     <div className="song-carder">
-      {external ? (
+      {!persistent ? (
         <div
           className="song-linker"
           role="button"
@@ -131,7 +131,7 @@ const SongItem = ({ song, queue = [] }) => {
         </Link>
       )}
 
-      {!external ? (
+      {persistent ? (
         <SongActionMenu
           song={song}
           queue={songQueue}

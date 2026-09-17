@@ -66,6 +66,7 @@ const MadeForYou = () => {
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("soundwave-personalization-updated", fetchMadeForYou);
+    window.addEventListener("soundwave-catalog-synced", fetchMadeForYou);
 
     if (navigator.onLine) {
       fetchMadeForYou();
@@ -78,6 +79,7 @@ const MadeForYou = () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("soundwave-personalization-updated", fetchMadeForYou);
+      window.removeEventListener("soundwave-catalog-synced", fetchMadeForYou);
     };
   }, []);
 

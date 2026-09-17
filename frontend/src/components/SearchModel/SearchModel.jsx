@@ -20,7 +20,7 @@ import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./SearchModel.tailwind.css";
 
 import { API_BASE_URL } from "../../config/api";
-import { isExternalSong } from "../../utils/songSource";
+import { canUseSoundwaveSongApi } from "../../utils/songSource";
 import { trackTasteEvent } from "../../utils/personalization";
 
 const MAX_SONG_POOL = 36;
@@ -754,9 +754,9 @@ const SearchModal = ({
     if (!song?._id) return;
 
     const playlist = buildPlaylist(song, songs);
-    const external = isExternalSong(song);
+    const persistent = canUseSoundwaveSongApi(song);
 
-    if (!external) {
+    if (persistent) {
       trackTasteEvent("search_play", { songId: song._id }, { cooldownMs: 30000 });
     }
 
@@ -768,7 +768,7 @@ const SearchModal = ({
 
     // External Audius tracks play in the persistent Soundwave player. Do not
     // route them into MongoDB-backed Song Details, comments, likes or moments.
-    if (!external) {
+    if (persistent) {
       navigate(`/song/${song._id}`, {
         state: {
           song,
@@ -847,7 +847,7 @@ const SearchModal = ({
                     }
                   >
                     <img
-                      src={artist.image || "/fallback-cover.svg"}
+                      src={artist.image || artist.imageUrl || "/fallback-artist.svg"}
                       alt={artist.name || "Artist"}
                      loading="lazy" decoding="async" />
 
@@ -923,7 +923,7 @@ const SearchModal = ({
                     </div>
 
                     <Music2 size={18} />
-                    {!isExternalSong(song) ? (
+                    {canUseSoundwaveSongApi(song) ? (
                       <SongActionMenu
                         song={song}
                         queue={songs}

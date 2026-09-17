@@ -6,7 +6,7 @@ import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
 import "./Hero.tailwind.css";
-import { isExternalSong } from "../../utils/songSource";
+import { canUseSoundwaveSongApi } from "../../utils/songSource";
 
 const getArtist = (song) => song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
@@ -22,17 +22,26 @@ const Hero = () => {
       setPersonalized([]);
       return undefined;
     }
-    const controller = new AbortController();
-    apiClient.get("/api/recommend/home", {
-      headers: authHeaders(authToken),
-      params: { limit: 12 },
-      signal: controller.signal,
-    }).then(({ data }) => {
-      if (!data?.success) return;
-      const ranked = data.sections?.forYou || [];
-      setPersonalized(ranked.slice(0, 8));
-    }).catch(() => {});
-    return () => controller.abort();
+    let controller = new AbortController();
+    const loadPersonalized = () => {
+      controller.abort();
+      controller = new AbortController();
+      apiClient.get("/api/recommend/home", {
+        headers: authHeaders(authToken),
+        params: { limit: 12 },
+        signal: controller.signal,
+      }).then(({ data }) => {
+        if (!data?.success) return;
+        const ranked = data.sections?.forYou || [];
+        setPersonalized(ranked.slice(0, 8));
+      }).catch(() => {});
+    };
+    loadPersonalized();
+    window.addEventListener("soundwave-catalog-synced", loadPersonalized);
+    return () => {
+      controller.abort();
+      window.removeEventListener("soundwave-catalog-synced", loadPersonalized);
+    };
   }, [authToken]);
 
   const featured = useMemo(() => {
@@ -52,7 +61,7 @@ const Hero = () => {
   const playAndOpenHeroSong = (song, queue = featured.length ? featured : (catalogSongs.length ? catalogSongs : songs)) => {
     if (!song?._id) return;
     playSong?.(song, queue);
-    if (!isExternalSong(song)) {
+    if (canUseSoundwaveSongApi(song)) {
       navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
       window.scrollTo({ top: 0, behavior: "auto" });
     }
@@ -99,7 +108,7 @@ const Hero = () => {
                 <div className="hero-placeholder-art">♪</div>
               )}
             </div>
-            {mainSong && !isExternalSong(mainSong) ? (
+            {mainSong && canUseSoundwaveSongApi(mainSong) ? (
               <SongActionMenu
                 song={mainSong}
                 queue={featured.length ? featured : (catalogSongs.length ? catalogSongs : songs)}
@@ -125,7 +134,7 @@ const Hero = () => {
                     <Play size={15} fill="currentColor" />
                   </button>
                 )}
-                {song && !isExternalSong(song) ? (
+                {song && canUseSoundwaveSongApi(song) ? (
                   <SongActionMenu
                     song={song}
                     queue={featured}

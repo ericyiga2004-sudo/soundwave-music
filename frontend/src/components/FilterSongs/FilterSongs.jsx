@@ -172,12 +172,14 @@ const FilterSongs = () => {
     window.addEventListener("music-liked-updated", fetchSongs);
     window.addEventListener("artist-follow-updated", fetchSongs);
     window.addEventListener("soundwave-personalization-updated", fetchSongs);
+    window.addEventListener("soundwave-catalog-synced", fetchSongs);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchSongs);
       window.removeEventListener("music-liked-updated", fetchSongs);
       window.removeEventListener("artist-follow-updated", fetchSongs);
       window.removeEventListener("soundwave-personalization-updated", fetchSongs);
+      window.removeEventListener("soundwave-catalog-synced", fetchSongs);
     };
   }, [tab]);
 

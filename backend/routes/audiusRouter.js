@@ -5,6 +5,7 @@ import {
   getAudiusArtists,
   getAudiusCatalog,
   getAudiusStatus,
+  getAudiusTrackById,
   searchAudius,
   streamAudiusTrack,
 } from "../controllers/audiusController.js";
@@ -16,5 +17,6 @@ router.get("/search", searchAudius);
 router.get("/artists", getAudiusArtists);
 router.get("/artists/:artistId", getAudiusArtist);
 router.get("/albums/:albumId", getAudiusAlbumById);
+router.get("/tracks/:trackId", getAudiusTrackById);
 router.get("/stream/:trackId", streamAudiusTrack);
 export default router;

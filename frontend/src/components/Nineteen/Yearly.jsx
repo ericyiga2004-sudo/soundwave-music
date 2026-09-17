@@ -315,12 +315,14 @@ const Yearly = () => {
     window.addEventListener("music-liked-updated", fetchSections);
     window.addEventListener("artist-follow-updated", fetchSections);
     window.addEventListener("soundwave-personalization-updated", fetchSections);
+    window.addEventListener("soundwave-catalog-synced", fetchSections);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchSections);
       window.removeEventListener("music-liked-updated", fetchSections);
       window.removeEventListener("artist-follow-updated", fetchSections);
       window.removeEventListener("soundwave-personalization-updated", fetchSections);
+      window.removeEventListener("soundwave-catalog-synced", fetchSections);
     };
   }, []);
 

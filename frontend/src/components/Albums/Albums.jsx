@@ -357,12 +357,14 @@ const Albums = () => {
     window.addEventListener("music-liked-updated", fetchAlbums);
     window.addEventListener("artist-follow-updated", fetchAlbums);
     window.addEventListener("soundwave-personalization-updated", fetchAlbums);
+    window.addEventListener("soundwave-catalog-synced", fetchAlbums);
 
     return () => {
       window.removeEventListener("music-history-updated", fetchAlbums);
       window.removeEventListener("music-liked-updated", fetchAlbums);
       window.removeEventListener("artist-follow-updated", fetchAlbums);
       window.removeEventListener("soundwave-personalization-updated", fetchAlbums);
+      window.removeEventListener("soundwave-catalog-synced", fetchAlbums);
     };
   }, []);
 

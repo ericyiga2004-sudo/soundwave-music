@@ -5,7 +5,7 @@ import { getLowData } from "../utils/uiPreferences";
 
 export const MusicContext = React.createContext(null);
 
-const AUDIUS_CACHE_KEY = "soundwave_audius_catalog_v24";
+const AUDIUS_CACHE_KEY = "soundwave_audius_catalog_v24_2";
 
 const readAudiusCache = () => {
   try {
@@ -78,9 +78,9 @@ const getStoredToken = () => {
 const MusicContextProvider = ({ children }) => {
   const backendUrl = API_BASE_URL;
 
-  // Keep `songs` as the original MongoDB/Cloudinary catalog so existing
-  // playlists, social features, artist pages and history continue receiving
-  // real MongoDB ObjectIds. Audius lives in a separate discovery catalog.
+  // `songs` is now the provider-neutral persistent SoundWave catalog. Audius
+  // metadata is mirrored by the backend into normal MongoDB Song/Artist/Album
+  // records, so every existing feature can safely consume the same ids.
   const [songs, setSongs] = useState([]);
   const [audiusSongs, setAudiusSongs] = useState(readAudiusCache);
   const [catalogSongs, setCatalogSongs] = useState([]);
@@ -112,13 +112,32 @@ const MusicContextProvider = ({ children }) => {
 
       // Fetch both independently. Audius is allowed to fail without taking
       // Soundwave down, and the legacy /api/songs catalog keeps its old role.
+      let preferredGenres = [];
+      const authToken = getAuthToken();
+      if (authToken) {
+        try {
+          const preferenceResponse = await axios.get(`${backendUrl}/api/recommend/preferences`, {
+            headers: { token: authToken },
+            timeout: 8000,
+          });
+          preferredGenres = (preferenceResponse.data?.preferences?.genres || [])
+            .filter((item) => Number(item?.effectiveScore ?? item?.score ?? 0) > 0)
+            .sort((a, b) => Number(b?.effectiveScore ?? b?.score ?? 0) - Number(a?.effectiveScore ?? a?.score ?? 0))
+            .map((item) => item?.name)
+            .filter(Boolean)
+            .slice(0, 3);
+        } catch (error) {
+          console.log("Taste genres unavailable; using general Audius discovery:", error?.message || error);
+        }
+      }
+
       const [localResult, audiusResult] = await Promise.allSettled([
         axios.get(`${backendUrl}/api/songs`, {
           params: { limit: localLimit, sort: "popular" },
         }),
         axios.get(`${backendUrl}/api/audius/catalog`, {
-          params: { limit: audiusLimit, time: "week" },
-          timeout: 20000,
+          params: { limit: audiusLimit, time: "week", ...(preferredGenres.length ? { genres: preferredGenres.join(",") } : {}) },
+          timeout: 30000,
         }),
       ]);
 
@@ -163,12 +182,24 @@ const MusicContextProvider = ({ children }) => {
             ? audiusPayloadSongs
             : [];
 
-      setSongs(localFallbackSongs);
+      const persistedCatalog = [];
+      const persistedSeen = new Set();
+      [...localFallbackSongs, ...externalSongs].forEach((song) => {
+        const id = String(song?._id || "");
+        if (!id || persistedSeen.has(id)) return;
+        persistedSeen.add(id);
+        persistedCatalog.push(song);
+      });
+
+      setSongs(persistedCatalog);
       setAudiusSongs(externalSongs);
 
       const combined = mixCatalogs(localFallbackSongs, externalSongs);
 
       setCatalogSongs(combined);
+      if (freshExternalSongs.length && typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("soundwave-catalog-synced", { detail: { count: freshExternalSongs.length } }));
+      }
       setCatalogSource(externalSongs.length && localFallbackSongs.length ? "mixed" : externalSongs.length ? "audius" : "soundwave");
     } catch (error) {
       // Promise.allSettled makes this unlikely, but keep a final safety net.

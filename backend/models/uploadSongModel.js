@@ -230,6 +230,14 @@ const songSchema = new mongoose.Schema(
       default: "published",
       index: true,
     },
+
+    source: { type: String, default: "soundwave", index: true },
+    externalSource: { type: String, default: undefined, index: true },
+    externalId: { type: String, default: undefined, trim: true },
+    isExternal: { type: Boolean, default: false, index: true },
+    providerPermalink: { type: String, default: "" },
+    providerPlays: { type: Number, default: 0, min: 0 },
+    providerLikes: { type: Number, default: 0, min: 0 },
   },
   {
     timestamps: true,
@@ -274,6 +282,7 @@ songSchema.index({ genre: 1, plays: -1 });
 songSchema.index({ mood: 1, plays: -1 });
 songSchema.index({ songLanguage: 1, plays: -1 });
 songSchema.index({ featuredArtists: 1 });
+songSchema.index({ externalSource: 1, externalId: 1 }, { unique: true, partialFilterExpression: { externalSource: "audius", externalId: { $type: "string" } } });
 songSchema.index({ "monthlyStats.month": 1 });
 
 // Status-aware indexes
