@@ -11,9 +11,24 @@ import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import "./CSS/Explore.tailwind.css";
 
+const shuffleMix = (items = []) => {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  const seen = new Set();
+  return out.filter((song) => {
+    const id = String(song?._id || "");
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+};
+
 const Explore = () => {
   const navigate = useNavigate();
-  const { getAuthToken } = useContext(MusicContext);
+  const { getAuthToken, catalogSongs = [] } = useContext(MusicContext);
   const { playSong } = useContext(MusicPlayerContext);
   const token = getAuthToken?.() || "";
 
@@ -65,7 +80,19 @@ const Explore = () => {
           signal: controller.signal,
         });
         if (!data?.success) throw new Error(data?.message || "Could not load music");
-        setSongs(data.songs || []);
+        const localSongs = data.songs || [];
+        const needle = search.trim().toLowerCase();
+        const externalMatches = country === "All"
+          ? catalogSongs.filter((song) => {
+              if (!song?.isExternal) return false;
+              if (genre !== "All" && String(song.genre || "").toLowerCase() !== genre.toLowerCase()) return false;
+              if (mood !== "All" && String(song.mood || "").toLowerCase() !== mood.toLowerCase()) return false;
+              if (!needle) return true;
+              const haystack = `${song.title || ""} ${song.artist?.name || ""} ${song.genre || ""} ${song.mood || ""}`.toLowerCase();
+              return haystack.includes(needle);
+            })
+          : [];
+        setSongs(shuffleMix([...localSongs, ...externalMatches]).slice(0, 60));
       } catch (err) {
         if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
           setError(err?.response?.data?.message || err.message || "Could not load music");
@@ -73,7 +100,7 @@ const Explore = () => {
       } finally { setLoading(false); }
     }, 220);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [country, genre, mood, search, sort]);
+  }, [country, genre, mood, search, sort, catalogSongs]);
 
   const featured = songs[0] || null;
   const topTen = songs.slice(0, 10);
@@ -88,7 +115,13 @@ const Explore = () => {
   }, [songs]);
 
   const reset = () => { setCountry("All"); setGenre("All"); setMood("All"); setSearch(""); setSort("popular"); };
-  const openSong = (song, queue = songs) => navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
+  const openSong = (song, queue = songs) => {
+    if (song?.isExternal) {
+      playSong?.(song, queue);
+      return;
+    }
+    navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
+  };
 
   return (
     <div className="explore-page-v7 sw-container-fluid w-full mx-auto px-3">

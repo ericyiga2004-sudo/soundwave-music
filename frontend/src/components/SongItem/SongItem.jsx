@@ -1,7 +1,7 @@
 import SongActionMenu from "../SongActions/SongActionMenu";
 import React, { useContext, useMemo } from "react";
 import { FaPlay } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import "./SongItem.tailwind.css";
@@ -19,17 +19,18 @@ const normalizeSongs = (songs = []) => {
 };
 
 const SongItem = ({ song, queue = [] }) => {
+  const navigate = useNavigate();
   const { playSong } = useContext(MusicPlayerContext);
-  const { songs } = useContext(MusicContext);
+  const { songs, catalogSongs = [] } = useContext(MusicContext);
 
   const songQueue = useMemo(() => {
-    const sourceQueue = queue.length ? queue : songs;
+    const sourceQueue = queue.length ? queue : (catalogSongs.length ? catalogSongs : songs);
 
     return normalizeSongs([
       song,
       ...sourceQueue.filter((item) => item?._id !== song?._id),
     ]);
-  }, [queue, song, songs]);
+  }, [queue, song, songs, catalogSongs]);
 
   const external = isExternalSong(song);
 
@@ -80,7 +81,23 @@ const SongItem = ({ song, queue = [] }) => {
       <div className="card-content">
         <h4 className="card-title">{song.title || "Unknown Song"}</h4>
 
-        <p className="card-artist">
+        <p
+          className="card-artist"
+          role={song?.artist?._id ? "link" : undefined}
+          tabIndex={song?.artist?._id ? 0 : undefined}
+          onClick={(event) => {
+            if (!song?.artist?._id) return;
+            event.preventDefault();
+            event.stopPropagation();
+            navigate(`/artist/${song.artist._id}`);
+          }}
+          onKeyDown={(event) => {
+            if (!song?.artist?._id || (event.key !== "Enter" && event.key !== " ")) return;
+            event.preventDefault();
+            event.stopPropagation();
+            navigate(`/artist/${song.artist._id}`);
+          }}
+        >
           {song.artist?.name || song.artistName || "Unknown Artist"}
         </p>
       </div>

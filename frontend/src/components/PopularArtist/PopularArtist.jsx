@@ -15,6 +15,24 @@ import { API_BASE_URL as backendUrl } from "../../config/api";
 
 const MAX_ARTIST_STATS_SONGS = 80;
 
+const mixArtistSources = (local = [], external = []) => {
+  const a = [...local];
+  const b = [...external];
+  const out = [];
+  while (a.length || b.length) {
+    if (b.length && Math.random() < 0.6) out.push(b.shift());
+    if (a.length) out.push(a.shift());
+    if (b.length && Math.random() < 0.7) out.push(b.shift());
+  }
+  const seen = new Set();
+  return out.filter((artist) => {
+    const key = String(artist?._id || artist?.externalId || "");
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 const formatFollowers = (value = 0) => {
   const number = Number(value || 0);
 
@@ -201,21 +219,30 @@ const PopularArtist = () => {
       const token = String(localStorage.getItem("token") || "").trim();
 
       // Public catalog requests must never depend on authentication.
-      const [artistsRes, songsRes] = await Promise.all([
+      // Audius artist discovery is independent, so one provider cannot blank
+      // the whole artist section when it has a temporary outage.
+      const [artistsResult, audiusArtistsResult, songsResult, audiusSongsResult] = await Promise.allSettled([
         axios.get(`${backendUrl}/api/artists?limit=36&sort=followers`),
+        axios.get(`${backendUrl}/api/audius/artists?limit=36&sort=followers`),
         axios.get(`${backendUrl}/api/songs?limit=${MAX_ARTIST_STATS_SONGS}&sort=popular`),
+        axios.get(`${backendUrl}/api/audius/catalog?limit=${MAX_ARTIST_STATS_SONGS}&time=month`),
       ]);
 
-      setArtists(
-        artistsRes.data?.success && Array.isArray(artistsRes.data.artists)
-          ? artistsRes.data.artists
-          : []
-      );
-      setSongsForStats(
-        songsRes.data?.success && Array.isArray(songsRes.data.songs)
-          ? songsRes.data.songs
-          : []
-      );
+      const localArtists = artistsResult.status === "fulfilled" && artistsResult.value.data?.success
+        ? artistsResult.value.data.artists || []
+        : [];
+      const externalArtists = audiusArtistsResult.status === "fulfilled" && audiusArtistsResult.value.data?.success
+        ? audiusArtistsResult.value.data.artists || []
+        : [];
+      const localSongs = songsResult.status === "fulfilled" && songsResult.value.data?.success
+        ? songsResult.value.data.songs || []
+        : [];
+      const externalSongs = audiusSongsResult.status === "fulfilled" && audiusSongsResult.value.data?.source === "audius"
+        ? audiusSongsResult.value.data.songs || []
+        : [];
+
+      setArtists(mixArtistSources(localArtists, externalArtists));
+      setSongsForStats([...localSongs, ...externalSongs]);
 
       // Personalization is optional. A stale/expired token must not hide artists.
       if (token) {
@@ -286,6 +313,11 @@ const PopularArtist = () => {
   };
 
   const handleFollowArtist = async (artistId) => {
+    const sourceArtist = artists.find((artist) => String(artist?._id) === String(artistId));
+    if (sourceArtist?.isExternal || sourceArtist?.source === "audius") {
+      handleViewArtist(artistId);
+      return;
+    }
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -309,7 +341,6 @@ const PopularArtist = () => {
       );
 
       if (res.data.success) {
-        const sourceArtist = artists.find((artist) => String(artist?._id) === String(artistId));
         const updatedArtist = sourceArtist
           ? { ...sourceArtist, followers: res.data.followers }
           : { _id: artistId, followers: res.data.followers };
@@ -441,7 +472,9 @@ const PopularArtist = () => {
                       onClick={() => handleFollowArtist(artist._id)}
                       disabled={buttonLoading}
                     >
-                      {buttonLoading ? (
+                      {artist.isExternal || artist.source === "audius" ? (
+                        "View"
+                      ) : buttonLoading ? (
                         "..."
                       ) : following ? (
                         <>

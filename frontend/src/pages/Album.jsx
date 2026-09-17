@@ -1,6 +1,6 @@
 import SongActionMenu from "../components/SongActions/SongActionMenu";
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import {
   FaPause,
@@ -14,6 +14,7 @@ import "./CSS/Album.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../config/api";
 import { trackTasteEvent } from "../utils/personalization";
+import { isExternalSong } from "../utils/songSource";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
@@ -86,10 +87,12 @@ const AlbumSkeleton = () => {
 const Album = () => {
   const { albumId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const { currentSong, isPlaying, playSong, togglePlay } =
     useContext(MusicPlayerContext);
 
+  const isExternalAlbum = String(albumId || "").startsWith("audius_album_");
   const [album, setAlbum] = useState(location.state?.album || null);
   const [loading, setLoading] = useState(!location.state?.album);
 
@@ -100,7 +103,11 @@ const Album = () => {
       try {
         setLoading(true);
 
-        const res = await axios.get(`${backendUrl}/api/albums/${albumId}`);
+        const res = await axios.get(
+          isExternalAlbum
+            ? `${backendUrl}/api/audius/albums/${encodeURIComponent(albumId)}`
+            : `${backendUrl}/api/albums/${albumId}`
+        );
 
         if (!mounted) return;
 
@@ -129,11 +136,11 @@ const Album = () => {
     return () => {
       mounted = false;
     };
-  }, [albumId]);
+  }, [albumId, isExternalAlbum]);
 
   useEffect(() => {
-    if (album?._id) trackTasteEvent("album_view", { albumId: album._id }, { cooldownMs: 90000 });
-  }, [album?._id]);
+    if (album?._id && !isExternalAlbum) trackTasteEvent("album_view", { albumId: album._id }, { cooldownMs: 90000 });
+  }, [album?._id, isExternalAlbum]);
 
   const albumQueue = useMemo(() => {
     if (!album?.songs?.length) return [];
@@ -241,7 +248,18 @@ const Album = () => {
 
                 <h1>{album.title || "Untitled Album"}</h1>
 
-                <p className="album-artist">{albumArtist}</p>
+                <p
+                  className="album-artist"
+                  role={album?.artist?._id ? "link" : undefined}
+                  tabIndex={album?.artist?._id ? 0 : undefined}
+                  onClick={() => album?.artist?._id && navigate(`/artist/${album.artist._id}`)}
+                  onKeyDown={(event) => {
+                    if (album?.artist?._id && (event.key === "Enter" || event.key === " ")) {
+                      event.preventDefault();
+                      navigate(`/artist/${album.artist._id}`);
+                    }
+                  }}
+                >{albumArtist}</p>
 
                 <p className="album-description">
                   {album.description || "No description available for this album."}
@@ -357,12 +375,14 @@ const Album = () => {
                   >
                     {playingNow ? <FaPause /> : <FaPlay />}
                   </button>
-                  <SongActionMenu
-                    song={song}
-                    queue={albumQueue}
-                    triggerClassName="sw2324-overlay-more sw2324-album-more"
-                    triggerLabel={`More options for ${song.title}`}
-                  />
+                  {!isExternalSong(song) && (
+                    <SongActionMenu
+                      song={song}
+                      queue={albumQueue}
+                      triggerClassName="sw2324-overlay-more sw2324-album-more"
+                      triggerLabel={`More options for ${song.title}`}
+                    />
+                  )}
                 </div>
               );
             })}

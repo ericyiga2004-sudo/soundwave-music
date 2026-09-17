@@ -4,12 +4,13 @@ import { MusicContext } from "../../context/ShopContext";
 import "./Trending.tailwind.css";
 
 const Trending = () => {
-  const { songs } = useContext(MusicContext);
+  const { songs, catalogSongs = [] } = useContext(MusicContext);
   const [trending, setTrending] = useState([]);
 
   useEffect(() => {
-    if (songs?.length > 0) {
-      const sorted = [...songs]
+    const sourceSongs = catalogSongs.length ? catalogSongs : songs;
+    if (sourceSongs?.length > 0) {
+      const sorted = [...sourceSongs]
         .sort((a, b) => {
           const aFollowers = a?.artist?.followers || 0;
           const bFollowers = b?.artist?.followers || 0;
@@ -19,7 +20,7 @@ const Trending = () => {
 
       setTrending(sorted);
     }
-  }, [songs]);
+  }, [songs, catalogSongs]);
 
   return (
     <section className="trending-section">

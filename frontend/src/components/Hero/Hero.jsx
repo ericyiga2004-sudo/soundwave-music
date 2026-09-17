@@ -6,12 +6,13 @@ import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
 import "./Hero.tailwind.css";
+import { isExternalSong } from "../../utils/songSource";
 
 const getArtist = (song) => song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
 const Hero = () => {
   const navigate = useNavigate();
-  const { songs = [], token, getAuthToken } = useContext(MusicContext);
+  const { songs = [], catalogSongs = [], token, getAuthToken } = useContext(MusicContext);
   const { playSong } = useContext(MusicPlayerContext);
   const [personalized, setPersonalized] = useState([]);
   const authToken = getAuthToken?.() || token || "";
@@ -36,22 +37,25 @@ const Hero = () => {
 
   const featured = useMemo(() => {
     if (personalized.length) return personalized.slice(0, 3);
-    return [...songs]
+    const browseSongs = catalogSongs.length ? catalogSongs : songs;
+    return [...browseSongs]
       .sort((a, b) => {
         const scoreA = Number(a?.plays || 0) + Number(a?.likes || 0) * 2;
         const scoreB = Number(b?.plays || 0) + Number(b?.likes || 0) * 2;
         return scoreB - scoreA;
       })
       .slice(0, 3);
-  }, [personalized, songs]);
+  }, [personalized, songs, catalogSongs]);
 
   const mainSong = featured[0];
 
-  const playAndOpenHeroSong = (song, queue = featured.length ? featured : songs) => {
+  const playAndOpenHeroSong = (song, queue = featured.length ? featured : (catalogSongs.length ? catalogSongs : songs)) => {
     if (!song?._id) return;
     playSong?.(song, queue);
-    navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
-    window.scrollTo({ top: 0, behavior: "auto" });
+    if (!isExternalSong(song)) {
+      navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
   };
 
   return (
@@ -79,7 +83,7 @@ const Hero = () => {
                 <button
                   type="button"
                   className="hero-play-button"
-                  onClick={() => (mainSong ? playSong?.(mainSong, featured.length ? featured : songs) : navigate("/explore"))}
+                  onClick={() => (mainSong ? playSong?.(mainSong, featured.length ? featured : (catalogSongs.length ? catalogSongs : songs)) : navigate("/explore"))}
                 >
                   <Play size={17} fill="currentColor" />
                   {mainSong ? "Play" : "Browse"}
@@ -95,10 +99,10 @@ const Hero = () => {
                 <div className="hero-placeholder-art">♪</div>
               )}
             </div>
-            {mainSong ? (
+            {mainSong && !isExternalSong(mainSong) ? (
               <SongActionMenu
                 song={mainSong}
-                queue={featured.length ? featured : songs}
+                queue={featured.length ? featured : (catalogSongs.length ? catalogSongs : songs)}
                 triggerClassName="sw2324-overlay-more sw2324-hero-main-more"
                 triggerLabel={`More options for ${mainSong.title}`}
               />
@@ -121,7 +125,7 @@ const Hero = () => {
                     <Play size={15} fill="currentColor" />
                   </button>
                 )}
-                {song ? (
+                {song && !isExternalSong(song) ? (
                   <SongActionMenu
                     song={song}
                     queue={featured}

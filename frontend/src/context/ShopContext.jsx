@@ -5,6 +5,50 @@ import { getLowData } from "../utils/uiPreferences";
 
 export const MusicContext = React.createContext(null);
 
+const AUDIUS_CACHE_KEY = "soundwave_audius_catalog_v24";
+
+const readAudiusCache = () => {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(AUDIUS_CACHE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeAudiusCache = (songs = []) => {
+  try {
+    sessionStorage.setItem(AUDIUS_CACHE_KEY, JSON.stringify((songs || []).slice(0, 100)));
+  } catch {}
+};
+
+const shuffleCopy = (items = []) => {
+  const output = [...items];
+  for (let index = output.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [output[index], output[target]] = [output[target], output[index]];
+  }
+  return output;
+};
+
+const mixCatalogs = (localSongs = [], externalSongs = []) => {
+  const local = shuffleCopy(localSongs);
+  const external = shuffleCopy(externalSongs);
+  const combined = [];
+  const seen = new Set();
+
+  while (local.length || external.length) {
+    const chooseExternal = external.length && (!local.length || Math.random() < 0.5);
+    const song = chooseExternal ? external.shift() : local.shift();
+    const key = String(song?._id || "");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    combined.push(song);
+  }
+
+  return combined;
+};
+
 const isBadTokenValue = (value) => {
   if (!value) return true;
 
@@ -38,7 +82,7 @@ const MusicContextProvider = ({ children }) => {
   // playlists, social features, artist pages and history continue receiving
   // real MongoDB ObjectIds. Audius lives in a separate discovery catalog.
   const [songs, setSongs] = useState([]);
-  const [audiusSongs, setAudiusSongs] = useState([]);
+  const [audiusSongs, setAudiusSongs] = useState(readAudiusCache);
   const [catalogSongs, setCatalogSongs] = useState([]);
   const [catalogSource, setCatalogSource] = useState("soundwave");
   const [loading, setLoading] = useState(false);
@@ -99,9 +143,18 @@ const MusicContextProvider = ({ children }) => {
         audiusResponse.data.source === "audius" &&
         audiusResponse.data.fallback !== true;
 
-      const externalSongs = audiusIsLive
+      const freshExternalSongs = audiusIsLive
         ? audiusPayloadSongs.filter((song) => song?.isExternal)
         : [];
+
+      // Do not make the UI flicker to local-only because one Audius request
+      // failed. Keep the last healthy session catalog while the backend's
+      // stale cache/retry layer recovers.
+      const externalSongs = freshExternalSongs.length
+        ? freshExternalSongs
+        : (audiusSongs.length ? audiusSongs : readAudiusCache());
+
+      if (freshExternalSongs.length) writeAudiusCache(freshExternalSongs);
 
       const localFallbackSongs =
         localSongs.length > 0
@@ -113,21 +166,15 @@ const MusicContextProvider = ({ children }) => {
       setSongs(localFallbackSongs);
       setAudiusSongs(externalSongs);
 
-      const seen = new Set();
-      const combined = [...externalSongs, ...localFallbackSongs].filter((song) => {
-        const key = String(song?._id || "");
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+      const combined = mixCatalogs(localFallbackSongs, externalSongs);
 
       setCatalogSongs(combined);
-      setCatalogSource(externalSongs.length ? "audius" : "soundwave");
+      setCatalogSource(externalSongs.length && localFallbackSongs.length ? "mixed" : externalSongs.length ? "audius" : "soundwave");
     } catch (error) {
       // Promise.allSettled makes this unlikely, but keep a final safety net.
       console.log("Fetch songs error:", error);
-      setAudiusSongs([]);
-      setCatalogSongs((current) => (current.length ? current : songs));
+      setAudiusSongs((current) => current.length ? current : readAudiusCache());
+      setCatalogSongs((current) => (current.length ? current : mixCatalogs(songs, readAudiusCache())));
       setCatalogSource("soundwave");
     } finally {
       setLoading(false);

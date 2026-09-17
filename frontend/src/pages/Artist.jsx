@@ -39,10 +39,12 @@ const Artist = () => {
   const { artistId } = useParams();
   const navigate = useNavigate();
 
-  const { songs = [], backendUrl } = useContext(MusicContext);
+  const { songs = [], catalogSongs = [], backendUrl } = useContext(MusicContext);
   const { playSong } = useContext(MusicPlayerContext);
 
+  const isExternalArtist = String(artistId || "").startsWith("audius_user_");
   const [artist, setArtist] = useState(null);
+  const [externalArtistSongs, setExternalArtistSongs] = useState([]);
   const [artistAlbums, setArtistAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
   const [albumsLoading, setAlbumsLoading] = useState(true);
@@ -52,8 +54,10 @@ const Artist = () => {
   const token = localStorage.getItem("token");
 
   const artistSongs = useMemo(() => {
-    return (songs || []).filter((song) => getArtistIdFromSong(song) === artistId);
-  }, [songs, artistId]);
+    if (isExternalArtist && externalArtistSongs.length) return externalArtistSongs;
+    const sourceSongs = isExternalArtist ? (catalogSongs.length ? catalogSongs : songs) : songs;
+    return (sourceSongs || []).filter((song) => getArtistIdFromSong(song) === artistId);
+  }, [songs, catalogSongs, externalArtistSongs, artistId, isExternalArtist]);
 
   const featuredSongs = useMemo(() => {
     return [...artistSongs]
@@ -88,19 +92,48 @@ const Artist = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get(`${backendUrl}/api/artists/${artistId}`);
+      const res = await axios.get(
+        isExternalArtist
+          ? `${backendUrl}/api/audius/artists/${encodeURIComponent(artistId)}`
+          : `${backendUrl}/api/artists/${artistId}`
+      );
 
       if (res.data.success) {
         setArtist(res.data.artist);
+        if (isExternalArtist && Array.isArray(res.data.songs)) {
+          setExternalArtistSongs(res.data.songs);
+          const albums = new Map();
+          res.data.songs.forEach((song) => {
+            if (song?.album?._id && !albums.has(song.album._id)) {
+              albums.set(song.album._id, { ...song.album, songs: [] });
+            }
+            if (song?.album?._id) albums.get(song.album._id).songs.push(song);
+          });
+          setArtistAlbums([...albums.values()]);
+        }
       }
     } catch (error) {
       console.log("Fetch artist error:", error);
+      if (isExternalArtist && artistSongs.length) {
+        setArtist(artistSongs[0]?.artist || null);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const fetchArtistAlbums = async () => {
+    if (isExternalArtist) {
+      const albums = new Map();
+      artistSongs.forEach((song) => {
+        if (song?.album?._id && !albums.has(song.album._id)) albums.set(song.album._id, { ...song.album, songs: [] });
+        if (song?.album?._id) albums.get(song.album._id).songs.push(song);
+      });
+      setArtistAlbums([...albums.values()]);
+      setAlbumsLoading(false);
+      return;
+    }
+
     try {
       setAlbumsLoading(true);
 
@@ -129,7 +162,7 @@ const Artist = () => {
   };
 
   const checkFollowStatus = async () => {
-    if (!token || !artistId) return;
+    if (isExternalArtist || !token || !artistId) return;
 
     try {
       const res = await axios.get(
@@ -153,14 +186,15 @@ const Artist = () => {
     fetchArtist();
     fetchArtistAlbums();
     checkFollowStatus();
-  }, [artistId]);
+  }, [artistId, isExternalArtist]);
 
   useEffect(() => {
-    if (artist?._id) trackTasteEvent("artist_view", { artistId: artist._id }, { cooldownMs: 90000 });
+    if (artist?._id && !isExternalArtist) trackTasteEvent("artist_view", { artistId: artist._id }, { cooldownMs: 90000 });
   }, [artist?._id]);
 
 
   const handleFollow = async () => {
+    if (isExternalArtist) return;
     if (!token) {
       navigate("/account");
       return;
@@ -311,26 +345,28 @@ const Artist = () => {
                 Play Songs
               </button>
 
-              <button
-                type="button"
-                className={`artist-follow-btn ${following ? "following" : ""}`}
-                onClick={handleFollow}
-                disabled={followLoading}
-              >
-                {followLoading ? (
-                  "..."
-                ) : following ? (
-                  <>
-                    <FaUserCheck />
-                    Following
-                  </>
-                ) : (
-                  <>
-                    <FaUserPlus />
-                    Follow
-                  </>
-                )}
-              </button>
+              {!isExternalArtist && (
+                <button
+                  type="button"
+                  className={`artist-follow-btn ${following ? "following" : ""}`}
+                  onClick={handleFollow}
+                  disabled={followLoading}
+                >
+                  {followLoading ? (
+                    "..."
+                  ) : following ? (
+                    <>
+                      <FaUserCheck />
+                      Following
+                    </>
+                  ) : (
+                    <>
+                      <FaUserPlus />
+                      Follow
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

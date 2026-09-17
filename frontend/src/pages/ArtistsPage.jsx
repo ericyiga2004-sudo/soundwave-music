@@ -11,6 +11,34 @@ import "./CSS/CatalogPages.tailwind.css";
 
 const PAGE_SIZE = 24;
 
+const artistKey = (artist) => String(artist?._id || artist?.externalId || "");
+
+const mixArtists = (local = [], external = []) => {
+  const left = [...local];
+  const right = [...external];
+  // Shuffle each source independently so Audius artists do not always occupy
+  // the same slots while still keeping a healthy local/external balance.
+  for (const list of [left, right]) {
+    for (let i = list.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+  }
+  const mixed = [];
+  while (left.length || right.length) {
+    if (right.length && Math.random() < 0.58) mixed.push(right.shift());
+    if (left.length) mixed.push(left.shift());
+    if (right.length && Math.random() < 0.72) mixed.push(right.shift());
+  }
+  const seen = new Set();
+  return mixed.filter((artist) => {
+    const key = artistKey(artist);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 const ArtistsPage = () => {
   const navigate = useNavigate();
   const { getAuthToken } = useContext(MusicContext);
@@ -30,15 +58,46 @@ const ArtistsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const data = await cachedGet("/api/artists", {
-        params: { page: targetPage, limit: PAGE_SIZE, search: query.trim(), sort },
-        ttl: 30000,
+      const params = { page: targetPage, limit: PAGE_SIZE, search: query.trim(), sort };
+      const audiusParams = {
+        limit: PAGE_SIZE,
+        offset: (targetPage - 1) * PAGE_SIZE,
+        q: query.trim(),
+        sort: sort === "name" ? "name" : "followers",
+      };
+
+      const [localResult, audiusResult] = await Promise.allSettled([
+        cachedGet("/api/artists", { params, ttl: 30000 }),
+        cachedGet("/api/audius/artists", { params: audiusParams, ttl: 90000 }),
+      ]);
+
+      const localData = localResult.status === "fulfilled" ? localResult.value : null;
+      const audiusData = audiusResult.status === "fulfilled" ? audiusResult.value : null;
+      const localArtists = localData?.success ? (localData.artists || []) : [];
+      const externalArtists = audiusData?.success ? (audiusData.artists || []) : [];
+
+      if (!localArtists.length && !externalArtists.length && localResult.status === "rejected" && audiusResult.status === "rejected") {
+        throw localResult.reason || audiusResult.reason || new Error("Could not load artists");
+      }
+
+      const batch = mixArtists(localArtists, externalArtists);
+      setArtists((current) => {
+        if (!append) return batch;
+        const combined = [...current, ...batch];
+        const seen = new Set();
+        return combined.filter((artist) => {
+          const key = artistKey(artist);
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
       });
-      if (!data?.success) throw new Error(data?.message || "Could not load artists");
-      setArtists((current) => append ? [...current, ...(data.artists || [])] : (data.artists || []));
-      setPage(Number(data.page || targetPage));
-      setPages(Number(data.pages || 1));
-      setTotal(Number(data.total ?? data.count ?? 0));
+
+      const localPages = Number(localData?.pages || 1);
+      const externalHasMore = Boolean(audiusData?.hasMore);
+      setPage(targetPage);
+      setPages(Math.max(localPages, externalHasMore ? targetPage + 1 : targetPage));
+      setTotal(Number(localData?.total ?? localData?.count ?? 0) + Number(audiusData?.total || 0));
     } catch (err) {
       setError(err?.response?.data?.message || err.message || "Could not load artists");
     } finally {
@@ -66,6 +125,7 @@ const ArtistsPage = () => {
 
   const toggleFollow = async (event, artist) => {
     event.stopPropagation();
+    if (artist?.isExternal || artist?.source === "audius") { navigate(`/artist/${artist._id}`); return; }
     if (!token) { navigate("/account"); return; }
     if (!artist?._id || followBusy) return;
     setFollowBusy(artist._id);
@@ -106,7 +166,7 @@ const ArtistsPage = () => {
             const isFollowing = following.has(String(artist._id));
             return <article className="sw-catalog-card artist" key={artist._id}>
               <div className="sw-catalog-card-art"><img src={optimizeArtworkUrl(artist.image || "/fallback-cover.svg", 480)} alt={artist.name || "Artist"} loading="lazy" decoding="async" /><button className="art-open" type="button" onClick={() => navigate(`/artist/${artist._id}`)} aria-label={`Open ${artist.name}`} /></div>
-              <div className="sw-catalog-card-copy"><strong>{artist.name}</strong><span>{artist.country || "Artist"}</span><div className="sw-catalog-card-meta"><small>{formatCompactNumber(artist.followers)} followers</small><button type="button" className={`sw-follow-btn ${isFollowing ? "active" : ""}`} disabled={followBusy === artist._id} onClick={(e) => toggleFollow(e, artist)}>{isFollowing ? <><Check size={12} /> Following</> : <><UserPlus size={12} /> Follow</>}</button></div></div>
+              <div className="sw-catalog-card-copy"><strong>{artist.name}</strong><span>{artist.country || "Artist"}</span><div className="sw-catalog-card-meta"><small>{formatCompactNumber(artist.followers)} followers</small><button type="button" className={`sw-follow-btn ${isFollowing ? "active" : ""}`} disabled={followBusy === artist._id} onClick={(e) => toggleFollow(e, artist)}>{artist.isExternal || artist.source === "audius" ? <>View</> : isFollowing ? <><Check size={12} /> Following</> : <><UserPlus size={12} /> Follow</>}</button></div></div>
             </article>;
           })}
         </div>

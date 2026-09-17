@@ -94,7 +94,13 @@ const userSchema = new mongoose.Schema(
 
     history: [
       {
-        song: { type: mongoose.Schema.Types.ObjectId, ref: "Song" },
+        // Native SoundWave plays keep the MongoDB reference. External catalog
+        // plays store a compact provider snapshot instead of forcing a foreign
+        // id into an ObjectId field. Existing accounts require no migration.
+        song: { type: mongoose.Schema.Types.ObjectId, ref: "Song", default: null },
+        source: { type: String, enum: ["soundwave", "audius"], default: "soundwave" },
+        externalId: { type: String, default: "", trim: true },
+        externalSong: { type: mongoose.Schema.Types.Mixed, default: null },
         playedAt: { type: Date, default: Date.now },
       },
     ],

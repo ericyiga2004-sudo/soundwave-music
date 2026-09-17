@@ -344,19 +344,20 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const addSongToHistory = useCallback(
     async (song) => {
-      if (!token || !backendUrl || !song?._id || isExternalSong(song)) return;
+      if (!token || !backendUrl || !song?._id) return;
 
       try {
+        const external = isExternalSong(song);
         await axios.post(
           `${backendUrl}/api/history/add`,
-          {
-            songId: song._id,
-          },
-          {
-            headers: {
-              token,
-            },
-          }
+          external
+            ? {
+                source: "audius",
+                externalId: song.externalId || String(song._id).replace(/^audius_/, ""),
+                song,
+              }
+            : { songId: song._id, source: "soundwave" },
+          { headers: { token } }
         );
 
         window.dispatchEvent(new Event("music-history-updated"));
