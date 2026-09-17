@@ -16,6 +16,7 @@ import commentRouter from "./routes/commentRouter.js";
 import personalizationRouter from "./routes/personalizationRouter.js";
 import socialRouter from "./routes/socialRouter.js";
 import realtimeRouter from "./routes/realtimeRouter.js";
+import audiusRouter from "./routes/audiusRouter.js";
 import authUser from "./middleware/authUser.js";
 import { shareSongDirect } from "./controllers/socialController.js";
 
@@ -26,7 +27,7 @@ app.use(cors({ exposedHeaders: ["X-SoundWave-Realtime", "X-SoundWave-Version"] }
 app.disable("x-powered-by");
 app.use((req, res, next) => {
   res.set("X-SoundWave-Realtime", "sse");
-  res.set("X-SoundWave-Version", "23.22.0");
+  res.set("X-SoundWave-Version", "23.23.0-audius");
   next();
 });
 app.use(express.json({ limit: "1mb" }));
@@ -34,13 +35,14 @@ app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   if (
     req.method === "GET" &&
-    ["/api/songs", "/api/artists", "/api/albums"].some((prefix) => req.path.startsWith(prefix))
+    ["/api/songs", "/api/artists", "/api/albums", "/api/audius/catalog", "/api/audius/search"].some((prefix) => req.path.startsWith(prefix))
   ) {
     res.set("Cache-Control", "public, max-age=20, stale-while-revalidate=60");
   }
   next();
 });
 
+app.use("/api/audius", audiusRouter);
 app.use("/api/songs", songRoutes);
 app.use("/api/artists", artistRoutes);
 app.use("/api/albums", albumRoutes);
@@ -68,7 +70,7 @@ app.use("/api/social", socialRouter);
 app.use("/api/realtime", realtimeRouter);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.22.0", realtime: "sse" });
+  res.json({ success: true, service: "soundwave-api", status: "ok", version: "23.23.0-audius", realtime: "sse" });
 });
 
 app.get("/", (_req, res) => {

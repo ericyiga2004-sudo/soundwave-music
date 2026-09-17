@@ -1,5 +1,6 @@
 import express from "express";
 import { listReliableRoomReactions, sendReliableRoomReaction } from "../controllers/roomReactionController.js";
+import { sendLiveRoomReactionV2 } from "../controllers/liveRoomReactionV2Controller.js";
 import authUser from "../middleware/authUser.js";
 import optionalAuthUser from "../middleware/optionalAuthUser.js";
 import {
@@ -82,5 +83,6 @@ router.post("/rooms/:code/chat", authUser, postLiveRoomChat);
 router.post("/rooms/:code/chat/:messageId/react", authUser, reactLiveRoomChat);
 router.post("/rooms/:code/reactions", authUser, sendReliableRoomReaction);
 router.get("/rooms/:code/reactions/recent", authUser, listReliableRoomReactions);
+router.post("/rooms/:code/live-reactions-v2", authUser, sendLiveRoomReactionV2);
 
 export default router;

@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../../utils/safeStorage";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -67,7 +66,7 @@ const ShareWithMe = () => {
   const authToken = useMemo(() => {
     const cleanToken =
       getAuthToken?.() ||
-      String(token || safeLocalStorage.getItem("token") || "").trim();
+      String(token || localStorage.getItem("token") || "").trim();
 
     return isBadTokenValue(cleanToken) ? "" : cleanToken;
   }, [token, getAuthToken]);
@@ -311,6 +310,8 @@ const ShareWithMe = () => {
     await markAsRead(share._id);
 
     playSong?.(song, playlistSongs);
+    navigate(`/song/${song._id}`, { state: { song, playlist: playlistSongs } });
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   if (!authToken) {

@@ -1,4 +1,3 @@
-import { safeLocalStorage, safeSessionStorage } from "../utils/safeStorage";
 import axios from "axios";
 import { API_BASE_URL, API_HOSTED_URL, API_MODE } from "./api";
 
@@ -13,16 +12,16 @@ export const apiClient = axios.create({
 const BAD_TOKEN_VALUES = new Set(["", "false", "null", "undefined", "none", "nan"]);
 
 export const getStoredAuthToken = () => {
-  const raw = String(safeLocalStorage.getItem("token") || "").trim();
+  const raw = String(localStorage.getItem("token") || "").trim();
   if (BAD_TOKEN_VALUES.has(raw.toLowerCase())) {
-    safeLocalStorage.removeItem("token");
+    localStorage.removeItem("token");
     return "";
   }
   return raw;
 };
 
 export const clearStoredAuthToken = () => {
-  safeLocalStorage.removeItem("token");
+  localStorage.removeItem("token");
   window.dispatchEvent(new CustomEvent("soundwave-auth-invalid"));
 };
 

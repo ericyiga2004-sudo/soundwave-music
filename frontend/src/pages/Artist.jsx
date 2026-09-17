@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../utils/safeStorage";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,7 +18,6 @@ import SongItem from "../components/SongItem/SongItem";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/Artist.tailwind.css";
-import { fetchArtistCatalogue } from "../utils/artistCatalogue";
 import { trackTasteEvent } from "../utils/personalization";
 
 const formatFollowers = (value = 0) => {
@@ -27,6 +25,10 @@ const formatFollowers = (value = 0) => {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(Number(value || 0));
+};
+
+const getArtistIdFromSong = (song) => {
+  return (song?.artist?._id || song?.artist || song?.artistId || "").toString();
 };
 
 const getAlbumIdFromSong = (song) => {
@@ -37,7 +39,7 @@ const Artist = () => {
   const { artistId } = useParams();
   const navigate = useNavigate();
 
-  const { backendUrl } = useContext(MusicContext);
+  const { songs = [], backendUrl } = useContext(MusicContext);
   const { playSong } = useContext(MusicPlayerContext);
 
   const [artist, setArtist] = useState(null);
@@ -47,16 +49,11 @@ const Artist = () => {
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  const token = safeLocalStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-  const [catalogue, setCatalogue] = useState({ artistId: "", songs: [] });
-  const [songsLoading, setSongsLoading] = useState(true);
-  const [songsError, setSongsError] = useState("");
-  const [reload, setReload] = useState(0);
-  const artistSongs = useMemo(
-    () => catalogue.artistId === artistId ? catalogue.songs : [],
-    [catalogue, artistId]
-  );
+  const artistSongs = useMemo(() => {
+    return (songs || []).filter((song) => getArtistIdFromSong(song) === artistId);
+  }, [songs, artistId]);
 
   const featuredSongs = useMemo(() => {
     return [...artistSongs]
@@ -87,6 +84,50 @@ const Artist = () => {
     return map;
   }, [artistSongs]);
 
+  const fetchArtist = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.get(`${backendUrl}/api/artists/${artistId}`);
+
+      if (res.data.success) {
+        setArtist(res.data.artist);
+      }
+    } catch (error) {
+      console.log("Fetch artist error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchArtistAlbums = async () => {
+    try {
+      setAlbumsLoading(true);
+
+      const res = await axios.get(`${backendUrl}/api/albums`);
+
+      if (res.data.success) {
+        const albums = Array.isArray(res.data.albums) ? res.data.albums : [];
+
+        const filteredAlbums = albums.filter((album) => {
+          const albumArtistId =
+            album?.artist?._id || album?.artist || album?.artistId || "";
+
+          return albumArtistId?.toString() === artistId;
+        });
+
+        setArtistAlbums(filteredAlbums);
+      } else {
+        setArtistAlbums([]);
+      }
+    } catch (error) {
+      console.log("Fetch artist albums error:", error);
+      setArtistAlbums([]);
+    } finally {
+      setAlbumsLoading(false);
+    }
+  };
+
   const checkFollowStatus = async () => {
     if (!token || !artistId) return;
 
@@ -109,47 +150,10 @@ const Artist = () => {
   };
 
   useEffect(() => {
-    const controller = new AbortController();
-    let active = true;
-    const options = { signal: controller.signal, timeout: 20000 };
-    setArtist(null);
-    setArtistAlbums([]);
-    setCatalogue({ artistId, songs: [] });
-    setLoading(true);
-    setAlbumsLoading(true);
-    setSongsLoading(true);
-    setSongsError("");
-
-    axios.get(`${backendUrl}/api/artists/${artistId}`, options)
-      .then(({ data }) => { if (active) setArtist(data.success ? data.artist : null); })
-      .catch(() => { if (active) setArtist(null); })
-      .finally(() => { if (active) setLoading(false); });
-
-    axios.get(`${backendUrl}/api/albums`, options)
-      .then(({ data }) => {
-        if (!active) return;
-        const albums = data.success && Array.isArray(data.albums) ? data.albums : [];
-        setArtistAlbums(albums.filter((album) =>
-          String(album?.artist?._id || album?.artist || album?.artistId || "") === artistId
-        ));
-      })
-      .catch(() => { if (active) setArtistAlbums([]); })
-      .finally(() => { if (active) setAlbumsLoading(false); });
-
-    fetchArtistCatalogue(axios, backendUrl, artistId, controller.signal)
-      .then((songs) => { if (active) setCatalogue({ artistId, songs }); })
-      .catch(() => {
-        if (active) setSongsError("Could not load this artist's songs. Please try again.");
-      })
-      .finally(() => { if (active) setSongsLoading(false); });
-
-    return () => { active = false; controller.abort(); };
-  }, [artistId, backendUrl, reload]);
-
-  useEffect(() => {
-    setFollowing(false);
+    fetchArtist();
+    fetchArtistAlbums();
     checkFollowStatus();
-  }, [artistId, token]);
+  }, [artistId]);
 
   useEffect(() => {
     if (artist?._id) trackTasteEvent("artist_view", { artistId: artist._id }, { cooldownMs: 90000 });
@@ -178,10 +182,6 @@ const Artist = () => {
       if (res.data.success) {
         setFollowing(Boolean(res.data.following));
 
-        const updatedArtist = artist
-          ? { ...artist, followers: res.data.followers }
-          : { _id: artistId, followers: res.data.followers };
-
         setArtist((prev) =>
           prev
             ? {
@@ -190,15 +190,6 @@ const Artist = () => {
               }
             : prev
         );
-
-        window.dispatchEvent(new CustomEvent("artist-follow-state-updated", {
-          detail: {
-            artistId: String(artistId),
-            following: Boolean(res.data.following),
-            followers: Number(res.data.followers || 0),
-            artist: updatedArtist,
-          },
-        }));
       }
     } catch (error) {
       console.log("Follow artist error:", error);
@@ -290,7 +281,7 @@ const Artist = () => {
 
               <span>
                 <FaMusic />
-                {songsLoading ? "Loading songs…" : songsError ? "Songs unavailable" : `${artistSongs.length} songs`}
+                {artistSongs.length} songs
               </span>
 
               <span>
@@ -353,14 +344,7 @@ const Artist = () => {
           </div>
         </div>
 
-        {songsLoading ? (
-          <div className="artist-no-songs" role="status"><p>Loading songs...</p></div>
-        ) : songsError ? (
-          <div className="artist-no-songs" role="alert">
-            <p>{songsError}</p>
-            <button type="button" className="artist-play-btn" onClick={() => setReload((value) => value + 1)}>Retry</button>
-          </div>
-        ) : featuredSongs.length > 0 ? (
+        {featuredSongs.length > 0 ? (
           <div className="artist-song-slider">
             {featuredSongs.map((song) => (
               <div className="artist-song-slide" key={song._id}>
@@ -414,7 +398,7 @@ const Artist = () => {
                     <strong>{album.title || album.name || "Untitled Album"}</strong>
                     <small>
                       {album.releaseYear || album.year || "Album"} •{" "}
-                      {songsLoading ? "Loading tracks…" : songsError ? "Tracks unavailable" : `${albumSongs.length} songs`}
+                      {albumSongs.length} songs
                     </small>
                   </span>
                 </button>
@@ -474,7 +458,7 @@ const Artist = () => {
             </div>
 
             <div className="artist-all-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] md:[--sw-gutter-x:1.5rem] md:[--sw-gutter-y:1.5rem]">
-              {artistSongs.filter((song) => !featuredSongs.some((featured) => String(featured._id) === String(song._id))).map((song) => (
+              {artistSongs.slice(8).map((song) => (
                 <div className="col !w-[50%] flex-none col sm:!w-[33.333333333333336%] sm:flex-none col lg:!w-[25%] lg:flex-none col xl:!w-[16.666666666666668%] xl:flex-none" key={song._id}>
                   <SongItem song={song} queue={artistSongs} />
                 </div>

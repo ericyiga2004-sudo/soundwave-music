@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../utils/safeStorage";
 import PremiumSelect from "../components/UI/PremiumSelect";
 import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -215,7 +214,7 @@ const PlayList = () => {
   const authToken = useMemo(() => {
     const cleanToken =
       getAuthToken?.() ||
-      String(token || safeLocalStorage.getItem("token") || "").trim();
+      String(token || localStorage.getItem("token") || "").trim();
 
     return isBadTokenValue(cleanToken) ? "" : cleanToken;
   }, [token, getAuthToken]);

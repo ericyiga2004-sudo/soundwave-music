@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../utils/safeStorage";
 import SongActionMenu from "../components/SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -203,7 +202,7 @@ const YearsPage = () => {
         setLoading(true);
         setError("");
 
-        const token = String(safeLocalStorage.getItem("token") || "").trim();
+        const token = String(localStorage.getItem("token") || "").trim();
         let fetchedPreferences = {};
 
         if (token) {

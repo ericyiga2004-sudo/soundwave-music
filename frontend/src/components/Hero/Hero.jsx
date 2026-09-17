@@ -47,6 +47,13 @@ const Hero = () => {
 
   const mainSong = featured[0];
 
+  const playAndOpenHeroSong = (song, queue = featured.length ? featured : songs) => {
+    if (!song?._id) return;
+    playSong?.(song, queue);
+    navigate(`/song/${song._id}`, { state: { song, playlist: queue } });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
   return (
     <section className="hero sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] xl:!px-[3rem] !pt-[1.5rem] xl:!pt-[3rem]">
       <div className="hero-heading-row">
@@ -83,7 +90,7 @@ const Hero = () => {
 
             <div className="hero-artwork-wrap" aria-hidden={!mainSong}>
               {mainSong?.imageUrl ? (
-                <img src={mainSong.imageUrl} alt={mainSong.title || "Featured song"} />
+                <button type="button" className="sw2323-song-art-button !block !h-full !w-full !border-0 !bg-transparent !p-0 !rounded-[inherit] overflow-hidden" onClick={() => playAndOpenHeroSong(mainSong)} aria-label={`Play and open ${mainSong.title}`}><img src={mainSong.imageUrl} alt={mainSong.title || "Featured song"} /></button>
               ) : (
                 <div className="hero-placeholder-art">♪</div>
               )}
@@ -103,7 +110,7 @@ const Hero = () => {
           <div className="hero-mini-stack">
             {(featured.length ? featured.slice(1, 3) : [null, null]).map((song, index) => (
               <article className="hero-mini-card" key={song?._id || index}>
-                {song?.imageUrl ? <img src={song.imageUrl} alt="" loading="lazy" /> : <div className="hero-mini-placeholder">♪</div>}
+                {song?.imageUrl ? <button type="button" className="sw2323-song-art-button !block !h-[68px] !w-[68px] sm:!h-[86px] sm:!w-[86px] !border-0 !bg-transparent !p-0 !rounded-[11px] overflow-hidden" onClick={() => playAndOpenHeroSong(song, featured)} aria-label={`Play and open ${song.title}`}><img src={song.imageUrl} alt="" loading="lazy" /></button> : <div className="hero-mini-placeholder">♪</div>}
                 <div>
                   <span>{index === 0 ? "Top Pick" : "Listen Again"}</span>
                   <h3>{song?.title || (index === 0 ? "New music, simplified" : "Your library, ready")}</h3>

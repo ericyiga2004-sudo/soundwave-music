@@ -1,4 +1,3 @@
-import { safeSessionStorage } from "./safeStorage";
 const ACTIVE_ROOM_SESSION_KEY = "soundwave:active-live-room-session";
 const ACTIVE_ROOM_SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const ACTIVE_ROOM_SESSION_EVENT = "soundwave:active-live-room-session-changed";
@@ -24,13 +23,13 @@ const emitSessionChange = (session = null) => {
 export const readActiveLiveRoomSession = () => {
   if (!canUseSessionStorage()) return null;
   try {
-    const raw = safeSessionStorage.getItem(ACTIVE_ROOM_SESSION_KEY);
+    const raw = window.sessionStorage.getItem(ACTIVE_ROOM_SESSION_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const code = normalizeCode(parsed?.code);
     const savedAt = Number(parsed?.savedAt || 0);
     if (!code || !savedAt || Date.now() - savedAt > ACTIVE_ROOM_SESSION_MAX_AGE_MS) {
-      safeSessionStorage.removeItem(ACTIVE_ROOM_SESSION_KEY);
+      window.sessionStorage.removeItem(ACTIVE_ROOM_SESSION_KEY);
       return null;
     }
     return { ...parsed, code };
@@ -63,7 +62,7 @@ export const writeActiveLiveRoomSession = (next = {}) => {
       savedAt: Date.now(),
     };
 
-    safeSessionStorage.setItem(
+    window.sessionStorage.setItem(
       ACTIVE_ROOM_SESSION_KEY,
       JSON.stringify(merged)
     );
@@ -83,7 +82,7 @@ export const clearActiveLiveRoomSession = (expectedCode = "") => {
       if (current?.code && current.code !== normalizeCode(expectedCode)) return;
     }
 
-    safeSessionStorage.removeItem(ACTIVE_ROOM_SESSION_KEY);
+    window.sessionStorage.removeItem(ACTIVE_ROOM_SESSION_KEY);
     emitSessionChange(null);
   } catch {
     // Session storage restrictions must never break playback.

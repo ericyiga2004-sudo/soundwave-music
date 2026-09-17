@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../../utils/safeStorage";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -305,7 +304,7 @@ const Albums = () => {
     try {
       setLoading(true);
 
-      const token = String(safeLocalStorage.getItem("token") || "").trim();
+      const token = String(localStorage.getItem("token") || "").trim();
 
       // Albums and song statistics are public catalog data and always load first.
       const [albumsRes, songsRes] = await Promise.all([

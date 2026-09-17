@@ -1,4 +1,3 @@
-import { safeSessionStorage } from "../../utils/safeStorage";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
@@ -17,7 +16,7 @@ const DISMISSED_KEY = "soundwave:live-quick-nav-dismissed-room";
 const readDismissedCode = () => {
   if (typeof window === "undefined") return "";
   try {
-    return normalizeCode(safeSessionStorage.getItem(DISMISSED_KEY) || "");
+    return normalizeCode(window.sessionStorage.getItem(DISMISSED_KEY) || "");
   } catch {
     return "";
   }
@@ -48,7 +47,7 @@ const LiveRoomQuickNavigator = () => {
       const nextCode = normalizeCode(next?.code);
       if (nextCode && dismissedCode && nextCode !== dismissedCode) {
         try {
-          safeSessionStorage.removeItem(DISMISSED_KEY);
+          window.sessionStorage.removeItem(DISMISSED_KEY);
         } catch {}
         setDismissedCode("");
       }
@@ -81,7 +80,7 @@ const LiveRoomQuickNavigator = () => {
   useEffect(() => {
     if (!alreadyInsideRoom || !roomCode || dismissedCode !== roomCode) return;
     try {
-      safeSessionStorage.removeItem(DISMISSED_KEY);
+      window.sessionStorage.removeItem(DISMISSED_KEY);
     } catch {}
     setDismissedCode("");
   }, [alreadyInsideRoom, dismissedCode, roomCode]);
@@ -96,7 +95,7 @@ const LiveRoomQuickNavigator = () => {
       setSession(null);
       setDismissedCode("");
       try {
-        safeSessionStorage.removeItem(DISMISSED_KEY);
+        window.sessionStorage.removeItem(DISMISSED_KEY);
       } catch {}
     };
 
@@ -114,7 +113,7 @@ const LiveRoomQuickNavigator = () => {
 
   const dismiss = () => {
     try {
-      safeSessionStorage.setItem(DISMISSED_KEY, roomCode);
+      window.sessionStorage.setItem(DISMISSED_KEY, roomCode);
     } catch {}
     setDismissedCode(roomCode);
   };

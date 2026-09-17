@@ -1,5 +1,4 @@
-import { safeLocalStorage, safeSessionStorage } from "./utils/safeStorage";
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Sidebar from "./components/SideBar/SideBar";
@@ -25,6 +24,7 @@ import {
 } from "./utils/uiPreferences";
 import "./App.tailwind.css";
 import "./pages/CSS/PremiumControlsV2324.tailwind.css";
+import "./pages/CSS/PremiumControlsV2323.tailwind.css";
 
 const Explore = lazy(() => import("./pages/Explore"));
 const Library = lazy(() => import("./pages/Library"));
@@ -70,25 +70,8 @@ const RouteFallback = () => (
 
 const App = () => {
   const location = useLocation();
-  // Start every page at its heading instead of keeping the previous page's scroll.
-  // Preserve direct links to songs and shared rooms.
-  useLayoutEffect(() => {
-    const previous = window.history.scrollRestoration;
-    window.history.scrollRestoration = "manual";
-    return () => { window.history.scrollRestoration = previous; };
-  }, []);
-  useLayoutEffect(() => {
-    if (!location.hash) {
-      const previousScrollBehavior = document.documentElement.style.scrollBehavior;
-      document.documentElement.style.scrollBehavior = "auto";
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      document.documentElement.style.scrollBehavior = previousScrollBehavior;
-    }
-  }, [location.pathname, location.key]);
   const [isLaunching, setIsLaunching] = useState(
-    () => safeSessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true"
+    () => sessionStorage.getItem(LAUNCH_SEEN_KEY) !== "true"
   );
   const [batterySaver, setBatterySaverState] = useState(getBatterySaver);
   const [lowData, setLowDataState] = useState(getLowData);
@@ -98,7 +81,7 @@ const App = () => {
   useEffect(() => {
     if (!isLaunching) return undefined;
     const timer = window.setTimeout(() => {
-      safeSessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
+      sessionStorage.setItem(LAUNCH_SEEN_KEY, "true");
       setIsLaunching(false);
     }, 850);
     return () => window.clearTimeout(timer);
@@ -160,7 +143,7 @@ const App = () => {
   if (isLaunching) return <LaunchScreen />;
 
   return (
-    <div className={`app sw-mobile-ready ${isImmersivePage ? "app-immersive" : ""} ${isSongDetailPage ? "app-song-detail" : ""}`}>
+    <div className={`app ${isImmersivePage ? "app-immersive" : ""} ${isSongDetailPage ? "app-song-detail" : ""}`}>
       {!isImmersivePage ? (
         <div className="sw-app-shell">
           <Sidebar hidden={sidebarHidden} />

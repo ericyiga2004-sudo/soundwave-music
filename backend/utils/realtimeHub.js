@@ -5,7 +5,6 @@ const keyFor = (userId) => String(userId || "");
 const safeWrite = (res, packet) => {
   try {
     res.write(`data: ${JSON.stringify(packet)}\n\n`);
-    res.flush?.();
     return true;
   } catch {
     return false;

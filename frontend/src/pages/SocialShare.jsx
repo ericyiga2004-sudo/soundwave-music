@@ -13,30 +13,6 @@ import "./CSS/Social.tailwind.css";
 import "./CSS/SocialV20.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
-const SHARE_ENDPOINTS = [
-  "/api/social/share-song",
-  "/api/social/share",
-  "/api/social/songs/share",
-  "/api/share-song",
-];
-
-const postShareWithCompatibility = async (payload, headers) => {
-  let lastError = null;
-  for (const endpoint of SHARE_ENDPOINTS) {
-    try {
-      return await apiClient.post(endpoint, payload, { headers });
-    } catch (error) {
-      lastError = error;
-      const status = Number(error?.response?.status || 0);
-      const message = String(error?.response?.data?.message || "").toLowerCase();
-      const routeMissing = status === 405 || (status === 404 && (!message || message.includes("api route not found") || message.includes("cannot post")));
-      if (!routeMissing) throw error;
-    }
-  }
-  const error = lastError || new Error("Song sharing is not available on this backend yet.");
-  error.soundwaveShareRoutesMissing = true;
-  throw error;
-};
 
 const SocialShare = () => {
   const navigate = useNavigate();
@@ -95,11 +71,11 @@ const SocialShare = () => {
     setSending(true);
     setStatus("");
     try {
-      const { data } = await postShareWithCompatibility({
+      const { data } = await apiClient.post("/api/social/share-song", {
         songId,
         userIds: selectedPeople,
         message: message.trim(),
-      }, headers);
+      }, { headers });
       if (!data?.success) throw new Error(data?.message || "Could not share song");
       const names = (data.sharedWith || []).map(nameOf).slice(0, 3).join(", ");
       setStatus(`Shared live${names ? ` with ${names}` : ""}. Their notification arrives without reloading.`);
@@ -107,11 +83,7 @@ const SocialShare = () => {
       setMessage("");
       invalidateSocial("share-song", { songId, recipients: selectedPeople });
     } catch (error) {
-      if (error?.soundwaveShareRoutesMissing) {
-        setStatus("Share routes are missing on the deployed SoundWave API. Deploy the matching V23.2 backend, then this button will work without changing the page.");
-      } else {
-        setStatus(error?.response?.data?.message || error.message || "Could not share song.");
-      }
+      setStatus(error?.response?.data?.message || error.message || "Could not share song.");
     } finally {
       setSending(false);
     }
@@ -147,7 +119,7 @@ const SocialShare = () => {
               const selected = selectedPeople.includes(String(user._id));
               return (
                 <button type="button" className={selected ? "sw20-person-card selected" : "sw20-person-card"} key={user._id} onClick={() => togglePerson(String(user._id))}>
-                  <span className="sw-social-avatar">{user.image ? <img src={user.image} alt="" /> : nameOf(user).slice(0, 1).toUpperCase()}</span>{user.online ? <i className="sw-online-dot" title="Online" aria-label="Online" /> : null}
+                  <span className="sw-social-avatar">{user.image ? <img src={user.image} alt="" /> : nameOf(user).slice(0, 1).toUpperCase()}</span>
                   <span><strong>{nameOf(user)}</strong><small>{Number(user.tasteMatch || 0)}% taste match</small></span>
                   <i>{selected ? <Check size={15} /> : <UserRoundPlus size={15} />}</i>
                 </button>

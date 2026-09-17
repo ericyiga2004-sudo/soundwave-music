@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../../utils/safeStorage";
 import SongActionMenu from "../SongActions/SongActionMenu";
 import {
   useContext,
@@ -21,6 +20,7 @@ import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./SearchModel.tailwind.css";
 
 import { API_BASE_URL } from "../../config/api";
+import { isExternalSong } from "../../utils/songSource";
 import { trackTasteEvent } from "../../utils/personalization";
 
 const MAX_SONG_POOL = 36;
@@ -605,7 +605,16 @@ const SearchModal = ({
       try {
         setLoading(true);
 
-        const token = safeLocalStorage.getItem("token");
+        const token = localStorage.getItem("token");
+
+        const audiusSearchRequest = axios.get(`${API_BASE_URL}/api/audius/search`, {
+          params: {
+            q: query,
+            limit: 30,
+            sort: "popular",
+          },
+          timeout: 18000,
+        });
 
         const backendSearchRequest = axios.get(`${API_BASE_URL}/api/songs/search`, {
           params: {
@@ -621,13 +630,32 @@ const SearchModal = ({
 
         const albumsRequest = axios.get(`${API_BASE_URL}/api/albums`, { params: { search: cleanedQuery, limit: 8, sort: "popular" } });
 
-        const [backendSearchRes, songPoolRes, artistsRes, albumsRes] =
-          await Promise.all([
-            backendSearchRequest,
-            songPoolRequest,
-            artistsRequest,
-            albumsRequest,
-          ]);
+        // Search sources are independent. A runtime error in Audius must not
+        // blank Soundwave's normal song, artist, or album results.
+        const [
+          audiusResult,
+          backendResult,
+          songPoolResult,
+          artistsResult,
+          albumsResult,
+        ] = await Promise.allSettled([
+          audiusSearchRequest,
+          backendSearchRequest,
+          songPoolRequest,
+          artistsRequest,
+          albumsRequest,
+        ]);
+
+        const audiusSearchRes =
+          audiusResult.status === "fulfilled" ? audiusResult.value : null;
+        const backendSearchRes =
+          backendResult.status === "fulfilled" ? backendResult.value : null;
+        const songPoolRes =
+          songPoolResult.status === "fulfilled" ? songPoolResult.value : null;
+        const artistsRes =
+          artistsResult.status === "fulfilled" ? artistsResult.value : null;
+        const albumsRes =
+          albumsResult.status === "fulfilled" ? albumsResult.value : null;
 
         let preferences = {};
         if (token) {
@@ -644,23 +672,36 @@ const SearchModal = ({
           }
         }
 
-        const backendSongs = backendSearchRes.data?.success
+        const audiusSongs =
+          audiusSearchRes?.data?.success &&
+          audiusSearchRes.data.source === "audius" &&
+          audiusSearchRes.data.fallback !== true
+            ? audiusSearchRes.data.songs || []
+            : [];
+
+        const backendSongs = backendSearchRes?.data?.success
           ? backendSearchRes.data.songs || []
           : [];
 
-        const songPool = songPoolRes.data?.success
+        const songPool = songPoolRes?.data?.success
           ? songPoolRes.data.songs || []
           : [];
 
-        const fetchedArtists = artistsRes.data?.success
+        const fetchedArtists = artistsRes?.data?.success
           ? artistsRes.data.artists || []
           : [];
 
-        const fetchedAlbums = albumsRes.data?.success
+        const fetchedAlbums = albumsRes?.data?.success
           ? albumsRes.data.albums || []
           : [];
 
-        setSongs(rankSongs([...backendSongs, ...songPool], query, preferences));
+        setSongs(
+          rankSongs(
+            [...audiusSongs, ...backendSongs, ...songPool],
+            query,
+            preferences
+          )
+        );
         setArtists(rankArtists(fetchedArtists, query, preferences));
         setAlbums(rankAlbums(fetchedAlbums, query, preferences));
       } catch (err) {
@@ -713,7 +754,11 @@ const SearchModal = ({
     if (!song?._id) return;
 
     const playlist = buildPlaylist(song, songs);
-    trackTasteEvent("search_play", { songId: song._id }, { cooldownMs: 30000 });
+    const external = isExternalSong(song);
+
+    if (!external) {
+      trackTasteEvent("search_play", { songId: song._id }, { cooldownMs: 30000 });
+    }
 
     if (musicPlayer?.playSong) {
       musicPlayer.playSong(song, playlist);
@@ -721,11 +766,16 @@ const SearchModal = ({
       onPlaySong?.(song, playlist);
     }
 
-    navigate(`/song/${song._id}`, {
-      state: {
-        playlist,
-      },
-    });
+    // External Audius tracks play in the persistent Soundwave player. Do not
+    // route them into MongoDB-backed Song Details, comments, likes or moments.
+    if (!external) {
+      navigate(`/song/${song._id}`, {
+        state: {
+          song,
+          playlist,
+        },
+      });
+    }
 
     closeModalAndScroll();
   };
@@ -747,7 +797,6 @@ const SearchModal = ({
         </div>
 
         <div className="sw-search-header">
-          <button type="button" className="sw-search-cancel" onClick={onClose} aria-label="Close search">Cancel <X size={20}/></button>
           <div className="sw-search-input">
             <Search size={18} />
 
@@ -759,7 +808,7 @@ const SearchModal = ({
             />
 
             {query && (
-              <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
+              <button type="button" onClick={() => setQuery("")}>
                 <X size={18} />
               </button>
             )}
@@ -874,12 +923,14 @@ const SearchModal = ({
                     </div>
 
                     <Music2 size={18} />
-                    <SongActionMenu
-                      song={song}
-                      queue={songs}
-                      triggerClassName="sw2324-overlay-more sw2324-search-more"
-                      triggerLabel={`More options for ${song.title}`}
-                    />
+                    {!isExternalSong(song) ? (
+                      <SongActionMenu
+                        song={song}
+                        queue={songs}
+                        triggerClassName="sw2324-overlay-more sw2324-search-more"
+                        triggerLabel={`More options for ${song.title}`}
+                      />
+                    ) : null}
                   </div>
                 ))}
               </>

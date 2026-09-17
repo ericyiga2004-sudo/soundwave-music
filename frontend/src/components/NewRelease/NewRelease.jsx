@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../../utils/safeStorage";
 import SongActionMenu from "../SongActions/SongActionMenu";
 import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
@@ -152,7 +151,7 @@ const NewRelease = () => {
       setErrorMessage("");
 
       const publicSongs = await fetchPublicNewReleases();
-      const token = String(safeLocalStorage.getItem("token") || "").trim();
+      const token = String(localStorage.getItem("token") || "").trim();
 
       let preferences = {};
       if (token) {

@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../../utils/safeStorage";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { FaUserCheck } from "react-icons/fa";
@@ -31,7 +30,7 @@ const FollowedArtists = () => {
     try {
       setLoading(true);
 
-      const token = safeLocalStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       if (!token) {
         setFollowedArtists([]);

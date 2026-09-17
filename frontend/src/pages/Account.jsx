@@ -1,5 +1,3 @@
-import AccountIdentity from "../components/UI/AccountIdentity";
-import { safeLocalStorage, safeSessionStorage } from "../utils/safeStorage";
 import { useState, useContext, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
@@ -51,10 +49,10 @@ const getValidToken = (value) => {
 };
 
 const cleanStoredToken = () => {
-  const storedToken = safeLocalStorage.getItem("token");
+  const storedToken = localStorage.getItem("token");
 
   if (isBadTokenValue(storedToken)) {
-    safeLocalStorage.removeItem("token");
+    localStorage.removeItem("token");
     return "";
   }
 
@@ -65,7 +63,7 @@ const Account = () => {
   const { token, setToken, logout, backendUrl } = useContext(MusicContext);
 
   const validToken = useMemo(() => {
-    return getValidToken(token || safeLocalStorage.getItem("token"));
+    return getValidToken(token || localStorage.getItem("token"));
   }, [token]);
 
   const [historySongs, setHistorySongs] = useState([]);
@@ -126,14 +124,54 @@ const Account = () => {
   const showNotice = (type, message) => {
     setNotice({ type, message });
 
-    if (type === "error") return;
     window.setTimeout(() => {
       setNotice(null);
     }, 3500);
   };
 
+  const getUserLocation = () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+        },
+        () => {
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    });
+  };
+
+  const saveLocationAfterAuth = async (authToken, location) => {
+    if (!authToken || !location) return;
+
+    try {
+      await axios.post(`${backendUrl}/api/user/location`, location, {
+        headers: {
+          token: authToken,
+        },
+      });
+    } catch (error) {
+      console.log("Save location error:", error);
+    }
+  };
+
   const fetchHistory = async () => {
-    const authToken = getValidToken(token || safeLocalStorage.getItem("token"));
+    const authToken = getValidToken(token || localStorage.getItem("token"));
 
     if (!authToken) {
       setHistorySongs([]);
@@ -145,7 +183,6 @@ const Account = () => {
       setHistoryLoading(true);
 
       const res = await axios.get(`${backendUrl}/api/history/get`, {
-        timeout: 25000,
         headers: {
           token: authToken,
         },
@@ -169,7 +206,7 @@ const Account = () => {
         error.response?.data?.message?.toLowerCase()?.includes("jwt") ||
         error.response?.data?.message?.toLowerCase()?.includes("token")
       ) {
-        safeLocalStorage.removeItem("token");
+        localStorage.removeItem("token");
         setToken("");
       }
 
@@ -190,7 +227,7 @@ const Account = () => {
   }, [backendUrl, token]);
 
   const handleLogout = () => {
-    safeLocalStorage.removeItem("token");
+    localStorage.removeItem("token");
 
     if (logout) {
       logout();
@@ -205,16 +242,15 @@ const Account = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    if (loading) return;
-    setNotice(null);
 
     try {
       setLoading(true);
 
       const cleanUsername = username.trim();
       const cleanEmail = email.trim().toLowerCase();
-      const cleanPassword = password;
+      const cleanPassword = password.trim();
 
+      const location = await getUserLocation();
 
       const endpoint = mode === "login" ? "/api/user/login" : "/api/user/register";
 
@@ -228,10 +264,10 @@ const Account = () => {
               username: cleanUsername,
               email: cleanEmail,
               password: cleanPassword,
+              location,
             };
 
       const res = await axios.post(`${backendUrl}${endpoint}`, payload, {
-        timeout: 25000,
         headers: {
           "Content-Type": "application/json",
         },
@@ -241,7 +277,11 @@ const Account = () => {
         const authToken = String(res.data.token).trim();
 
         setToken(authToken);
-        safeLocalStorage.setItem("token", authToken);
+        localStorage.setItem("token", authToken);
+
+        if (mode === "login") {
+          await saveLocationAfterAuth(authToken, location);
+        }
 
         showNotice(
           "success",
@@ -256,7 +296,7 @@ const Account = () => {
 
         window.dispatchEvent(new Event("auth-updated"));
       } else {
-        safeLocalStorage.removeItem("token");
+        localStorage.removeItem("token");
         setToken("");
 
         showNotice(
@@ -270,7 +310,7 @@ const Account = () => {
       const message =
         error.response?.data?.message ||
         error.response?.data?.error ||
-        (error.code === "ECONNABORTED" ? "Sign-in took too long. Please try again; the server may still be starting." : !error.response ? "Could not reach SoundWave. Check your connection and try again." : error.message) ||
+        error.message ||
         "Something went wrong";
 
       showNotice("error", message);
@@ -280,7 +320,7 @@ const Account = () => {
   };
 
   const noticeMarkup = notice && (
-    <div role="alert" className={`auth-notice ${notice.type}`}>
+    <div className={`auth-notice ${notice.type}`}>
       <span className="auth-notice-dot"></span>
       <p>{notice.message}</p>
     </div>
@@ -302,7 +342,6 @@ const Account = () => {
             <div className="col !w-[100%] flex-none col md:flex-[1_0_0%] !text-center md:!text-left">
               <span className="dashboard-badge">Your Account</span>
               <h1>Welcome Back</h1>
-              <AccountIdentity token={validToken} backendUrl={backendUrl} />
               <p>Your music, history, playlists, and personal mixes are ready.</p>
             </div>
 
@@ -348,7 +387,7 @@ const Account = () => {
                 <span className="account-setting-icon"><FaWifi /></span>
                 <span className="account-setting-text">
                   <strong>Low Data Mode</strong>
-                  <small>Defers artwork, loads smaller catalog pages, and reduces audio preloading while keeping your queue playing.</small>
+                  <small>Defers artwork, loads smaller catalog pages, and stops automatic next-track streaming unless Repeat All is on.</small>
                 </span>
                 <span className="account-setting-state">{lowDataEnabled ? "On" : "Off"}</span>
               </button>
@@ -444,7 +483,6 @@ const Account = () => {
               <button
                 type="button"
                 className={mode === "login" ? "active" : ""}
-                disabled={loading}
                 onClick={() => setMode("login")}
               >
                 Login
@@ -453,7 +491,6 @@ const Account = () => {
               <button
                 type="button"
                 className={mode === "register" ? "active" : ""}
-                disabled={loading}
                 onClick={() => setMode("register")}
               >
                 Sign Up
@@ -478,8 +515,6 @@ const Account = () => {
                 <FaEnvelope />
                 <input
                   type="email"
-                  autoComplete="email"
-                  autoCapitalize="none"
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -491,7 +526,6 @@ const Account = () => {
                 <FaLock />
                 <input
                   type="password"
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

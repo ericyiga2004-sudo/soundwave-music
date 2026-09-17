@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../utils/safeStorage";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MusicContext } from "./ShopContext";
 import { API_BASE_URL } from "../config/api";
@@ -52,7 +51,7 @@ export const RealtimeProvider = ({ children }) => {
   const busRef = useRef(createBus());
 
   const authToken = useMemo(
-    () => cleanToken(getAuthToken?.() || token || safeLocalStorage.getItem("token")),
+    () => cleanToken(getAuthToken?.() || token || localStorage.getItem("token")),
     [token, getAuthToken]
   );
 

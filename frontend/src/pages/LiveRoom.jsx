@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../utils/safeStorage";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowBigUp, Check, ChevronDown, Copy, Crown, Heart, LockKeyhole, MessageCircle, Pause, Play, Plus, RadioTower, RefreshCw, Send, SkipForward, Smile, ThumbsUp, UsersRound, Volume2, VolumeX, X, LogOut, Trash2 } from "lucide-react";
@@ -11,7 +10,7 @@ import { clearActiveLiveRoomSession, writeActiveLiveRoomSession } from "../utils
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
-import SocialSongPicker from "../components/Social/SocialSongPicker";
+import RoomSongVoteModal from "../components/Social/RoomSongVoteModal";
 import SocialNav from "../components/Social/SocialNav";
 import RoomReactionSharedLedger from "../components/Social/RoomReactionSharedLedger";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
@@ -19,8 +18,13 @@ import "./CSS/Social.tailwind.css";
 import "./CSS/SocialV20.tailwind.css";
 import "./CSS/LiveRoomPremiumV2318.tailwind.css";
 import "./CSS/LiveRoomLifecycleV2322.tailwind.css";
+import "./CSS/LiveRoomPremiumV2319.tailwind.css";
 
 const nameOf = (user) => user?.username || user?.name || "Listener";
+const userIdOf = (user) => String(user?._id || user?.id || user || "");
+const displayNameOf = (user, viewerId = "") =>
+  userIdOf(user) && userIdOf(user) === String(viewerId || "") ? "You" : nameOf(user);
+const CHAT_EMOJIS = ["😀", "😂", "🥹", "😍", "😎", "🤯", "😮", "😭", "❤️", "🔥", "👏", "🙌", "🎵", "🎧", "✨", "💯"];
 const formatClock = (seconds = 0) => {
   const safe = Math.max(0, Math.floor(Number(seconds) || 0));
   return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
@@ -44,11 +48,13 @@ const LiveRoom = () => {
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(Boolean(authToken));
   const [error, setError] = useState("");
-  const [songId, setSongId] = useState("");
   const [message, setMessage] = useState("");
   const [roomActionBusy, setRoomActionBusy] = useState("");
   const [chatBody, setChatBody] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
+  const [chatEmojiOpen, setChatEmojiOpen] = useState(false);
+  const [songPickerOpen, setSongPickerOpen] = useState(false);
+  const [songAddBusy, setSongAddBusy] = useState(false);
   const [hostPlayBusy, setHostPlayBusy] = useState("");
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [roomPanel, setRoomPanel] = useState("queue");
@@ -56,6 +62,7 @@ const LiveRoom = () => {
   const [listenerPaused, setListenerPaused] = useState(false);
   const [roomClock, setRoomClock] = useState(0);
   const chatEndRef = useRef(null);
+  const chatInputRef = useRef(null);
   const roomRef = useRef(null);
   const playerRef = useRef(player);
   const seekTimerRef = useRef(null);
@@ -494,8 +501,8 @@ const LiveRoom = () => {
       // BroadcastChannel is only a local fast path; SSE remains authoritative.
     }
     try {
-      safeLocalStorage.setItem("soundwave:live-room-reaction", JSON.stringify({ ...packet, localAt: Date.now() }));
-      safeLocalStorage.removeItem("soundwave:live-room-reaction");
+      localStorage.setItem("soundwave:live-room-reaction", JSON.stringify({ ...packet, localAt: Date.now() }));
+      localStorage.removeItem("soundwave:live-room-reaction");
     } catch {
       // Private browsing/storage restrictions should not block room reactions.
     }
@@ -819,6 +826,10 @@ const LiveRoom = () => {
   }, [chatOpen]);
 
   useEffect(() => {
+    if (!chatOpen) setChatEmojiOpen(false);
+  }, [chatOpen]);
+
+  useEffect(() => {
     if (!room?.code || !room?.currentSong?._id) return undefined;
 
     window.dispatchEvent(new CustomEvent("soundwave-room-control", {
@@ -861,19 +872,33 @@ const LiveRoom = () => {
     .filter((entry) => !entry.played)
     .sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0) || new Date(a.createdAt) - new Date(b.createdAt));
 
-  const addSong = async (event) => {
-    event.preventDefault();
-    if (!songId) return;
+  const addSongsForVote = async (songIds = []) => {
+    const ids = [...new Set((songIds || []).map(String).filter(Boolean))].slice(0, 5);
+    if (ids.length < 2 || !room?.code || songAddBusy) return;
+    setSongAddBusy(true);
     try {
-      const { data } = await apiClient.post(`/api/social/rooms/${room.code}/queue`, { songId }, { headers });
-      if (data?.success) {
-        setSongId("");
-        setMessage("Added to the room queue. Everyone connected sees it live.");
-        window.dispatchEvent(new CustomEvent("soundwave-social-mutated", { detail: { reason: "room-queue", code: roomCode, songId } }));
-        load({ quiet: true });
+      // Submit as one user action but serialize the existing queue endpoint.
+      // The backend currently saves the whole room document per add; parallel
+      // writes could race and make one of 2–5 selected songs disappear.
+      let added = 0;
+      let firstError = null;
+      for (const selectedSongId of ids) {
+        try {
+          const { data } = await apiClient.post(`/api/social/rooms/${room.code}/queue`, { songId: selectedSongId }, { headers });
+          if (data?.success) added += 1;
+        } catch (errorValue) {
+          firstError ||= errorValue;
+        }
       }
+      if (!added) throw firstError || new Error("Could not add those songs.");
+      setSongPickerOpen(false);
+      setMessage(`${added} song${added === 1 ? "" : "s"} added for the room to vote on.`);
+      window.dispatchEvent(new CustomEvent("soundwave-social-mutated", { detail: { reason: "room-queue-batch", code: roomCode, songIds: ids } }));
+      await load({ quiet: true });
     } catch (errorValue) {
-      setMessage(errorValue?.response?.data?.message || "Could not add song.");
+      setMessage(errorValue?.response?.data?.message || errorValue?.message || "Could not add those songs.");
+    } finally {
+      setSongAddBusy(false);
     }
   };
 
@@ -915,11 +940,18 @@ const LiveRoom = () => {
         } : current);
       }
       setChatBody("");
+      setChatEmojiOpen(false);
     } catch (errorValue) {
       setMessage(errorValue?.response?.data?.message || errorValue.message || "Could not send live message.");
     } finally {
       setChatBusy(false);
     }
+  };
+
+  const appendChatEmoji = (emoji) => {
+    if (!CHAT_EMOJIS.includes(emoji)) return;
+    setChatBody((current) => `${current}${emoji}`.slice(0, 280));
+    window.requestAnimationFrame(() => chatInputRef.current?.focus?.());
   };
 
   const reactChat = async (messageId, emoji = "❤️") => {
@@ -1058,15 +1090,16 @@ const LiveRoom = () => {
   const onlineCount = (room.members || []).filter((member) => member.user?.online).length;
   const chatMessageCount = (room.chat || []).length;
   const roomPlaying = room.playbackState === "playing";
-  const hostName = nameOf(room.host);
+  const hostName = displayNameOf(room.host, room._viewerId);
   const roomDuration = Math.max(0, Number(room.currentSong?.duration || player?.duration || 0));
   const displayPosition = roomDuration ? Math.min(roomClock, roomDuration) : roomClock;
   const roomProgress = roomDuration > 0 ? Math.min(100, (displayPosition / roomDuration) * 100) : 0;
   const nextQueued = queue[0] || null;
+  const songPickerExcludedIds = [room.currentSong?._id, ...(room.queue || []).filter((entry) => !entry.played).map((entry) => entry.song?._id)].filter(Boolean);
   const localAudioFollowing = Boolean(room._isHost ? (roomPlaying && player?.isPlaying) : (roomPlaying && !listenerPaused && player?.isPlaying));
 
   return (
-    <div className="sw-social-page sw20-page sw23-live-room-page sw2318-premium-room" onPointerDownCapture={unlockListenerAudioFromAnyGesture} onKeyDownCapture={unlockListenerAudioFromAnyGesture}>
+    <div className="sw-social-page sw20-page sw23-live-room-page sw2318-premium-room sw2319-room sw-container-fluid w-full mx-auto px-3" onPointerDownCapture={unlockListenerAudioFromAnyGesture} onKeyDownCapture={unlockListenerAudioFromAnyGesture}>
       <SocialNav />
 
       <header className="sw23-room-header">
@@ -1080,7 +1113,7 @@ const LiveRoom = () => {
               </span>
             </div>
             <h1>{room.name}</h1>
-            <p><strong>{hostName}</strong> is hosting · {onlineCount} online · {room.members?.length || 1} in room · everyone must use code <strong>{room.code}</strong></p>
+            <p>Hosted by <strong>{hostName}</strong> · {onlineCount} online · {room.members?.length || 1} in room · code <strong>{room.code}</strong></p>
           </div>
         </div>
         <div className="sw2322-room-header-side">
@@ -1115,8 +1148,8 @@ const LiveRoom = () => {
 
       {message ? <div className="sw-social-message sw23-room-message">{message}</div> : null}
 
-      <div className="sw23-live-room-grid">
-        <main className="sw23-room-main">
+      <div className="sw23-live-room-grid row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem]">
+        <main className="sw23-room-main col !w-[100%] flex-none">
           <section className="sw-social-panel sw20-panel sw23-now-playing">
             <div className="sw23-now-playing-topline">
               <div>
@@ -1216,17 +1249,14 @@ const LiveRoom = () => {
                 <span className="sw25-leader-badge"><Crown size={14} /> Host player</span>
               </div>
 
-              <form className="sw2310-host-add-song" onSubmit={addSong}>
+              <div className="sw2319-compact-song-add">
                 <div>
                   <span>Host participation</span>
-                  <strong>Add another song</strong>
-                  <small>You are part of the room too — add tracks and vote exactly like every listener.</small>
+                  <strong>Add songs for voting</strong>
+                  <small>Smart picks use your listening taste without crowding the leader panel.</small>
                 </div>
-                <div className="sw2310-host-picker">
-                  <SocialSongPicker songs={songs} value={songId} onChange={setSongId} label="Add a song as host" maxVisible={5} compact />
-                  <button className="sw-primary-btn" type="submit" disabled={!songId}><Plus size={15} /> Add</button>
-                </div>
-              </form>
+                <button className="sw-primary-btn" type="button" onClick={() => setSongPickerOpen(true)}><Plus size={15} /> Choose 2–5</button>
+              </div>
 
               {queue.length ? (
                 <>
@@ -1303,10 +1333,14 @@ const LiveRoom = () => {
               <span className="sw23-queue-count">{queue.length} queued</span>
             </div>
 
-            <form className="sw23-room-add-song" onSubmit={addSong}>
-              <SocialSongPicker songs={songs} value={songId} onChange={setSongId} label="Add a song to this live room" maxVisible={8} compact />
-              <button className="sw-primary-btn" type="submit" disabled={!songId}><Plus size={15} /> Add to live queue</button>
-            </form>
+            <div className="sw2319-smart-add-bar">
+              <div>
+                <span className="sw-social-kicker">Smart song selection</span>
+                <strong>Put 2–5 songs up for vote</strong>
+                <small>SoundWave orders choices from your learned taste, recently played music and likes.</small>
+              </div>
+              <button className="sw-primary-btn" type="button" onClick={() => setSongPickerOpen(true)}><Plus size={15} /> Choose songs</button>
+            </div>
 
             <div className="sw23-room-queue-list">
               {queue.length ? queue.map((entry, index) => {
@@ -1319,7 +1353,7 @@ const LiveRoom = () => {
                     <div className="sw23-queue-copy">
                       <strong>{entry.song?.title}</strong>
                       <span>{getArtistName(entry.song)}</span>
-                      <small>{index === 0 ? "Top voted · plays next when current song finishes" : `Added by ${nameOf(entry.addedBy)}`}</small>
+                      <small>{index === 0 ? "Top voted · plays next when current song finishes" : `Added by ${displayNameOf(entry.addedBy, room._viewerId)}`}</small>
                     </div>
                     <button type="button" className={`sw23-vote-btn ${hasVoted ? "voted" : ""}`} onClick={() => vote(entry._id)} aria-pressed={hasVoted}>
                       <ThumbsUp size={16} fill={hasVoted ? "currentColor" : "none"} />
@@ -1336,7 +1370,7 @@ const LiveRoom = () => {
           ) : null}
         </main>
 
-        <aside className="sw23-room-side">
+        <aside className="sw23-room-side col !w-[100%] flex-none">
           <section className={`sw-social-panel sw20-panel sw23-live-chat-panel sw2318-chat-sheet ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
             <div className="sw23-live-chat-header sw2318-chat-sheet-header">
               <div><span className="sw-social-kicker">Live chat</span><h2>Room Chat</h2></div>
@@ -1354,7 +1388,7 @@ const LiveRoom = () => {
                 <article className="sw-live-chat-message sw23-live-chat-message" key={item._id}>
                   <span className="sw-social-avatar small">{item.user?.image ? <img src={item.user.image} alt="" /> : nameOf(item.user).slice(0, 1).toUpperCase()}</span>
                   <div>
-                    <div className="sw23-chat-author"><strong>{nameOf(item.user)}</strong>{item.user?.online ? <i className="sw-online-dot" title="Online" /> : null}<time>{chatTime(item.createdAt)}</time></div>
+                    <div className="sw23-chat-author"><strong>{displayNameOf(item.user, room._viewerId)}</strong>{item.user?.online ? <i className="sw-online-dot" title="Online" /> : null}<time>{chatTime(item.createdAt)}</time></div>
                     <p>{item.body}</p>
                     <div className="sw-live-chat-reactions">
                       {(item.reactions || []).map((reaction) => <button type="button" key={`${item._id}-${reaction.emoji}`} onClick={() => reactChat(item._id, reaction.emoji)}>{reaction.emoji} {reaction.count || 0}</button>)}
@@ -1366,11 +1400,20 @@ const LiveRoom = () => {
               <span ref={chatEndRef} />
             </div>
 
-            <form className="sw-live-chat-form sw23-live-chat-form" onSubmit={sendChat}>
-              <Smile size={16} />
-              <input value={chatBody} onChange={(event) => setChatBody(event.target.value.slice(0, 280))} placeholder="Message everyone listening…" />
-              <button type="submit" disabled={!chatBody.trim() || chatBusy} aria-label="Send live message"><Send size={15} /></button>
-            </form>
+            <div className="sw2319-chat-compose-wrap">
+              {chatEmojiOpen ? (
+                <div className="sw2319-chat-emoji-picker" role="group" aria-label="Add emoji to message">
+                  {CHAT_EMOJIS.map((emoji) => (
+                    <button type="button" key={emoji} onClick={() => appendChatEmoji(emoji)} aria-label={`Add ${emoji}`}>{emoji}</button>
+                  ))}
+                </div>
+              ) : null}
+              <form className="sw-live-chat-form sw23-live-chat-form" onSubmit={sendChat}>
+                <button type="button" className={`sw2319-chat-emoji-toggle ${chatEmojiOpen ? "is-open" : ""}`} onClick={() => setChatEmojiOpen((current) => !current)} aria-expanded={chatEmojiOpen} aria-label="Add emoji to message"><Smile size={17} /></button>
+                <input ref={chatInputRef} value={chatBody} onChange={(event) => setChatBody(event.target.value.slice(0, 280))} placeholder="Message everyone listening…" />
+                <button type="submit" disabled={!chatBody.trim() || chatBusy} aria-label="Send live message"><Send size={15} /></button>
+              </form>
+            </div>
           </section>
 
           <section className="sw-social-panel sw20-panel sw23-room-members-panel">
@@ -1387,7 +1430,7 @@ const LiveRoom = () => {
                       <span className="sw-social-avatar small">{member.user?.image ? <img src={member.user.image} alt="" /> : nameOf(member.user).slice(0, 1).toUpperCase()}</span>
                       {member.user?.online ? <i className="sw-online-dot" title="Online" aria-label="Online" /> : null}
                     </span>
-                    <span><strong>{nameOf(member.user)}</strong><small>{isHostMember ? "Host" : member.user?.online ? "Listening now" : "In room"}</small></span>
+                    <span><strong>{displayNameOf(member.user, room._viewerId)}</strong><small>{isHostMember ? "Host" : member.user?.online ? "Listening now" : "In room"}</small></span>
                     {isHostMember ? <Crown size={14} /> : member.user?.online ? <Check size={14} /> : null}
                   </button>
                 );
@@ -1417,6 +1460,17 @@ const LiveRoom = () => {
         <MessageCircle size={21} strokeWidth={2.15} />
         <span className="sw2318-chat-count">{chatMessageCount > 99 ? "99+" : chatMessageCount}</span>
       </button>
+
+      <RoomSongVoteModal
+        open={songPickerOpen}
+        onClose={() => !songAddBusy && setSongPickerOpen(false)}
+        songs={songs}
+        authToken={authToken}
+        viewerId={room?._viewerId || ""}
+        excludedIds={songPickerExcludedIds}
+        onSubmit={addSongsForVote}
+        busy={songAddBusy}
+      />
 
       <RoomReactionSharedLedger roomCode={roomCode} viewerId={room?._viewerId || ""} />
     </div>

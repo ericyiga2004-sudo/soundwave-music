@@ -33,6 +33,7 @@ For the local backend, retain your existing private environment files and config
 - Migrated component styles to Tailwind `@apply` in `*.tailwind.css`. Exact values use arbitrary utilities; theme variables, animation keyframes, and dynamic runtime values remain where needed. Responsive component rules use the screens in `tailwind.config.js`.
 - Rebuilt sidebar layout and collapse with JSX utilities: hidden below 992px, an 86px icon rail on smaller desktops, and a 258px sidebar on wider desktops. The existing bottom navigation remains on phones. Sidebar controls include accessible labels and expanded state; the player expands with the workspace when the sidebar is hidden.
 - Preserved existing theme colors. Kept all four original SongDetails stylesheets byte-for-byte unchanged. Replaced its Bootstrap utility classes while retaining its CSS.
+- Fixed artwork button sizing in the home hero and compact song cards.
 
 ## Audio fixes
 
@@ -53,7 +54,3 @@ The existing mobile mute button remains. A mobile SongDetails unmute control app
 - Saved zero-volume recovery through the mobile SongDetails unmute control passes.
 
 Browser checks used a local sample MP3 and a mocked catalog. They do not verify your physical phone, live catalog URLs, production server headers, or authenticated social-room synchronization. Test a real song on your phone after running or deploying this version; if a specific track still fails, its audio URL and the browser error will help identify a separate source issue.
-
-## Deploy-checkout merge
-
-This updater is based on the supplied soundwave-deploy-current.zip. Its notification reconciliation, artist-follow events, sharing compatibility, current live-room design, and light default theme were preserved. Previously removed components stay removed. The backend and SongDetails stylesheets are unchanged. Both builds and browser playback/layout checks passed again on this merged version.

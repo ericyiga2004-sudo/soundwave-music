@@ -9,9 +9,10 @@ import {
 } from "react";
 import axios from "axios";
 import { MusicContext } from "./ShopContext";
-import { getLowData, getPersonalizationEnabled } from "../utils/uiPreferences";
+import { getLowData } from "../utils/uiPreferences";
 import { trackTasteEvent } from "../utils/personalization";
 import { getSongAudioUrl } from "../utils/audioSource";
+import { isExternalSong } from "../utils/songSource";
 
 export const MusicPlayerContext = createContext(null);
 
@@ -41,6 +42,18 @@ const normalizePlaylist = (songs = []) => {
     seen.add(song._id);
     return true;
   });
+};
+
+const getRandomIndex = (length, currentIndex) => {
+  if (length <= 1) return currentIndex;
+
+  let nextIndex = currentIndex;
+
+  while (nextIndex === currentIndex) {
+    nextIndex = Math.floor(Math.random() * length);
+  }
+
+  return nextIndex;
 };
 
 const getArtistName = (song) =>
@@ -147,8 +160,6 @@ export const MusicPlayerProvider = ({ children }) => {
   const [playbackError, setPlaybackError] = useState("");
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [recommendationReady, setRecommendationReady] = useState(false);
-  const [recommendationPool, setRecommendationPool] = useState([]);
   const [shuffle, setShuffleState] = useState(false);
   const [repeat, setRepeatState] = useState(REPEAT_MODES.OFF);
   const [audioEffects, setAudioEffectsState] = useState(DEFAULT_AUDIO_EFFECTS);
@@ -285,67 +296,14 @@ export const MusicPlayerProvider = ({ children }) => {
   }, [setAudioEffects]);
 
   const setShuffle = useCallback((value) => {
-    if (roomControlRef.current?.active) return;
-    const next = typeof value === "function" ? Boolean(value(shuffleRef.current)) : Boolean(value);
-    if (next && !shuffleRef.current) {
-      const split = currentIndexRef.current + 1;
-      const upcoming = playlistRef.current.slice(split);
-      for (let i = upcoming.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [upcoming[i], upcoming[j]] = [upcoming[j], upcoming[i]];
-      }
-      playlistRef.current = [...playlistRef.current.slice(0, split), ...upcoming];
-      setPlaylist(playlistRef.current);
-    }
-    shuffleRef.current = next;
-    setShuffleState(next);
+    setShuffleState((previous) => {
+      const nextValue =
+        typeof value === "function" ? Boolean(value(previous)) : Boolean(value);
+
+      shuffleRef.current = nextValue;
+      return nextValue;
+    });
   }, []);
-
-  // Fetch ahead of playback: advancing a track never waits on the recommendation API.
-  useEffect(() => {
-    let cancelled = false;
-    setRecommendationPool([]);
-    setRecommendationReady(false);
-    if (!token || !getPersonalizationEnabled()) { setRecommendationReady(true); return; }
-    axios.get(`${backendUrl}/api/recommend/for-you`, {
-      headers: { token }, params: { limit: 60 }, timeout: 15000,
-    }).then(({ data }) => {
-      if (!cancelled && Array.isArray(data.songs)) setRecommendationPool(data.songs);
-    }).catch(() => { /* The existing catalog remains available offline or on API failure. */ }).finally(() => { if (!cancelled) setRecommendationReady(true); });
-    return () => { cancelled = true; };
-  }, [token, backendUrl]);
-
-  useEffect(() => {
-    if (!currentSong || roomControlRef.current?.active || repeat !== REPEAT_MODES.OFF) return;
-    const queue = playlistRef.current;
-    const index = currentIndexRef.current;
-    if (queue.length - index - 1 > 2) return;
-    const pool = recommendationPool.length ? recommendationPool : (musicContext?.songs || []);
-    const usable = normalizePlaylist(pool).filter(item => getSongAudioUrl(item));
-    const ids = new Set(queue.map(item => item._id));
-    let recycling = false;
-    let additions = usable.filter(item => !ids.has(item._id));
-    // Once the catalog is exhausted, start another discovery cycle, avoiding an immediate repeat.
-    if (!additions.length && index === queue.length - 1) {
-      recycling = true;
-      additions = usable.filter(item => item._id !== currentSong._id);
-    }
-    additions = additions.slice(0, recommendationReady ? 20 : 2);
-    if (!additions.length) return;
-    if (shuffleRef.current) {
-      for (let i = additions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [additions[i], additions[j]] = [additions[j], additions[i]];
-      }
-    }
-    // Drop only played history when recycling, keeping every upcoming selection in order.
-    const retained = queue.slice(recycling ? index : Math.max(0, index - 50));
-    const nextIndex = recycling ? 0 : Math.min(index, 50);
-    playlistRef.current = [...retained, ...additions];
-    currentIndexRef.current = nextIndex;
-    setCurrentIndex(nextIndex);
-    setPlaylist(playlistRef.current);
-  }, [currentSong, currentIndex, playlist.length, recommendationPool, recommendationReady, musicContext?.songs, repeat]);
 
   const setRepeat = useCallback((modeOrUpdater) => {
     setRepeatState((previous) => {
@@ -372,15 +330,8 @@ export const MusicPlayerProvider = ({ children }) => {
   }, [setRepeat]);
 
   const syncTrackState = useCallback((song, queue) => {
-    // Preserve an active queue, including deliberate repeated entries, while advancing.
-    const cleanQueue = queue === playlistRef.current ? queue : normalizePlaylist(queue?.length ? queue : [song]);
+    const cleanQueue = normalizePlaylist(queue?.length ? queue : [song]);
     const index = cleanQueue.findIndex((item) => item._id === song?._id);
-    if (queue !== playlistRef.current && shuffleRef.current && !roomControlRef.current?.active) {
-      for (let i = cleanQueue.length - 1; i > index + 1; i--) {
-        const j = index + 1 + Math.floor(Math.random() * (i - index));
-        [cleanQueue[i], cleanQueue[j]] = [cleanQueue[j], cleanQueue[i]];
-      }
-    }
 
     playlistRef.current = cleanQueue;
     currentIndexRef.current = index;
@@ -393,7 +344,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
   const addSongToHistory = useCallback(
     async (song) => {
-      if (!token || !backendUrl || !song?._id) return;
+      if (!token || !backendUrl || !song?._id || isExternalSong(song)) return;
 
       try {
         await axios.post(
@@ -457,7 +408,13 @@ export const MusicPlayerProvider = ({ children }) => {
       const previousSong = currentSongRef.current;
       const isSameSong = previousSong?._id === song._id;
 
-      if (!isSameSong && previousSong?._id && audio.currentTime > 0 && audio.currentTime < 12) {
+      if (
+        !isSameSong &&
+        previousSong?._id &&
+        !isExternalSong(previousSong) &&
+        audio.currentTime > 0 &&
+        audio.currentTime < 12
+      ) {
         trackTasteEvent("skip_early", { songId: previousSong._id }, { cooldownMs: 8000 });
       }
 
@@ -1036,8 +993,11 @@ export const MusicPlayerProvider = ({ children }) => {
 
     let nextIndex;
 
-    // Shuffle reorders the visible queue; Next always follows that displayed order.
-    nextIndex = activeIndex + 1;
+    if (shuffleRef.current) {
+      nextIndex = getRandomIndex(queue.length, activeIndex);
+    } else {
+      nextIndex = activeIndex + 1;
+    }
 
     if (nextIndex >= queue.length) {
       if (repeatRef.current === REPEAT_MODES.ALL) {
@@ -1109,7 +1069,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
       const activeSong = currentSongRef.current;
       const signals = tasteSignalsRef.current;
-      if (activeSong?._id && signals.songId === activeSong._id) {
+      if (activeSong?._id && !isExternalSong(activeSong) && signals.songId === activeSong._id) {
         if (currentTime >= 20 && !signals.sent20) {
           signals.sent20 = true;
           trackTasteEvent("play_20s", { songId: activeSong._id }, { cooldownMs: 0 });
@@ -1254,7 +1214,7 @@ export const MusicPlayerProvider = ({ children }) => {
 
       const repeatMode = repeatRef.current;
       const activeSong = currentSongRef.current;
-      if (activeSong?._id && !tasteSignalsRef.current.completed) {
+      if (activeSong?._id && !isExternalSong(activeSong) && !tasteSignalsRef.current.completed) {
         tasteSignalsRef.current.completed = true;
         trackTasteEvent("complete", { songId: activeSong._id }, { cooldownMs: 0 });
       }
@@ -1265,7 +1225,9 @@ export const MusicPlayerProvider = ({ children }) => {
       }
 
       if (repeatMode === REPEAT_MODES.ONE) {
-        if (activeSong?._id) trackTasteEvent("repeat", { songId: activeSong._id }, { cooldownMs: 5000 });
+        if (activeSong?._id && !isExternalSong(activeSong)) {
+          trackTasteEvent("repeat", { songId: activeSong._id }, { cooldownMs: 5000 });
+        }
         tasteSignalsRef.current = { songId: activeSong?._id || "", sent20: false, sent60: false, completed: false };
         audio.currentTime = 0;
 
@@ -1281,6 +1243,18 @@ export const MusicPlayerProvider = ({ children }) => {
           console.error("Unable to repeat song:", error);
         }
 
+        return;
+      }
+
+      // Low Data Mode avoids silently starting another full audio stream.
+      // Explicit Repeat All still behaves as requested by the listener.
+      if (getLowData() && repeatMode === REPEAT_MODES.OFF) {
+        userWantedPlayRef.current = false;
+        audio.pause();
+        audio.currentTime = 0;
+        setProgress(0);
+        setIsPlaying(false);
+        setBufferingState(false);
         return;
       }
 
@@ -1552,7 +1526,6 @@ export const MusicPlayerProvider = ({ children }) => {
       resetAudioEffects,
 
       playSong,
-      playByIndex,
       pauseSong,
       resumeSong,
       resumeLiveRoomFromGesture,
@@ -1587,7 +1560,6 @@ export const MusicPlayerProvider = ({ children }) => {
       setAudioEffects,
       resetAudioEffects,
       playSong,
-      playByIndex,
       pauseSong,
       resumeSong,
       resumeLiveRoomFromGesture,

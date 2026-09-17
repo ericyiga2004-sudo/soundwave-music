@@ -1,4 +1,3 @@
-import RouteErrorBoundary from "./components/UI/RouteErrorBoundary";
 import "./tailwind.css";
 import { createRoot } from "react-dom/client";
 import "./index.tailwind.css";
@@ -11,9 +10,13 @@ import MusicContextProvider from "./context/ShopContext";
 import { MusicPlayerProvider } from "./context/MainPlayerContext.jsx";
 import { RealtimeProvider } from "./context/RealtimeContext.jsx";
 import LiveRoomQuickNavigator from "./components/Social/LiveRoomQuickNavigator.jsx";
+import { getTheme } from "./utils/uiPreferences";
+
+const initialTheme = getTheme();
+document.documentElement.dataset.swTheme = initialTheme;
+document.documentElement.style.colorScheme = initialTheme;
 
 createRoot(document.getElementById("root")).render(
-  <RouteErrorBoundary>
   <BrowserRouter>
     <MusicContextProvider>
       <RealtimeProvider>
@@ -24,7 +27,4 @@ createRoot(document.getElementById("root")).render(
       </RealtimeProvider>
     </MusicContextProvider>
   </BrowserRouter>
-  </RouteErrorBoundary>
 );
-
-import "./mobile-layout.tailwind.css";

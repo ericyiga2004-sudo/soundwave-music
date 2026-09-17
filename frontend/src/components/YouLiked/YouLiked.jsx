@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "../../utils/safeStorage";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SongItem from "../SongItem/SongItem";
@@ -14,7 +13,7 @@ const YouLiked = () => {
     try {
       setLoading(true);
 
-      const token = safeLocalStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       if (!token) {
         setSongs([]);

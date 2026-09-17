@@ -1,0 +1,27 @@
+@tailwind components;
+
+@layer components {
+  .sw-audius-catalog {
+    @apply w-full px-4 sm:px-6 xl:px-12 py-6;
+  }
+
+  .sw-audius-catalog-heading {
+    @apply mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between;
+  }
+
+  .sw-audius-catalog-heading span {
+    @apply text-[0.7rem] font-semibold tracking-[0.16em] opacity-70;
+  }
+
+  .sw-audius-catalog-heading h2 {
+    @apply mt-1 text-xl font-semibold sm:text-2xl;
+  }
+
+  .sw-audius-catalog-heading p {
+    @apply max-w-2xl text-sm opacity-70;
+  }
+
+  .sw-audius-catalog-grid {
+    @apply grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6;
+  }
+}

@@ -1,4 +1,3 @@
-import { safeLocalStorage } from "./safeStorage";
 const BATTERY_KEY = "soundwave_battery_saver";
 const LOW_DATA_KEY = "soundwave_low_data";
 const THEME_KEY = "soundwave_theme";
@@ -11,7 +10,7 @@ const dispatchPreferences = (detail = {}) => {
 };
 
 export const getBatterySaver = () => {
-  const stored = safeLocalStorage.getItem(BATTERY_KEY);
+  const stored = localStorage.getItem(BATTERY_KEY);
   if (stored === "true") return true;
   if (stored === "false") return false;
 
@@ -22,12 +21,12 @@ export const getBatterySaver = () => {
 
 export const setBatterySaver = (value) => {
   const next = Boolean(value);
-  safeLocalStorage.setItem(BATTERY_KEY, String(next));
+  localStorage.setItem(BATTERY_KEY, String(next));
   dispatchPreferences({ batterySaver: next });
 };
 
 export const getLowData = () => {
-  const stored = safeLocalStorage.getItem(LOW_DATA_KEY);
+  const stored = localStorage.getItem(LOW_DATA_KEY);
   if (stored === "true") return true;
   if (stored === "false") return false;
 
@@ -37,37 +36,40 @@ export const getLowData = () => {
 
 export const setLowData = (value) => {
   const next = Boolean(value);
-  safeLocalStorage.setItem(LOW_DATA_KEY, String(next));
+  localStorage.setItem(LOW_DATA_KEY, String(next));
   dispatchPreferences({ lowData: next });
 };
 
 export const getPersonalizationEnabled = () => {
-  const stored = safeLocalStorage.getItem(PERSONALIZATION_KEY);
+  const stored = localStorage.getItem(PERSONALIZATION_KEY);
   return stored !== "false";
 };
 
 export const setPersonalizationEnabled = (value) => {
   const next = Boolean(value);
-  safeLocalStorage.setItem(PERSONALIZATION_KEY, String(next));
+  localStorage.setItem(PERSONALIZATION_KEY, String(next));
   dispatchPreferences({ personalization: next });
 };
 
-export const getSidebarHidden = () => safeLocalStorage.getItem(SIDEBAR_HIDDEN_KEY) === "true";
+export const getSidebarHidden = () => localStorage.getItem(SIDEBAR_HIDDEN_KEY) === "true";
 
 export const setSidebarHidden = (value) => {
   const next = Boolean(value);
-  safeLocalStorage.setItem(SIDEBAR_HIDDEN_KEY, String(next));
+  localStorage.setItem(SIDEBAR_HIDDEN_KEY, String(next));
   dispatchPreferences({ sidebarHidden: next });
 };
 
 export const getTheme = () => {
-  const stored = safeLocalStorage.getItem(THEME_KEY);
-  return stored === "dark" ? "dark" : "light";
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  // SoundWave V23.19: new/default sessions start in premium dark mode.
+  // A user who explicitly selected light mode keeps that choice.
+  return "dark";
 };
 
 export const setTheme = (theme) => {
   const next = theme === "dark" ? "dark" : "light";
-  safeLocalStorage.setItem(THEME_KEY, next);
+  localStorage.setItem(THEME_KEY, next);
   dispatchPreferences({ theme: next });
 };
 
