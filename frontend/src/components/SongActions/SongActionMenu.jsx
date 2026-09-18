@@ -18,6 +18,7 @@ import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
 import "./SongActionsV2324.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const compactQueue = (song, queue = []) => {
   const values = [song, ...(Array.isArray(queue) ? queue : [])].filter(Boolean);
@@ -217,7 +218,7 @@ const SongActionMenu = ({
           </button>
         ) : (
           <span className="sw2324-song-menu-cover">
-            <img src={song?.imageUrl || song?.coverImage || song?.image || "/fallback-cover.svg"} alt="" />
+            <SongArtwork src={song?.imageUrl || song?.coverImage || song?.image || song?.album?.coverImage} alt={song?.title || "Song cover"} />
           </span>
         )}
         <span>
@@ -225,7 +226,7 @@ const SongActionMenu = ({
           <small>
             {playlistMode
               ? "Choose a playlist"
-              : (song?.artist?.name || song?.artistName || song?.artist || "SoundWave")}
+              : <MissingArtistName name={song?.artist?.name || song?.artistName || (typeof song?.artist === "string" ? song.artist : "")} />}
           </small>
         </span>
       </div>

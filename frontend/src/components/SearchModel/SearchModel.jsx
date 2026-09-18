@@ -22,6 +22,7 @@ import "./SearchModel.tailwind.css";
 import { API_BASE_URL } from "../../config/api";
 import { canUseSoundwaveSongApi } from "../../utils/songSource";
 import { trackTasteEvent } from "../../utils/personalization";
+import { AlbumArtwork, ArtistArtwork, MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const MAX_SONG_POOL = 36;
 const MAX_SONG_RESULTS = 15;
@@ -846,13 +847,15 @@ const SearchModal = ({
                       handleKeyboardOpen(event, () => handleArtistOpen(artist))
                     }
                   >
-                    <img
-                      src={artist.image || artist.imageUrl || "/fallback-artist.svg"}
+                    <ArtistArtwork
+                      src={artist.image || artist.imageUrl}
                       alt={artist.name || "Artist"}
-                     loading="lazy" decoding="async" />
+                      loading="lazy"
+                      decoding="async"
+                    />
 
                     <div>
-                      <h4>{artist.name || "Unknown Artist"}</h4>
+                      <h4><MissingArtistName name={artist.name} /></h4>
                       <p>{artist.country || "Unknown Location"}</p>
                     </div>
 
@@ -877,10 +880,12 @@ const SearchModal = ({
                       handleKeyboardOpen(event, () => handleAlbumOpen(album))
                     }
                   >
-                    <img
-                      src={album.coverImage || "/fallback-cover.svg"}
+                    <AlbumArtwork
+                      src={album.coverImage || album.imageUrl || album.image}
                       alt={album.title || "Album"}
-                     loading="lazy" decoding="async" />
+                      loading="lazy"
+                      decoding="async"
+                    />
 
                     <div>
                       <h4>{album.title || "Untitled Album"}</h4>
@@ -908,16 +913,18 @@ const SearchModal = ({
                       handleKeyboardOpen(event, () => handleSongOpen(song))
                     }
                   >
-                    <img
-                      src={song.imageUrl || "/fallback-cover.svg"}
+                    <SongArtwork
+                      src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage}
                       alt={song.title || "Song"}
-                     loading="lazy" decoding="async" />
+                      loading="lazy"
+                      decoding="async"
+                    />
 
                     <div>
                       <h4>{song.title || "Unknown Song"}</h4>
 
                       <p>
-                        {getArtistName(song)}
+                        <MissingArtistName name={getArtistName(song)} />
                         {getAlbumTitle(song) ? ` • ${getAlbumTitle(song)}` : ""}
                       </p>
                     </div>

@@ -1,5 +1,6 @@
 import PremiumSelect from "../components/UI/PremiumSelect";
 import SongActionMenu from "../components/SongActions/SongActionMenu";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ChevronRight, Play, Search, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -134,8 +135,8 @@ const Explore = () => {
         {featured ? (
           <div className="col !w-[100%] flex-none col xl:!w-[41.666666666666664%] xl:flex-none">
             <article className="explore-feature-card">
-              <img src={getSongCover(featured)} alt="" />
-              <div><small>Featured now</small><strong>{featured.title}</strong><span>{getArtistName(featured)}</span></div>
+              <SongArtwork src={getSongCover(featured)} alt={featured?.title || "Song cover"} />
+              <div><small>Featured now</small><strong>{featured.title}</strong><span><MissingArtistName name={getArtistName(featured)} /></span></div>
               <button type="button" onClick={() => playSong?.(featured, songs)} aria-label={`Play ${featured.title}`}><Play size={17} fill="currentColor" /></button>
               <SongActionMenu song={featured} queue={songs} triggerClassName="sw2324-overlay-more" triggerLabel={`More options for ${featured.title}`} />
             </article>
@@ -157,9 +158,9 @@ const Explore = () => {
       {loading && !songs.length ? <section className="explore-results"><CatalogSkeleton count={10} rows/></section> : error && !songs.length ? <section className="explore-results"><EmptyState title="Explore could not load" message={error}/></section> : songs.length ? <>
         <section className="explore-results">
           <div className="explore-section-heading"><div><span className="explore-v7-kicker">Top picks</span><h2>{country === "All" ? "Popular right now" : `Top in ${country}`}</h2></div><button type="button" onClick={()=>navigate("/songs")}>View all <ChevronRight size={15}/></button></div>
-          <div className="explore-top-list">{topTen.map((song,index)=><article key={song._id} className="explore-top-row"><span className="explore-rank">{String(index+1).padStart(2,"0")}</span><img src={getSongCover(song)} alt="" loading="lazy" decoding="async"/><button type="button" className="explore-title-btn" onClick={()=>openSong(song,topTen)}><strong>{song.title}</strong><small>{getArtistName(song)}</small></button><span className="explore-row-meta !hidden md:!block">{song.genre||"Music"}</span><button type="button" className="explore-play-btn" onClick={()=>playSong?.(song,topTen)} aria-label={`Play ${song.title}`}><Play size={15} fill="currentColor"/></button><SongActionMenu song={song} queue={topTen} triggerLabel={`More options for ${song.title}`} /></article>)}</div>
+          <div className="explore-top-list">{topTen.map((song,index)=><article key={song._id} className="explore-top-row"><span className="explore-rank">{String(index+1).padStart(2,"0")}</span><SongArtwork src={getSongCover(song)} alt={song?.title || "Song cover"} loading="lazy" decoding="async"/><button type="button" className="explore-title-btn" onClick={()=>openSong(song,topTen)}><strong>{song.title}</strong><small><MissingArtistName name={getArtistName(song)} /></small></button><span className="explore-row-meta !hidden md:!block">{song.genre||"Music"}</span><button type="button" className="explore-play-btn" onClick={()=>playSong?.(song,topTen)} aria-label={`Play ${song.title}`}><Play size={15} fill="currentColor"/></button><SongActionMenu song={song} queue={topTen} triggerLabel={`More options for ${song.title}`} /></article>)}</div>
         </section>
-        {moodGroups.map((group)=><section className="explore-mood-v7" key={group.name}><div className="explore-section-heading"><div><span className="explore-v7-kicker">Mood</span><h2>{group.name}</h2></div><button type="button" onClick={()=>navigate(`/songs?mood=${encodeURIComponent(group.name)}`)}>See all <ChevronRight size={15}/></button></div><div className="explore-art-grid">{group.items.map((song)=><article key={song._id}><button type="button" className="explore-art-button" onClick={()=>openSong(song,group.items)}><img src={getSongCover(song)} alt={song.title} loading="lazy" decoding="async"/></button><strong>{song.title}</strong><span>{getArtistName(song)}</span><SongActionMenu song={song} queue={group.items} triggerClassName="sw2324-overlay-more" triggerLabel={`More options for ${song.title}`} /></article>)}</div></section>)}
+        {moodGroups.map((group)=><section className="explore-mood-v7" key={group.name}><div className="explore-section-heading"><div><span className="explore-v7-kicker">Mood</span><h2>{group.name}</h2></div><button type="button" onClick={()=>navigate(`/songs?mood=${encodeURIComponent(group.name)}`)}>See all <ChevronRight size={15}/></button></div><div className="explore-art-grid">{group.items.map((song)=><article key={song._id}><button type="button" className="explore-art-button" onClick={()=>openSong(song,group.items)}><SongArtwork src={getSongCover(song)} alt={song.title || "Song cover"} loading="lazy" decoding="async"/></button><strong>{song.title}</strong><span><MissingArtistName name={getArtistName(song)} /></span><SongActionMenu song={song} queue={group.items} triggerClassName="sw2324-overlay-more" triggerLabel={`More options for ${song.title}`} /></article>)}</div></section>)}
       </> : <section className="explore-results"><EmptyState title="No songs found" message="Change one of the filters or reset Explore."/></section>}
     </div>
   );

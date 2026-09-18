@@ -12,6 +12,7 @@ import {
 import "./PopularArtist.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../../config/api";
+import { ArtistArtwork, MissingArtistName } from "../UI/CatalogArtwork";
 
 const MAX_ARTIST_STATS_SONGS = 80;
 const hasMongoId = (value) => /^[a-f0-9]{24}$/i.test(String(value || ""));
@@ -436,8 +437,8 @@ const PopularArtist = () => {
                   role="button"
                   tabIndex={0}
                 >
-                  <img
-                    src={artist.image || artist.imageUrl || "/fallback-artist.svg"}
+                  <ArtistArtwork
+                    src={artist.image || artist.imageUrl}
                     alt={artist.name || "Artist"}
                     className="popular-artist-image"
                     loading="lazy"
@@ -452,7 +453,7 @@ const PopularArtist = () => {
                 </div>
 
                 <div className="popular-artist-content">
-                  <h3>{artist.name || "Unknown Artist"}</h3>
+                  <h3><MissingArtistName name={artist.name} /></h3>
 
                   <p className="popular-artist-country">
                     <FaMapMarkerAlt />

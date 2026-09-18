@@ -9,6 +9,7 @@ import { getArtistName, getSongCover } from "../utils/catalog";
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import SocialSongPicker from "../components/Social/SocialSongPicker";
 import SocialNav from "../components/Social/SocialNav";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
@@ -178,8 +179,8 @@ const Circle = () => {
                       player?.playSong?.(entry.song, circleSongs);
                       navigate(`/song/${entry.song._id}`, { state: { song: entry.song, playlist: circleSongs } });
                     }}>
-                      <img src={getSongCover(entry.song)} alt="" />
-                      <span><strong>{entry.song?.title}</strong><small>{getArtistName(entry.song)} · added by {nameOf(entry.addedBy)}</small>{entry.note ? <em>{entry.note}</em> : null}</span>
+                      <SongArtwork src={getSongCover(entry.song)} alt={entry.song?.title || "Song cover"} />
+                      <span><strong>{entry.song?.title}</strong><small><MissingArtistName name={getArtistName(entry.song)} /> · added by {nameOf(entry.addedBy)}</small>{entry.note ? <em>{entry.note}</em> : null}</span>
                       <i className="sw20-circle-play"><Play size={15} fill="currentColor" /></i>
                     </button>
                   </article>

@@ -9,6 +9,7 @@ import { getArtistName, getSongCover } from "../utils/catalog";
 import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
 import "./CSS/Social.tailwind.css";
 import "./CSS/SocialV20.tailwind.css";
@@ -142,7 +143,7 @@ const SocialMix = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         kicker="Friend Mix"
         title="A mix where everybody gets a say."
@@ -193,10 +194,10 @@ const SocialMix = () => {
           <div className="sw20-mix-song-grid sw22-mix-song-grid">
             {mix.slice(0, 30).map((song) => (
               <button type="button" key={song._id} onClick={() => play(song)}>
-                <img src={getSongCover(song)} alt="" loading="lazy" decoding="async" />
+                <SongArtwork src={getSongCover(song)} alt={song?.title || "Song cover"} loading="lazy" decoding="async" />
                 <span>
                   <strong>{song.title}</strong>
-                  <small>{getArtistName(song)}</small>
+                  <small><MissingArtistName name={getArtistName(song)} /></small>
                   <em className="sw22-mix-reasons">{(song.friendMixReasons || []).slice(0, 2).join(" · ") || "Balanced for the group"}</em>
                 </span>
                 <i className="sw22-mix-score"><b>{song.friendMixScore || 0}</b><Play size={12} fill="currentColor" /></i>

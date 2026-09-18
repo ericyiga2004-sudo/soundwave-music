@@ -23,6 +23,7 @@ import {
 import "./CSS/Visualizer.tailwind.css";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const audioGraphCache = new WeakMap();
 
@@ -798,7 +799,7 @@ const Visualizer = () => {
   return (
     <main className="visualizer-page" style={visualVars} ref={fullscreenRef}>
       <div className="visualizer-bg" aria-hidden="true">
-        <img src={routeSong.imageUrl || "/fallback.jpg"} alt="" />
+        <SongArtwork src={routeSong.imageUrl || routeSong.image || routeSong.coverImage || routeSong.album?.coverImage} alt="" />
       </div>
 
       <div className="visualizer-tint" aria-hidden="true" />
@@ -815,7 +816,7 @@ const Visualizer = () => {
 
         <div className="visualizer-title-mini">
           <strong>{routeSong.title}</strong>
-          <span>{getArtistName(routeSong)}</span>
+          <span><MissingArtistName name={getArtistName(routeSong)} /></span>
         </div>
 
         <button
@@ -841,7 +842,7 @@ const Visualizer = () => {
         />
 
         <div className={`visualizer-blob ${isPlaying && levels.audio > 0.02 ? "playing" : ""}`}>
-          <img src={routeSong.imageUrl || "/fallback.jpg"} alt={`${routeSong.title} cover`} />
+          <SongArtwork src={routeSong.imageUrl || routeSong.image || routeSong.coverImage || routeSong.album?.coverImage} alt={`${routeSong.title} cover`} />
           <span className="blob-ring ring-one" aria-hidden="true" />
           <span className="blob-ring ring-two" aria-hidden="true" />
           <span className="vocal-ring vocal-ring-one" aria-hidden="true" />
@@ -863,7 +864,7 @@ const Visualizer = () => {
               : "Smooth Pulse Mode"}
           </p>
           <h1>{routeSong.title}</h1>
-          <span>{getArtistName(routeSong)}</span>
+          <span><MissingArtistName name={getArtistName(routeSong)} /></span>
         </div>
 
         <div className="smooth-lyric-panel" aria-live="polite">

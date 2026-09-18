@@ -17,6 +17,7 @@ import {
 import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./ShareWithMe.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const PLAYLISTS_PER_PAGE = 6;
 
@@ -403,7 +404,7 @@ const ShareWithMe = () => {
                           <div className="shared-playlist-cover !h-full">
                             {coverImages.length > 0 ? (
                               coverImages.map((image, index) => (
-                                <img
+                                <SongArtwork
                                   src={image}
                                   alt={playlist.name || "Shared playlist"}
                                   key={`${playlist._id}-${index}`}
@@ -509,14 +510,14 @@ const ShareWithMe = () => {
                                       {index + 1}
                                     </span>
 
-                                    <img
+                                    <SongArtwork
                                       src={getSongImage(song)}
-                                      alt={song.title}
+                                      alt={song.title || "Song cover"}
                                      loading="lazy" decoding="async" />
 
                                     <div className="playlist-song-info">
                                       <h4>{song.title || "Unknown Song"}</h4>
-                                      <p>{getArtistName(song)}</p>
+                                      <p><MissingArtistName name={getArtistName(song)} /></p>
                                     </div>
 
                                     <span className="song-play-btn">

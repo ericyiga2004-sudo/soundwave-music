@@ -19,6 +19,7 @@ import {
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/PlayList.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const MAX_PLAYLIST_SONGS = 50;
 const SONGS_PER_PAGE = 24;
@@ -1165,11 +1166,11 @@ const PlayList = () => {
                           <div className="playlist-song-row" key={song._id}>
                             <span className="song-number">{index + 1}</span>
 
-                            <img src={getSongImage(song)} alt={song.title} />
+                            <SongArtwork src={getSongImage(song)} alt={song.title || "Song cover"} />
 
                             <div className="playlist-song-info">
                               <h4>{song.title}</h4>
-                              <p>{getArtistName(song)}</p>
+                              <p><MissingArtistName name={getArtistName(song)} /></p>
                             </div>
 
                             <button
@@ -1234,11 +1235,11 @@ const PlayList = () => {
                           <div className="playlist-song-row" key={song._id}>
                             <span className="song-number">{index + 1}</span>
 
-                            <img src={getSongImage(song)} alt={song.title} />
+                            <SongArtwork src={getSongImage(song)} alt={song.title || "Song cover"} />
 
                             <div className="playlist-song-info">
                               <h4>{song.title}</h4>
-                              <p>{getArtistName(song)}</p>
+                              <p><MissingArtistName name={getArtistName(song)} /></p>
                             </div>
 
                             <button
@@ -1442,13 +1443,13 @@ const PlayList = () => {
                               key={song._id}
                             >
                               <div className="available-song-card">
-                                <img src={getSongImage(song)} alt={song.title} />
+                                <SongArtwork src={getSongImage(song)} alt={song.title || "Song cover"} />
 
                                 <div className="available-song-info">
                                   <h4>{song.title}</h4>
 
                                   <p>
-                                    {getArtistName(song)}
+                                    <MissingArtistName name={getArtistName(song)} />
                                     {song.genre ? ` • ${song.genre}` : ""}
                                   </p>
 

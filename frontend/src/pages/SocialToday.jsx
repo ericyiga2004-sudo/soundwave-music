@@ -10,6 +10,7 @@ import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import SocialPageHero from "../components/Social/SocialPageHero";
 import SocialSongPicker from "../components/Social/SocialSongPicker";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
 import "./CSS/Social.tailwind.css";
 import "./CSS/SocialV20.tailwind.css";
@@ -65,7 +66,7 @@ const SocialToday = () => {
   const picks = home?.dailyPicks || [];
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         kicker="One Song Today"
         title="One track can say more than a status."
@@ -95,8 +96,8 @@ const SocialToday = () => {
             <div className="sw20-daily-list">
               {picks.map((pick) => (
                 <button type="button" key={pick._id} onClick={() => play(pick.song, picks.map((item) => item.song).filter(Boolean))}>
-                  <img src={getSongCover(pick.song)} alt="" loading="lazy" />
-                  <span><small>{nameOf(pick.user)}</small><strong>{pick.song?.title || "Song"}</strong><em>{getArtistName(pick.song)}</em></span>
+                  <SongArtwork src={getSongCover(pick.song)} alt={pick.song?.title || "Song cover"} loading="lazy" />
+                  <span><small>{nameOf(pick.user)}</small><strong>{pick.song?.title || "Song"}</strong><em><MissingArtistName name={getArtistName(pick.song)} /></em></span>
                   <i><Play size={14} fill="currentColor" /></i>
                 </button>
               ))}

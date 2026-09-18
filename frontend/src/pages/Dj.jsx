@@ -35,6 +35,7 @@ import {
 import { Howl, Howler } from "howler";
 import WaveSurfer from "wavesurfer.js";
 import { MusicContext } from "../context/ShopContext";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import "./CSS/Dj.tailwind.css";
 
 const SFX_MAX_PLAY_MS = 12000;
@@ -2227,12 +2228,9 @@ const Dj = () => {
             role="button"
             tabIndex={0}
           >
-            <img
-              src={image}
+            <SongArtwork
+              src={deck ? image : ""}
               alt={deck ? getSongTitle(deck) : `Deck ${side}`}
-              onError={(event) => {
-                event.currentTarget.src = "/fallback-cover.svg";
-              }}
             />
           </div>
 
@@ -2527,7 +2525,7 @@ const Dj = () => {
 
       {renderMiniClassic()}
 
-      <div className="sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+      <div className="sw-container-fluid w-full mx-auto px-3">
         <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem] md:[--sw-gutter-x:1rem] md:[--sw-gutter-y:1rem] !items-stretch dj-tailwind-controller">
           <div
             className={`col !w-[100%] flex-none col xl:!w-[41.666666666666664%] xl:flex-none mobile-panel ${
@@ -2784,19 +2782,16 @@ const Dj = () => {
                             : "crate-song-card"
                         }
                       >
-                        <img
+                        <SongArtwork
                           src={getSongImage(song)}
-                          alt={getSongTitle(song)}
-                          onError={(event) => {
-                            event.currentTarget.src = "/fallback-cover.svg";
-                          }}
+                          alt={getSongTitle(song) || "Song cover"}
                         />
 
                         <div>
                           <h4>{getSongTitle(song)}</h4>
 
                           <p>
-                            {getArtistName(song)} · {getSongBpm(song)} BPM
+                            <MissingArtistName name={getArtistName(song)} /> · {getSongBpm(song)} BPM
                           </p>
                         </div>
 

@@ -64,7 +64,7 @@ const SocialCircles = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         kicker="Private groups"
         title="Small music groups, without the noise."

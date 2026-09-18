@@ -19,6 +19,7 @@ import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/Artist.tailwind.css";
 import { trackTasteEvent } from "../utils/personalization";
+import { AlbumArtwork, ArtistArtwork, MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const formatFollowers = (value = 0) => {
   return new Intl.NumberFormat("en", {
@@ -277,7 +278,7 @@ const Artist = () => {
   return (
     <main className="artist-page">
       <div className="artist-bg" aria-hidden="true">
-        <img src={artist.image || artist.imageUrl || "/fallback-artist.svg"} alt="" />
+        <ArtistArtwork src={artist.image || artist.imageUrl} alt="" />
       </div>
 
       <button
@@ -293,7 +294,7 @@ const Artist = () => {
         <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] !items-end">
           <div className="col !w-[100%] flex-none col md:!w-auto md:flex-none !text-center md:!text-left">
             <div className="artist-hero-image !mx-auto md:!mx-[0px]">
-              <img src={artist.image || artist.imageUrl || "/fallback-artist.svg"} alt={artist.name} />
+              <ArtistArtwork src={artist.image || artist.imageUrl} alt={artist.name || "Artist"} />
 
               {artist.verified && (
                 <span className="artist-verified">
@@ -308,7 +309,7 @@ const Artist = () => {
               {artist.verified ? "Verified Artist" : "Artist"}
             </span>
 
-            <h1>{artist.name || "Unknown Artist"}</h1>
+            <h1><MissingArtistName name={artist.name} /></h1>
 
             <div className="artist-meta">
               <span>
@@ -423,13 +424,8 @@ const Artist = () => {
                   key={album._id}
                   onClick={() => openAlbum(album._id)}
                 >
-                  <img
-                    src={
-                      album.coverImage ||
-                      album.imageUrl ||
-                      album.image ||
-                      "/fallback-cover.svg"
-                    }
+                  <AlbumArtwork
+                    src={album.coverImage || album.imageUrl || album.image}
                     alt={album.title || album.name || "Album"}
                   />
 
@@ -470,7 +466,7 @@ const Artist = () => {
                 >
                   <span className="artist-liked-index">{index + 1}</span>
 
-                  <img src={song.imageUrl || "/fallback-cover.svg"} alt="" />
+                  <SongArtwork src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage} alt={song.title || "Song cover"} />
 
                   <span className="artist-liked-copy">
                     <strong>{song.title}</strong>

@@ -7,6 +7,7 @@ import { FaClock, FaPlay } from "react-icons/fa";
 import { MusicContext } from "../../context/ShopContext";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import "./ContinueListening.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const MAX_HISTORY_ITEMS = 20;
 
@@ -230,7 +231,7 @@ const ContinueListening = () => {
                     if (event.key === "Enter") openSong(song);
                   }}
                 >
-                  <img src={getSongImage(song)} alt={song.title}  loading="lazy" decoding="async" />
+                  <SongArtwork src={getSongImage(song)} alt={song.title || "Song cover"} loading="lazy" decoding="async" />
 
                   <button
                     type="button"
@@ -250,7 +251,7 @@ const ContinueListening = () => {
                     {song.title || "Unknown Song"}
                   </h3>
 
-                  <p>{getArtistName(song)}</p>
+                  <p><MissingArtistName name={getArtistName(song)} /></p>
 
                   <small>
                     <FaClock />

@@ -1,0 +1,154 @@
+.sw-artwork-fallback {
+  @apply grid;
+  @apply [place-items:center];
+  @apply [width:100%];
+  @apply [height:100%];
+  @apply [min-width:0];
+  @apply [min-height:0];
+  @apply overflow-hidden;
+  @apply [background:var(--sw-surface-2)];
+  @apply [color:var(--sw-text-tertiary)];
+}
+
+.sw-artwork-fallback > svg {
+  @apply [width:34%];
+  @apply [height:34%];
+  @apply [min-width:18px];
+  @apply [min-height:18px];
+  @apply [max-width:48px];
+  @apply [max-height:48px];
+  @apply [opacity:.8];
+}
+
+.sw-artwork-fallback-artist {
+  @apply [border-radius:inherit];
+}
+
+.sw-artwork-fallback-artist > svg {
+  @apply [width:31%];
+  @apply [height:31%];
+}
+
+.sw-missing-artist-label {
+  @apply [display:inline-flex];
+  @apply items-center;
+  @apply [gap:5px];
+  @apply [max-width:100%];
+  @apply [color:inherit];
+}
+
+.sw-missing-artist-label > svg {
+  @apply [width:.9em];
+  @apply [height:.9em];
+  @apply [min-width:.9em];
+  @apply [opacity:.78];
+}
+
+.sw-missing-artist-label > span {
+  @apply min-w-0;
+  @apply overflow-hidden;
+  @apply [text-overflow:ellipsis];
+  @apply [white-space:nowrap];
+}
+
+/* Match the geometry of legacy <img> selectors when the fallback is a span. */
+.release-image > .sw-artwork-fallback,
+.album-home-cover > .sw-artwork-fallback,
+.sw-catalog-card-art > .sw-artwork-fallback,
+.explore-art-button > .sw-artwork-fallback,
+.sw-player-cover > .sw-artwork-fallback,
+.sw2324-song-menu-cover > .sw-artwork-fallback,
+.song-recommendation-main > .sw-artwork-fallback {
+  @apply w-full;
+  @apply h-full;
+}
+
+.mood-song-card > .sw-artwork-fallback {
+  @apply w-full;
+  @apply [height:145px];
+  @apply [background:var(--sw-surface-2)];
+}
+
+.explore-top-row > .sw-artwork-fallback {
+  @apply [width:50px];
+  @apply [height:50px];
+  @apply [border-radius:8px];
+}
+
+.sw20-daily-list button > .sw-artwork-fallback {
+  @apply [width:58px];
+  @apply [height:58px];
+  @apply [border-radius:13px];
+}
+
+.sw20-mix-song-grid button > .sw-artwork-fallback {
+  @apply [width:74px];
+  @apply [height:74px];
+  @apply [border-radius:14px];
+}
+
+.vinyl-pro > .sw-artwork-fallback {
+  @apply [width:104px];
+  @apply [height:104px];
+  @apply [border-radius:50%];
+  @apply [border:4px_solid_rgba(255,_255,_255,_0.14)];
+  @apply [pointer-events:none];
+}
+
+.crate-song-card > .sw-artwork-fallback {
+  @apply [width:64px];
+  @apply [height:64px];
+  @apply [border-radius:16px];
+}
+
+.visualizer-bg > .sw-artwork-fallback,
+.visualizer-blob > .sw-artwork-fallback {
+  @apply w-full;
+  @apply h-full;
+}
+
+@media (max-width: 1199.98px) {
+  .mood-song-card > .sw-artwork-fallback {
+    @apply [height:125px];
+  }
+}
+
+@media (max-width: 991px) {
+  .mood-song-card > .sw-artwork-fallback {
+    @apply [height:150px];
+  }
+}
+
+@media (max-width: 768px) {
+  .mood-song-card > .sw-artwork-fallback {
+    @apply [height:135px];
+  }
+}
+
+@media (max-width: 575.98px) {
+  .explore-top-row > .sw-artwork-fallback {
+    @apply [width:42px];
+    @apply [height:42px];
+  }
+
+  .sw20-daily-list button > .sw-artwork-fallback {
+    @apply [width:54px];
+    @apply [height:54px];
+  }
+
+  .sw20-mix-song-grid button > .sw-artwork-fallback {
+    @apply [width:66px];
+    @apply [height:66px];
+    @apply [border-radius:13px];
+  }
+
+  .mood-song-card > .sw-artwork-fallback {
+    @apply [height:120px];
+  }
+}
+
+@media (max-width: 360px) {
+  .mood-song-card > .sw-artwork-fallback {
+    @apply [height:108px];
+  }
+}

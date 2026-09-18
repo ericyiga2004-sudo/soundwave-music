@@ -32,6 +32,7 @@ import { apiClient, authHeaders, cachedGet } from "../config/apiClient";
 import { formatCompactNumber, formatDuration, getArtistName, getSongCover } from "../utils/catalog";
 import { getBatterySaver } from "../utils/uiPreferences";
 import { isSongOfflineAvailable, removeOfflineSong, saveSongForOffline } from "../utils/offlineDownload";
+import { AlbumArtwork, ArtistArtwork, MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { trackTasteEvent } from "../utils/personalization";
 import useSongDetailsLiveRoomSync from "../hooks/useSongDetailsLiveRoomSync";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
@@ -814,7 +815,7 @@ const SongDetails = () => {
       <section className="song-premium-hero">
         <div className="song-premium-art-column">
           <div className="song-now-playing-stage">
-            <img className="song-premium-art" src={getSongCover(song)} alt={`${song.title} artwork`} />
+            <SongArtwork className="song-premium-art" src={getSongCover(song)} alt={`${song.title} artwork`} />
 
             <div className="song-premium-meta-block">
               <div className="song-v2320-kicker-row">
@@ -834,7 +835,7 @@ const SongDetails = () => {
                 ) : null}
               </div>
               <h1>{song.title}</h1>
-              <button className="song-premium-link" type="button" disabled={!artistId} onClick={()=>artistId&&navigate(`/artist/${artistId}`)}>{getArtistName(song)}</button>
+              <button className="song-premium-link" type="button" disabled={!artistId} onClick={()=>artistId&&navigate(`/artist/${artistId}`)}><MissingArtistName name={getArtistName(song)} /></button>
               <button className="song-premium-link muted" type="button" disabled={!albumId} onClick={()=>albumId&&navigate(`/album/${albumId}`)}>{song.album?.title || "Single"}</button>
               {liveRoomSync.isLiveSong ? (
                 <div className={`song-v2320-live-state ${liveRoomSync.listenerPaused ? "is-local-paused" : ""}`}>
@@ -899,15 +900,15 @@ const SongDetails = () => {
           <div className="song-mobile-relations md:!hidden">
             {albumId ? (
               <button type="button" className="song-relation-card" onClick={() => navigate(`/album/${albumId}`)}>
-                <img src={song.album?.image || song.album?.coverImage || song.album?.imageUrl || getSongCover(song)} alt="" loading="lazy" decoding="async"/>
-                <span><small>Album</small><strong>{song.album?.title || "Album"}</strong><em>{getArtistName(song)}</em></span>
+                <AlbumArtwork src={song.album?.image || song.album?.coverImage || song.album?.imageUrl} alt={song.album?.title || "Album cover"} loading="lazy" decoding="async"/>
+                <span><small>Album</small><strong>{song.album?.title || "Album"}</strong><em><MissingArtistName name={getArtistName(song)} /></em></span>
                 <ChevronRight size={20}/>
               </button>
             ) : null}
             {artistId ? (
               <button type="button" className="song-relation-card" onClick={() => navigate(`/artist/${artistId}`)}>
-                <img className="artist" src={song.artist?.image || song.artist?.avatar || getSongCover(song)} alt="" loading="lazy" decoding="async"/>
-                <span><small>Artist</small><strong>{getArtistName(song)}</strong><em>View artist</em></span>
+                <ArtistArtwork className="artist" src={song.artist?.image || song.artist?.avatar || song.artist?.imageUrl} alt={getArtistName(song)} loading="lazy" decoding="async"/>
+                <span><small>Artist</small><strong><MissingArtistName name={getArtistName(song)} /></strong><em>View artist</em></span>
                 <ChevronRight size={20}/>
               </button>
             ) : null}
@@ -991,7 +992,7 @@ const SongDetails = () => {
 
         <aside className="song-recommendations">
           <div className="song-section-title"><div><span className="song-premium-kicker">Up next</span><h2>More like this</h2></div></div>
-          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><div className="song-recommendation-row" key={item._id}><button className="song-recommendation-main" type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><img src={getSongCover(item)} alt="" loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small>{getArtistName(item)}</small></span></button><div className="song-recommendation-actions"><SongActionMenu song={item} queue={recommendations} triggerLabel={`More options for ${item.title}`} /><button className="song-recommendation-queue" type="button" onClick={(event)=>playNextRecommendation(event,item)} aria-label={`Play ${item.title} next`} title="Play next"><Sparkles size={15}/><span>Next</span></button><button className="song-recommendation-queue" type="button" onClick={(event)=>addRecommendationToQueue(event,item)} aria-label={`Add ${item.title} to queue`} title="Add later"><ListMusic size={15}/><span>+</span></button></div></div>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
+          {recommendations.length?<div className="song-recommendation-list">{recommendations.map((item)=><div className="song-recommendation-row" key={item._id}><button className="song-recommendation-main" type="button" onClick={()=>{player?.playSong?.(item,recommendations);navigate(`/song/${item._id}`,{state:{song:item,playlist:recommendations}});}}><SongArtwork src={getSongCover(item)} alt={item.title || "Song cover"} loading="lazy" decoding="async"/><span><strong>{item.title}</strong><small><MissingArtistName name={getArtistName(item)} /></small></span></button><div className="song-recommendation-actions"><SongActionMenu song={item} queue={recommendations} triggerLabel={`More options for ${item.title}`} /><button className="song-recommendation-queue" type="button" onClick={(event)=>playNextRecommendation(event,item)} aria-label={`Play ${item.title} next`} title="Play next"><Sparkles size={15}/><span>Next</span></button><button className="song-recommendation-queue" type="button" onClick={(event)=>addRecommendationToQueue(event,item)} aria-label={`Add ${item.title} to queue`} title="Add later"><ListMusic size={15}/><span>+</span></button></div></div>)}</div>:<p className="song-muted-copy">Recommendations will appear as the catalog learns this track.</p>}
 
           <div className="song-discovery-trail">
             <div className="song-section-title compact"><div><span className="song-premium-kicker">Friends</span><h2>Discovery trail</h2></div></div>

@@ -8,6 +8,7 @@ import { apiClient } from "../config/apiClient";
 import { getSongCover } from "../utils/catalog";
 import { getSongAudioUrl } from "../utils/audioSource";
 import "./CSS/NotificationBell.tailwind.css";
+import { SongArtwork } from "../components/UI/CatalogArtwork";
 
 const bad = new Set(["", "false", "null", "undefined", "none", "nan"]);
 const getValidToken = (token, getAuthToken) => {
@@ -346,7 +347,7 @@ const NotificationBell = () => {
                       <p>{notification.message}</p>
                       <small>{formatDate(notificationTime(notification))}</small>
                     </span>
-                    {notification.relatedSong ? <img className="notification-song-cover" src={getSongCover(notification.relatedSong)} alt="" loading="lazy" /> : null}
+                    {notification.relatedSong ? <SongArtwork className="notification-song-cover" src={getSongCover(notification.relatedSong)} alt={notification.relatedSong?.title || "Song cover"} loading="lazy" /> : null}
                   </button>
                   <button type="button" className="notification-delete" onClick={() => deleteNotification(notification._id)} aria-label="Delete notification"><FaTrash /></button>
                 </div>
@@ -369,7 +370,7 @@ const NotificationBell = () => {
                   <strong>{notification.title}</strong>
                   <em>{notification.message}</em>
                 </span>
-                {notification.relatedSong ? <img className="notification-toast-song-cover" src={getSongCover(notification.relatedSong)} alt="" /> : null}
+                {notification.relatedSong ? <SongArtwork className="notification-toast-song-cover" src={getSongCover(notification.relatedSong)} alt={notification.relatedSong?.title || "Song cover"} /> : null}
               </button>
               <button type="button" className="notification-toast-close" onClick={() => dismissToast(notification._id)} aria-label="Dismiss"><FaTimes /></button>
             </article>

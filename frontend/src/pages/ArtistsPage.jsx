@@ -8,6 +8,7 @@ import { formatCompactNumber, optimizeArtworkUrl } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import "./CSS/CatalogPages.tailwind.css";
+import { ArtistArtwork, MissingArtistName } from "../components/UI/CatalogArtwork";
 
 const PAGE_SIZE = 24;
 const hasMongoId = (value) => /^[a-f0-9]{24}$/i.test(String(value || ""));
@@ -166,8 +167,8 @@ const ArtistsPage = () => {
           {artists.map((artist) => {
             const isFollowing = following.has(String(artist._id));
             return <article className="sw-catalog-card artist" key={artist._id}>
-              <div className="sw-catalog-card-art"><img src={optimizeArtworkUrl(artist.image || artist.imageUrl || "/fallback-artist.svg", 480)} alt={artist.name || "Artist"} loading="lazy" decoding="async" /><button className="art-open" type="button" onClick={() => navigate(`/artist/${artist._id}`)} aria-label={`Open ${artist.name}`} /></div>
-              <div className="sw-catalog-card-copy"><strong>{artist.name}</strong><span>{artist.country || "Artist"}</span><div className="sw-catalog-card-meta"><small>{formatCompactNumber(artist.followers)} followers</small><button type="button" className={`sw-follow-btn ${isFollowing ? "active" : ""}`} disabled={followBusy === artist._id} onClick={(e) => toggleFollow(e, artist)}>{!hasMongoId(artist._id) ? <>View</> : isFollowing ? <><Check size={12} /> Following</> : <><UserPlus size={12} /> Follow</>}</button></div></div>
+              <div className="sw-catalog-card-art"><ArtistArtwork src={optimizeArtworkUrl(artist.image || artist.imageUrl, 480)} alt={artist.name || "Artist"} loading="lazy" decoding="async" /><button className="art-open" type="button" onClick={() => navigate(`/artist/${artist._id}`)} aria-label={`Open ${artist.name}`} /></div>
+              <div className="sw-catalog-card-copy"><strong><MissingArtistName name={artist.name} /></strong><span>{artist.country || "Artist"}</span><div className="sw-catalog-card-meta"><small>{formatCompactNumber(artist.followers)} followers</small><button type="button" className={`sw-follow-btn ${isFollowing ? "active" : ""}`} disabled={followBusy === artist._id} onClick={(e) => toggleFollow(e, artist)}>{!hasMongoId(artist._id) ? <>View</> : isFollowing ? <><Check size={12} /> Following</> : <><UserPlus size={12} /> Follow</>}</button></div></div>
             </article>;
           })}
         </div>

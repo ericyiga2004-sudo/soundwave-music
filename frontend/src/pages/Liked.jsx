@@ -7,6 +7,7 @@ import { FaHeart, FaMusic, FaPlay, FaTrash, FaWifi } from "react-icons/fa";
 import "./CSS/Liked.tailwind.css";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const Liked = () => {
   const { token, backendUrl } = useContext(MusicContext);
@@ -350,14 +351,14 @@ const Liked = () => {
                       if (event.key === "Enter") openSong(song._id);
                     }}
                   >
-                    <img
+                    <SongArtwork
                       src={getSongImage(song)}
                       alt={song.title || "Song cover"}
                     />
 
                     <div className="liked-song-text">
                       <h3>{song.title || "Unknown Song"}</h3>
-                      <p>{getArtistName(song)}</p>
+                      <p><MissingArtistName name={getArtistName(song)} /></p>
 
                       <div className="liked-mobile-meta xl:!hidden">
                         <span>{getAlbumName(song)}</span>

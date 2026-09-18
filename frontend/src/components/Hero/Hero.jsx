@@ -7,6 +7,7 @@ import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { apiClient, authHeaders } from "../../config/apiClient";
 import "./Hero.tailwind.css";
 import { canUseSoundwaveSongApi } from "../../utils/songSource";
+import { SongArtwork } from "../UI/CatalogArtwork";
 
 const getArtist = (song) => song?.artist?.name || song?.artistName || song?.artist || "Unknown Artist";
 
@@ -102,8 +103,10 @@ const Hero = () => {
             </div>
 
             <div className="hero-artwork-wrap" aria-hidden={!mainSong}>
-              {mainSong?.imageUrl ? (
-                <button type="button" className="sw2323-song-art-button !block !h-full !w-full !border-0 !bg-transparent !p-0 !rounded-[inherit] overflow-hidden" onClick={() => playAndOpenHeroSong(mainSong)} aria-label={`Play and open ${mainSong.title}`}><img src={mainSong.imageUrl} alt={mainSong.title || "Featured song"} /></button>
+              {mainSong ? (
+                <button type="button" className="sw2323-song-art-button !block !h-full !w-full !border-0 !bg-transparent !p-0 !rounded-[inherit] overflow-hidden" onClick={() => playAndOpenHeroSong(mainSong)} aria-label={`Play and open ${mainSong.title}`}>
+                  <SongArtwork src={mainSong.imageUrl || mainSong.image || mainSong.coverImage || mainSong.album?.coverImage} alt={mainSong.title || "Featured song"} />
+                </button>
               ) : (
                 <div className="hero-placeholder-art">♪</div>
               )}
@@ -123,7 +126,7 @@ const Hero = () => {
           <div className="hero-mini-stack">
             {(featured.length ? featured.slice(1, 3) : [null, null]).map((song, index) => (
               <article className="hero-mini-card" key={song?._id || index}>
-                {song?.imageUrl ? <button type="button" className="sw2323-song-art-button !block !h-[68px] !w-[68px] sm:!h-[86px] sm:!w-[86px] !border-0 !bg-transparent !p-0 !rounded-[11px] overflow-hidden" onClick={() => playAndOpenHeroSong(song, featured)} aria-label={`Play and open ${song.title}`}><img src={song.imageUrl} alt="" loading="lazy" /></button> : <div className="hero-mini-placeholder">♪</div>}
+                {song ? <button type="button" className="sw2323-song-art-button !block !h-[68px] !w-[68px] sm:!h-[86px] sm:!w-[86px] !border-0 !bg-transparent !p-0 !rounded-[11px] overflow-hidden" onClick={() => playAndOpenHeroSong(song, featured)} aria-label={`Play and open ${song.title}`}><SongArtwork src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage} alt={song.title || "Song cover"} loading="lazy" /></button> : <div className="hero-mini-placeholder">♪</div>}
                 <div>
                   <span>{index === 0 ? "Top Pick" : "Listen Again"}</span>
                   <h3>{song?.title || (index === 0 ? "New music, simplified" : "Your library, ready")}</h3>

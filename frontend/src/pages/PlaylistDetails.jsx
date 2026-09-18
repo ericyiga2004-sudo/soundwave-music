@@ -9,6 +9,7 @@ import { getArtistName, getSongCover } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import "./CSS/CatalogPages.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const PlaylistDetails = () => {
   const { playlistId } = useParams();
@@ -141,8 +142,8 @@ const PlaylistDetails = () => {
       <section className="sw-playlist-detail-hero">
         <div className={`sw-playlist-collage ${covers.length <= 1 ? "one" : ""}`}>
           {covers.length
-            ? covers.map((cover, index) => <img key={`${cover}-${index}`} src={cover} alt="" loading="lazy" decoding="async" />)
-            : <img src="/fallback-cover.svg" alt="" />}
+            ? covers.map((cover, index) => <SongArtwork key={`${cover}-${index}`} src={cover} alt="Playlist artwork" loading="lazy" decoding="async" />)
+            : <SongArtwork src="" alt="Playlist artwork" />}
         </div>
 
         <div className="sw-playlist-detail-copy">
@@ -185,10 +186,10 @@ const PlaylistDetails = () => {
           <div className="sw-song-list">
             {songs.map((song) => (
               <div className="sw-song-list-row" key={song._id}>
-                <img src={getSongCover(song)} alt="" loading="lazy" decoding="async" />
+                <SongArtwork src={getSongCover(song)} alt={song.title || "Song cover"} loading="lazy" decoding="async" />
                 <button type="button" className="sw-song-title" onClick={() => navigate(`/song/${song._id}`, { state: { playlist: songs } })}>
                   <strong>{song.title}</strong>
-                  <span>{getArtistName(song)}</span>
+                  <span><MissingArtistName name={getArtistName(song)} /></span>
                 </button>
                 <span className="sw-song-album">{song.album?.title || "Single"}</span>
                 <span className="sw-song-duration">{song.genre || ""}</span>

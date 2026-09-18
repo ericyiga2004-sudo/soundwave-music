@@ -5,6 +5,7 @@ import { FaPlay } from "react-icons/fa";
 import "./Albums.tailwind.css";
 
 import { API_BASE_URL as backendUrl } from "../../config/api";
+import { AlbumArtwork, MissingArtistName } from "../UI/CatalogArtwork";
 
 const MAX_ALBUM_STATS_SONGS = 80;
 
@@ -457,7 +458,7 @@ const Albums = () => {
                   aria-label={`Open ${album.title || "album"}`}
                 >
                   <span className="album-home-cover">
-                    <img
+                    <AlbumArtwork
                       src={albumImage}
                       alt={album.title || "Album cover"}
                       className="featured-bg"
@@ -472,7 +473,7 @@ const Albums = () => {
 
                 <button type="button" className="album-home-copy" onClick={openAlbum}>
                   <h3>{album.title || "Untitled Album"}</h3>
-                  <p>{artistName}</p>
+                  <p><MissingArtistName name={artistName} /></p>
                   <small>
                     {songCount} {songCount === 1 ? "song" : "songs"}
                   </small>

@@ -107,7 +107,7 @@ const SocialRooms = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         kicker="Pass the Aux"
         title="A room that changes the moment someone taps."

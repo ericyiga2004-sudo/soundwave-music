@@ -15,6 +15,7 @@ import "./CSS/Album.tailwind.css";
 import { API_BASE_URL as backendUrl } from "../config/api";
 import { trackTasteEvent } from "../utils/personalization";
 import { canUseSoundwaveSongApi } from "../utils/songSource";
+import { AlbumArtwork, MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
@@ -233,7 +234,7 @@ const Album = () => {
           <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] lg:[--sw-gutter-x:3rem] lg:[--sw-gutter-y:3rem] !items-end">
             <div className="col !w-[100%] flex-none col md:!w-[41.666666666666664%] md:flex-none col lg:!w-[33.333333333333336%] lg:flex-none">
               <div className="album-cover-wrap">
-                <img
+                <AlbumArtwork
                   src={albumImage}
                   alt={album.title || "Album cover"}
                   className="album-cover"
@@ -262,7 +263,7 @@ const Album = () => {
                       navigate(`/artist/${album.artist._id}`);
                     }
                   }}
-                >{albumArtist}</p>
+                ><MissingArtistName name={albumArtist} /></p>
 
                 <p className="album-description">
                   {album.description || "No description available for this album."}
@@ -342,7 +343,7 @@ const Album = () => {
                     )}
                   </div>
 
-                  <img
+                  <SongArtwork
                     src={getSongImage(song)}
                     alt={song.title || "Song cover"}
                     className="album-track-image"
@@ -360,7 +361,7 @@ const Album = () => {
                       )}
                     </h3>
 
-                    <p>{getArtistName(song)}</p>
+                    <p><MissingArtistName name={getArtistName(song)} /></p>
                   </div>
 
                   <span className="album-track-duration">

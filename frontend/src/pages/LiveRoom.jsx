@@ -8,6 +8,7 @@ import { apiClient, authHeaders } from "../config/apiClient";
 import { getArtistName, getSongCover } from "../utils/catalog";
 import { clearActiveLiveRoomSession, writeActiveLiveRoomSession } from "../utils/liveRoomSession";
 import AccountRequired from "../components/UI/AccountRequired";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import RoomSongVoteModal from "../components/Social/RoomSongVoteModal";
@@ -1163,11 +1164,11 @@ const LiveRoom = () => {
 
             {room.currentSong ? (
               <div className="sw23-now-playing-card">
-                <img src={getSongCover(room.currentSong)} alt="" />
+                <SongArtwork src={getSongCover(room.currentSong)} alt={room.currentSong?.title || "Song cover"} />
                 <div className="sw23-now-playing-copy">
                   <small>Everyone in this room is synced to</small>
                   <strong>{room.currentSong.title}</strong>
-                  <span>{getArtistName(room.currentSong)}</span>
+                  <span><MissingArtistName name={getArtistName(room.currentSong)} /></span>
                   <p>{room._isHost ? "Your player is the room clock. Play, pause, seek and Next are sent to every joined member." : listenerPaused ? "Only this device is paused. The live room keeps moving; press Play to catch up to the host’s current position." : player?.playbackError?.toLowerCase?.().includes("tap play") ? "Your browser needs one audio permission gesture. Tap anywhere in the room or press Start live audio once; after that SoundWave follows the host automatically." : player?.isBuffering ? "Joining the host’s current position. SoundWave now starts from a small playable buffer instead of waiting for a long full-buffer check." : player?.isPlaying ? "Your media follows the leader’s song, position and pause state automatically." : "The room is live. Tap Play once if your browser requires permission to start audio."}</p>
                   <div className="sw24-vote-lock">
                     <strong>Current song stays locked.</strong>
@@ -1261,11 +1262,11 @@ const LiveRoom = () => {
               {queue.length ? (
                 <>
                   <div className="sw25-leader-top">
-                    <img src={getSongCover(queue[0].song)} alt="" />
+                    <SongArtwork src={getSongCover(queue[0].song)} alt={queue[0].song?.title || "Song cover"} />
                     <div>
                       <small>#1 by live votes</small>
                       <strong>{queue[0].song?.title || "Top voted song"}</strong>
-                      <span>{getArtistName(queue[0].song)} · {queue[0].votes?.length || 0} vote{(queue[0].votes?.length || 0) === 1 ? "" : "s"}</span>
+                      <span><MissingArtistName name={getArtistName(queue[0].song)} /> · {queue[0].votes?.length || 0} vote{(queue[0].votes?.length || 0) === 1 ? "" : "s"}</span>
                     </div>
                     <button type="button" onClick={() => hostPlayQueuedSong(queue[0]._id)} disabled={Boolean(hostPlayBusy)}>
                       <Play size={16} fill="currentColor" />
@@ -1277,10 +1278,10 @@ const LiveRoom = () => {
                     {queue.slice(0, 8).map((entry, index) => (
                       <article key={`leader-${entry._id}`}>
                         <span className="sw25-leader-rank">{index + 1}</span>
-                        <img src={getSongCover(entry.song)} alt="" />
+                        <SongArtwork src={getSongCover(entry.song)} alt={entry.song?.title || "Song cover"} />
                         <div>
                           <strong>{entry.song?.title}</strong>
-                          <span>{getArtistName(entry.song)}</span>
+                          <span><MissingArtistName name={getArtistName(entry.song)} /></span>
                         </div>
                         <span className="sw25-leader-votes"><ThumbsUp size={14} fill="currentColor" /> {entry.votes?.length || 0}</span>
                         {(() => {
@@ -1349,10 +1350,10 @@ const LiveRoom = () => {
                 return (
                   <article className={index === 0 ? "is-leading" : ""} key={entry._id}>
                     <span className="sw23-queue-rank">{index + 1}</span>
-                    <img src={getSongCover(entry.song)} alt="" />
+                    <SongArtwork src={getSongCover(entry.song)} alt={entry.song?.title || "Song cover"} />
                     <div className="sw23-queue-copy">
                       <strong>{entry.song?.title}</strong>
-                      <span>{getArtistName(entry.song)}</span>
+                      <span><MissingArtistName name={getArtistName(entry.song)} /></span>
                       <small>{index === 0 ? "Top voted · plays next when current song finishes" : `Added by ${displayNameOf(entry.addedBy, room._viewerId)}`}</small>
                     </div>
                     <button type="button" className={`sw23-vote-btn ${hasVoted ? "voted" : ""}`} onClick={() => vote(entry._id)} aria-pressed={hasVoted}>

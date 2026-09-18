@@ -3,6 +3,7 @@ import axios from "axios";
 import SongItem from "../SongItem/SongItem";
 import "./YouLiked.tailwind.css";
 import { API_BASE_URL } from "../../config/api";
+import { SongArtwork } from "../UI/CatalogArtwork";
 
 const YouLiked = () => {
   const [songs, setSongs] = useState([]);
@@ -104,7 +105,7 @@ const YouLiked = () => {
 
         {basedOn?.imageUrl && (
           <div className="you-liked-seed">
-            <img src={basedOn.imageUrl} alt={basedOn.title || "Liked song"}  loading="lazy" decoding="async" />
+            <SongArtwork src={basedOn.imageUrl || basedOn.image || basedOn.coverImage || basedOn.album?.coverImage} alt={basedOn.title || "Liked song"} loading="lazy" decoding="async" />
 
             <div>
               <small>Based on</small>

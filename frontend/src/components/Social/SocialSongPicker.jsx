@@ -2,6 +2,7 @@ import { useContext, useMemo, useState } from "react";
 import { Check, Music2, Pause, Play, Search } from "lucide-react";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { getArtistName, getSongCover } from "../../utils/catalog";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const text = (value) => String(value || "").trim().toLowerCase();
 
@@ -68,11 +69,11 @@ const SocialSongPicker = ({
 
       {selected ? (
         <div className="sw-social-selected-song">
-          <img src={getSongCover(selected)} alt="" loading="lazy" decoding="async" />
+          <SongArtwork src={getSongCover(selected)} alt={selected?.title || "Song cover"} loading="lazy" decoding="async" />
           <span>
             <small>Selected</small>
             <strong title={selected.title}>{selected.title}</strong>
-            <em title={getArtistName(selected)}>{getArtistName(selected)}</em>
+            <em title={getArtistName(selected)}><MissingArtistName name={getArtistName(selected)} /></em>
           </span>
           <button type="button" onClick={(event) => preview(event, selected)} aria-label={`Preview ${selected.title}`}>
             {currentId === String(selected._id) && isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
@@ -93,12 +94,12 @@ const SocialSongPicker = ({
                 aria-pressed={active}
               >
                 <span className="sw-social-picker-art">
-                  <img src={getSongCover(song)} alt="" loading="lazy" decoding="async" />
+                  <SongArtwork src={getSongCover(song)} alt={song?.title || "Song cover"} loading="lazy" decoding="async" />
                   {active ? <i><Check size={13} /></i> : null}
                 </span>
                 <span className="sw-social-picker-copy">
                   <strong title={song.title}>{song.title}</strong>
-                  <small title={getArtistName(song)}>{getArtistName(song)}</small>
+                  <small title={getArtistName(song)}><MissingArtistName name={getArtistName(song)} /></small>
                 </span>
               </button>
               <button

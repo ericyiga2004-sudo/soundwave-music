@@ -6,6 +6,7 @@ import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/YearsPage.tailwind.css";
 
 import { API_BASE_URL } from "../config/api";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const yearCollections = [
   {
@@ -359,8 +360,8 @@ const YearsPage = () => {
                     onClick={() => window.scrollTo(0, 0)}
                   >
                     <div className="years-song-img-wrap">
-                      <img
-                        src={song.imageUrl || "/fallback-cover.svg"}
+                      <SongArtwork
+                        src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage}
                         alt={song.title || "Song cover"}
                         className="years-song-img"
                         loading="lazy"
@@ -380,9 +381,7 @@ const YearsPage = () => {
                       <h3>{song.title || "Unknown Song"}</h3>
 
                       <p>
-                        {song.artist?.name ||
-                          song.artist?.artistName ||
-                          "Unknown Artist"}
+                        <MissingArtistName name={song.artist?.name || song.artist?.artistName || song.artistName} />
                       </p>
 
                       <span>

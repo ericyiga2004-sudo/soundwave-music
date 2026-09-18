@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { API_BASE_URL as backendUrl } from "../../config/api";
 import "./NewRelease.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const dateFields = [
   "releaseDate",
@@ -242,8 +243,8 @@ const NewRelease = () => {
                   aria-label={`Play ${song.title || "song"}`}
                 >
                   <span className="release-image">
-                    <img
-                      src={song.imageUrl || "/fallback-cover.svg"}
+                    <SongArtwork
+                      src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage}
                       alt={song.title || "Song cover"}
                       loading="lazy"
                       decoding="async"
@@ -263,7 +264,7 @@ const NewRelease = () => {
                   }}
                 >
                   <h3>{song.title || "Unknown Song"}</h3>
-                  <p>{song.artist?.name || "Unknown Artist"}</p>
+                  <p><MissingArtistName name={song.artist?.name || song.artistName} /></p>
                 </button>
                 <SongActionMenu
                   song={song}

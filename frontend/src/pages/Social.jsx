@@ -9,6 +9,7 @@ import AccountRequired from "../components/UI/AccountRequired";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import SocialPageHero from "../components/Social/SocialPageHero";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { SOCIAL_IMAGES } from "../components/Social/socialImages";
 import "./CSS/Social.tailwind.css";
 import "./CSS/SocialV20.tailwind.css";
@@ -51,7 +52,7 @@ const Social = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         title="Music becomes social when it moves between people."
         description="SoundWave Social is now split into focused spaces. Share tracks directly, build private Circles, start live rooms, compare taste and keep every interaction easy to find."
@@ -98,9 +99,9 @@ const Social = () => {
                       <small>{activity.note || activity.song?.title || activity.type?.replaceAll("_", " ") || "Music activity"}</small>
                       <em>{compactDate(activity.createdAt)}</em>
                     </span>
-                    {activity.song ? <img className="sw20-activity-cover" src={getSongCover(activity.song)} alt="" loading="lazy" /> : <ArrowRight size={16} />}
+                    {activity.song ? <SongArtwork className="sw20-activity-cover" src={getSongCover(activity.song)} alt={activity.song?.title || "Song cover"} loading="lazy" /> : <ArrowRight size={16} />}
                   </button>
-                  {activity.song ? <div className="sw20-activity-song"><Play size={13} fill="currentColor" /><span>{activity.song.title}</span><small>{getArtistName(activity.song)}</small></div> : null}
+                  {activity.song ? <div className="sw20-activity-song"><Play size={13} fill="currentColor" /><span>{activity.song.title}</span><small><MissingArtistName name={getArtistName(activity.song)} /></small></div> : null}
                 </article>
               ))}
               {!home?.feed?.length ? <div className="sw20-empty-card"><UsersRound size={24} /><strong>Your social feed starts with people.</strong><p>Follow listeners, share songs or start a Circle and activity will appear here automatically.</p><button type="button" className="sw-secondary-btn" onClick={() => navigate("/social/people")}>Find people</button></div> : null}

@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Check, Heart, History, Music2, Search, Sparkles, ThumbsUp, X } from "lucide-react";
 import { cachedGet, authHeaders } from "../../config/apiClient";
 import { getArtistName, getSongCover } from "../../utils/catalog";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const idOf = (song) => String(song?._id || song?.id || "");
 const text = (value) => String(value || "").trim().toLowerCase();
@@ -193,12 +194,12 @@ const RoomSongVoteModal = ({
                     aria-pressed={selected}
                   >
                     <span className="sw2319-song-art">
-                      <img src={getSongCover(song)} alt="" loading="lazy" decoding="async" />
+                      <SongArtwork src={getSongCover(song)} alt={song?.title || "Song cover"} loading="lazy" decoding="async" />
                       <i>{selected ? <Check size={14} /> : null}</i>
                     </span>
                     <span className="sw2319-song-copy">
                       <strong>{song.title}</strong>
-                      <small>{getArtistName(song)}</small>
+                      <small><MissingArtistName name={getArtistName(song)} /></small>
                       <em className={`is-${reasonType}`}>
                         {reasonType === "recent" ? <History size={11} /> : reasonType === "liked" ? <Heart size={11} fill="currentColor" /> : reasonType === "for-you" ? <Sparkles size={11} /> : <ThumbsUp size={11} />}
                         {reason}

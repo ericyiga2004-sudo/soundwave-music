@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import "./apple-theme.tailwind.css";
 import "./v10-layout.tailwind.css";
 import "./v12-compact-media.tailwind.css";
+import "./mobile-responsive-hotfix.tailwind.css";
 import { BrowserRouter } from "react-router-dom";
 import MusicContextProvider from "./context/ShopContext";
 import { MusicPlayerProvider } from "./context/MainPlayerContext.jsx";

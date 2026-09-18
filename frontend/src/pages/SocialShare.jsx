@@ -90,7 +90,7 @@ const SocialShare = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         kicker="Direct sharing"
         title="Send a song. They see it live."

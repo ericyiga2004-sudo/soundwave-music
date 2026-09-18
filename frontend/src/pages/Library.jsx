@@ -38,6 +38,7 @@ import {
 } from "../utils/offlineDownload";
 
 import "./CSS/Library.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const FALLBACK_COVER = "/fallback-cover.svg";
 const PLAYLIST_COVER = "/playlist.png";
@@ -900,12 +901,9 @@ const Library = () => {
       }}
     >
       <span className="boom-cover">
-        <img
+        <SongArtwork
           src={getSongImage(song)}
-          alt={getSongTitle(song)}
-          onError={(event) => {
-            event.currentTarget.src = FALLBACK_COVER;
-          }}
+          alt={getSongTitle(song) || "Song cover"}
         />
         {offline && (
           <span className="boom-offline-dot" title="Saved offline">
@@ -917,7 +915,7 @@ const Library = () => {
       <span className="boom-song-main">
         <h3>{getSongTitle(song)}</h3>
         <p>
-          {getArtistName(song)}
+          <MissingArtistName name={getArtistName(song)} />
           {getAlbumTitle(song) ? ` • ${getAlbumTitle(song)}` : ""}
         </p>
       </span>

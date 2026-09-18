@@ -6,6 +6,7 @@ import { MusicPlayerContext } from "../../context/MainPlayerContext";
 import { MusicContext } from "../../context/ShopContext";
 import "./SongItem.tailwind.css";
 import { canUseSoundwaveSongApi } from "../../utils/songSource";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const normalizeSongs = (songs = []) => {
   const seen = new Set();
@@ -60,8 +61,8 @@ const SongItem = ({ song, queue = [] }) => {
   const cardBody = (
     <>
       <div className="card-img-container">
-        <img
-          src={song.imageUrl || "/fallback-cover.svg"}
+        <SongArtwork
+          src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage}
           alt={song.title || "Song cover"}
           loading="lazy"
           decoding="async"
@@ -98,7 +99,7 @@ const SongItem = ({ song, queue = [] }) => {
             navigate(`/artist/${song.artist._id}`);
           }}
         >
-          {song.artist?.name || song.artistName || "Unknown Artist"}
+          <MissingArtistName name={song.artist?.name || song.artistName} />
         </p>
       </div>
     </>

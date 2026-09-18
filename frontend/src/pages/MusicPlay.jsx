@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./CSS/MusicPlay.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { getLowData, UI_PREFERENCES_EVENT } from "../utils/uiPreferences";
 
@@ -163,11 +164,11 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
           <div className={`sw-player ${sidebarHidden ? "lg:!left-0" : ""} ${isBuffering ? "is-buffering" : ""}`}>
             <div className="sw-player-song">
               <button type="button" className="sw-player-cover" onClick={openSong} aria-label="Open current song">
-                <img src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
+                <SongArtwork src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
               </button>
               <div className="sw-player-song-copy">
                 <strong>{currentSong?.title || "Unknown Song"}</strong>
-                <span className={playbackError ? "sw-player-error-text" : ""}>{playbackError || (isBuffering ? bufferMessage || "Buffering…" : getArtistName(currentSong))}</span>
+                <span className={playbackError ? "sw-player-error-text" : ""}>{playbackError || (isBuffering ? bufferMessage || "Buffering…" : <MissingArtistName name={getArtistName(currentSong)} />)}</span>
               </div>
             </div>
 
@@ -270,10 +271,10 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
                     key={song?._id || index}
                     onClick={() => playQueueSong(song)}
                   >
-                    <img src={getCover(song)} alt="" loading="lazy" decoding="async" />
+                    <SongArtwork src={getCover(song)} alt={song?.title || "Song cover"} loading="lazy" decoding="async" />
                     <span>
                       <strong>{song?.title || "Unknown Song"}</strong>
-                      <small>{getArtistName(song)}</small>
+                      <small><MissingArtistName name={getArtistName(song)} /></small>
                     </span>
                     <em>{index === currentIndex ? "Playing" : index + 1}</em>
                   </button>

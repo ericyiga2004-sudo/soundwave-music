@@ -104,7 +104,7 @@ const SocialPeople = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3 !px-[0px]">
+    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
       <SocialPageHero
         kicker="Taste Match"
         title="Find people through the music, not a popularity contest."

@@ -6,6 +6,7 @@ import { MusicPlayerContext } from "../context/MainPlayerContext";
 import { useRealtime } from "../context/RealtimeContext";
 import { apiClient, authHeaders } from "../config/apiClient";
 import { getArtistName, getSongCover } from "../utils/catalog";
+import { ArtistArtwork, MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import SocialNav from "../components/Social/SocialNav";
@@ -140,13 +141,13 @@ const SocialProfile = () => {
           </section>
         </div>
         <div className="col !w-[100%] flex-none col lg:!w-[66.66666666666667%] lg:flex-none">
-          <section className="sw-social-panel !h-full"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Identity</span><h2>Top taste</h2></div></div><div className="sw-tag-group">{(profile.topGenres || []).map((tag) => <span key={`g-${tag}`}>{tag}</span>)}{(profile.topLanguages || []).map((tag) => <span key={`l-${tag}`}>{tag}</span>)}</div><div className="sw-profile-artists">{(profile.topArtists || []).map((artist) => <button type="button" key={artist._id} onClick={() => navigate(`/artist/${artist._id}`)}><span className="sw-social-avatar small">{artist.image ? <img src={artist.image} alt="" /> : String(artist.name || "A").slice(0, 1)}</span><span>{artist.name}</span></button>)}</div></section>
+          <section className="sw-social-panel !h-full"><div className="sw-social-section-heading"><div><span className="sw-social-kicker">Identity</span><h2>Top taste</h2></div></div><div className="sw-tag-group">{(profile.topGenres || []).map((tag) => <span key={`g-${tag}`}>{tag}</span>)}{(profile.topLanguages || []).map((tag) => <span key={`l-${tag}`}>{tag}</span>)}</div><div className="sw-profile-artists">{(profile.topArtists || []).map((artist) => <button type="button" key={artist._id} onClick={() => navigate(`/artist/${artist._id}`)}><span className="sw-social-avatar small"><ArtistArtwork src={artist.image || artist.imageUrl} alt={artist.name || "Artist"} /></span><span><MissingArtistName name={artist.name} /></span></button>)}</div></section>
         </div>
       </div>
 
       <section className="sw-social-panel !mt-[1rem] xl:!mt-[1.5rem]">
         <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Recent listening</span><h2>{user.socialSettings?.listeningActivity === false ? "Listening activity is private" : "Recently played"}</h2></div></div>
-        {(profile.recentlyPlayed || []).length ? <div className="sw-profile-recent">{profile.recentlyPlayed.map((song, index) => <button type="button" key={`${song._id}-${index}`} onClick={() => { player?.playSong?.(song, profile.recentlyPlayed); navigate(`/song/${song._id}`, { state: { song, playlist: profile.recentlyPlayed } }); }}><img src={getSongCover(song)} alt="" /><span><strong>{song.title}</strong><small>{getArtistName(song)}</small></span><Play size={16} /></button>)}</div> : <p className="sw-social-muted">No public listening activity to show.</p>}
+        {(profile.recentlyPlayed || []).length ? <div className="sw-profile-recent">{profile.recentlyPlayed.map((song, index) => <button type="button" key={`${song._id}-${index}`} onClick={() => { player?.playSong?.(song, profile.recentlyPlayed); navigate(`/song/${song._id}`, { state: { song, playlist: profile.recentlyPlayed } }); }}><SongArtwork src={getSongCover(song)} alt={song?.title || "Song cover"} /><span><strong>{song.title}</strong><small><MissingArtistName name={getArtistName(song)} /></small></span><Play size={16} /></button>)}</div> : <p className="sw-social-muted">No public listening activity to show.</p>}
       </section>
     </div>
   );

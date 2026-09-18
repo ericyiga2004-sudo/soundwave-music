@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { FaPlay } from "react-icons/fa";
 
 import { API_BASE_URL as backendUrl } from "../../config/api";
+import { MissingArtistName, SongArtwork } from "../UI/CatalogArtwork";
 
 const tabs = ["Trending", "New", "Most Liked"];
 
@@ -319,8 +320,8 @@ const FilterSongs = () => {
                     }}
                   >
                     <div className="filter-release-image">
-                      <img
-                        src={song.imageUrl || "/fallback-cover.svg"}
+                      <SongArtwork
+                        src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage}
                         alt={song.title || "Song cover"}
                         loading="lazy"
                       />
@@ -340,7 +341,7 @@ const FilterSongs = () => {
                     <div className="filter-release-content">
                       <h3>{song.title || "Unknown Song"}</h3>
 
-                      <p>{getArtistName(song)}</p>
+                      <p><MissingArtistName name={getArtistName(song)} /></p>
 
                       {getSongCountry(song) && (
                         <span className="song-country">

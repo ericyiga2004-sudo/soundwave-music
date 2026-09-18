@@ -9,6 +9,7 @@ import { formatDuration, getArtistName, getSongCover } from "../utils/catalog";
 import CatalogSkeleton from "../components/UI/CatalogSkeleton";
 import EmptyState from "../components/UI/EmptyState";
 import "./CSS/CatalogPages.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const PAGE_SIZE = 36;
 
@@ -161,14 +162,14 @@ const SongsPage = () => {
         <div className="sw-song-list">
           {songs.map((song) => (
             <div className="sw-song-list-row" key={song._id}>
-              <img src={getSongCover(song)} alt="" loading="lazy" decoding="async" />
+              <SongArtwork src={getSongCover(song)} alt={song.title || "Song cover"} loading="lazy" decoding="async" />
               <button
                 type="button"
                 className="sw-song-title"
                 onClick={() => navigate(`/song/${song._id}`, { state: { playlist: songs } })}
               >
                 <strong>{song.title}</strong>
-                <span>{getArtistName(song)}</span>
+                <span><MissingArtistName name={getArtistName(song)} /></span>
               </button>
               <span className="sw-song-album">{song.album?.title || "Single"}</span>
               <span className="sw-song-duration">{formatDuration(song.duration)}</span>

@@ -6,6 +6,7 @@ import { FaArrowLeft, FaMusic, FaPlay } from "react-icons/fa";
 import { MusicContext } from "../context/ShopContext";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
 import "./CSS/MoodPage.tailwind.css";
+import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 
 const moodLabels = {
   happy: "Happy",
@@ -136,12 +137,12 @@ const MoodPage = () => {
             {moodSongs.map((song) => (
               <div className="col flex-[1_0_0%]" key={song._id}>
                 <article className="mood-song-card">
-                  <img src={getSongImage(song)} alt={song.title} />
+                  <SongArtwork src={getSongImage(song)} alt={song.title || "Song cover"} />
 
                   <div className="mood-song-body">
                     <h3>{song.title || "Unknown Song"}</h3>
 
-                    <p>{getArtistName(song)}</p>
+                    <p><MissingArtistName name={getArtistName(song)} /></p>
 
                     <div className="mood-song-meta">
                       <span>{song.genre || "Unknown"}</span>
