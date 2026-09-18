@@ -272,7 +272,7 @@ const SongActionMenu = ({
       <button
         ref={triggerRef}
         type="button"
-        className={`sw2324-song-more !grid !h-10 !w-10 shrink-0 place-items-center !rounded-full [&>svg]:!h-[22px] [&>svg]:!w-[22px] ${triggerClassName}`.trim()}
+        className={`sw2324-song-more !grid !h-11 !w-11 shrink-0 place-items-center !rounded-full [&>svg]:!h-[22px] [&>svg]:!w-[22px] ${triggerClassName}`.trim()}
         onClick={toggle}
         aria-label={triggerLabel}
         aria-expanded={open}

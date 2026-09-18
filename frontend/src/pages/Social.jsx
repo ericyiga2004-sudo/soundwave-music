@@ -83,7 +83,7 @@ const Social = () => {
               <div><span className="sw-social-kicker">Live network</span><h2>What your music people are doing</h2></div>
               <span className={realtimeConnected ? "sw20-realtime-pill online" : realtimeMode === "polling" ? "sw20-realtime-pill fallback" : "sw20-realtime-pill"}>{realtimeConnected ? "Live updates" : realtimeMode === "polling" ? "Updates on" : "Checking"}</span>
             </div>
-            <div className="sw20-activity-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {(home?.feed || []).slice(0, 8).map((activity) => (
                 <article className="sw20-activity-card" key={activity._id}>
                   <button

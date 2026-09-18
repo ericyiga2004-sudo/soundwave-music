@@ -249,7 +249,7 @@ const NewRelease = () => {
                       loading="lazy"
                       decoding="async"
                     />
-                    <span className="play-btn !grid !h-11 !w-11 place-items-center !text-sm" aria-hidden="true">
+                    <span className="absolute bottom-3 right-3 z-10 grid h-12 w-12 place-items-center rounded-full bg-[var(--sw-accent)] text-[18px] text-white shadow-lg" aria-hidden="true">
                       <FaPlay />
                     </span>
                   </span>

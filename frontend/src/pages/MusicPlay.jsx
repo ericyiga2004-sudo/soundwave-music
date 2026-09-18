@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FaListUl, FaPause as FaPauseSolid, FaPlay as FaPlaySolid, FaStepBackward, FaStepForward } from "react-icons/fa";
 import "./CSS/MusicPlay.tailwind.css";
 import { MissingArtistName, SongArtwork } from "../components/UI/CatalogArtwork";
 import { MusicPlayerContext } from "../context/MainPlayerContext";
@@ -161,121 +162,82 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
 
       {currentSong && (
         <>
-          <div className={`sw-player !left-3 !right-3 !bottom-[92px] !z-[1900] !min-h-[72px] !grid-cols-[minmax(0,1fr)_auto_auto] !gap-2 !rounded-2xl !border !border-[var(--sw-border)] !p-2 lg:!right-0 lg:!bottom-0 lg:!min-h-[86px] lg:!grid-cols-[minmax(190px,1fr)_minmax(330px,1.4fr)_minmax(160px,1fr)] lg:!gap-[18px] lg:!rounded-none lg:!border-x-0 lg:!border-b-0 lg:!p-[10px_20px] ${sidebarHidden ? "lg:!left-0" : "lg:!left-[258px]"} ${isBuffering ? "is-buffering" : ""}`}>
-            <div className="sw-player-song !min-w-0 !gap-2">
-              <button type="button" className="sw-player-cover !h-12 !w-12 !basis-12 shrink-0 !rounded-xl" onClick={openSong} aria-label="Open current song">
+          {/* Phone player: Tailwind-only and physically separated from the bottom nav. */}
+          {!location.pathname.startsWith("/song/") ? <div className="fixed inset-x-3 bottom-[100px] z-[2250] flex min-h-[82px] items-center gap-2 rounded-[20px] border border-[var(--sw-border)] bg-[var(--sw-surface)] p-2 shadow-[0_12px_34px_rgba(0,0,0,0.22)] lg:hidden">
+            <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={openSong} aria-label="Open current song">
+              <span className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[var(--sw-surface-2)]">
+                <SongArtwork className="h-full w-full" src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
+              </span>
+              <span className="grid min-w-0 flex-1 gap-0.5">
+                <strong className="truncate text-[14px] font-extrabold leading-tight text-[var(--sw-text)]">{currentSong?.title || "Unknown Song"}</strong>
+                <span className={`truncate text-[12px] leading-tight ${playbackError ? "text-[var(--sw-accent)]" : "text-[var(--sw-text-secondary)]"}`}>{playbackError || (isBuffering ? bufferMessage || "Buffering…" : <MissingArtistName name={getArtistName(currentSong)} />)}</span>
+              </span>
+            </button>
+
+            <div className="flex shrink-0 items-center gap-1">
+              <button type="button" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--sw-surface-2)] text-[24px] text-[var(--sw-text-secondary)]" onClick={prevSong} aria-label="Previous song">
+                <FaStepBackward aria-hidden="true" />
+              </button>
+              <button type="button" className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-[var(--sw-text)] text-[26px] text-[var(--sw-bg)]" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
+                {isBuffering ? <span className="sw-player-spinner" /> : isPlaying ? <FaPauseSolid aria-hidden="true" /> : <FaPlaySolid className="translate-x-[1px]" aria-hidden="true" />}
+              </button>
+              <button type="button" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--sw-surface-2)] text-[24px] text-[var(--sw-text-secondary)]" onClick={nextSong} aria-label="Next song">
+                <FaStepForward aria-hidden="true" />
+              </button>
+              <button type="button" className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-[22px] ${queueOpen ? "bg-[var(--sw-surface-2)] text-[var(--sw-accent)]" : "text-[var(--sw-text-secondary)]"}`} onClick={() => setQueueOpen((open) => !open)} aria-label="Show queue" title="Queue">
+                <FaListUl aria-hidden="true" />
+              </button>
+            </div>
+          </div> : null}
+
+          {/* Desktop/tablet player keeps the proven reference layout. */}
+          <div className={`sw-player !hidden lg:!grid ${sidebarHidden ? "lg:!left-0" : ""} ${isBuffering ? "is-buffering" : ""}`}>
+            <div className="sw-player-song">
+              <button type="button" className="sw-player-cover" onClick={openSong} aria-label="Open current song">
                 <SongArtwork src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
               </button>
-              <div className="sw-player-song-copy min-w-0 [&>strong]:!text-[0.82rem] [&>span]:!text-[0.72rem]">
+              <div className="sw-player-song-copy">
                 <strong>{currentSong?.title || "Unknown Song"}</strong>
                 <span className={playbackError ? "sw-player-error-text" : ""}>{playbackError || (isBuffering ? bufferMessage || "Buffering…" : <MissingArtistName name={getArtistName(currentSong)} />)}</span>
               </div>
             </div>
 
-            <div className="sw-player-center !contents lg:!block">
-              <div className="sw-player-controls !gap-1">
-                <button
-                  type="button"
-                  className={`sw-player-icon-control !hidden md:!grid ${shuffle ? "active" : ""}`}
-                  onClick={() => setShuffle?.(!shuffle)}
-                  aria-label="Toggle shuffle"
-                  title="Shuffle"
-                >
-                  <Shuffle size={17} />
-                </button>
-                <button type="button" className="sw-player-icon-control !grid !h-9 !w-9 shrink-0 place-items-center" onClick={prevSong} aria-label="Previous song">
-                  <SkipBack className="!h-5 !w-5" fill="currentColor" />
-                </button>
-                <button type="button" className="sw-player-main-control !grid !h-11 !w-11 shrink-0 place-items-center" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
-                  {isBuffering ? <span className="sw-player-spinner" /> : isPlaying ? <Pause className="!h-6 !w-6" fill="currentColor" /> : <Play className="!h-6 !w-6" fill="currentColor" />}
-                </button>
-                <button type="button" className="sw-player-icon-control !grid !h-9 !w-9 shrink-0 place-items-center" onClick={nextSong} aria-label="Next song">
-                  <SkipForward className="!h-5 !w-5" fill="currentColor" />
-                </button>
-                <button
-                  type="button"
-                  className={`sw-player-icon-control !hidden md:!grid ${repeat !== repeatModes?.OFF ? "active" : ""}`}
-                  onClick={cycleRepeat}
-                  aria-label={repeatLabel}
-                  title={repeatLabel}
-                >
-                  {repeat === repeatModes?.ONE ? <Repeat1 size={17} /> : <Repeat size={17} />}
-                </button>
+            <div className="sw-player-center">
+              <div className="sw-player-controls">
+                <button type="button" className={`sw-player-icon-control ${shuffle ? "active" : ""}`} onClick={() => setShuffle?.(!shuffle)} aria-label="Toggle shuffle" title="Shuffle"><Shuffle size={18} /></button>
+                <button type="button" className="sw-player-icon-control" onClick={prevSong} aria-label="Previous song"><SkipBack size={20} fill="currentColor" /></button>
+                <button type="button" className="sw-player-main-control" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>{isBuffering ? <span className="sw-player-spinner" /> : isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}</button>
+                <button type="button" className="sw-player-icon-control" onClick={nextSong} aria-label="Next song"><SkipForward size={20} fill="currentColor" /></button>
+                <button type="button" className={`sw-player-icon-control ${repeat !== repeatModes?.OFF ? "active" : ""}`} onClick={cycleRepeat} aria-label={repeatLabel} title={repeatLabel}>{repeat === repeatModes?.ONE ? <Repeat1 size={18} /> : <Repeat size={18} />}</button>
               </div>
 
-              <div className="sw-player-progress-row !hidden lg:!grid">
+              <div className="sw-player-progress-row">
                 <span>{formatTime(clampedProgress)}</span>
-                <input
-                  type="range"
-                  min="0"
-                  max={safeDuration || 0}
-                  step="0.05"
-                  value={clampedProgress}
-                  onChange={(event) => seekTo?.(Number(event.target.value))}
-                  disabled={!safeDuration}
-                  aria-label="Seek song position"
-                  style={{ "--sw-progress": `${progressPercent}%` }}
-                />
+                <input type="range" min="0" max={safeDuration || 0} step="0.05" value={clampedProgress} onChange={(event) => seekTo?.(Number(event.target.value))} disabled={!safeDuration} aria-label="Seek song position" style={{ "--sw-progress": `${progressPercent}%` }} />
                 <span>{formatTime(safeDuration)}</span>
               </div>
             </div>
 
-            <div className="sw-player-actions !flex shrink-0 items-center !gap-1">
+            <div className="sw-player-actions">
               <div className="sw-volume-control !hidden xl:!flex">
                 <button type="button" onClick={toggleMute} aria-label={volume <= 0.001 ? "Unmute audio" : "Mute audio"} aria-pressed={volume <= 0.001} className="sw-player-icon-control">{volumeIcon}</button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={(event) => setVolume(Number(event.target.value))}
-                  aria-label="Volume"
-                />
+                <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(event) => setVolume(Number(event.target.value))} aria-label="Volume" />
               </div>
-              <button
-                type="button"
-                className={`sw-player-icon-control !hidden !h-9 !w-9 sm:!grid xl:!hidden ${volume <= 0.001 ? "active" : ""}`}
-                onClick={toggleMute}
-                aria-label={volume <= 0.001 ? "Unmute" : "Mute"}
-                title={volume <= 0.001 ? "Unmute" : "Mute"}
-              >
-                {volume <= 0.001 ? <VolumeX size={18} /> : volume < 0.45 ? <Volume1 size={18} /> : <Volume2 size={18} />}
-              </button>
-              <button
-                type="button"
-                className={`sw-player-icon-control sw-queue-toggle !grid !h-9 !w-9 shrink-0 place-items-center ${queueOpen ? "active" : ""}`}
-                onClick={() => setQueueOpen((open) => !open)}
-                aria-label="Show queue"
-                title="Queue"
-              >
-                <ListMusic className="!h-5 !w-5" />
-              </button>
+              <button type="button" className={`sw-player-icon-control sw-queue-toggle ${queueOpen ? "active" : ""}`} onClick={() => setQueueOpen((open) => !open)} aria-label="Show queue" title="Queue"><ListMusic size={19} /></button>
             </div>
           </div>
 
-          <aside className={`sw-queue-drawer !bottom-[174px] !right-3 max-w-[calc(100vw-24px)] lg:!bottom-[98px] lg:!right-5 ${queueOpen ? "open" : ""}`} aria-hidden={!queueOpen}>
+          <aside className={`sw-queue-drawer !z-[2350] !bottom-[192px] !right-3 max-w-[calc(100vw-24px)] lg:!bottom-[98px] lg:!right-5 ${queueOpen ? "open" : ""}`} aria-hidden={!queueOpen}>
             <div className="sw-queue-header">
-              <div>
-                <small>Up Next</small>
-                <h3>Playing Queue</h3>
-              </div>
+              <div><small>Up Next</small><h3>Playing Queue</h3></div>
               <button type="button" onClick={() => setQueueOpen(false)} aria-label="Close queue"><X size={18} /></button>
             </div>
             <div className="sw-queue-list">
               {playlist.length ? (
                 playlist.map((song, index) => (
-                  <button
-                    type="button"
-                    className={`sw-queue-item ${index === currentIndex ? "active" : ""}`}
-                    key={song?._id || index}
-                    onClick={() => playQueueSong(song)}
-                  >
+                  <button type="button" className={`sw-queue-item ${index === currentIndex ? "active" : ""}`} key={song?._id || index} onClick={() => playQueueSong(song)}>
                     <SongArtwork src={getCover(song)} alt={song?.title || "Song cover"} loading="lazy" decoding="async" />
-                    <span>
-                      <strong>{song?.title || "Unknown Song"}</strong>
-                      <small><MissingArtistName name={getArtistName(song)} /></small>
-                    </span>
+                    <span><strong>{song?.title || "Unknown Song"}</strong><small><MissingArtistName name={getArtistName(song)} /></small></span>
                     <em>{index === currentIndex ? "Playing" : index + 1}</em>
                   </button>
                 ))

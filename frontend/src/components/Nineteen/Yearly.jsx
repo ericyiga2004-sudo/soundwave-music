@@ -407,7 +407,7 @@ const Yearly = () => {
 
                               <button
                                 type="button"
-                                className="year-play-btn !grid !h-11 !w-11 place-items-center !opacity-100 [&>svg]:!text-sm"
+                                className="year-play-btn !grid !h-12 !w-12 place-items-center !opacity-100 [&>svg]:!text-[20px]"
                                 aria-label={`Play ${
                                   song.title || "this song"
                                 }`}

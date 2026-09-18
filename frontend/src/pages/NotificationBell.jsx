@@ -301,7 +301,7 @@ const NotificationBell = () => {
       <div className="notification-bell-wrap" ref={dropdownRef}>
         <button
           type="button"
-          className={`${open ? "notification-bell-btn active" : "notification-bell-btn"} !grid !h-10 !w-10 shrink-0 place-items-center !rounded-full [&>svg]:!h-5 [&>svg]:!w-5`}
+          className={`${open ? "notification-bell-btn active" : "notification-bell-btn"} !grid !h-12 !w-12 shrink-0 place-items-center !rounded-full !p-0 text-[var(--sw-text)] sm:!h-10 sm:!w-10`}
           onClick={() => {
             if (!open && pendingUnreadRef.current.size) {
               const pending = pendingUnreadRef.current.size;
@@ -313,7 +313,7 @@ const NotificationBell = () => {
           aria-label={`${unreadCount} unread notifications`}
           title={connected ? "Live notifications connected" : mode === "polling" ? "Notifications updating automatically" : "Notifications"}
         >
-          <FaBell />
+          <FaBell className="block !h-6 !w-6 !text-[24px] sm:!h-5 sm:!w-5 sm:!text-[20px]" aria-hidden="true" />
           {unreadCount > 0 ? <span className="notification-badge">{unreadCount > 99 ? "99+" : unreadCount}</span> : null}
           {connected ? <span className="notification-live-dot" aria-hidden="true" /> : null}
         </button>

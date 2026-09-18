@@ -327,7 +327,7 @@ const FilterSongs = () => {
                       />
 
                       <div
-                        className="filter-play-btn !grid !h-11 !w-11 place-items-center !opacity-100 [&>svg]:!text-sm"
+                        className="filter-play-btn !grid !h-12 !w-12 place-items-center !opacity-100 [&>svg]:!text-[20px]"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();

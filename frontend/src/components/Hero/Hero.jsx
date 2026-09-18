@@ -133,8 +133,8 @@ const Hero = () => {
                   <p>{song ? getArtist(song) : "SoundWave"}</p>
                 </div>
                 {song && (
-                  <button type="button" className="!grid !h-11 !w-11 shrink-0 place-items-center !rounded-full" onClick={() => playSong?.(song, featured)} aria-label={`Play ${song.title}`}>
-                    <Play className="!h-5 !w-5" fill="currentColor" />
+                  <button type="button" className="!grid !h-12 !w-12 shrink-0 place-items-center !rounded-full" onClick={() => playSong?.(song, featured)} aria-label={`Play ${song.title}`}>
+                    <Play className="!h-6 !w-6" fill="currentColor" />
                   </button>
                 )}
                 {song && canUseSoundwaveSongApi(song) ? (

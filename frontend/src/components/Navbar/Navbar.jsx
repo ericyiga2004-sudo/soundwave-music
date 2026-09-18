@@ -1,6 +1,23 @@
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { BatteryMedium, Settings2, WifiOff, ChevronLeft, ChevronRight, Home, Library, Moon, Radio, Search, Sparkles, Sun, User, UsersRound, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  BatteryMedium,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  Library,
+  Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Radio,
+  Search,
+  Sparkles,
+  Sun,
+  User,
+  UsersRound,
+  WifiOff,
+} from "lucide-react";
+import { FaRegUser, FaSearch } from "react-icons/fa";
 import "./Navbar.tailwind.css";
 import SearchModal from "../SearchModel/SearchModel";
 import { MusicPlayerContext } from "../../context/MainPlayerContext";
@@ -97,129 +114,109 @@ const Navbar = () => {
                 ? "Playlist"
                 : "SoundWave");
 
+  const performancePopover = settingsOpen ? (
+    <div className="sw-settings-popover" role="dialog" aria-label="Performance settings">
+      <div className="sw-settings-heading">
+        <div>
+          <strong>Performance</strong>
+          <small>Use less battery and mobile data.</small>
+        </div>
+      </div>
+
+      <button type="button" className="sw-settings-row" onClick={() => setBatterySaver(!batterySaver)}>
+        <span className="sw-settings-row-icon"><BatteryMedium size={17} /></span>
+        <span className="sw-settings-copy"><strong>Battery Saver</strong><small>Stops decorative motion and expensive effects.</small></span>
+        <span className={`sw-switch ${batterySaver ? "on" : ""}`} aria-hidden="true"><i /></span>
+      </button>
+
+      <button type="button" className="sw-settings-row" onClick={() => setLowData(!lowData)}>
+        <span className="sw-settings-row-icon"><WifiOff size={17} /></span>
+        <span className="sw-settings-copy"><strong>Low Data Mode</strong><small>Loads lower-priority sections only when you reach them.</small></span>
+        <span className={`sw-switch ${lowData ? "on" : ""}`} aria-hidden="true"><i /></span>
+      </button>
+
+      <button type="button" className="sw-settings-row" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+        <span className="sw-settings-row-icon">{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</span>
+        <span className="sw-settings-copy"><strong>Appearance</strong><small>{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}</small></span>
+        <span className="sw-settings-value">{theme === "dark" ? "Dark" : "Light"}</span>
+      </button>
+
+      <button type="button" className="sw-settings-row" onClick={() => setSidebarHidden(!sidebarHidden)}>
+        <span className="sw-settings-row-icon">{sidebarHidden ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</span>
+        <span className="sw-settings-copy"><strong>Sidebar</strong><small>{sidebarHidden ? "Bring the desktop sidebar back." : "Hide only the sidebar and reclaim its page width."}</small></span>
+        <span className={`sw-switch ${sidebarHidden ? "on" : ""}`} aria-hidden="true"><i /></span>
+      </button>
+    </div>
+  ) : null;
+
   return (
     <>
-      <header className="sw-top-header !flex !min-h-[64px] !w-full !max-w-full items-center justify-between !gap-2 !px-3 !py-2 sm:!grid sm:!grid-cols-[minmax(120px,1fr)_minmax(180px,320px)_auto] sm:!gap-3 sm:!px-4 lg:!grid-cols-[1fr_minmax(220px,390px)_1fr] lg:!px-6">
-        <div className="sw-top-left min-w-0 flex-1 sm:flex-none">
+      {/* Phone header: deliberately Tailwind-only so legacy converted CSS cannot squeeze icons. */}
+      <header className="sticky top-0 z-[2300] flex min-h-[68px] w-full items-center justify-between gap-3 border-b border-[var(--sw-border)] bg-[var(--sw-bg)] px-4 py-2 sm:hidden">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[var(--sw-accent)] text-[23px] font-black text-white" aria-hidden="true">♪</span>
+          <strong className="min-w-0 truncate text-[20px] font-extrabold tracking-[-0.03em] text-[var(--sw-text)]">{title}</strong>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <button type="button" className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--sw-surface-2)] text-[var(--sw-text)]" onClick={() => setOpenSearch(true)} aria-label="Search">
+            <FaSearch className="block text-[24px]" aria-hidden="true" />
+          </button>
+          <NotificationBell />
+          <NavLink to="/account" className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--sw-surface-2)] text-[var(--sw-text)]" aria-label="Account">
+            <FaRegUser className="block text-[25px]" aria-hidden="true" />
+          </NavLink>
+        </div>
+      </header>
+
+      {/* Tablet/desktop header keeps the established reference layout. */}
+      <header className="sw-top-header !hidden sm:!grid">
+        <div className="sw-top-left">
           <button type="button" className="sw-icon-btn !hidden lg:!grid" onClick={() => setSidebarHidden(!sidebarHidden)} aria-controls="soundwave-sidebar" aria-expanded={!sidebarHidden} aria-label={sidebarHidden ? "Show sidebar" : "Hide sidebar"}>{sidebarHidden ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}</button>
           <div className="sw-history-controls !hidden lg:!flex">
-            <button type="button" onClick={() => navigate(-1)} aria-label="Back">
-              <ChevronLeft size={19} />
-            </button>
-            <button type="button" onClick={() => navigate(1)} aria-label="Forward">
-              <ChevronRight size={19} />
-            </button>
+            <button type="button" onClick={() => navigate(-1)} aria-label="Back"><ChevronLeft size={19} /></button>
+            <button type="button" onClick={() => navigate(1)} aria-label="Forward"><ChevronRight size={19} /></button>
           </div>
-
-          <div className="sw-mobile-brand !flex min-w-0 shrink items-center !gap-2 lg:!hidden">
-            <span className="sw-mobile-brand-icon !grid !h-10 !w-10 shrink-0 place-items-center !rounded-xl !text-xl">♪</span>
-            <strong className="min-w-0 max-w-[92px] truncate !text-[1.08rem] sm:max-w-[150px]">{title}</strong>
+          <div className="sw-mobile-brand !flex lg:!hidden">
+            <span className="sw-mobile-brand-icon">♪</span>
+            <strong>{title}</strong>
           </div>
         </div>
 
-        <button type="button" className="sw-search-btn !hidden sm:!flex" onClick={() => setOpenSearch(true)}>
-          <Search size={17} />
+        <button type="button" className="sw-search-btn" onClick={() => setOpenSearch(true)}>
+          <Search size={18} />
           <span>Search</span>
           <kbd className="!hidden xl:!inline">/</kbd>
         </button>
 
-        <div className="sw-top-actions ml-auto !flex shrink-0 items-center !gap-1.5 sm:!gap-2">
-          <button type="button" className="sw-icon-btn !grid !h-10 !w-10 shrink-0 place-items-center sm:!hidden" onClick={() => setOpenSearch(true)} aria-label="Search">
-            <Search className="!h-[22px] !w-[22px] shrink-0" strokeWidth={2.4} />
-          </button>
-          <NavLink
-            to="/social"
-            className={({ isActive }) => `sw-icon-btn sw-social-top-link !hidden lg:!grid ${isActive ? "active" : ""}`}
-            title="SoundWave Social"
-            aria-label="Open SoundWave Social"
-          >
-            <UsersRound size={18} />
-          </NavLink>
+        <div className="sw-top-actions">
+          <NavLink to="/social" className={({ isActive }) => `sw-icon-btn sw-social-top-link !hidden lg:!grid ${isActive ? "active" : ""}`} title="SoundWave Social" aria-label="Open SoundWave Social"><UsersRound size={20} /></NavLink>
 
           <div className="sw-settings-wrap">
-            <button
-              type="button"
-              className={`sw-icon-btn !grid !h-10 !w-10 shrink-0 place-items-center ${batterySaver || lowData ? "active" : ""}`}
-              onClick={() => setSettingsOpen((open) => !open)}
-              title="Performance settings"
-              aria-label="Open performance settings"
-              aria-expanded={settingsOpen}
-            >
-              <Settings2 className="!h-[22px] !w-[22px] shrink-0" strokeWidth={2.4} />
+            <button type="button" className={`sw-icon-btn !h-10 !w-10 ${batterySaver || lowData ? "active" : ""}`} onClick={() => setSettingsOpen((open) => !open)} title="Performance settings" aria-label="Open performance settings" aria-expanded={settingsOpen}>
+              <span className="grid h-full w-full place-items-center text-[22px]">⚙</span>
             </button>
-
-            {settingsOpen && (
-              <div className="sw-settings-popover" role="dialog" aria-label="Performance settings">
-                <div className="sw-settings-heading">
-                  <div>
-                    <strong>Performance</strong>
-                    <small>Use less battery and mobile data.</small>
-                  </div>
-                </div>
-
-                <button type="button" className="sw-settings-row" onClick={() => setBatterySaver(!batterySaver)}>
-                  <span className="sw-settings-row-icon"><BatteryMedium size={17} /></span>
-                  <span className="sw-settings-copy">
-                    <strong>Battery Saver</strong>
-                    <small>Stops decorative motion and expensive effects.</small>
-                  </span>
-                  <span className={`sw-switch ${batterySaver ? "on" : ""}`} aria-hidden="true"><i /></span>
-                </button>
-
-                <button type="button" className="sw-settings-row" onClick={() => setLowData(!lowData)}>
-                  <span className="sw-settings-row-icon"><WifiOff size={17} /></span>
-                  <span className="sw-settings-copy">
-                    <strong>Low Data Mode</strong>
-                    <small>Loads lower-priority sections only when you reach them.</small>
-                  </span>
-                  <span className={`sw-switch ${lowData ? "on" : ""}`} aria-hidden="true"><i /></span>
-                </button>
-
-                <button type="button" className="sw-settings-row" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                  <span className="sw-settings-row-icon">{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</span>
-                  <span className="sw-settings-copy">
-                    <strong>Appearance</strong>
-                    <small>{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}</small>
-                  </span>
-                  <span className="sw-settings-value">{theme === "dark" ? "Dark" : "Light"}</span>
-                </button>
-
-                <button type="button" className="sw-settings-row" onClick={() => setSidebarHidden(!sidebarHidden)}>
-                  <span className="sw-settings-row-icon">{sidebarHidden ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</span>
-                  <span className="sw-settings-copy">
-                    <strong>Sidebar</strong>
-                    <small>{sidebarHidden ? "Bring the desktop sidebar back." : "Hide only the sidebar and reclaim its page width."}</small>
-                  </span>
-                  <span className={`sw-switch ${sidebarHidden ? "on" : ""}`} aria-hidden="true"><i /></span>
-                </button>
-              </div>
-            )}
+            {performancePopover}
           </div>
 
-          <div className="shrink-0">
-            <NotificationBell />
-          </div>
+          <NotificationBell />
 
-          <NavLink to="/account" className="sw-account-pill !flex !h-10 !w-10 shrink-0 items-center justify-center !rounded-full !p-0 xl:!w-auto xl:!px-[10px]" aria-label="Account">
-            <User className="!h-[22px] !w-[22px] shrink-0" strokeWidth={2.4} />
+          <NavLink to="/account" className="sw-account-pill" aria-label="Account">
+            <User size={20} />
             <span className="!hidden xl:!inline">Account</span>
           </NavLink>
         </div>
       </header>
 
-      <SearchModal
-        isOpen={openSearch}
-        onClose={() => setOpenSearch(false)}
-        songs={songs}
-        onPlaySong={playSongFromSearch}
-      />
+      <SearchModal isOpen={openSearch} onClose={() => setOpenSearch(false)} songs={songs} onPlaySong={playSongFromSearch} />
 
-      <nav className="sw-bottom-nav !grid !min-h-[74px] !grid-cols-5 !items-center !gap-1 !px-2 !py-2 lg:!hidden" aria-label="Main navigation">
+      {/* Phone bottom nav is Tailwind-only: no legacy 18px svg rule can override it. */}
+      <nav className="fixed inset-x-3 bottom-[max(10px,env(safe-area-inset-bottom))] z-[2400] grid h-[80px] grid-cols-5 items-center gap-1 rounded-[22px] border border-[var(--sw-border)] bg-[var(--sw-player-bg)] px-2 py-2 shadow-[0_14px_38px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:hidden" aria-label="Main navigation">
         {mobileLinks.map((item) => {
           const Icon = item.icon;
           return (
-            <NavLink key={item.path} to={item.path} className="sw-bottom-item !min-h-[56px] !gap-1 !rounded-2xl !text-[0.68rem]">
-              <Icon className="!h-6 !w-6 shrink-0" strokeWidth={2.25} />
+            <NavLink key={item.path} to={item.path} className={({ isActive }) => `flex min-h-[60px] min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-bold no-underline ${isActive ? "text-[var(--sw-accent)]" : "text-[var(--sw-text-tertiary)]"}`}>
+              <Icon className="h-[27px] w-[27px] shrink-0" strokeWidth={2.35} />
               <span className="leading-none">{item.label}</span>
             </NavLink>
           );
