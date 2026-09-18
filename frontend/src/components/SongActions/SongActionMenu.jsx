@@ -272,13 +272,13 @@ const SongActionMenu = ({
       <button
         ref={triggerRef}
         type="button"
-        className={`sw2324-song-more ${triggerClassName}`.trim()}
+        className={`sw2324-song-more !grid !h-10 !w-10 shrink-0 place-items-center !rounded-full [&>svg]:!h-[22px] [&>svg]:!w-[22px] ${triggerClassName}`.trim()}
         onClick={toggle}
         aria-label={triggerLabel}
         aria-expanded={open}
         title="More options"
       >
-        <Ellipsis size={18}/>
+        <Ellipsis className="!h-[22px] !w-[22px]" />
       </button>
       {open && typeof document !== "undefined" ? createPortal(panel, document.body) : null}
     </>

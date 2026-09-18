@@ -249,7 +249,7 @@ const NewRelease = () => {
                       loading="lazy"
                       decoding="async"
                     />
-                    <span className="play-btn" aria-hidden="true">
+                    <span className="play-btn !grid !h-11 !w-11 place-items-center !text-sm" aria-hidden="true">
                       <FaPlay />
                     </span>
                   </span>
@@ -263,8 +263,8 @@ const NewRelease = () => {
                     window.scrollTo(0, 0);
                   }}
                 >
-                  <h3>{song.title || "Unknown Song"}</h3>
-                  <p><MissingArtistName name={song.artist?.name || song.artistName} /></p>
+                  <h3 className="!text-[0.9rem]">{song.title || "Unknown Song"}</h3>
+                  <p className="!text-[0.76rem]"><MissingArtistName name={song.artist?.name || song.artistName} /></p>
                 </button>
                 <SongActionMenu
                   song={song}

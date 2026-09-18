@@ -70,7 +70,7 @@ const SongItem = ({ song, queue = [] }) => {
 
         <button
           type="button"
-          className="play-overlay"
+          className="play-overlay !flex !h-11 !w-11 !translate-y-0 !scale-100 !items-center !justify-center !opacity-100 [&>svg]:!text-base sm:!h-12 sm:!w-12"
           onClick={handlePlayOnly}
           aria-label={`Play ${song.title || "song"}`}
           title="Play"
@@ -79,7 +79,7 @@ const SongItem = ({ song, queue = [] }) => {
         </button>
       </div>
 
-      <div className="card-content">
+      <div className="card-content [&_.card-title]:!text-[0.9rem] [&_.card-artist]:!text-[0.78rem]">
         <h4 className="card-title">{song.title || "Unknown Song"}</h4>
 
         <p

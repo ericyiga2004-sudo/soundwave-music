@@ -235,7 +235,7 @@ const ContinueListening = () => {
 
                   <button
                     type="button"
-                    className="continue-play-floating"
+                    className="continue-play-floating !grid !h-11 !w-11 !translate-y-0 place-items-center !opacity-100 [&>svg]:!text-base"
                     onClick={(event) => {
                       event.stopPropagation();
                       playSingleSong(song);

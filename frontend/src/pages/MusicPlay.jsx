@@ -161,19 +161,19 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
 
       {currentSong && (
         <>
-          <div className={`sw-player ${sidebarHidden ? "lg:!left-0" : ""} ${isBuffering ? "is-buffering" : ""}`}>
-            <div className="sw-player-song">
-              <button type="button" className="sw-player-cover" onClick={openSong} aria-label="Open current song">
+          <div className={`sw-player !left-3 !right-3 !bottom-[92px] !z-[1900] !min-h-[72px] !grid-cols-[minmax(0,1fr)_auto_auto] !gap-2 !rounded-2xl !border !border-[var(--sw-border)] !p-2 lg:!right-0 lg:!bottom-0 lg:!min-h-[86px] lg:!grid-cols-[minmax(190px,1fr)_minmax(330px,1.4fr)_minmax(160px,1fr)] lg:!gap-[18px] lg:!rounded-none lg:!border-x-0 lg:!border-b-0 lg:!p-[10px_20px] ${sidebarHidden ? "lg:!left-0" : "lg:!left-[258px]"} ${isBuffering ? "is-buffering" : ""}`}>
+            <div className="sw-player-song !min-w-0 !gap-2">
+              <button type="button" className="sw-player-cover !h-12 !w-12 !basis-12 shrink-0 !rounded-xl" onClick={openSong} aria-label="Open current song">
                 <SongArtwork src={getCover(currentSong)} alt={currentSong?.title || "Current song"} />
               </button>
-              <div className="sw-player-song-copy">
+              <div className="sw-player-song-copy min-w-0 [&>strong]:!text-[0.82rem] [&>span]:!text-[0.72rem]">
                 <strong>{currentSong?.title || "Unknown Song"}</strong>
                 <span className={playbackError ? "sw-player-error-text" : ""}>{playbackError || (isBuffering ? bufferMessage || "Buffering…" : <MissingArtistName name={getArtistName(currentSong)} />)}</span>
               </div>
             </div>
 
-            <div className="sw-player-center">
-              <div className="sw-player-controls">
+            <div className="sw-player-center !contents lg:!block">
+              <div className="sw-player-controls !gap-1">
                 <button
                   type="button"
                   className={`sw-player-icon-control !hidden md:!grid ${shuffle ? "active" : ""}`}
@@ -183,14 +183,14 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
                 >
                   <Shuffle size={17} />
                 </button>
-                <button type="button" className="sw-player-icon-control" onClick={prevSong} aria-label="Previous song">
-                  <SkipBack size={19} fill="currentColor" />
+                <button type="button" className="sw-player-icon-control !grid !h-9 !w-9 shrink-0 place-items-center" onClick={prevSong} aria-label="Previous song">
+                  <SkipBack className="!h-5 !w-5" fill="currentColor" />
                 </button>
-                <button type="button" className="sw-player-main-control" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
-                  {isBuffering ? <span className="sw-player-spinner" /> : isPlaying ? <Pause size={21} fill="currentColor" /> : <Play size={21} fill="currentColor" />}
+                <button type="button" className="sw-player-main-control !grid !h-11 !w-11 shrink-0 place-items-center" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"}>
+                  {isBuffering ? <span className="sw-player-spinner" /> : isPlaying ? <Pause className="!h-6 !w-6" fill="currentColor" /> : <Play className="!h-6 !w-6" fill="currentColor" />}
                 </button>
-                <button type="button" className="sw-player-icon-control" onClick={nextSong} aria-label="Next song">
-                  <SkipForward size={19} fill="currentColor" />
+                <button type="button" className="sw-player-icon-control !grid !h-9 !w-9 shrink-0 place-items-center" onClick={nextSong} aria-label="Next song">
+                  <SkipForward className="!h-5 !w-5" fill="currentColor" />
                 </button>
                 <button
                   type="button"
@@ -203,7 +203,7 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
                 </button>
               </div>
 
-              <div className="sw-player-progress-row">
+              <div className="sw-player-progress-row !hidden lg:!grid">
                 <span>{formatTime(clampedProgress)}</span>
                 <input
                   type="range"
@@ -220,7 +220,7 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
               </div>
             </div>
 
-            <div className="sw-player-actions">
+            <div className="sw-player-actions !flex shrink-0 items-center !gap-1">
               <div className="sw-volume-control !hidden xl:!flex">
                 <button type="button" onClick={toggleMute} aria-label={volume <= 0.001 ? "Unmute audio" : "Mute audio"} aria-pressed={volume <= 0.001} className="sw-player-icon-control">{volumeIcon}</button>
                 <input
@@ -235,7 +235,7 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
               </div>
               <button
                 type="button"
-                className={`sw-player-icon-control xl:!hidden ${volume <= 0.001 ? "active" : ""}`}
+                className={`sw-player-icon-control !hidden !h-9 !w-9 sm:!grid xl:!hidden ${volume <= 0.001 ? "active" : ""}`}
                 onClick={toggleMute}
                 aria-label={volume <= 0.001 ? "Unmute" : "Mute"}
                 title={volume <= 0.001 ? "Unmute" : "Mute"}
@@ -244,17 +244,17 @@ const MusicPlayer = ({ sidebarHidden = false }) => {
               </button>
               <button
                 type="button"
-                className={`sw-player-icon-control sw-queue-toggle ${queueOpen ? "active" : ""}`}
+                className={`sw-player-icon-control sw-queue-toggle !grid !h-9 !w-9 shrink-0 place-items-center ${queueOpen ? "active" : ""}`}
                 onClick={() => setQueueOpen((open) => !open)}
                 aria-label="Show queue"
                 title="Queue"
               >
-                <ListMusic size={18} />
+                <ListMusic className="!h-5 !w-5" />
               </button>
             </div>
           </div>
 
-          <aside className={`sw-queue-drawer ${queueOpen ? "open" : ""}`} aria-hidden={!queueOpen}>
+          <aside className={`sw-queue-drawer !bottom-[174px] !right-3 max-w-[calc(100vw-24px)] lg:!bottom-[98px] lg:!right-5 ${queueOpen ? "open" : ""}`} aria-hidden={!queueOpen}>
             <div className="sw-queue-header">
               <div>
                 <small>Up Next</small>

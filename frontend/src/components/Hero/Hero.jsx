@@ -125,7 +125,7 @@ const Hero = () => {
         <div className="min-w-0">
           <div className="hero-mini-stack !grid !h-auto grid-cols-1 !grid-rows-none gap-3 sm:grid-cols-2 xl:h-full xl:grid-cols-1 xl:!grid-rows-2">
             {(featured.length ? featured.slice(1, 3) : [null, null]).map((song, index) => (
-              <article className="hero-mini-card !grid min-w-0 !min-h-[112px] !grid-cols-[72px_minmax(0,1fr)_34px] !gap-3 !p-3 sm:!grid-cols-[76px_minmax(0,1fr)_34px] xl:!min-h-[160px] xl:!grid-cols-[94px_minmax(0,1fr)_36px] xl:!gap-[14px] xl:!p-4" key={song?._id || index}>
+              <article className="hero-mini-card !grid min-w-0 !min-h-[120px] !grid-cols-[76px_minmax(0,1fr)_44px] !gap-3 !p-3 sm:!grid-cols-[86px_minmax(0,1fr)_44px] xl:!min-h-[160px] xl:!grid-cols-[94px_minmax(0,1fr)_44px] xl:!gap-[14px] xl:!p-4" key={song?._id || index}>
                 {song ? <button type="button" className="sw2323-song-art-button !block !h-[68px] !w-[68px] sm:!h-[86px] sm:!w-[86px] !border-0 !bg-transparent !p-0 !rounded-[11px] overflow-hidden" onClick={() => playAndOpenHeroSong(song, featured)} aria-label={`Play and open ${song.title}`}><SongArtwork src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage} alt={song.title || "Song cover"} loading="lazy" /></button> : <div className="hero-mini-placeholder">♪</div>}
                 <div>
                   <span>{index === 0 ? "Top Pick" : "Listen Again"}</span>
@@ -133,8 +133,8 @@ const Hero = () => {
                   <p>{song ? getArtist(song) : "SoundWave"}</p>
                 </div>
                 {song && (
-                  <button type="button" onClick={() => playSong?.(song, featured)} aria-label={`Play ${song.title}`}>
-                    <Play size={15} fill="currentColor" />
+                  <button type="button" className="!grid !h-11 !w-11 shrink-0 place-items-center !rounded-full" onClick={() => playSong?.(song, featured)} aria-label={`Play ${song.title}`}>
+                    <Play className="!h-5 !w-5" fill="currentColor" />
                   </button>
                 )}
                 {song && canUseSoundwaveSongApi(song) ? (

@@ -83,7 +83,7 @@ const Social = () => {
               <div><span className="sw-social-kicker">Live network</span><h2>What your music people are doing</h2></div>
               <span className={realtimeConnected ? "sw20-realtime-pill online" : realtimeMode === "polling" ? "sw20-realtime-pill fallback" : "sw20-realtime-pill"}>{realtimeConnected ? "Live updates" : realtimeMode === "polling" ? "Updates on" : "Checking"}</span>
             </div>
-            <div className="sw20-activity-grid">
+            <div className="sw20-activity-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2">
               {(home?.feed || []).slice(0, 8).map((activity) => (
                 <article className="sw20-activity-card" key={activity._id}>
                   <button
@@ -101,7 +101,7 @@ const Social = () => {
                     </span>
                     {activity.song ? <SongArtwork className="sw20-activity-cover" src={getSongCover(activity.song)} alt={activity.song?.title || "Song cover"} loading="lazy" /> : <ArrowRight size={16} />}
                   </button>
-                  {activity.song ? <div className="sw20-activity-song"><Play size={13} fill="currentColor" /><span>{activity.song.title}</span><small><MissingArtistName name={getArtistName(activity.song)} /></small></div> : null}
+                  {activity.song ? <div className="sw20-activity-song !min-h-11"><Play className="!h-4 !w-4 shrink-0" fill="currentColor" /><span>{activity.song.title}</span><small><MissingArtistName name={getArtistName(activity.song)} /></small></div> : null}
                 </article>
               ))}
               {!home?.feed?.length ? <div className="sw20-empty-card"><UsersRound size={24} /><strong>Your social feed starts with people.</strong><p>Follow listeners, share songs or start a Circle and activity will appear here automatically.</p><button type="button" className="sw-secondary-btn" onClick={() => navigate("/social/people")}>Find people</button></div> : null}

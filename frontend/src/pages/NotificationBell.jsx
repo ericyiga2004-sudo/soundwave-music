@@ -301,7 +301,7 @@ const NotificationBell = () => {
       <div className="notification-bell-wrap" ref={dropdownRef}>
         <button
           type="button"
-          className={open ? "notification-bell-btn active" : "notification-bell-btn"}
+          className={`${open ? "notification-bell-btn active" : "notification-bell-btn"} !grid !h-10 !w-10 shrink-0 place-items-center !rounded-full [&>svg]:!h-5 [&>svg]:!w-5`}
           onClick={() => {
             if (!open && pendingUnreadRef.current.size) {
               const pending = pendingUnreadRef.current.size;

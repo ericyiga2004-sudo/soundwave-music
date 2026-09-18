@@ -99,7 +99,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="sw-top-header !flex !min-h-[56px] !w-full !max-w-full items-center justify-between gap-2 !px-3 !py-2 sm:!grid sm:!grid-cols-[minmax(120px,1fr)_minmax(180px,320px)_auto] sm:!gap-3 sm:!px-4 lg:!grid-cols-[1fr_minmax(220px,390px)_1fr] lg:!px-6">
+      <header className="sw-top-header !flex !min-h-[64px] !w-full !max-w-full items-center justify-between !gap-2 !px-3 !py-2 sm:!grid sm:!grid-cols-[minmax(120px,1fr)_minmax(180px,320px)_auto] sm:!gap-3 sm:!px-4 lg:!grid-cols-[1fr_minmax(220px,390px)_1fr] lg:!px-6">
         <div className="sw-top-left min-w-0 flex-1 sm:flex-none">
           <button type="button" className="sw-icon-btn !hidden lg:!grid" onClick={() => setSidebarHidden(!sidebarHidden)} aria-controls="soundwave-sidebar" aria-expanded={!sidebarHidden} aria-label={sidebarHidden ? "Show sidebar" : "Hide sidebar"}>{sidebarHidden ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}</button>
           <div className="sw-history-controls !hidden lg:!flex">
@@ -111,9 +111,9 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="sw-mobile-brand !flex min-w-0 lg:!hidden">
-            <span className="sw-mobile-brand-icon">♪</span>
-            <strong className="min-w-0 max-w-[108px] truncate sm:max-w-[150px]">{title}</strong>
+          <div className="sw-mobile-brand !flex min-w-0 shrink items-center !gap-2 lg:!hidden">
+            <span className="sw-mobile-brand-icon !grid !h-10 !w-10 shrink-0 place-items-center !rounded-xl !text-xl">♪</span>
+            <strong className="min-w-0 max-w-[92px] truncate !text-[1.08rem] sm:max-w-[150px]">{title}</strong>
           </div>
         </div>
 
@@ -123,9 +123,9 @@ const Navbar = () => {
           <kbd className="!hidden xl:!inline">/</kbd>
         </button>
 
-        <div className="sw-top-actions ml-auto !flex shrink-0 items-center !gap-1 sm:!gap-2">
-          <button type="button" className="sw-icon-btn !grid sm:!hidden" onClick={() => setOpenSearch(true)} aria-label="Search">
-            <Search size={18} />
+        <div className="sw-top-actions ml-auto !flex shrink-0 items-center !gap-1.5 sm:!gap-2">
+          <button type="button" className="sw-icon-btn !grid !h-10 !w-10 shrink-0 place-items-center sm:!hidden" onClick={() => setOpenSearch(true)} aria-label="Search">
+            <Search className="!h-[22px] !w-[22px] shrink-0" strokeWidth={2.4} />
           </button>
           <NavLink
             to="/social"
@@ -139,13 +139,13 @@ const Navbar = () => {
           <div className="sw-settings-wrap">
             <button
               type="button"
-              className={`sw-icon-btn !grid ${batterySaver || lowData ? "active" : ""}`}
+              className={`sw-icon-btn !grid !h-10 !w-10 shrink-0 place-items-center ${batterySaver || lowData ? "active" : ""}`}
               onClick={() => setSettingsOpen((open) => !open)}
               title="Performance settings"
               aria-label="Open performance settings"
               aria-expanded={settingsOpen}
             >
-              <Settings2 size={18} />
+              <Settings2 className="!h-[22px] !w-[22px] shrink-0" strokeWidth={2.4} />
             </button>
 
             {settingsOpen && (
@@ -196,10 +196,12 @@ const Navbar = () => {
             )}
           </div>
 
-          <NotificationBell />
+          <div className="shrink-0">
+            <NotificationBell />
+          </div>
 
-          <NavLink to="/account" className="sw-account-pill !flex !h-[34px] !w-[34px] shrink-0 items-center justify-center !p-0 xl:!w-auto xl:!px-[10px]" aria-label="Account">
-            <User size={17} />
+          <NavLink to="/account" className="sw-account-pill !flex !h-10 !w-10 shrink-0 items-center justify-center !rounded-full !p-0 xl:!w-auto xl:!px-[10px]" aria-label="Account">
+            <User className="!h-[22px] !w-[22px] shrink-0" strokeWidth={2.4} />
             <span className="!hidden xl:!inline">Account</span>
           </NavLink>
         </div>
@@ -212,13 +214,13 @@ const Navbar = () => {
         onPlaySong={playSongFromSearch}
       />
 
-      <nav className="sw-bottom-nav !grid lg:!hidden" aria-label="Main navigation">
+      <nav className="sw-bottom-nav !grid !min-h-[74px] !grid-cols-5 !items-center !gap-1 !px-2 !py-2 lg:!hidden" aria-label="Main navigation">
         {mobileLinks.map((item) => {
           const Icon = item.icon;
           return (
-            <NavLink key={item.path} to={item.path} className="sw-bottom-item">
-              <Icon size={20} />
-              <span>{item.label}</span>
+            <NavLink key={item.path} to={item.path} className="sw-bottom-item !min-h-[56px] !gap-1 !rounded-2xl !text-[0.68rem]">
+              <Icon className="!h-6 !w-6 shrink-0" strokeWidth={2.25} />
+              <span className="leading-none">{item.label}</span>
             </NavLink>
           );
         })}

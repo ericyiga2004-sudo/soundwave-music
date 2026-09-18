@@ -175,14 +175,14 @@ const SongsPage = () => {
               <span className="sw-song-duration">{formatDuration(song.duration)}</span>
               <div className="sw-row-actions">
                 <button
-                  className="sw-icon-only"
+                  className="sw-icon-only !grid !h-10 !w-10 shrink-0 place-items-center !rounded-full"
                   type="button"
                   onClick={() => playSong?.(song, songs)}
                   aria-label={`Play ${song.title}`}
                 >
-                  <Play size={16} fill="currentColor" />
+                  <Play className="!h-5 !w-5" fill="currentColor" />
                 </button>
-                <SongActionMenu song={song} queue={songs} triggerClassName="sw-icon-only" triggerLabel={`More options for ${song.title}`} />
+                <SongActionMenu song={song} queue={songs} triggerClassName="sw-icon-only !h-10 !w-10" triggerLabel={`More options for ${song.title}`} />
               </div>
             </div>
           ))}
