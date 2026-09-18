@@ -791,14 +791,14 @@ const SearchModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="sw-search-overlay">
-      <div className="sw-search-modal" ref={modalRef}>
+    <div className="sw-search-overlay !items-start">
+      <div className="sw-search-modal !h-[100svh] !max-w-none !rounded-none md:!h-[92vh] md:!max-w-[700px] md:!rounded-b-[30px]" ref={modalRef}>
         <div className="sw-search-handle" onClick={onClose}>
           <ChevronDown size={24} />
         </div>
 
-        <div className="sw-search-header">
-          <div className="sw-search-input">
+        <div className="sw-search-header !px-4 !pb-4 sm:!px-[22px] sm:!pb-5">
+          <div className="sw-search-input !gap-3 !rounded-2xl !px-4 !py-3 sm:!gap-[15px] sm:!px-[18px] sm:!py-4">
             <Search size={18} />
 
             <input
@@ -831,7 +831,7 @@ const SearchModal = ({
         )}
 
         {!loading && query && (
-          <div className="sw-search-results">
+          <div className="sw-search-results !px-3 !pb-6 sm:!px-[22px] sm:!pb-[30px]">
             {artists.length > 0 && (
               <>
                 <h3>Artists</h3>
@@ -839,7 +839,7 @@ const SearchModal = ({
                 {artists.map((artist) => (
                   <div
                     key={artist._id}
-                    className="sw-search-item"
+                    className="sw-search-item min-w-0 !gap-3 !px-2 !py-2 sm:!gap-[15px] sm:!p-3"
                     role="button"
                     tabIndex={0}
                     onClick={() => handleArtistOpen(artist)}
@@ -872,7 +872,7 @@ const SearchModal = ({
                 {albums.map((album) => (
                   <div
                     key={album._id}
-                    className="sw-search-item"
+                    className="sw-search-item min-w-0 !gap-3 !px-2 !py-2 sm:!gap-[15px] sm:!p-3"
                     role="button"
                     tabIndex={0}
                     onClick={() => handleAlbumOpen(album)}
@@ -905,7 +905,7 @@ const SearchModal = ({
                 {songs.map((song) => (
                   <div
                     key={song._id}
-                    className="sw-search-item"
+                    className="sw-search-item min-w-0 !gap-3 !px-2 !py-2 sm:!gap-[15px] sm:!p-3"
                     role="button"
                     tabIndex={0}
                     onClick={() => handleSongOpen(song)}

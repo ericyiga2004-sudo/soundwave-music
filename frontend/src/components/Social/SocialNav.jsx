@@ -12,11 +12,11 @@ const items = [
 ];
 
 const SocialNav = () => (
-  <nav className="sw-social-mode-nav" aria-label="SoundWave Social modes">
+  <nav className="sw-social-mode-nav flex w-full max-w-full items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="SoundWave Social modes">
     {items.map(({ to, label, icon: Icon, end }) => (
-      <NavLink key={to} to={to} end={end} className={({ isActive }) => isActive ? "active" : ""}>
+      <NavLink key={to} to={to} end={end} className={({ isActive }) => `${isActive ? "active" : ""} flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[var(--sw-border)] bg-[var(--sw-surface)] px-3 text-xs font-extrabold text-[var(--sw-text-secondary)] no-underline max-[380px]:h-9 max-[380px]:w-9 max-[380px]:px-0 ${isActive ? "!border-[var(--sw-accent)] !bg-[var(--sw-accent)] !text-white" : ""}`}>
         <Icon size={16} />
-        <span>{label}</span>
+        <span className="max-[380px]:hidden">{label}</span>
       </NavLink>
     ))}
   </nav>

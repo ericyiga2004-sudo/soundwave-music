@@ -69,21 +69,21 @@ const Hero = () => {
   };
 
   return (
-    <section className="hero sw-container-fluid w-full mx-auto px-3 !px-[1rem] sm:!px-[1.5rem] xl:!px-[3rem] !pt-[1.5rem] xl:!pt-[3rem]">
-      <div className="hero-heading-row">
+    <section className="hero sw-container-fluid mx-auto w-full min-w-0 max-w-[1660px] px-4 pt-5 sm:px-6 sm:pt-6 xl:px-12 xl:pt-12">
+      <div className="hero-heading-row !flex min-w-0 items-end justify-between gap-3">
         <div>
           <span>Listen Now</span>
-          <h1>Made for the moment.</h1>
+          <h1 className="!text-[clamp(1.9rem,10vw,2.65rem)] sm:!text-[clamp(2rem,5vw,3.4rem)]">Made for the moment.</h1>
         </div>
         <button type="button" onClick={() => navigate("/explore")}>See All</button>
       </div>
 
-      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem]">
-        <div className="col !w-[100%] flex-none col sw-col-wide xl:!w-[66.66666666666667%] xl:flex-none">
-          <article className="hero-feature-card">
-            <div className="hero-feature-copy">
+      <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-3 xl:gap-6">
+        <div className="min-w-0 xl:col-span-2">
+          <article className="hero-feature-card !grid !min-h-0 min-w-0 !grid-cols-1 !gap-5 !p-[18px] sm:!p-6 md:!grid-cols-[minmax(0,1fr)_180px] md:!items-center xl:!min-h-[350px] xl:!grid-cols-[minmax(0,1fr)_minmax(190px,34%)] xl:!gap-8 xl:!p-[clamp(24px,4vw,46px)]">
+            <div className="hero-feature-copy min-w-0">
               <span className="hero-kicker"><Sparkles size={14} /> {personalized.length ? "FOR YOU" : "FEATURED"}</span>
-              <h2>{mainSong?.title || "Your music, all in one beautiful place."}</h2>
+              <h2 className="!text-[clamp(1.9rem,9vw,3rem)] sm:!text-[clamp(2rem,5vw,4rem)] break-words">{mainSong?.title || "Your music, all in one beautiful place."}</h2>
               <p>
                 {mainSong
                   ? `${getArtist(mainSong)} · ${personalized.length ? "Picked from your listening taste, country signals and plays." : "A standout from your SoundWave catalog."}`
@@ -102,7 +102,7 @@ const Hero = () => {
               </div>
             </div>
 
-            <div className="hero-artwork-wrap" aria-hidden={!mainSong}>
+            <div className="hero-artwork-wrap !w-full max-w-[220px] justify-self-start md:!w-[180px] md:justify-self-end xl:!w-[min(100%,300px)]" aria-hidden={!mainSong}>
               {mainSong ? (
                 <button type="button" className="sw2323-song-art-button !block !h-full !w-full !border-0 !bg-transparent !p-0 !rounded-[inherit] overflow-hidden" onClick={() => playAndOpenHeroSong(mainSong)} aria-label={`Play and open ${mainSong.title}`}>
                   <SongArtwork src={mainSong.imageUrl || mainSong.image || mainSong.coverImage || mainSong.album?.coverImage} alt={mainSong.title || "Featured song"} />
@@ -122,10 +122,10 @@ const Hero = () => {
           </article>
         </div>
 
-        <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
-          <div className="hero-mini-stack">
+        <div className="min-w-0">
+          <div className="hero-mini-stack !grid !h-auto grid-cols-1 !grid-rows-none gap-3 sm:grid-cols-2 xl:h-full xl:grid-cols-1 xl:!grid-rows-2">
             {(featured.length ? featured.slice(1, 3) : [null, null]).map((song, index) => (
-              <article className="hero-mini-card" key={song?._id || index}>
+              <article className="hero-mini-card !grid min-w-0 !min-h-[112px] !grid-cols-[72px_minmax(0,1fr)_34px] !gap-3 !p-3 sm:!grid-cols-[76px_minmax(0,1fr)_34px] xl:!min-h-[160px] xl:!grid-cols-[94px_minmax(0,1fr)_36px] xl:!gap-[14px] xl:!p-4" key={song?._id || index}>
                 {song ? <button type="button" className="sw2323-song-art-button !block !h-[68px] !w-[68px] sm:!h-[86px] sm:!w-[86px] !border-0 !bg-transparent !p-0 !rounded-[11px] overflow-hidden" onClick={() => playAndOpenHeroSong(song, featured)} aria-label={`Play and open ${song.title}`}><SongArtwork src={song.imageUrl || song.image || song.coverImage || song.album?.coverImage} alt={song.title || "Song cover"} loading="lazy" /></button> : <div className="hero-mini-placeholder">♪</div>}
                 <div>
                   <span>{index === 0 ? "Top Pick" : "Listen Again"}</span>

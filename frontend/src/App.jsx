@@ -148,10 +148,10 @@ const App = () => {
         <div className="sw-app-shell">
           <Sidebar hidden={sidebarHidden} />
 
-          <div className={`sw-workspace min-w-0 min-h-screen ml-0 motion-safe:transition-[margin] motion-safe:duration-200 ${sidebarHidden ? "" : "lg:ml-[86px] xl:ml-[258px]"}`}>
+          <div className={`sw-workspace min-w-0 min-h-screen w-full max-w-full overflow-x-hidden ml-0 motion-safe:transition-[margin] motion-safe:duration-200 ${sidebarHidden ? "" : "lg:ml-[86px] xl:ml-[258px]"}`}>
             <Navbar />
 
-            <main className="main-content">
+            <main className="main-content w-full min-w-0 max-w-full overflow-x-hidden [&>*]:min-w-0 [&>*]:max-w-full">
               <RouteErrorBoundary resetKey={location.pathname}><Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<Home />} />

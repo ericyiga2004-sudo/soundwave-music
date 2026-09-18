@@ -125,15 +125,15 @@ const Explore = () => {
   };
 
   return (
-    <div className="explore-page-v7 sw-container-fluid w-full mx-auto px-3">
-      <section className="explore-v7-head row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1.5rem] [--sw-gutter-y:1.5rem] !items-end">
-        <div className="col !w-[100%] flex-none col xl:!w-[58.333333333333336%] xl:flex-none">
+    <div className="explore-page-v7 sw-container-fluid mx-auto w-full min-w-0 max-w-full overflow-x-hidden px-4 sm:px-6 lg:px-8">
+      <section className="explore-v7-head !grid min-w-0 !grid-cols-1 !gap-5 xl:!grid-cols-12 xl:!items-end xl:!gap-6">
+        <div className="min-w-0 xl:col-span-7">
           <span className="explore-v7-kicker">Explore SoundWave</span>
           <h1>Find something that feels right.</h1>
           <p>Browse by country, genre, mood, or search. SoundWave loads only a compact page of results to keep phones fast.</p>
         </div>
         {featured ? (
-          <div className="col !w-[100%] flex-none col xl:!w-[41.666666666666664%] xl:flex-none">
+          <div className="min-w-0 xl:col-span-5">
             <article className="explore-feature-card">
               <SongArtwork src={getSongCover(featured)} alt={featured?.title || "Song cover"} />
               <div><small>Featured now</small><strong>{featured.title}</strong><span><MissingArtistName name={getArtistName(featured)} /></span></div>
@@ -146,12 +146,12 @@ const Explore = () => {
 
       <section className="explore-filter-shell" aria-label="Explore filters">
         <div className="explore-filter-title"><SlidersHorizontal size={16}/><span>Filter music</span><button type="button" onClick={reset}>Reset</button></div>
-        <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:0.5rem] [--sw-gutter-y:0.5rem]">
-          <div className="col !w-[100%] flex-none col md:!w-[41.666666666666664%] md:flex-none col xl:!w-[33.333333333333336%] xl:flex-none"><div className="explore-search-wrap"><Search size={16}/><input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Songs, artists, moods…" aria-label="Search music"/></div></div>
-          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={country} onChange={(e)=>setCountry(e.target.value)} aria-label="Country"><option>All</option>{(filters.countries||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
-          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={genre} onChange={(e)=>setGenre(e.target.value)} aria-label="Genre"><option>All</option>{(filters.genres||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
-          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={mood} onChange={(e)=>setMood(e.target.value)} aria-label="Mood"><option>All</option>{(filters.moods||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
-          <div className="col !w-[50%] flex-none col md:flex-[1_0_0%]"><PremiumSelect value={sort} onChange={(e)=>setSort(e.target.value)} aria-label="Sort"><option value="popular">Popular</option><option value="newest">Newest</option><option value="liked">Most liked</option><option value="az">A–Z</option></PremiumSelect></div>
+        <div className="grid min-w-0 grid-cols-2 gap-2 md:grid-cols-6">
+          <div className="col-span-2 min-w-0 md:col-span-2"><div className="explore-search-wrap"><Search size={16}/><input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Songs, artists, moods…" aria-label="Search music"/></div></div>
+          <div className="min-w-0"><PremiumSelect value={country} onChange={(e)=>setCountry(e.target.value)} aria-label="Country"><option>All</option>{(filters.countries||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
+          <div className="min-w-0"><PremiumSelect value={genre} onChange={(e)=>setGenre(e.target.value)} aria-label="Genre"><option>All</option>{(filters.genres||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
+          <div className="min-w-0"><PremiumSelect value={mood} onChange={(e)=>setMood(e.target.value)} aria-label="Mood"><option>All</option>{(filters.moods||[]).map((item)=><option key={item}>{item}</option>)}</PremiumSelect></div>
+          <div className="min-w-0"><PremiumSelect value={sort} onChange={(e)=>setSort(e.target.value)} aria-label="Sort"><option value="popular">Popular</option><option value="newest">Newest</option><option value="liked">Most liked</option><option value="az">A–Z</option></PremiumSelect></div>
         </div>
       </section>
 

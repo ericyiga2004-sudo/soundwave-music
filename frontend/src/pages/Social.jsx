@@ -52,7 +52,7 @@ const Social = () => {
   };
 
   return (
-    <div className="sw-social-page sw20-page sw-container-fluid w-full mx-auto px-3">
+    <div className="sw-social-page sw20-page sw-container-fluid mx-auto w-full min-w-0 max-w-full overflow-x-hidden px-4 py-4 sm:px-6 lg:px-8">
       <SocialPageHero
         title="Music becomes social when it moves between people."
         description="SoundWave Social is now split into focused spaces. Share tracks directly, build private Circles, start live rooms, compare taste and keep every interaction easy to find."
@@ -63,7 +63,7 @@ const Social = () => {
         <button type="button" className="sw-secondary-btn" onClick={() => navigate("/social/rooms")}><RadioTower size={16} /> Start a room</button>
       </SocialPageHero>
 
-      <section className="sw20-mode-grid" aria-label="Social modes">
+      <section className="sw20-mode-grid !grid min-w-0 !grid-cols-1 gap-3 sm:!grid-cols-2 xl:!grid-cols-3" aria-label="Social modes">
         {modes.map(({ to, title, copy, icon: Icon, image }) => (
           <button type="button" className="sw20-mode-card" key={to} onClick={() => navigate(to)}>
             <div className="sw20-mode-art"><img src={image.src} alt={image.alt} loading="lazy" decoding="async" /></div>
@@ -76,9 +76,9 @@ const Social = () => {
         ))}
       </section>
 
-      <div className="row flex flex-wrap [--sw-gutter-x:1.5rem] [--sw-gutter-y:0px] -mx-[calc(var(--sw-gutter-x)/2)] -mt-[var(--sw-gutter-y)] [&>*]:px-[calc(var(--sw-gutter-x)/2)] [&>*]:mt-[var(--sw-gutter-y)] [&>*]:shrink-0 [&>*]:w-full [&>*]:max-w-full [--sw-gutter-x:1rem] [--sw-gutter-y:1rem] xl:[--sw-gutter-x:1.5rem] xl:[--sw-gutter-y:1.5rem] !mt-[0.25rem]">
-        <div className="col !w-[100%] flex-none col sw-col-wide xl:!w-[66.66666666666667%] xl:flex-none">
-          <section className="sw-social-panel sw20-panel">
+      <div className="mt-1 grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-3 xl:gap-6">
+        <div className="min-w-0 xl:col-span-2">
+          <section className="sw-social-panel sw20-panel min-w-0 max-w-full overflow-hidden">
             <div className="sw-social-section-heading">
               <div><span className="sw-social-kicker">Live network</span><h2>What your music people are doing</h2></div>
               <span className={realtimeConnected ? "sw20-realtime-pill online" : realtimeMode === "polling" ? "sw20-realtime-pill fallback" : "sw20-realtime-pill"}>{realtimeConnected ? "Live updates" : realtimeMode === "polling" ? "Updates on" : "Checking"}</span>
@@ -109,8 +109,8 @@ const Social = () => {
           </section>
         </div>
 
-        <div className="col !w-[100%] flex-none col xl:!w-[33.333333333333336%] xl:flex-none">
-          <section className="sw-social-panel sw20-panel">
+        <div className="min-w-0">
+          <section className="sw-social-panel sw20-panel min-w-0 max-w-full overflow-hidden">
             <div className="sw-social-section-heading"><div><span className="sw-social-kicker">Today</span><h2>Fast status</h2></div></div>
             <div className="sw20-status-list">
               <button type="button" onClick={() => navigate("/social/today")}><Music2 size={17} /><span><strong>{home?.dailyPicks?.length || 0}</strong><small>songs picked today</small></span><ArrowRight size={15} /></button>

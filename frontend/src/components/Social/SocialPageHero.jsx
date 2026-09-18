@@ -13,8 +13,8 @@ const SocialPageHero = ({ kicker = "SoundWave Social", title, description, image
   return (
     <>
       <SocialNav />
-      <header className="sw20-social-hero">
-        <div className="sw20-social-hero-copy">
+      <header className="sw20-social-hero !grid min-w-0 !grid-cols-1 !gap-4 !border-b !border-[var(--sw-border)] !pb-5 lg:!grid-cols-[minmax(0,1.08fr)_minmax(320px,.92fr)] lg:!gap-6">
+        <div className="sw20-social-hero-copy min-w-0 !p-0 sm:!py-2 lg:!py-[18px]">
           <div className="sw20-social-kicker-row">
             <span className="sw-social-kicker">{kicker}</span>
             <span className={isLive ? "sw20-live-state online" : isPolling ? "sw20-live-state fallback" : "sw20-live-state"}>
@@ -22,11 +22,11 @@ const SocialPageHero = ({ kicker = "SoundWave Social", title, description, image
               {label}
             </span>
           </div>
-          <h1>{title}</h1>
-          <p>{description}</p>
+          <h1 className="!max-w-full !text-[clamp(1.85rem,9vw,2.5rem)] !leading-[1.02] break-words sm:!text-[clamp(2rem,6vw,3.5rem)] lg:!text-[clamp(2rem,4vw,4.2rem)]">{title}</h1>
+          <p className="!max-w-full !text-sm sm:!text-[0.95rem]">{description}</p>
           {children ? <div className="sw20-hero-actions">{children}</div> : null}
         </div>
-        <div className="sw20-social-hero-image">
+        <div className="sw20-social-hero-image min-w-0 !min-h-0 !w-full !aspect-[16/9] !rounded-[20px] sm:!aspect-[16/8] lg:!aspect-auto lg:!min-h-[320px] lg:!rounded-[26px]">
           <img src={image?.src} alt={image?.alt || ""} loading="eager" decoding="async" />
         </div>
       </header>

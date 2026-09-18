@@ -99,8 +99,8 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="sw-top-header">
-        <div className="sw-top-left">
+      <header className="sw-top-header !flex !min-h-[56px] !w-full !max-w-full items-center justify-between gap-2 !px-3 !py-2 sm:!grid sm:!grid-cols-[minmax(120px,1fr)_minmax(180px,320px)_auto] sm:!gap-3 sm:!px-4 lg:!grid-cols-[1fr_minmax(220px,390px)_1fr] lg:!px-6">
+        <div className="sw-top-left min-w-0 flex-1 sm:flex-none">
           <button type="button" className="sw-icon-btn !hidden lg:!grid" onClick={() => setSidebarHidden(!sidebarHidden)} aria-controls="soundwave-sidebar" aria-expanded={!sidebarHidden} aria-label={sidebarHidden ? "Show sidebar" : "Hide sidebar"}>{sidebarHidden ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}</button>
           <div className="sw-history-controls !hidden lg:!flex">
             <button type="button" onClick={() => navigate(-1)} aria-label="Back">
@@ -111,22 +111,25 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="sw-mobile-brand lg:!hidden">
+          <div className="sw-mobile-brand !flex min-w-0 lg:!hidden">
             <span className="sw-mobile-brand-icon">♪</span>
-            <strong>{title}</strong>
+            <strong className="min-w-0 max-w-[108px] truncate sm:max-w-[150px]">{title}</strong>
           </div>
         </div>
 
-        <button type="button" className="sw-search-btn" onClick={() => setOpenSearch(true)}>
+        <button type="button" className="sw-search-btn !hidden sm:!flex" onClick={() => setOpenSearch(true)}>
           <Search size={17} />
           <span>Search</span>
           <kbd className="!hidden xl:!inline">/</kbd>
         </button>
 
-        <div className="sw-top-actions">
+        <div className="sw-top-actions ml-auto !flex shrink-0 items-center !gap-1 sm:!gap-2">
+          <button type="button" className="sw-icon-btn !grid sm:!hidden" onClick={() => setOpenSearch(true)} aria-label="Search">
+            <Search size={18} />
+          </button>
           <NavLink
             to="/social"
-            className={({ isActive }) => `sw-icon-btn sw-social-top-link ${isActive ? "active" : ""}`}
+            className={({ isActive }) => `sw-icon-btn sw-social-top-link !hidden lg:!grid ${isActive ? "active" : ""}`}
             title="SoundWave Social"
             aria-label="Open SoundWave Social"
           >
@@ -136,7 +139,7 @@ const Navbar = () => {
           <div className="sw-settings-wrap">
             <button
               type="button"
-              className={`sw-icon-btn ${batterySaver || lowData ? "active" : ""}`}
+              className={`sw-icon-btn !grid ${batterySaver || lowData ? "active" : ""}`}
               onClick={() => setSettingsOpen((open) => !open)}
               title="Performance settings"
               aria-label="Open performance settings"
@@ -195,7 +198,7 @@ const Navbar = () => {
 
           <NotificationBell />
 
-          <NavLink to="/account" className="sw-account-pill" aria-label="Account">
+          <NavLink to="/account" className="sw-account-pill !flex !h-[34px] !w-[34px] shrink-0 items-center justify-center !p-0 xl:!w-auto xl:!px-[10px]" aria-label="Account">
             <User size={17} />
             <span className="!hidden xl:!inline">Account</span>
           </NavLink>
@@ -209,7 +212,7 @@ const Navbar = () => {
         onPlaySong={playSongFromSearch}
       />
 
-      <nav className="sw-bottom-nav lg:!hidden" aria-label="Main navigation">
+      <nav className="sw-bottom-nav !grid lg:!hidden" aria-label="Main navigation">
         {mobileLinks.map((item) => {
           const Icon = item.icon;
           return (
